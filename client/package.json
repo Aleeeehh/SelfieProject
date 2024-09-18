@@ -1,0 +1,50 @@
+{
+    "name": "client",
+    "version": "1.1.0",
+    "private": true,
+    "dependencies": {
+        "bootstrap-icons": "latest",
+        "client": "file:",
+        "react": "latest",
+        "react-dom": "latest",
+        "react-router-dom": "latest",
+        "react-scripts": "latest"
+    },
+    "devDependencies": {
+        "@types/node": "latest",
+        "@types/react": "latest",
+        "@types/react-dom": "latest",
+        "@types/react-router-dom": "latest",
+        "concurrently": "latest",
+        "eslint": "latest",
+        "typescript": "latest"
+    },
+    "scripts": {
+        "start": "react-scripts start --watch --watch-poll",
+        "startLocal": "npm install && react-scripts start --watch --watch-poll",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ],
+        "rules": {
+            "@typescript-eslint/explicit-function-return-type": "error"
+        }
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    }
+}
