@@ -1,28 +1,35 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "./Home";
 import Header from "./Header";
 import Footer from "./Footer";
+import Login from "./Login";
+import Calendar from "./Calendar";
+import Pomodoro from "./Pomodoro";
+import Projects from "./Projects";
+import Note from "./Note";
+import NotFound from "./NotFound";
 
 function App(): React.JSX.Element {
 	return (
 		<div id="body-container">
-			<BrowserRouter>
-				<Routes>
-					<Route path="/">
-						<Route
-							index
-							element={
-								<WithLayout>
-									<Home />
-								</WithLayout>
-							}
-						/>
-						<Route path="*" element={<Navigate to="/" replace />} />
-					</Route>
-				</Routes>
-			</BrowserRouter>
+			<WithLayout>
+				<BrowserRouter>
+					<Routes>
+						<Route path="/">
+							<Route index element={<Home />} />
+							<Route path="login" element={<Login />} />
+							<Route path="calendar" element={<Calendar />} />
+							<Route path="pomodoro" element={<Pomodoro />} />
+							<Route path="projects" element={<Projects />} />
+							<Route path="notes" element={<Note />} />
+							<Route path="*" element={<NotFound />} />
+							{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
+						</Route>
+					</Routes>
+				</BrowserRouter>
+			</WithLayout>
 		</div>
 	);
 }

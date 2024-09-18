@@ -21,12 +21,15 @@ function Home(): React.JSX.Element {
 	}, []);
 
 	return (
-		<div className="home-table">
-			{/* <a href="/info">
-				<button>Cliccami</button>
-			</a> */}
+		<>
 			{message && <div>{message}</div>}
-		</div>
+			<div className="home-container">
+				<div className="preview preview-calendar">Qui ci va la preview del calendario</div>
+				<div className="preview preview-pomodoro">Qui ci va la preview del pomodoro</div>
+				<div className="preview preview-note">Qui ci va la preview delle note</div>
+				<div className="preview preview-projects">Qui ci va la preview dei progetti</div>
+			</div>
+		</>
 	);
 }
 
