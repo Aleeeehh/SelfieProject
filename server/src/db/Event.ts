@@ -2,10 +2,9 @@ import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema({
 	owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-	startDate: Date,
-	endDate: Date,
+	startTime: Date,
+	endTime: Date,
 	title: String,
-	text: String,
 	frequency: { type: String, enum: ["once", "daily", "weekly", "monthly"], default: "once" },
 	location: String,
 	notificationMethod: { type: String, enum: ["os", "whatsapp", "email"] },
