@@ -1,8 +1,26 @@
 import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema({
-	user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-	duration: Number,
+	owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+	startDate: Date,
+	endDate: Date,
+	title: String,
+	text: String,
+	frequency: { type: String, enum: ["once", "daily", "weekly", "monthly"], default: "once" },
+	location: String,
+	notificationMethod: { type: String, enum: ["os", "whatsapp", "email"] },
+	notificationAnticipation: Number,
+	notificationRepetition: { type: String, enum: ["once", "multiple", "untilresponse", "hourly"] },
+	users: [
+		{
+			user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+			accepted: {
+				type: String,
+				enum: ["accepted", "rifiuted", "waiting"],
+				default: "waiting",
+			},
+		},
+	],
 });
 
 const Event = mongoose.model("Event", eventSchema);

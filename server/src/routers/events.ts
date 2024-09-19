@@ -15,12 +15,14 @@ router.post("/", (req: Request, res: Response) => {
 		const event: Event = req.body as Event;
 
 		// TODO: insert into database new event
+
 		console.log("Received event: ", event);
 
 		const resBody: ResponseBody = {
 			message: "Event inserted into database",
 			status: ResponseStatus.GOOD,
 		};
+
 		res.json(resBody);
 	} catch (e) {
 		console.log(e);

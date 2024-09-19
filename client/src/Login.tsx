@@ -26,23 +26,26 @@ export default function Login(): React.JSX.Element {
 	async function handleLogin(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		try {
-			const res = await fetch("/login", {
+			const res = await fetch("http://localhost:3002/login", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({ username, password }),
 			});
+
 			const resBody: ResponseBody = await res.json();
 			if (resBody.status === ResponseStatus.GOOD) {
 				redirect("/");
 			} else {
-				setMessage(resBody.message || "Unable lo login");
+				const msg = resBody.message || "Unable lo login";
+				setMessage(msg);
 			}
 		} catch (e) {
 			setMessage("Credenziali errate");
 		}
 	}
+
 	return (
 		<div className="login-form">
 			<form>
@@ -52,13 +55,13 @@ export default function Login(): React.JSX.Element {
 						type="text"
 						name="username"
 						value={username}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-							setUsername(e.target.value)
-						}
+						onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+							setUsername(e.target.value);
+						}}
 					/>
 				</label>
 				<label htmlFor="password">
-					Username
+					Password
 					<input
 						type={clearPswd ? "text" : "password"}
 						name="password"

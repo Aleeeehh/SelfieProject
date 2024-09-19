@@ -1,6 +1,6 @@
 import React from "react";
 
-function Header(): React.JSX.Element {
+export default function Header(): React.JSX.Element {
 	return (
 		<header className="header">
 			<a href="/" className="header-home">
@@ -23,5 +23,3 @@ function Header(): React.JSX.Element {
 		</header>
 	);
 }
-
-export default Header;

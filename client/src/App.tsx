@@ -24,9 +24,9 @@ function App(): React.JSX.Element {
 							<Route path="pomodoro" element={<Pomodoro />} />
 							<Route path="projects" element={<Projects />} />
 							<Route path="notes" element={<Note />} />
-							<Route path="*" element={<NotFound />} />
 							{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
 						</Route>
+						<Route path="*" element={<NotFound />} />
 					</Routes>
 				</BrowserRouter>
 			</WithLayout>

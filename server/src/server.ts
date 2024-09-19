@@ -1,9 +1,10 @@
 import express, { Request, Response, Application } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { default as eventsRouter } from "./routers/event";
+import { default as eventsRouter } from "./routers/events";
 import { default as pomodoroRouter } from "./routers/pomodoro";
 import { default as projectsRouter } from "./routers/projects";
+import { ResponseStatus } from "./types/ResponseStatus";
 
 // import env file
 dotenv.config();
@@ -33,7 +34,7 @@ server.post("/login", (req: Request, _: Response) => {
 
 // Catch all route
 server.use("*", (_: Request, res: Response) => {
-	res.send("Path not found");
+	res.json({ status: ResponseStatus.BAD, message: "Path not found" });
 });
 
 server.listen(PORT, () => {
