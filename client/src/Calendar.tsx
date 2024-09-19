@@ -30,7 +30,7 @@ export default function Calendar(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch("http://localhost:3002/events");
+				const res = await fetch("http://localhost:3002/api/events");
 				console.log(res);
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -48,7 +48,7 @@ export default function Calendar(): React.JSX.Element {
 		e.preventDefault();
 
 		// TODO: validate input
-		const res = await fetch("http://localhost:3002/events", {
+		const res = await fetch("http://localhost:3002/api/events", {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({

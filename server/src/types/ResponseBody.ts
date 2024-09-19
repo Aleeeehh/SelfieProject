@@ -1,4 +1,4 @@
-import { ResponseStatus } from "./ResponseStatus";
+import { ResponseStatus } from "./ResponseStatus.js";
 
 export type ResponseBody = {
 	status: ResponseStatus;

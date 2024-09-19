@@ -7,7 +7,7 @@ export default function Projects(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch("http://localhost:3002/pomodoro");
+				const res = await fetch("http://localhost:3002/api/pomodoro");
 				console.log(res);
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");

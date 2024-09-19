@@ -6,7 +6,7 @@ function Home(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch("http://localhost:3002");
+				const res = await fetch("http://localhost:3002/api");
 				if (res.status === 200) {
 					const resBody = await res.json();
 
