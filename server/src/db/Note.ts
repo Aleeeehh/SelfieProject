@@ -6,6 +6,6 @@ const noteSchema = new mongoose.Schema({
 	categories: [String],
 });
 
-const Note = mongoose.model("Note", noteSchema);
+const NoteSchema = mongoose.model("Note", noteSchema);
 
-export default Note;
+export default NoteSchema;

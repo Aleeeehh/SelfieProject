@@ -25,5 +25,5 @@
 		"noEmit": false, // if true, no output directory when building  (cannot be true in docker)
 		"noImplicitReturns": true
 	},
-	"include": ["src", "public"]
+	"include": ["src"]
 }

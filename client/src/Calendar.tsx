@@ -2,7 +2,7 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ResponseBody } from "./types/ResponseBody";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 enum Frequency {
 	ONCE = "once",
@@ -82,10 +82,16 @@ export default function Calendar(): React.JSX.Element {
 	return (
 		<>
 			{message && <div>{message}</div>}
-			{dateMessage && <div className="nome-data">{dateMessage}</div>} {/* Mostra il messaggio della data */}
+			{dateMessage && <div className="nome-data">{dateMessage}</div>}{" "}
+			{/* Mostra il messaggio della data */}
 			{createEvent && (
 				<div className="create-event-container">
-					<button className="btn btn-primary" style={{ backgroundColor: "#b30000", color: "#FFFFFF", border: "0" }} onClick={toggleCreateEvent}>Close</button>
+					<button
+						className="btn btn-primary"
+						style={{ backgroundColor: "#b30000", color: "#FFFFFF", border: "0" }}
+						onClick={toggleCreateEvent}>
+						Close
+					</button>
 					<form>
 						<label htmlFor="title">
 							Title
@@ -139,17 +145,24 @@ export default function Calendar(): React.JSX.Element {
 								/>
 							</div>
 						</label>
-						<button className="btn btn-primary" style={{ backgroundColor: "#b30000", color: "#FFFFFF", border: "0" }} onClick={handleCreateEvent}>Crea</button>
+						<button
+							className="btn btn-primary"
+							style={{ backgroundColor: "#b30000", color: "#FFFFFF", border: "0" }}
+							onClick={handleCreateEvent}>
+							Crea
+						</button>
 					</form>
 				</div>
 			)}
-
 			<div>
-				<button className="btn btn-primary addEvent" style={{ backgroundColor: "#b30000", color: "#FFFFFF", border: "0" }} onClick={toggleCreateEvent} >+</button>
-			</div >
-
+				<button
+					className="btn btn-primary addEvent"
+					style={{ backgroundColor: "#b30000", color: "#FFFFFF", border: "0" }}
+					onClick={toggleCreateEvent}>
+					+
+				</button>
+			</div>
 			<div className="calendar-container">
-
 				<div className="calendar">
 					<div className="month-indicator">
 						<time dateTime="2024-03"> March 2024 </time>
@@ -165,102 +178,163 @@ export default function Calendar(): React.JSX.Element {
 					</div>
 					<div className="date-grid">
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-01">1</time>
+							<time onClick={handleDateClick} dateTime="2024-03-01">
+								1
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-02">2</time>
+							<time onClick={handleDateClick} dateTime="2024-03-02">
+								2
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-03">3</time>
+							<time onClick={handleDateClick} dateTime="2024-03-03">
+								3
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-04">4</time>
+							<time onClick={handleDateClick} dateTime="2024-03-04">
+								4
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-05">5</time>
+							<time onClick={handleDateClick} dateTime="2024-03-05">
+								5
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-06">6</time>
+							<time onClick={handleDateClick} dateTime="2024-03-06">
+								6
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-07">7</time>
+							<time onClick={handleDateClick} dateTime="2024-03-07">
+								7
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-08">8</time>
+							<time onClick={handleDateClick} dateTime="2024-03-08">
+								8
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-09">9</time>
+							<time onClick={handleDateClick} dateTime="2024-03-09">
+								9
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-10">10</time>
+							<time onClick={handleDateClick} dateTime="2024-03-10">
+								10
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-11">11</time>
+							<time onClick={handleDateClick} dateTime="2024-03-11">
+								11
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-12">12</time>
+							<time onClick={handleDateClick} dateTime="2024-03-12">
+								12
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-13">13</time>
+							<time onClick={handleDateClick} dateTime="2024-03-13">
+								13
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-14">14</time>
+							<time onClick={handleDateClick} dateTime="2024-03-14">
+								14
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-15">15</time>
+							<time onClick={handleDateClick} dateTime="2024-03-15">
+								15
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-16">16</time>
+							<time onClick={handleDateClick} dateTime="2024-03-16">
+								16
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-17">17</time>
+							<time onClick={handleDateClick} dateTime="2024-03-17">
+								17
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-18">18</time>
+							<time onClick={handleDateClick} dateTime="2024-03-18">
+								18
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-19">19</time>
+							<time onClick={handleDateClick} dateTime="2024-03-19">
+								19
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-20">20</time>
+							<time onClick={handleDateClick} dateTime="2024-03-20">
+								20
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-21">21</time>
+							<time onClick={handleDateClick} dateTime="2024-03-21">
+								21
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-22">22</time>
+							<time onClick={handleDateClick} dateTime="2024-03-22">
+								22
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-23">23</time>
+							<time onClick={handleDateClick} dateTime="2024-03-23">
+								23
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-24">24</time>
+							<time onClick={handleDateClick} dateTime="2024-03-24">
+								24
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-25">25</time>
+							<time onClick={handleDateClick} dateTime="2024-03-25">
+								25
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-26">26</time>
+							<time onClick={handleDateClick} dateTime="2024-03-26">
+								26
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-27">27</time>
+							<time onClick={handleDateClick} dateTime="2024-03-27">
+								27
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-28">28</time>
+							<time onClick={handleDateClick} dateTime="2024-03-28">
+								28
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-29">29</time>
+							<time onClick={handleDateClick} dateTime="2024-03-29">
+								29
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-30">30</time>
+							<time onClick={handleDateClick} dateTime="2024-03-30">
+								30
+							</time>
 						</button>
 						<button>
-							<time onClick={handleDateClick} dateTime="2024-03-31">31</time>
+							<time onClick={handleDateClick} dateTime="2024-03-31">
+								31
+							</time>
 						</button>
 					</div>
 				</div>
-			</div >
+			</div>
 		</>
 	);
 }
-
