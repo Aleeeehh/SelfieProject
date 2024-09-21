@@ -1,37 +1,29 @@
 {
-    "compilerOptions": {
-      "jsx": "preserve",
-      "target": "es2016",
-      "module": "esnext",
-      "outDir": "./dist",
-      "esModuleInterop": true,
-      "forceConsistentCasingInFileNames": true,
-      "strict": true,
-      "noImplicitAny": true,
-      "strictNullChecks": true,
-      "strictFunctionTypes": true,
-      "noImplicitThis": true,
-      "alwaysStrict": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "noImplicitOverride": true,
-      "skipLibCheck": true,
-      "lib": [
-        "dom",
-        "dom.iterable",
-        "esnext"
-      ],
-      "allowJs": true,
-      "allowSyntheticDefaultImports": true,
-      "moduleResolution": "node",
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "noEmit": false,  // if true, no output directory when building  (cannot be true in docker)
-      "noImplicitReturns": true
-    },
-    "include": [
-      "src",
-      "public"
-    ]
-  }
-  
+	"compilerOptions": {
+		"jsx": "preserve",
+		"target": "es2016",
+		"module": "NodeNext",
+		"outDir": "./dist",
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitOverride": true,
+		"skipLibCheck": true,
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"allowJs": false,
+		"allowSyntheticDefaultImports": true,
+		"moduleResolution": "NodeNext",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"noEmit": false, // if true, no output directory when building  (cannot be true in docker)
+		"noImplicitReturns": true
+	},
+	"include": ["src", "public"]
+}

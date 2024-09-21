@@ -1,0 +1,117 @@
+.pomodoro-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; 
+  align-items: center;     
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;               
+  width: 100%;
+  height: 100vh;           
+  background-color: rgba(57, 16, 16, 0.723); 
+}
+/*
+header {
+	display: flex;
+	flex-direction: column;
+	font-size: 10px;
+	color: rgb(46, 17, 192);
+	margin-bottom: 0px;
+	align-items: center;
+	justify-content: center;
+}
+
+.paragraph {
+	margin: 0.5em auto 1em;
+	width: 300px;
+	color: white;
+	text-align: center;
+}
+
+.pomodoro {
+	position: relative;
+	width: 300px;
+	height: 300px;
+	color: white;
+	text-align: center;
+
+}
+
+.timer {
+	font-size: 3em;
+	color: rgb(255, 255, 255);
+	position: absolute;
+	top: 60%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 45px;
+	font-weight: 600;
+}
+
+.pannello label {
+	display: inline-block;
+	margin: auto;
+}
+
+.studyTime {
+	width: 400px;
+	justify-content: space-between;
+}
+
+input {
+	border-radius: 0px 16px 16px 0px;
+	border: none;
+	padding: 16px;
+	font-size: 15px;
+}
+
+.breakTime {
+	width: 400px;
+	justify-content: space-between;
+}
+
+.studyCycles {
+	width: 400px;
+	justify-content: space-between;
+}
+
+.animate-pomodoro {
+	animation: colorChange linear forwards;
+}
+
+.reverse-animate-pomodoro {
+	animation: reverseColorChange linear forwards;
+}
+
+
+@keyframes colorChange {
+	0% {
+		filter: hue-rotate(0deg);
+	}
+
+	/* Inizio dell'animazione: colore rosso */
+	/*100% {
+		filter: hue-rotate(60deg);
+	}
+
+	/* Fine dell'animazione: colore verde */
+/*}
+
+@keyframes reverseColorChange {
+	0% {
+		filter: hue-rotate(60deg);
+	}
+
+	/* Inizio dell'animazione: colore rosso */
+	/*100% {
+		filter: hue-rotate(0deg);
+	}
+
+	/* Fine dell'animazione: colore verde */
+/*}
+
+
+
+
+button {
+	width: 150px;
+}

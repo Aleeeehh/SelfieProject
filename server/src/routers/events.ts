@@ -1,8 +1,8 @@
 import { Request, Response, Router } from "express";
 
-import { Event } from "../types/Event";
-import { ResponseBody } from "../types/ResponseBody";
-import { ResponseStatus } from "../types/ResponseStatus";
+import { Event } from "../types/Event.js";
+import { ResponseBody } from "../types/ResponseBody.js";
+import { ResponseStatus } from "../types/ResponseStatus.js";
 
 const router: Router = Router();
 

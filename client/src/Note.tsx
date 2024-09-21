@@ -7,7 +7,7 @@ export default function Note(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch("http://localhost:3002/note");
+				const res = await fetch("http://localhost:3002/api/note");
 				console.log(res);
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");

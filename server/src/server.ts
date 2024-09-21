@@ -1,10 +1,9 @@
-import express, { Request, Response, Application } from "express";
+import express, { Application, Request, Response } from "express";
+// import express, { Request, Response, Application, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { default as eventsRouter } from "./routers/events";
-import { default as pomodoroRouter } from "./routers/pomodoro";
-import { default as projectsRouter } from "./routers/projects";
-import { ResponseStatus } from "./types/ResponseStatus";
+import path from "path";
+import { default as apiRouter } from "./routers/api.js";
 
 // import env file
 dotenv.config();
@@ -15,26 +14,16 @@ const PORT = process.env.PORT || 3002;
 server.use(express.json());
 server.use(cors());
 
-server.get("/", (_: Request, res: Response) => {
-	res.json({ message: "Hello from the server" });
-});
+server.use("/api", apiRouter);
 
-server.use("/events", eventsRouter);
-server.use("/projects", projectsRouter);
-server.use("/pomodoro", pomodoroRouter);
+// Serve the static React files
+const __dirname = path.resolve();
 
-server.post("/login", (req: Request, _: Response) => {
-	const username = req.body.username;
-	const password = req.body.password;
+server.use(express.static(path.join(__dirname, "../client/build")));
 
-	console.log(username, password);
-
-	// validate credentials in database
-});
-
-// Catch all route
-server.use("*", (_: Request, res: Response) => {
-	res.json({ status: ResponseStatus.BAD, message: "Path not found" });
+// Serve React for non-API routes
+server.get("*", (_: Request, res: Response) => {
+	res.sendFile(path.join(__dirname, "../client/build", "index.html"));
 });
 
 server.listen(PORT, () => {
