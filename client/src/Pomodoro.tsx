@@ -15,24 +15,28 @@ export default function Pomodoro(): React.JSX.Element {
 			}
 		})();
 	}, []);
-
+				//TODO: rivedere il css, cioè togliere id e classi che non servono, oppure renderle utili
 	return (
-		<>
+		<>			
 			{message && <div>{message}</div>}
-			<div className="container-fluid">
+			<div className="pomodoro-container">
 				<header>
-					<h1>POMODORO TIMER</h1>
+					<h1 id="title">POMODORO TIMER</h1>
 				</header>
-				<img src="images/tomato.png" alt="tomato.png" />
+				<img id="tomato" src="images/tomato.png" alt="tomato.png" />
 
 				<div>
 					<h4 id="status"></h4>
+
+					<div>
 					<button id="start-button" type="button" className="btn btn-success">START</button>
 					<button id="stop-button" type="button" className="btn btn-danger" disabled>STOP</button>
+					</div>
+
 					<p className="paragraph">FILL THE SPACES AND PRESS START TO BEGIN!</p>
 				</div>
 
-				<div className="pannello studyTime">
+				<div className="pannello studyTime" >
 				<label htmlFor="inputStudy">Study time in minutes</label>
 				<input name="inputStudy" type="number" placeholder="Enter the time" className="inputStudyTime" id="inputStudy" />
 				</div>
