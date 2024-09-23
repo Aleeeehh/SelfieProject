@@ -1,10 +1,10 @@
 import { Request, Response, Router } from "express";
-
-import { Event } from "../types/Event.js";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
-import EventSchema from "../db/Event.js";
 import { validDateString } from "../lib.js";
+import { Order } from "../enums.js";
+import NoteSchema from "../db/Note.js";
+import type Note from "../types/Note.js";
 
 const router: Router = Router();
 
@@ -12,6 +12,13 @@ router.get("/", async (req: Request, res: Response) => {
 	try {
 		const dateFromStr = req.query.from as string;
 		const dateToStr = req.query.to as string;
+		const order = req.query.order as Order;
+		if (!Object.values(Order).includes(order)) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Invalid order: should be 'date', 'length' or 'name",
+			});
+		}
 
 		var dateFrom;
 		if (dateFromStr && !validDateString(dateFromStr))
@@ -42,9 +49,44 @@ router.get("/", async (req: Request, res: Response) => {
 		if (dateTo) filter.endTime = { $lte: dateTo };
 
 		// TODO: filter per logged user
-		const foundEvents = await EventSchema.find(filter);
+		let foundNotes = await NoteSchema.find(filter).lean();
 
-		return res.json({ status: ResponseStatus.GOOD, value: [...foundEvents] });
+		const notes = [];
+
+		for (const note of foundNotes) {
+			const newNote: Note = {
+				id: note._id.toString(),
+				ownerId: note.owner?.toString() || "",
+				title: note.title,
+				text: note.text || "",
+				tags: note.categories || [],
+				createdAt: note.createdAt,
+				updatedAt: note.updatedAt,
+			};
+
+			notes.push(newNote);
+		}
+
+		let sortedNotes: Note[] = [];
+		switch (order) {
+			case Order.DATE:
+				sortedNotes = notes.sort(
+					(ev1, ev2) => ev2.createdAt.getTime() - ev1.createdAt.getTime()
+				);
+				break;
+			case Order.NAME:
+				sortedNotes = notes.sort((ev1, ev2) =>
+					ev1.title.toLowerCase().localeCompare(ev2.title.toLowerCase())
+				);
+				break;
+			case Order.LENGTH:
+				sortedNotes = notes.sort((ev1, ev2) => ev2.text.length - ev1.text.length);
+				break;
+			default:
+				break;
+		}
+
+		return res.json({ status: ResponseStatus.GOOD, value: sortedNotes });
 	} catch (e) {
 		console.log(e);
 		const resBody: ResponseBody = {
@@ -57,30 +99,30 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 router.get("/:id", async (req: Request, res: Response) => {
-	const eventId = req.params.id as string;
+	const noteId = req.params.id as string;
 
 	try {
 		// TODO: validate param
 		// TODO: validate body fields
 
-		const foundEvent = await EventSchema.findById(eventId);
+		const foundNote = await NoteSchema.findById(noteId);
 
-		if (!foundEvent) {
+		if (!foundNote) {
 			const resBody: ResponseBody = {
-				message: "Event with id " + eventId + " not found!",
+				message: "Note with id " + noteId + " not found!",
 				status: ResponseStatus.BAD,
 			};
 
 			res.status(400).json(resBody);
 		}
 
-		console.log("Returning event: ", foundEvent);
+		console.log("Returning note: ", foundNote);
 
-		// TODO: filter the fields of the found event
+		// TODO: filter the fields of the found note
 		const resBody: ResponseBody = {
-			message: "Event inserted into database",
+			message: "Note inserted into database",
 			status: ResponseStatus.GOOD,
-			value: JSON.stringify(foundEvent),
+			value: JSON.stringify(foundNote),
 		};
 
 		res.json(resBody);
@@ -97,15 +139,15 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
 	try {
-		// TODO: validate event input
+		// TODO: validate note input
 		// TODO: validate body fields
-		const event: Event = req.body as Event;
+		const newNote: Note = req.body as Note;
 
-		await EventSchema.create(event);
-		console.log("Inserted event: ", event);
+		await NoteSchema.create(newNote);
+		console.log("Inserted note: ", newNote);
 
 		const resBody: ResponseBody = {
-			message: "Event inserted into database",
+			message: "Note inserted into database",
 			status: ResponseStatus.GOOD,
 		};
 
@@ -122,33 +164,33 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 router.put("/:id", async (req: Request, res: Response) => {
-	const eventId = req.params.id as string;
-	const updatedEvent = req.body as Event;
+	const noteId = req.params.id as string;
+	const updatedNote = req.body as Note;
 
 	try {
 		// TODO: validate param
 		// TODO: validate body fields
 
-		const foundEvent = await EventSchema.findById(eventId);
+		const foundNote = await NoteSchema.findById(noteId);
 
-		if (!foundEvent) {
+		if (!foundNote) {
 			const resBody: ResponseBody = {
-				message: "Event with id " + eventId + " not found!",
+				message: "Note with id " + noteId + " not found!",
 				status: ResponseStatus.BAD,
 			};
 
 			res.status(400).json(resBody);
 		}
 
-		console.log("Updating event: ", foundEvent, " to ", updatedEvent);
+		console.log("Updating note: ", foundNote, " to ", updatedNote);
 
-		await EventSchema.findByIdAndUpdate(eventId, updatedEvent);
+		await NoteSchema.findByIdAndUpdate(noteId, updatedNote);
 
-		// TODO: filter the fields of the found event
+		// TODO: filter the fields of the found note
 		const resBody: ResponseBody = {
-			message: "Event updated in database",
+			message: "Note updated in database",
 			status: ResponseStatus.GOOD,
-			value: JSON.stringify(foundEvent),
+			value: JSON.stringify(foundNote),
 		};
 
 		res.json(resBody);
@@ -164,30 +206,30 @@ router.put("/:id", async (req: Request, res: Response) => {
 });
 
 router.delete("/:id", async (req: Request, res: Response) => {
-	const eventId = req.params.id as string;
+	const noteId = req.params.id as string;
 
 	try {
 		// TODO: validate param
 		// TODO: validate body fields
 
-		const foundEvent = await EventSchema.findByIdAndDelete(eventId);
+		const foundNote = await NoteSchema.findByIdAndDelete(noteId);
 
-		if (!foundEvent) {
+		if (!foundNote) {
 			const resBody: ResponseBody = {
-				message: "Event with id " + eventId + " not found!",
+				message: "Note with id " + noteId + " not found!",
 				status: ResponseStatus.BAD,
 			};
 
 			res.status(400).json(resBody);
 		}
 
-		console.log("Deleted event: ", foundEvent);
+		console.log("Deleted note: ", foundNote);
 
-		// TODO: filter the fields of the found event
+		// TODO: filter the fields of the found note
 		const resBody: ResponseBody = {
-			message: "Event deleted from database",
+			message: "Note deleted from database",
 			status: ResponseStatus.GOOD,
-			value: JSON.stringify(foundEvent),
+			value: JSON.stringify(foundNote),
 		};
 
 		res.json(resBody);

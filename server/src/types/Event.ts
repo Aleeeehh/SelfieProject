@@ -1,10 +1,7 @@
-enum Frequency {
-	ONCE = "once",
-	DAILY = "day",
-	WEEKLY = "week",
-}
+import type { Frequency } from "../enums.js";
 
 export type Event = {
+	id: String;
 	title: string;
 	start: Date;
 	end: Date;

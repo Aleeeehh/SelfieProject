@@ -36,6 +36,7 @@ router.post("/register", async (req: Request, res: Response) => {
 			return res.status(400).json({ status: ResponseStatus.BAD, message: "Invalid body" });
 
 		const newUser: User = {
+			id: "",
 			username,
 			password,
 			firstName,
