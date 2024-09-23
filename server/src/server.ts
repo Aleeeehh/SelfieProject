@@ -9,21 +9,26 @@ import { default as apiRouter } from "./routers/api.js";
 dotenv.config();
 
 const server: Application = express();
-const PORT = process.env.PORT || 3002;
+const PORT = process.env.PORT || 8000;
 
 server.use(express.json());
+server.use(express.urlencoded({ extended: true }));
 server.use(cors());
+server.enable("trust proxy");
 
 server.use("/api", apiRouter);
 
 // Serve the static React files
 const __dirname = path.resolve();
 
-server.use(express.static(path.join(__dirname, "../client/build")));
+server.use("/js", express.static(path.join(__dirname, "build", "js")));
+server.use("/css", express.static(path.join(__dirname, "build", "css")));
+server.use("/img", express.static(path.join(__dirname, "build", "media")));
 
-// Serve React for non-API routes
+server.use(express.static(path.join(__dirname, "build")));
+
 server.get("*", (_: Request, res: Response) => {
-	res.sendFile(path.join(__dirname, "../client/build", "index.html"));
+	res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
 server.listen(PORT, () => {
