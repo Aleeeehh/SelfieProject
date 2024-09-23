@@ -1,9 +1,9 @@
 import express, { Application, Request, Response } from "express";
-// import express, { Request, Response, Application, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import { default as apiRouter } from "./routers/api.js";
+import mongoose from "mongoose";
 
 // import env file
 dotenv.config();
@@ -16,6 +16,7 @@ server.use(express.urlencoded({ extended: true }));
 server.use(cors());
 server.enable("trust proxy");
 
+// Api routes definition
 server.use("/api", apiRouter);
 
 // Serve the static React files
@@ -31,6 +32,19 @@ server.get("*", (_: Request, res: Response) => {
 	res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
+// Connect to database
+const DB_USER = "";
+const DB_PSWD = "";
+const DB_HOST = "";
+const DB_PORT = "";
+const DB_APP_NAME = "";
+
+mongoose.connect(`mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}/${DB_APP_NAME}`);
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+
+// Start the server
 server.listen(PORT, () => {
 	console.log("Server listening on port", PORT);
 });
