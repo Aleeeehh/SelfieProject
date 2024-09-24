@@ -2,6 +2,7 @@ import React from "react";
 import { redirect } from "react-router-dom";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { ResponseBody } from "./types/ResponseBody";
+import { SERVER_API } from "./params/params";
 
 export default function Login(): React.JSX.Element {
 	const [username, setUsername] = React.useState("");
@@ -12,7 +13,7 @@ export default function Login(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch("http://localhost:3002/api/logged");
+				const res = await fetch(`${SERVER_API}/logged`);
 				if (res.status === 200) {
 					const resBody = await res.json();
 					if (resBody.value) redirect("/");
@@ -26,7 +27,7 @@ export default function Login(): React.JSX.Element {
 	async function handleLogin(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		try {
-			const res = await fetch("http://localhost:3002/login", {
+			const res = await fetch(`${SERVER_API}/login`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

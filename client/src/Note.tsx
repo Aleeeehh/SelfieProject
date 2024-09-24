@@ -1,4 +1,5 @@
 import React from "react";
+import { SERVER_API } from "./params/params";
 
 export default function Note(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
@@ -7,7 +8,7 @@ export default function Note(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch("http://localhost:3002/api/note");
+				const res = await fetch(`${SERVER_API}/api/note`);
 				console.log(res);
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");

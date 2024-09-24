@@ -5,46 +5,61 @@ import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import EventSchema from "../db/Event.js";
 import { validDateString } from "../lib.js";
+import moment from "moment";
 
 const router: Router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
 	try {
-		const dateFromStr = req.query.from as string;
-		const dateToStr = req.query.to as string;
+		const dateFromStr = req.query.from as string | undefined;
+		const dateToStr = req.query.to as string | undefined;
 
-		var dateFrom;
+		var dateFrom = null;
 		if (dateFromStr && !validDateString(dateFromStr))
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message: "Dates must be in the format: YYYY-MM-DD",
 			});
-		else dateFrom = new Date(dateFromStr);
+		else if (dateFromStr) dateFrom = new Date(dateFromStr);
 
-		var dateTo;
+		var dateTo = null;
 		if (dateToStr && !validDateString(dateToStr))
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message: "Dates must be in the format: YYYY-MM-DD",
 			});
-		else dateTo = new Date(dateToStr);
-
-		if (!(validDateString(dateFromStr) && validDateString(dateToStr))) {
-			return res.status(400).json({
-				status: ResponseStatus.BAD,
-				message: "Dates must be in the format: YYYY-MM-DD",
-			});
-		}
+		else if (dateToStr) dateTo = new Date(dateToStr);
 
 		const filter: any = {}; //TODO: add userId for current user
 
-		if (dateFrom) filter.startTime = { $gte: dateFrom };
-		if (dateTo) filter.endTime = { $lte: dateTo };
+		if (dateFrom) {
+			filter.startTime = { $gte: dateFrom };
+		}
+		if (dateTo) {
+			filter.endTime = { $lte: dateTo };
+		}
 
 		// TODO: filter per logged user
-		const foundEvents = await EventSchema.find(filter);
+		const foundEvents = await EventSchema.find(filter).lean();
 
-		return res.json({ status: ResponseStatus.GOOD, value: [...foundEvents] });
+		const events = [];
+
+		for (const event of foundEvents) {
+			console.log("Creating evnet");
+			const newEvent: Event = {
+				id: event._id.toString(),
+				owner: event.owner.toString(),
+				title: event.title,
+				startTime: moment(event.startTime).toDate(),
+				endTime: moment(event.endTime).toDate(),
+				frequency: event.frequency,
+				location: event.location,
+			};
+
+			events.push(newEvent);
+		}
+
+		return res.json({ status: ResponseStatus.GOOD, value: events });
 	} catch (e) {
 		console.log(e);
 		const resBody: ResponseBody = {

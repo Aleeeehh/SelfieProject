@@ -6,7 +6,6 @@ export enum Order {
 
 export enum Frequency {
 	ONCE = "once",
-	DAILY = "daily",
-	WEEKLY = "weekly",
-	MONTHLY = "monthly",
+	DAILY = "day",
+	WEEKLY = "week",
 }

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Frequency } from "../enums.js";
 
 const eventSchema = new mongoose.Schema(
 	{
@@ -6,7 +7,11 @@ const eventSchema = new mongoose.Schema(
 		startTime: { type: Date, required: true },
 		endTime: { type: Date, required: true },
 		title: { type: String, required: true },
-		frequency: { type: String, enum: ["once", "daily", "weekly", "monthly"], default: "once" },
+		frequency: {
+			type: String,
+			enum: [Frequency.ONCE, Frequency.DAILY, Frequency.WEEKLY, Frequency.MONTHLY],
+			default: Frequency.ONCE,
+		},
 		location: { type: String, required: true },
 		// notificationMethod: { type: String, enum: ["os", "whatsapp", "email"] },
 		// notificationAnticipation: { type: Number, required: true },
