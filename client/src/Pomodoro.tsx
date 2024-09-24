@@ -4,57 +4,73 @@ import { useState, ChangeEvent, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./params/params";
 
-export default function Pomodoro(): React.JSX.Element {
-	const [message, setMessage] = useState("caricamento in corso");
+enum MESSAGE {
+	PRESS_START = "FILL THE SPACES AND PRESS START TO BEGIN!",
+	ERROR = "INSERT AN INTEGER NUMBER FOR STUDY TIME, PAUSE TIME AND STUDY CYCLES! (1-99)",
+	VOID = "",
+}
 
-	const [studyTime, setStudyTime] = useState(0);
-	const [pauseTime, setPauseTime] = useState(0);
-	const [cycles, setCycles] = useState(0);
-	const [paragraph, setParagraph] = useState("FILL THE SPACES AND PRESS START TO BEGIN!");
-	const [timer, setTimer] = useState("");
-	const [minutes, setMinutes] = useState(0);
-	const [seconds, setSeconds] = useState(0);
-	const [status, setStatus] = useState("BEGIN SESSION!");
-	const [isStudySession, setIsStudySession] = useState(false);
-	const [isStopDisabled, setIsStopDisabled] = useState(true);
-	const [isStartDisabled, setIsStartDisabled] = useState(false);
-	const [isStudyboxDisabled, setIsStudyboxDisabled] = useState(false);
-	const [isPauseboxDisabled, setIsPauseboxDisabled] = useState(false);
-	const [isCyclesboxDisabled, setIsCyclesboxDisabled] = useState(false);
+enum STATUS {
+	BEGIN = "BEGIN SESSION",
+	STUDY = "STUDY",
+	PAUSE = "PAUSE",
+	END = "END OF SESSION",
+}
+
+type PomodoroData = {
+	studyTime: number;
+	pauseTime: number;
+	cycles: number;
+	status: STATUS;
+	message: MESSAGE;
+	minutes: number;
+	seconds: number;
+	studying: boolean;
+	activeTimer: boolean;
+	intervalId?: NodeJS.Timeout;
+};
+
+const initialState: PomodoroData = {
+	studyTime: 1,
+	pauseTime: 1,
+	cycles: 1,
+	status: STATUS.BEGIN,
+	message: MESSAGE.PRESS_START,
+	minutes: 0,
+	seconds: 0,
+	studying: false,
+	activeTimer: false,
+	intervalId: undefined,
+};
+
+export default function Pomodoro(): React.JSX.Element {
+	const [data, setData] = useState(initialState);
+	const [message, setMessage] = useState("");
 
 	const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
-	// On page load, get the events for the user
+	// On page load, get the previous pomodoro sessions for the user
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch(`${SERVER_API}/api/pomodoro`);
+				const res = await fetch(`${SERVER_API}/pomodoro`);
 				console.log(res);
+				// TODO: set session value as response
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
 			}
 		})();
 	}, []);
 
-	function initData(): void {
-		setMinutes(studyTime);
-		setSeconds(0);
-		updateTimerText();
-		console.log(minutes);
-	}
-
 	function inputCheck(): boolean {
 		if (
-			studyTime <= 0 ||
-			studyTime > 99 ||
-			pauseTime <= 0 ||
-			pauseTime > 99 ||
-			cycles <= 0 ||
-			cycles > 99
+			data.studyTime <= 0 ||
+			data.studyTime > 99 ||
+			data.pauseTime <= 0 ||
+			data.pauseTime > 99 ||
+			data.cycles <= 0 ||
+			data.cycles > 99
 		) {
-			setParagraph(
-				"INSERT AN INTEGER NUMBER FOR STUDY TIME, PAUSE TIME AND STUDY CYCLES! (1-99)"
-			);
 			return false;
 		} else {
 			return true;
@@ -64,9 +80,26 @@ export default function Pomodoro(): React.JSX.Element {
 	function startProcess(): void {
 		if (inputCheck()) {
 			//suona il campanello
-			setParagraph("");
-			startTimer();
+			clearInterval(data.intervalId);
+
+			const interval = setInterval(() => {
+				updateTimer();
+			}, 100);
+
+			setData({
+				...data,
+				message: MESSAGE.VOID,
+				studying: true,
+				activeTimer: true,
+				intervalId: interval,
+				status: STATUS.STUDY,
+				minutes: data.studyTime,
+				seconds: 0,
+				cycles: data.cycles - 1,
+			});
 			startAnimation();
+		} else {
+			setData({ ...data, message: MESSAGE.ERROR });
 		}
 	}
 
@@ -75,94 +108,94 @@ export default function Pomodoro(): React.JSX.Element {
 		stopTimer();
 	}
 
-	function startTimer(): void {
-		setIsStudySession(true);
-		disableInputs(true);
-
-		initData();
-		setCycles((prevCycles) => prevCycles - 1);
-
-		setStatus("STUDY");
-
-		//setInterval(() => {updateTimer(); }, 1000);
-		updateTimer();
-	}
-
 	function stopTimer(): void {
-		clearInterval(timer);
-		setTimer("");
-		setMinutes(studyTime);
-		setSeconds(0);
-		disableInputs(false);
-		setStatus("END OF SESSION");
+		clearInterval(data.intervalId);
+
+		setData((prevData) => {
+			return {
+				...prevData,
+				intervalId: undefined,
+				activeTimer: false,
+				status: STATUS.END,
+			};
+		});
+
 		resetPomodoroColor();
 	}
 
 	function updateTimer(): void {
-		setSeconds((prevSeconds) => prevSeconds - 1);
-		if (seconds < 0) {
-			setSeconds(59);
-			setMinutes((prevSMinutes) => prevSMinutes - 1);
-		}
+		setData((prevData) => {
+			var {
+				minutes,
+				seconds,
+				cycles,
+				studyTime,
+				studying,
+				pauseTime,
+				status,
+				intervalId,
+				activeTimer,
+			} = prevData;
 
-		if (minutes < 0) {
-			if (cycles === 0) {
-				stopTimer();
-				return;
+			seconds = seconds - 1;
+			if (seconds < 0) {
+				seconds = 59;
+				minutes = minutes - 1;
 			}
 
-			if (isStudySession) {
-				setStatus("PAUSE");
-				setIsStudySession(false);
-				//suona campanello
+			if (minutes < 0) {
+				if (cycles === 0) {
+					clearInterval(prevData.intervalId);
 
-				//animazione al contrario
-				startAnimation();
-				setMinutes(pauseTime);
-				setSeconds(0);
-			} else {
-				setIsStudySession(true);
-				//suona campanello
+					intervalId = undefined;
+					activeTimer = false;
+					status = STATUS.END;
 
-				//animazione standard
-				startAnimation();
-				setStatus("STUDY");
+					resetPomodoroColor();
+					minutes = studyTime;
+					seconds = 0;
+				} else {
+					minutes = studying ? pauseTime : studyTime;
+					seconds = 0;
 
-				setMinutes(studyTime);
-				setSeconds(0);
-				setCycles((prevCycles) => prevCycles - 1);
+					status = studying ? STATUS.PAUSE : STATUS.STUDY;
+
+					studying = !studying;
+
+					if (studying) cycles = cycles - 1;
+					startAnimation();
+				}
 			}
-		}
-		setTimer(pad(minutes) + ":" + pad(seconds));
+
+			return {
+				...prevData,
+				minutes,
+				seconds,
+				cycles,
+				studyTime,
+				studying,
+				pauseTime,
+				status,
+				intervalId,
+				activeTimer,
+			} as PomodoroData;
+		});
 	}
 
 	function startAnimation(): void {
 		if (pomodoroRef.current) {
 			pomodoroRef.current.classList.remove("animate-pomodoro");
 			pomodoroRef.current.classList.remove("reverse-animate-pomodoro");
-			if (isStudySession) {
-				pomodoroRef.current.style.animationDuration = `${studyTime * 60}s`;
+			if (data.studying) {
+				pomodoroRef.current.style.animationDuration = `${data.studyTime * 60}s`;
 				pomodoroRef.current.classList.add("animate-pomodoro");
 			}
 
-			if (!isStudySession) {
-				pomodoroRef.current.style.animationDuration = `${studyTime * 60}s`;
+			if (!data.studying) {
+				pomodoroRef.current.style.animationDuration = `${data.studyTime * 60}s`;
 				pomodoroRef.current.classList.add("reverse-animate-pomodoro");
 			}
 		}
-	}
-
-	function updateTimerText(): void {
-		setTimer(pad(minutes) + ":" + pad(seconds));
-	}
-
-	function disableInputs(value: boolean): void {
-		setIsStopDisabled(!value);
-		setIsStartDisabled(value);
-
-		setIsPauseboxDisabled(value);
-		setIsStudyboxDisabled(value);
-		setIsCyclesboxDisabled(value);
 	}
 
 	function pad(value: number): string {
@@ -192,7 +225,7 @@ export default function Pomodoro(): React.JSX.Element {
 				<div ref={pomodoroRef} className="pomodoro">
 					<img src="/images/tomato.png" alt="tomato.png" />
 					<div id="timer" className="timer">
-						{timer}
+						{pad(data.minutes) + ":" + pad(data.seconds)}
 					</div>
 				</div>
 
@@ -204,7 +237,7 @@ export default function Pomodoro(): React.JSX.Element {
 							color: "white",
 							textAlign: "center",
 						}}>
-						{status}
+						{data.status}
 					</h4>
 
 					<div>
@@ -213,7 +246,7 @@ export default function Pomodoro(): React.JSX.Element {
 							type="button"
 							className="btn btn-success"
 							onClick={startProcess}
-							disabled={isStartDisabled}>
+							disabled={data.activeTimer}>
 							START
 						</button>
 						<button
@@ -221,12 +254,12 @@ export default function Pomodoro(): React.JSX.Element {
 							type="button"
 							className="btn btn-danger"
 							onClick={stopProcess}
-							disabled={isStopDisabled}>
+							disabled={!data.activeTimer}>
 							STOP
 						</button>
 					</div>
 
-					<p className="paragraph">{paragraph}</p>
+					<p className="paragraph">{data.message}</p>
 				</div>
 
 				<div className="pannello studyTime">
@@ -237,11 +270,11 @@ export default function Pomodoro(): React.JSX.Element {
 						placeholder="Enter the time"
 						className="inputStudyTime"
 						id="inputStudy"
-						value={studyTime}
+						value={data.studyTime}
 						onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-							setStudyTime(parseInt(e.target.value))
+							setData({ ...data, studyTime: parseInt(e.target.value) })
 						}
-						disabled={isStudyboxDisabled}
+						disabled={data.activeTimer}
 					/>
 				</div>
 
@@ -252,11 +285,11 @@ export default function Pomodoro(): React.JSX.Element {
 						type="number"
 						placeholder="Enter the time"
 						id="inputPause"
-						value={pauseTime}
+						value={data.pauseTime}
 						onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-							setPauseTime(parseInt(e.target.value))
+							setData({ ...data, pauseTime: parseInt(e.target.value) })
 						}
-						disabled={isPauseboxDisabled}
+						disabled={data.activeTimer}
 					/>
 				</div>
 				<div className="pannello studyCycles">
@@ -266,11 +299,11 @@ export default function Pomodoro(): React.JSX.Element {
 						type="number"
 						placeholder="Enter the study cycles"
 						id="inputCycles"
-						value={cycles}
+						value={data.cycles}
 						onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-							setCycles(parseInt(e.target.value))
+							setData({ ...data, cycles: parseInt(e.target.value) })
 						}
-						disabled={isCyclesboxDisabled}
+						disabled={data.activeTimer}
 					/>
 				</div>
 			</div>
