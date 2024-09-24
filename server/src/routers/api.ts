@@ -1,7 +1,7 @@
 import { default as usersRouter } from "./users.js";
 import { default as eventsRouter } from "./events.js";
-import { default as pomodoroRouter } from "./notes.js";
-import { default as notesRouter } from "./pomodoro.js";
+import { default as pomodoroRouter } from "./pomodoro.js";
+import { default as notesRouter } from "./notes.js";
 import { default as projectsRouter } from "./projects.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import { Request, Response, Router } from "express";

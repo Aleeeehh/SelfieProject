@@ -2,7 +2,8 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ResponseBody } from "./types/ResponseBody";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import { SERVER_API } from "./params/params";
 
 enum Frequency {
 	ONCE = "once",
@@ -10,7 +11,20 @@ enum Frequency {
 	WEEKLY = "week",
 }
 
-const Mesi = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+const Mesi = [
+	"Gennaio",
+	"Febbraio",
+	"Marzo",
+	"Aprile",
+	"Maggio",
+	"Giugno",
+	"Luglio",
+	"Agosto",
+	"Settembre",
+	"Ottobre",
+	"Novembre",
+	"Dicembre",
+];
 //const GiorniSettimana = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
 
 export type Event = {
@@ -44,7 +58,7 @@ export default function Calendar(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch("http://localhost:3002/api/events");
+				const res = await fetch(`${SERVER_API}/events`);
 				console.log(res);
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -56,7 +70,6 @@ export default function Calendar(): React.JSX.Element {
 
 	//da implementare
 	//function changeDayWeek(day: number): void {}
-
 
 	function toggleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
@@ -75,7 +88,7 @@ export default function Calendar(): React.JSX.Element {
 		e.preventDefault();
 
 		// TODO: validate input
-		const res = await fetch("http://localhost:3002/api/events", {
+		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -99,17 +112,69 @@ export default function Calendar(): React.JSX.Element {
 	return (
 		<>
 			{message && <div>{message}</div>}
-			{day && <div className="nome-data">{day} {Mesi[meseCorrente]} 2024</div>}
+			{day && (
+				<div className="nome-data">
+					{day} {Mesi[meseCorrente]} 2024
+				</div>
+			)}
 
 			<div className="calendar-container row">
 				<div className="calendar col-4">
-					<div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginRight: "5vw" }}>
-						<button className="btn addEvent" style={{ backgroundColor: "bisque", color: "white", border: "0", minWidth: "100px", fontSize: "1rem" }} onClick={toggleCreateEvent}>Add Event</button>
+					<div
+						style={{
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							marginRight: "5vw",
+						}}>
+						<button
+							className="btn addEvent"
+							style={{
+								backgroundColor: "bisque",
+								color: "white",
+								border: "0",
+								minWidth: "100px",
+								fontSize: "1rem",
+							}}
+							onClick={toggleCreateEvent}>
+							Add Event
+						</button>
 					</div>
-					<div className="month-indicator" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-						<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", minWidth: "100px", fontSize: "1rem" }} onClick={mesePrecedente}>Back</button>
-						<time style={{ fontSize: "2rem", color: "black" }}> {Mesi[meseCorrente]}</time>
-						<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", minWidth: "100px", fontSize: "1rem" }} onClick={meseSuccessivo}>Next</button>
+					<div
+						className="month-indicator"
+						style={{
+							display: "flex",
+							justifyContent: "space-between",
+							alignItems: "center",
+						}}>
+						<button
+							className="btn btn-primary"
+							style={{
+								backgroundColor: "bisque",
+								color: "white",
+								border: "0",
+								minWidth: "100px",
+								fontSize: "1rem",
+							}}
+							onClick={mesePrecedente}>
+							Back
+						</button>
+						<time style={{ fontSize: "2rem", color: "black" }}>
+							{" "}
+							{Mesi[meseCorrente]}
+						</time>
+						<button
+							className="btn btn-primary"
+							style={{
+								backgroundColor: "bisque",
+								color: "white",
+								border: "0",
+								minWidth: "100px",
+								fontSize: "1rem",
+							}}
+							onClick={meseSuccessivo}>
+							Next
+						</button>
 					</div>
 					<div className="day-of-week">
 						<div>Su</div>
@@ -156,7 +221,12 @@ export default function Calendar(): React.JSX.Element {
 				</div>
 				{createEvent && (
 					<div className="create-event-container col-2">
-						<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0" }} onClick={toggleCreateEvent}>Close</button>
+						<button
+							className="btn btn-primary"
+							style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+							onClick={toggleCreateEvent}>
+							Close
+						</button>
 						<form>
 							<label htmlFor="title">
 								Title
@@ -210,7 +280,12 @@ export default function Calendar(): React.JSX.Element {
 									/>
 								</div>
 							</label>
-							<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0" }} onClick={handleCreateEvent}>Create Event</button>
+							<button
+								className="btn btn-primary"
+								style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+								onClick={handleCreateEvent}>
+								Create Event
+							</button>
 						</form>
 					</div>
 				)}
@@ -240,10 +315,8 @@ export default function Calendar(): React.JSX.Element {
 					<time>22:00</time>
 					<time>23:00</time>
 					<time>00:00</time>
-
 				</div>
-			</div >
+			</div>
 		</>
 	);
 }
-

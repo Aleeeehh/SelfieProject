@@ -1,5 +1,6 @@
 import React from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/css/bootstrap.min.css";
+import { SERVER_API } from "./params/params";
 
 export default function Pomodoro(): React.JSX.Element {
 	const [message, setMessage] = React.useState("caricamento in corso");
@@ -8,7 +9,7 @@ export default function Pomodoro(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch("http://localhost:3002/api/pomodoro");
+				const res = await fetch(`${SERVER_API}/api/pomodoro`);
 				console.log(res);
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -27,24 +28,44 @@ export default function Pomodoro(): React.JSX.Element {
 
 				<div>
 					<h4 id="status"></h4>
-					<button id="start-button" type="button" className="btn btn-success">START</button>
-					<button id="stop-button" type="button" className="btn btn-danger" disabled>STOP</button>
+					<button id="start-button" type="button" className="btn btn-success">
+						START
+					</button>
+					<button id="stop-button" type="button" className="btn btn-danger" disabled>
+						STOP
+					</button>
 					<p className="paragraph">FILL THE SPACES AND PRESS START TO BEGIN!</p>
 				</div>
 
 				<div className="pannello studyTime">
-				<label htmlFor="inputStudy">Study time in minutes</label>
-				<input name="inputStudy" type="number" placeholder="Enter the time" className="inputStudyTime" id="inputStudy" />
+					<label htmlFor="inputStudy">Study time in minutes</label>
+					<input
+						name="inputStudy"
+						type="number"
+						placeholder="Enter the time"
+						className="inputStudyTime"
+						id="inputStudy"
+					/>
 				</div>
 
 				<div className="pannello breakTime">
 					<label htmlFor="inputPause"> Break time in minutes </label>
-					<input name="inputPause" type="number" placeholder="Enter the time" id="inputPause" />
+					<input
+						name="inputPause"
+						type="number"
+						placeholder="Enter the time"
+						id="inputPause"
+					/>
 				</div>
 
 				<div className="pannello studyCycles">
 					<label htmlFor="inputCycles"> Number of study cycles </label>
-					<input name="inputCycles" type="number" placeholder="Enter the study cycles" id="inputCycles" />
+					<input
+						name="inputCycles"
+						type="number"
+						placeholder="Enter the study cycles"
+						id="inputCycles"
+					/>
 				</div>
 			</div>
 		</>

@@ -10,7 +10,7 @@ router.get("/", async (_: Request, res: Response) => {
 	try {
 		const filter = {};
 		// TODO: filter per logged user
-		let foundSessions = await PomodoroSchema.find(filter).lean();
+		const foundSessions = await PomodoroSchema.find(filter).lean();
 
 		const pomodoros = [];
 
