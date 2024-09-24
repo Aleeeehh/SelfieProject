@@ -33,7 +33,11 @@ router.post("/register", async (req: Request, res: Response) => {
 		const birthday = new Date(birthdayStr);
 
 		if (!(username || password || firstName || lastName))
-			return res.status(400).json({ status: ResponseStatus.BAD, message: "Invalid body" });
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message:
+					"Invalid body: 'username', 'password', 'firstName' and 'lastName' required",
+			});
 
 		const newUser: User = {
 			id: "",
@@ -59,7 +63,7 @@ router.post("/register", async (req: Request, res: Response) => {
 		await UserSchema.create(newUser);
 
 		const resBody: ResponseBody = {
-			message: "Event inserted into database",
+			message: "New user inserted into database",
 			status: ResponseStatus.GOOD,
 		};
 

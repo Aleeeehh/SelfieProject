@@ -4,6 +4,12 @@ import cors from "cors";
 import path from "path";
 import { default as apiRouter } from "./routers/api.js";
 import mongoose from "mongoose";
+import {
+	createDummyEvents,
+	createDummyNotes,
+	createDummyPomodoros,
+	createDummyUsers,
+} from "./db/populateDB.js";
 
 // import env file
 dotenv.config();
@@ -33,13 +39,20 @@ server.get("*", (_: Request, res: Response) => {
 });
 
 // Connect to database
-const DB_USER = "";
-const DB_PSWD = "";
-const DB_HOST = "";
-const DB_PORT = "";
-const DB_APP_NAME = "";
+// const DB_USER = "";
+//const DB_PSWD = "";
+const DB_HOST = "127.0.0.1";
+const DB_PORT = "27017";
+const DB_APP_NAME = "selfie_db";
 
-mongoose.connect(`mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}/${DB_APP_NAME}`);
+// TODO: Use authentication for DB
+// mongoose.connect(`mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}/${DB_APP_NAME}`);
+mongoose
+	.connect(`mongodb://${DB_HOST}:${DB_PORT}/${DB_APP_NAME}`)
+	.then(() => createDummyUsers())
+	.then(() => createDummyEvents())
+	.then(() => createDummyNotes())
+	.then(() => createDummyPomodoros());
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));

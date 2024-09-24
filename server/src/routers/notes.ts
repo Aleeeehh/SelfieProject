@@ -56,10 +56,10 @@ router.get("/", async (req: Request, res: Response) => {
 		for (const note of foundNotes) {
 			const newNote: Note = {
 				id: note._id.toString(),
-				ownerId: note.owner?.toString() || "",
+				owner: note.owner?.toString() || "",
 				title: note.title,
 				text: note.text || "",
-				tags: note.categories || [],
+				tags: note.tags || [],
 				createdAt: note.createdAt,
 				updatedAt: note.updatedAt,
 			};
@@ -70,9 +70,11 @@ router.get("/", async (req: Request, res: Response) => {
 		let sortedNotes: Note[] = [];
 		switch (order) {
 			case Order.DATE:
-				sortedNotes = notes.sort(
-					(note1, note2) => note2.createdAt.getTime() - note1.createdAt.getTime()
-				);
+				sortedNotes = notes.sort((note1, note2) => {
+					if (!note2.createdAt) return -1;
+					if (!note1.createdAt) return 1;
+					return note2.createdAt.getTime() - note1.createdAt.getTime();
+				});
 				break;
 			case Order.NAME:
 				sortedNotes = notes.sort((note1, note2) =>

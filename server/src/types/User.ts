@@ -6,6 +6,8 @@ type User = {
 	lastName: String;
 	birthday: Date;
 	address?: String;
+	createdAt?: Date;
+	updatedAt?: Date;
 };
 
 export default User;

@@ -17,7 +17,7 @@ router.get("/", async (_: Request, res: Response) => {
 		for (const session of foundSessions) {
 			const newPomodoro: Pomodoro = {
 				id: session._id.toString(),
-				ownerId: session.owner?.toString() || "",
+				owner: session.owner?.toString() || "",
 				studyTime: session.studyTime || 0,
 				pauseTime: session.pauseTime || 0,
 				cycles: session.cycles || 1,

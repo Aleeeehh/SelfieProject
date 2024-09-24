@@ -1,11 +1,11 @@
 type Pomodoro = {
 	id: string;
-	ownerId: string;
+	owner: string;
 	studyTime: number;
 	pauseTime: number;
 	cycles: number;
-	createdAt: Date;
-	updatedAt: Date;
+	createdAt?: Date;
+	updatedAt?: Date;
 };
 
 export default Pomodoro;
