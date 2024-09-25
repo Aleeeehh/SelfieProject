@@ -5,6 +5,8 @@ import { validDateString } from "../lib.js";
 import { Order } from "../enums.js";
 import NoteSchema from "../db/Note.js";
 import type Note from "../types/Note.js";
+import UserSchema from "../db/User.js";
+import { ObjectId } from "mongodb";
 
 const router: Router = Router();
 
@@ -99,6 +101,16 @@ router.get("/:id", async (req: Request, res: Response) => {
 		// TODO: validate param
 		// TODO: validate body fields
 
+		try {
+			new ObjectId(noteId);
+		} catch (e) {
+			const resBody: ResponseBody = {
+				message: "Note with id " + noteId + " not found!",
+				status: ResponseStatus.BAD,
+			};
+
+			return res.status(400).json(resBody);
+		}
 		const foundNote = await NoteSchema.findById(noteId).lean();
 
 		if (!foundNote) {
@@ -123,7 +135,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 		// TODO: filter the fields of the found note
 		const resBody: ResponseBody = {
 			status: ResponseStatus.GOOD,
-			value: JSON.stringify(note),
+			value: note,
 		};
 
 		return res.json(resBody);
@@ -142,17 +154,30 @@ router.post("/", async (req: Request, res: Response) => {
 	try {
 		// TODO: validate note input
 		// TODO: validate body fields
+
 		const newNote: Note = req.body as Note;
 
-		await NoteSchema.create(newNote);
+		if (!newNote.owner) {
+			const user = await UserSchema.findOne().lean();
+			if (!user) {
+				console.log("Error finding user");
+				return res
+					.status(400)
+					.json({ status: ResponseStatus.BAD, message: "Error finding user" });
+			}
+			newNote.owner = user._id.toString();
+		}
+
+		const createdNote = await NoteSchema.create(newNote);
 		console.log("Inserted note: ", newNote);
 
 		const resBody: ResponseBody = {
 			message: "Note inserted into database",
 			status: ResponseStatus.GOOD,
+			value: createdNote._id.toString(),
 		};
 
-		res.json(resBody);
+		return res.json(resBody);
 	} catch (e) {
 		console.log(e);
 		const resBody: ResponseBody = {
@@ -160,7 +185,7 @@ router.post("/", async (req: Request, res: Response) => {
 			status: ResponseStatus.BAD,
 		};
 
-		res.status(500).json(resBody);
+		return res.status(500).json(resBody);
 	}
 });
 
@@ -191,7 +216,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const resBody: ResponseBody = {
 			message: "Note updated in database",
 			status: ResponseStatus.GOOD,
-			value: JSON.stringify(foundNote),
+			value: updatedNote,
 		};
 
 		res.json(resBody);
@@ -230,7 +255,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 		const resBody: ResponseBody = {
 			message: "Note deleted from database",
 			status: ResponseStatus.GOOD,
-			value: JSON.stringify(foundNote),
+			value: foundNote,
 		};
 
 		res.json(resBody);

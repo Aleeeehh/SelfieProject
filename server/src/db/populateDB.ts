@@ -115,6 +115,13 @@ export async function createDummyNotes() {
 			text: "Welcome, this is a text!",
 			tags: ["test"],
 		},
+		{
+			id: "",
+			title: "A new note",
+			owner: user._id.toString(),
+			text: "Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!Welcome, this is a text!",
+			tags: ["test"],
+		},
 	];
 	for (const note of dummyNotes) {
 		const foundNote = await NoteSchema.findOne({ title: note.title });

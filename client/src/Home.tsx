@@ -5,6 +5,10 @@ import Pomodoro from "./types/Pomodoro";
 import Note from "./types/Note";
 import { Event } from "./types/Event";
 
+const HOME_MAX_NUM_NOTES = 4;
+const HOME_MAX_NOTE_TITLE_CHARS = 20;
+const HOME_MAX_NOTE_TEXT_CHARS = 0;
+
 function Home(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [pomodoros, setPomodoros] = React.useState([] as Pomodoro[]);
@@ -81,23 +85,33 @@ function Home(): React.JSX.Element {
 				</div>
 				<div className="preview preview-note">
 					<div>Le tue note recenti:</div>
-					{notes
-						.filter((_, i) => i <= 6)
-						.map((note) => (
-							<a className="preview-note-card" href={`/notes/${note.id}`}>
-								<div>
-									<div className="preview-note-card-title">{note.title}</div>
-									<div className="preview-note-card-text">
-										{note.text.length > 100
-											? note.text.substring(0, 100) + "..."
-											: note.text}
+					<div className="preview-note-cards-container">
+						{notes
+							.filter((_, i) => i < HOME_MAX_NUM_NOTES)
+							.map((note) => (
+								<a className="preview-note-card" href={`/notes/${note.id}`}>
+									<div>
+										<div className="preview-note-card-title">
+											{note.title.length > HOME_MAX_NOTE_TITLE_CHARS
+												? note.title.substring(
+														0,
+														HOME_MAX_NOTE_TITLE_CHARS
+												  ) + "..."
+												: note.title}
+										</div>
+										<div className="preview-note-card-text">
+											{note.text.length > HOME_MAX_NOTE_TEXT_CHARS
+												? note.text.substring(0, HOME_MAX_NOTE_TEXT_CHARS) +
+												  "..."
+												: note.text}
+										</div>
 									</div>
-								</div>
-								<div className="preview-note-card-date">
-									Last update: {note.updatedAt?.toString()}
-								</div>
-							</a>
-						))}
+									{/* <div className="preview-note-card-date">
+										Last update: {note.updatedAt?.toString()}
+									</div> */}
+								</a>
+							))}
+					</div>
 				</div>
 				<div className="preview preview-projects">Qui ci va la preview dei progetti</div>
 			</div>

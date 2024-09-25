@@ -13,28 +13,42 @@
 
 .preview a {
 	text-decoration: none;
+	color: inherit;
 }
 
 .preview-note {
 	padding: 1em;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.preview-note-cards-container {
+	padding: 1em;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-around;
 }
 
 .preview-note-card {
 	background-color: burlywood;
-	width: 200px;
-	height: 200px;
+	width: 150px;
+	height: 100px;
 	border-radius: 5px;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
+	margin: 1em;
+	padding: 1em;
 }
 
 .preview-note-card-title {
 	font-weight: bold;
-	font-size: 1.1em;
+	font-size: 0.8em;
 }
 .preview-note-card-text {
-	font-size: 0.8em;
+	font-size: 0.7em;
 }
 
 .preview-note-card-date {

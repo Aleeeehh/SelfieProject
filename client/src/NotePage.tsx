@@ -3,7 +3,7 @@ import { SERVER_API } from "./params/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Note from "./types/Note";
-import { redirect, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const baseNote: Note = {
 	id: "",
@@ -20,25 +20,25 @@ export default function NotePage(): React.JSX.Element {
 	const [note, setNote] = React.useState(baseNote as Note);
 	const [tag, setTag] = React.useState("");
 	const [message, setMessage] = React.useState("");
+	const nav = useNavigate();
 
-	// On page load, get the events for the user
+	// On page load, get the note for the user
 	React.useEffect(() => {
 		if (id !== NEW)
-			(async (): Promise<void> => {
-				try {
-					const res = await fetch(`${SERVER_API}/notes/${id}`);
-					const resBody = (await res.json()) as ResponseBody;
-
-					if (resBody.status === ResponseStatus.GOOD) {
-						setNote(resBody.value);
-						console.log(resBody.value);
+			fetch(`${SERVER_API}/notes/${id}`)
+				.then((res) => res.json())
+				.then((data) => {
+					if (data.status === ResponseStatus.GOOD) {
+						setNote(data.value as Note);
+						console.log(data.value);
 					} else {
-						setMessage("Nota non trovata");
+						nav("/notes");
 					}
-				} catch (e) {
+				})
+				.catch(() => {
 					setMessage("Impossibile raggiungere il server");
-				}
-			})();
+					nav("/notes");
+				});
 	}, [id]);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
@@ -55,14 +55,14 @@ export default function NotePage(): React.JSX.Element {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			console.log(res);
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				const newNote: Note = resBody.value;
+				const newNoteId: string = resBody.value;
+				alert("Nota creata correttamente!");
 
 				// redirect to update page of the created note
-				redirect(`${SERVER_API}/notes/${newNote.id}`);
+				nav(`/notes/${newNoteId}`);
 			} else {
 				setMessage("Errore nell'inserimento della nota");
 			}
@@ -86,9 +86,34 @@ export default function NotePage(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (resBody.status === ResponseStatus.GOOD) {
+				alert("Nota modificata correttamente!");
+
 				setNote(resBody.value as Note);
 			} else {
 				setMessage("Errore nell'aggiornamento della nota");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
+
+	async function handleDelete(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+
+		// TODO: validate inputs (not empty, max length)
+		try {
+			const res = await fetch(`${SERVER_API}/notes/${id}`, {
+				method: "DELETE",
+			});
+
+			console.log(res);
+			const resBody = (await res.json()) as ResponseBody;
+
+			if (resBody.status === ResponseStatus.GOOD) {
+				alert("Nota cancellata correttamente!");
+				nav("/notes");
+			} else {
+				setMessage("Errore della cancellazione della nota");
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
@@ -181,6 +206,11 @@ export default function NotePage(): React.JSX.Element {
 					onClick={id === NEW ? handleCreate : handleUpdate}>
 					{id === NEW ? "Crea Nota" : "Aggiorna Nota"}
 				</button>
+				{id !== NEW && (
+					<button style={{ backgroundColor: "#ff0000" }} onClick={handleDelete}>
+						Cancella Nota
+					</button>
+				)}
 			</div>
 
 			{message && <div>{message}</div>}
