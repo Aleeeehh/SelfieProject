@@ -8,8 +8,9 @@ import Calendar from "./Calendar";
 import Login from "./Login";
 import Pomodoro from "./Pomodoro";
 import Projects from "./Projects";
-import Note from "./Note";
+import Notes from "./Notes";
 import NotFound from "./NotFound";
+import NotePage from "./NotePage";
 
 function App(): React.JSX.Element {
 	return (
@@ -23,7 +24,8 @@ function App(): React.JSX.Element {
 							<Route path="calendar" element={<Calendar />} />
 							<Route path="pomodoro" element={<Pomodoro />} />
 							<Route path="projects" element={<Projects />} />
-							<Route path="notes" element={<Note />} />
+							<Route path="notes" element={<Notes />} />
+							<Route path="notes/:id" element={<NotePage />} />
 							{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
 						</Route>
 						<Route path="*" element={<NotFound />} />

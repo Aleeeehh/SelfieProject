@@ -1,8 +1,8 @@
 import type { Frequency } from "../enums.js";
 
 export type Event = {
-	id: String;
-	owner: String;
+	id: string;
+	owner: string;
 	title: string;
 	startTime: Date;
 	endTime: Date;

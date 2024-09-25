@@ -1,9 +1,9 @@
 type Note = {
 	id: string;
 	owner: string;
-	title: String;
-	text: String;
-	tags: String[];
+	title: string;
+	text: string;
+	tags: string[];
 	createdAt?: Date;
 	updatedAt?: Date;
 };

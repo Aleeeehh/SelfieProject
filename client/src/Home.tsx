@@ -80,16 +80,24 @@ function Home(): React.JSX.Element {
 					))}
 				</div>
 				<div className="preview preview-note">
-					{notes.map((note) => (
-						<div>
-							<div>{note.title}</div>
-							<div>
-								{note.text.length > 100
-									? note.text.substring(0, 100) + "..."
-									: note.text}
-							</div>
-						</div>
-					))}
+					<div>Le tue note recenti:</div>
+					{notes
+						.filter((_, i) => i <= 6)
+						.map((note) => (
+							<a className="preview-note-card" href={`/notes/${note.id}`}>
+								<div>
+									<div className="preview-note-card-title">{note.title}</div>
+									<div className="preview-note-card-text">
+										{note.text.length > 100
+											? note.text.substring(0, 100) + "..."
+											: note.text}
+									</div>
+								</div>
+								<div className="preview-note-card-date">
+									Last update: {note.updatedAt?.toString()}
+								</div>
+							</a>
+						))}
 				</div>
 				<div className="preview preview-projects">Qui ci va la preview dei progetti</div>
 			</div>

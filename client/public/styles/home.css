@@ -10,3 +10,34 @@
 	text-align: center;
 	vertical-align: middle;
 }
+
+.preview a {
+	text-decoration: none;
+}
+
+.preview-note {
+	padding: 1em;
+}
+
+.preview-note-card {
+	background-color: burlywood;
+	width: 200px;
+	height: 200px;
+	border-radius: 5px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.preview-note-card-title {
+	font-weight: bold;
+	font-size: 1.1em;
+}
+.preview-note-card-text {
+	font-size: 0.8em;
+}
+
+.preview-note-card-date {
+	font-style: italic;
+	font-size: 0.7em;
+}

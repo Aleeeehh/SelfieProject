@@ -99,7 +99,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 		// TODO: validate param
 		// TODO: validate body fields
 
-		const foundNote = await NoteSchema.findById(noteId);
+		const foundNote = await NoteSchema.findById(noteId).lean();
 
 		if (!foundNote) {
 			const resBody: ResponseBody = {
@@ -107,18 +107,26 @@ router.get("/:id", async (req: Request, res: Response) => {
 				status: ResponseStatus.BAD,
 			};
 
-			res.status(400).json(resBody);
+			return res.status(400).json(resBody);
 		}
 
-		console.log("Returning note: ", foundNote);
+		const note: Note = {
+			id: foundNote._id.toString(),
+			owner: foundNote.owner.toString(),
+			title: foundNote.title,
+			text: foundNote.text,
+			tags: foundNote.tags,
+			createdAt: foundNote.createdAt,
+			updatedAt: foundNote.updatedAt,
+		};
 
 		// TODO: filter the fields of the found note
 		const resBody: ResponseBody = {
 			status: ResponseStatus.GOOD,
-			value: JSON.stringify(foundNote),
+			value: JSON.stringify(note),
 		};
 
-		res.json(resBody);
+		return res.json(resBody);
 	} catch (e) {
 		console.log(e);
 		const resBody: ResponseBody = {
@@ -126,7 +134,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 			status: ResponseStatus.BAD,
 		};
 
-		res.status(500).json(resBody);
+		return res.status(500).json(resBody);
 	}
 });
 

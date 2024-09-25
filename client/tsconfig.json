@@ -17,7 +17,7 @@
 		"noImplicitOverride": true,
 		"skipLibCheck": true,
 		"lib": ["dom", "dom.iterable", "esnext"],
-		"allowJs": true,
+		"allowJs": false,
 		"allowSyntheticDefaultImports": true,
 		"moduleResolution": "NodeNext",
 		"resolveJsonModule": true,
