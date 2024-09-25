@@ -3,7 +3,7 @@ import { SERVER_API } from "./params/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Note from "./types/Note";
-import { useParams } from "react-router-dom";
+import { redirect, useParams } from "react-router-dom";
 
 const baseNote: Note = {
 	id: "",
@@ -13,6 +13,8 @@ const baseNote: Note = {
 	tags: [],
 };
 
+const NEW = "new";
+
 export default function NotePage(): React.JSX.Element {
 	const { id } = useParams();
 	const [note, setNote] = React.useState(baseNote as Note);
@@ -21,30 +23,58 @@ export default function NotePage(): React.JSX.Element {
 
 	// On page load, get the events for the user
 	React.useEffect(() => {
-		(async (): Promise<void> => {
-			try {
-				const res = await fetch(`${SERVER_API}/notes/${id}`);
-				const resBody = (await res.json()) as ResponseBody;
+		if (id !== NEW)
+			(async (): Promise<void> => {
+				try {
+					const res = await fetch(`${SERVER_API}/notes/${id}`);
+					const resBody = (await res.json()) as ResponseBody;
 
-				if (resBody.status === ResponseStatus.GOOD) {
-					setNote(resBody.value);
-					console.log(resBody.value);
-				} else {
-					setMessage("Nota non trovata");
+					if (resBody.status === ResponseStatus.GOOD) {
+						setNote(resBody.value);
+						console.log(resBody.value);
+					} else {
+						setMessage("Nota non trovata");
+					}
+				} catch (e) {
+					setMessage("Impossibile raggiungere il server");
 				}
-			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
-			}
-		})();
+			})();
 	}, [id]);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
 		setNote({ ...note, [e.target.name]: e.target.value });
 	}
 
+	async function handleCreate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+
+		try {
+			const res = await fetch(`${SERVER_API}/notes`, {
+				method: "POST",
+				body: JSON.stringify(note),
+				headers: { "Content-Type": "application/json" },
+			});
+
+			console.log(res);
+			const resBody = (await res.json()) as ResponseBody;
+
+			if (resBody.status === ResponseStatus.GOOD) {
+				const newNote: Note = resBody.value;
+
+				// redirect to update page of the created note
+				redirect(`${SERVER_API}/notes/${newNote.id}`);
+			} else {
+				setMessage("Errore nell'inserimento della nota");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
+
 	async function handleUpdate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
+		// TODO: validate inputs (not empty, max length)
 		try {
 			const res = await fetch(`${SERVER_API}/notes/${id}`, {
 				method: "PUT",
@@ -105,6 +135,7 @@ export default function NotePage(): React.JSX.Element {
 
 	return (
 		<>
+			<div className="page-title">{id === NEW ? "Crea una nuova nota" : "Modifica nota"}</div>
 			<div className="note-container">
 				<label htmlFor="title">
 					Titolo
@@ -117,15 +148,6 @@ export default function NotePage(): React.JSX.Element {
 				<label>
 					Tags
 					<label htmlFor="title">
-						{/* <span
-							style={{
-								fontWeight: "normal",
-								fontSize: "0.9em",
-								fontStyle: "italic",
-								padding: "0.5em",
-							}}>
-							Aggiungi tag
-						</span> */}
 						<input
 							name="tag"
 							value={tag}
@@ -134,7 +156,7 @@ export default function NotePage(): React.JSX.Element {
 							}}
 						/>
 						<button style={{ margin: "auto 0.5em" }} onClick={addTag}>
-							Add Tag
+							+
 						</button>
 					</label>
 					<div className="tags-container">
@@ -154,8 +176,10 @@ export default function NotePage(): React.JSX.Element {
 							))}
 					</div>
 				</label>
-				<button style={{ backgroundColor: "#ffff00" }} onClick={handleUpdate}>
-					UpdateNote
+				<button
+					style={{ backgroundColor: "#ffff00" }}
+					onClick={id === NEW ? handleCreate : handleUpdate}>
+					{id === NEW ? "Crea Nota" : "Aggiorna Nota"}
 				</button>
 			</div>
 

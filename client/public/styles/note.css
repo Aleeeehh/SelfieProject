@@ -9,6 +9,12 @@
     border-radius: 5px;
 }
 
+.page-title {
+    font-size: larger;
+    font-weight: bolder;
+    text-align: center;
+}
+
 .note-container > * {
     width: 100%;
     border-radius: 5px;

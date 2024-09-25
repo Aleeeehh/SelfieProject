@@ -25,6 +25,7 @@ function App(): React.JSX.Element {
 							<Route path="pomodoro" element={<Pomodoro />} />
 							<Route path="projects" element={<Projects />} />
 							<Route path="notes" element={<Notes />} />
+							{/* Route notes/new creates the new page for note*/}
 							<Route path="notes/:id" element={<NotePage />} />
 							{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
 						</Route>
