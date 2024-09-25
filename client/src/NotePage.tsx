@@ -44,6 +44,7 @@ export default function NotePage(): React.JSX.Element {
 
 	async function handleUpdate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+
 		try {
 			const res = await fetch(`${SERVER_API}/notes/${id}`, {
 				method: "PUT",
@@ -64,42 +65,101 @@ export default function NotePage(): React.JSX.Element {
 		}
 	}
 
+	function addTag(e: React.MouseEvent<HTMLElement>): void {
+		e.preventDefault();
+
+		if (note.tags.includes(tag)) {
+			setMessage("Tag già presente nella lista");
+			setTag("");
+			return;
+		}
+
+		if (tag === "") {
+			setMessage("Tag vuota non valida");
+			return;
+		}
+
+		setNote((prevNote) => {
+			const newTags: string[] = [];
+			console.log(prevNote.tags);
+
+			for (const t of prevNote.tags) {
+				newTags.push(t);
+			}
+			newTags.push(tag);
+
+			return { ...prevNote, tags: newTags };
+		});
+
+		setTag(() => {
+			return "";
+		});
+	}
+
+	function deleteTag(e: React.MouseEvent<HTMLElement>, tag: string): void {
+		e.preventDefault();
+		const tags = note.tags.filter((t) => t !== tag);
+
+		setNote({ ...note, tags });
+	}
+
 	return (
-		<div>
-			<div>
-				<input name="title" value={note.title} onChange={handleChange} />
-				<textarea name="text" value={note.text} onChange={handleChange} />
-				{note && note.tags && note.tags.map((tag) => <div>{tag}</div>)}
-				<input
-					name="tag"
-					value={tag}
-					onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-						setTag(e.target.value);
-					}}
-				/>
-				<button
-					onClick={(e): void => {
-						e.preventDefault();
-						setNote((prevNote) => {
-							const newTags: string[] = [];
-							console.log(prevNote.tags);
-
-							for (const t of prevNote.tags) {
-								newTags.push(t);
-							}
-							newTags.push(tag);
-
-							return { ...prevNote, tags: newTags };
-						});
-						setTag(() => {
-							return "";
-						});
-					}}>
-					Add Tag
+		<>
+			<div className="note-container">
+				<label htmlFor="title">
+					Titolo
+					<input name="title" value={note.title} onChange={handleChange} />
+				</label>
+				<label htmlFor="title">
+					Testo
+					<textarea name="text" value={note.text} onChange={handleChange} />
+				</label>
+				<label>
+					Tags
+					<label htmlFor="title">
+						{/* <span
+							style={{
+								fontWeight: "normal",
+								fontSize: "0.9em",
+								fontStyle: "italic",
+								padding: "0.5em",
+							}}>
+							Aggiungi tag
+						</span> */}
+						<input
+							name="tag"
+							value={tag}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+								setTag(e.target.value);
+							}}
+						/>
+						<button style={{ margin: "auto 0.5em" }} onClick={addTag}>
+							Add Tag
+						</button>
+					</label>
+					<div className="tags-container">
+						{note &&
+							note.tags &&
+							note.tags.map((tag) => (
+								<div className="tag-box">
+									{tag}
+									<button
+										className="tag-delete"
+										onClick={(e: React.MouseEvent<HTMLElement>): void =>
+											deleteTag(e, tag)
+										}>
+										X
+									</button>
+								</div>
+							))}
+					</div>
+				</label>
+				<button style={{ backgroundColor: "#ffff00" }} onClick={handleUpdate}>
+					UpdateNote
 				</button>
 			</div>
-			<button onClick={handleUpdate}>UpdateNote</button>
+
 			{message && <div>{message}</div>}
-		</div>
+		</>
 	);
 }

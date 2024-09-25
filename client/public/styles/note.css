@@ -1,0 +1,60 @@
+.note-container {
+    width: calc(100% - 2em);
+    height: calc(100% - 2em);
+    margin: 1em;
+    display: flex;
+    flex-direction: column;
+    background-color: burlywood;
+    padding: 1em;
+    border-radius: 5px;
+}
+
+.note-container > * {
+    width: 100%;
+    border-radius: 5px;
+}
+
+.note-container * {
+    border-radius: 5px;
+}
+
+.note-container > label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+}
+
+.note-container  button {
+    margin: 0.5em auto;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.tags-container {
+    display: flex;
+    flex-direction: row;
+}
+.tag-box {
+    margin: 0.5em;
+    font-weight: 500;
+    font-style: italic;
+    display: flex;
+    flex-direction: row;
+    vertical-align: middle;
+}
+
+.tag-delete {
+    color: brown;
+    width: 2em;
+    height: 2em;
+    font-size: xx-small;
+    font-weight: bold;
+    margin: auto;
+    padding: 0;
+    border: none;
+}
+
+.note-container textarea {
+    resize: vertical;
+    min-height: 400px;
+}
