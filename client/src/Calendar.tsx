@@ -44,7 +44,27 @@ export default function Calendar(): React.JSX.Element {
 	const [meseCorrente, setMeseCorrente] = React.useState(0); //inizializzazione mese corrente a zero
 	const [message, setMessage] = React.useState("");
 	const [day, setDay] = React.useState(1);
+	const [activeButton, setActiveButton] = React.useState(0);
 	//const [dayWeek, setDayWeek] = React.useState(0);
+
+	function dayMode(e: React.MouseEvent<HTMLButtonElement>): void {
+		e.preventDefault();
+		setActiveButton(0);
+		console.log(activeButton);
+	}
+
+	function weekMode(e: React.MouseEvent<HTMLButtonElement>): void {
+		e.preventDefault();
+		setActiveButton(1);
+		console.log(activeButton);
+	}
+
+	function monthMode(e: React.MouseEvent<HTMLButtonElement>): void {
+		e.preventDefault();
+		setActiveButton(2);
+		console.log(activeButton);
+	}
+
 
 	function mesePrecedente(): void {
 		setMeseCorrente((meseCorrente - 1 + Mesi.length) % Mesi.length);
@@ -113,12 +133,52 @@ export default function Calendar(): React.JSX.Element {
 		<>
 			{message && <div>{message}</div>}
 			{day && (
-				<div className="nome-data">
-					{day} {Mesi[meseCorrente]} 2024
-				</div>
-			)}
+				<div>
+					<div style={{ display: "flex", justifyContent: "center" }}>
+						<button
+							className="btn btn-primary"
+							style={{
+								backgroundColor: "bisque",
+								color: "white",
+								border: "0",
+								marginLeft: "15px"
+							}}
+							onClick={dayMode}>
+							Day
+						</button>
+						<button
+							className="btn btn-primary"
+							style={{
+								backgroundColor: "bisque",
+								color: "white",
+								border: "0",
+								marginLeft: "15px"
+							}}
+							onClick={weekMode}>
+							Week
+						</button>
+						<button
+							className="btn btn-primary"
+							style={{
+								backgroundColor: "bisque",
+								color: "white",
+								border: "0",
+								marginLeft: "15px"
+							}}
+							onClick={monthMode}>
+							Month
+						</button>
+					</div>
 
-			<div className="calendar-container row">
+
+				</div >
+			)
+			}
+
+			{activeButton === 0 && <div className="calendar-container row">
+				<div className="nome-data">
+					<div>{day} {Mesi[meseCorrente]} 2024 </div>
+				</div>
 				<div className="calendar col-4">
 					<div
 						style={{
@@ -317,6 +377,56 @@ export default function Calendar(): React.JSX.Element {
 					<time>00:00</time>
 				</div>
 			</div>
+			}
+
+			{activeButton === 1 && <div>
+				<div className="nome-data-week" style={{ display: "flex", justifyContent: "center" }}>
+					<div>{Mesi[meseCorrente]} 2024 </div>
+				</div>
+
+				<div className="row" style={{ display: "flex", justifyContent: "center" }}>
+					<div className="col-10">
+						<div style={{ display: "flex", justifyContent: "space-between", maxWidth: "80%", marginLeft: "auto", marginRight: "auto" }}>
+							<div className="nome-data-week">Lun</div>
+							<div className="nome-data-week">Mar</div>
+							<div className="nome-data-week">Mer</div>
+							<div className="nome-data-week">Gio</div>
+							<div className="nome-data-week">Ven</div>
+							<div className="nome-data-week">Sab</div>
+							<div className="nome-data-week">Dom</div>
+						</div>
+						<div className="orario">
+							<time>00:00</time>
+							<time>01:00</time>
+							<time>02:00</time>
+							<time>03:00</time>
+							<time>04:00</time>
+							<time>05:00</time>
+							<time>06:00</time>
+							<time>07:00</time>
+							<time>08:00</time>
+							<time>09:00</time>
+							<time>10:00</time>
+							<time>11:00</time>
+							<time>12:00</time>
+							<time>13:00</time>
+							<time>14:00</time>
+							<time>15:00</time>
+							<time>16:00</time>
+							<time>17:00</time>
+							<time>18:00</time>
+							<time>19:00</time>
+							<time>20:00</time>
+							<time>21:00</time>
+							<time>22:00</time>
+							<time>23:00</time>
+							<time>00:00</time>
+						</div>
+					</div>
+
+				</div>
+			</div >}
+			{activeButton === 2 && <div>Month</div>}
 		</>
 	);
 }

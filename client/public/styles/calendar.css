@@ -119,6 +119,12 @@ button.btn:focus {
 	margin-left: 58vw;
 }
 
+.nome-data-week {
+	color: black;
+	font-weight: bold;
+	font-size: 2.5vw;
+}
+
 .orario {
 	margin-left: auto;
 	margin-right: auto;
@@ -126,6 +132,7 @@ button.btn:focus {
 	flex-direction: column;
 	max-height: 400px;
 	overflow-y: auto;
+	width: 100%;
 
 }
 
@@ -133,7 +140,17 @@ button.btn:focus {
 	position: relative;
 	padding-bottom: 30px;
 	font-weight: bold;
+}
 
+.vertical-separator {
+	width: 1px;
+	/* Larghezza della riga verticale */
+	height: 100%;
+	/* Altezza della riga verticale */
+	background-color: black;
+	/* Colore della riga */
+	margin: 0 10px;
+	/* Spazio intorno alla riga */
 }
 
 .orario time::after {
