@@ -1,5 +1,5 @@
 import React from "react";
-import { redirect } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { ResponseBody } from "./types/ResponseBody";
 import { SERVER_API } from "./params/params";
@@ -10,13 +10,15 @@ export default function Login(): React.JSX.Element {
 	const [clearPswd, setClearPswd] = React.useState(false);
 	const [message, setMessage] = React.useState("");
 
+	const nav = useNavigate();
+
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch(`${SERVER_API}/logged`);
+				const res = await fetch(`${SERVER_API}/users/`);
 				if (res.status === 200) {
 					const resBody = await res.json();
-					if (resBody.value) redirect("/");
+					if (resBody.value) nav("/");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -27,7 +29,7 @@ export default function Login(): React.JSX.Element {
 	async function handleLogin(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		try {
-			const res = await fetch(`${SERVER_API}/login`, {
+			const res = await fetch(`${SERVER_API}/users/login`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -37,7 +39,8 @@ export default function Login(): React.JSX.Element {
 
 			const resBody: ResponseBody = await res.json();
 			if (resBody.status === ResponseStatus.GOOD) {
-				redirect("/");
+				setMessage("Utente authenticato");
+				nav("/");
 			} else {
 				const msg = resBody.message || "Unable lo login";
 				setMessage(msg);

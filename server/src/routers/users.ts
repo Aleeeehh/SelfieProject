@@ -5,13 +5,15 @@ import { ResponseStatus } from "../types/ResponseStatus.js";
 import UserSchema from "../db/User.js";
 import { validDateString } from "../lib.js";
 import User from "../types/User.js";
+import passport from "passport";
+import { checkAuthentication } from "./api.js";
 
 const router: Router = Router();
 
-router.get("/", (_: Request, res: Response) => {
-	// TODO: get the current user information (when passport is integrated)
-	// return res.json({ ...res.user });
-	res.json({ message: "Hello from the users router" });
+// get if the current user
+router.get("/", (req: Request, res: Response) => {
+	if (req.user) return res.status(200).json({ status: ResponseStatus.GOOD, value: true });
+	else return res.status(402).json({ status: ResponseStatus.BAD, value: false });
 });
 
 router.post("/register", async (req: Request, res: Response) => {
@@ -79,7 +81,7 @@ router.post("/register", async (req: Request, res: Response) => {
 	}
 });
 
-router.post("/login", async (req: Request, res: Response) => {
+router.post("/login", passport.authenticate("local"), async (req: Request, res: Response) => {
 	try {
 		// TODO: validate body parameters
 		// TODO: password hashing in database
@@ -116,6 +118,63 @@ router.post("/login", async (req: Request, res: Response) => {
 		};
 
 		return res.status(500).json(resBody);
+	}
+});
+
+router.post("/logout", checkAuthentication, async (req, res) => {
+	try {
+		// delete session cookie
+		res.clearCookie("connect.sid");
+
+		return req.logout(function (err) {
+			if (err) {
+				return res
+					.status(400)
+					.json({ status: ResponseStatus.BAD, message: "Error logging out" });
+			}
+			// logout of passport
+			return req.session.destroy(function (err) {
+				if (err) {
+					return res
+						.status(400)
+						.json({ status: ResponseStatus.BAD, message: "Error logging out" });
+				}
+				// destroy the session
+				return res
+					.status(200)
+					.json({ status: ResponseStatus.GOOD, message: "Successfully logged out" }); // send to the client
+			});
+		});
+	} catch (err) {
+		console.error("Error logging out:", err);
+		return res.status(500).json({ status: ResponseStatus.BAD, message: "Error logging out" });
+	}
+});
+
+// Delete a user by ID
+router.delete("/", checkAuthentication, async (req, res) => {
+	try {
+		// get the requesting user
+		const user = await UserSchema.findByIdAndDelete(req.user?.id);
+
+		if (!user) {
+			return res.status(404).json({ status: ResponseStatus.BAD, message: "User not found" });
+		}
+
+		// send email token to confirm account deletion
+		console.log("Requested account deletion for user: ", user.username);
+
+		return res
+			.status(200)
+			.json({
+				status: ResponseStatus.GOOD,
+				message:
+					"Request completed: we sent an email to confirm that you want to delete the account.",
+			});
+	} catch (error) {
+		console.log(error);
+
+		return res.status(500).json({ status: ResponseStatus.BAD, message: "Error" });
 	}
 });
 

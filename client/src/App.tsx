@@ -11,6 +11,7 @@ import Projects from "./Projects";
 import Notes from "./Notes";
 import NotFound from "./NotFound";
 import NotePage from "./NotePage";
+import Profile from "./Profile";
 
 function App(): React.JSX.Element {
 	return (
@@ -24,6 +25,7 @@ function App(): React.JSX.Element {
 							<Route path="calendar" element={<Calendar />} />
 							<Route path="pomodoro" element={<Pomodoro />} />
 							<Route path="projects" element={<Projects />} />
+							<Route path="profile" element={<Profile />} />
 							<Route path="notes" element={<Notes />} />
 							{/* Route notes/new creates the new page for note*/}
 							<Route path="notes/:id" element={<NotePage />} />

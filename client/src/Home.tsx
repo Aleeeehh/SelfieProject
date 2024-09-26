@@ -4,6 +4,7 @@ import { ResponseBody } from "./types/ResponseBody";
 import Pomodoro from "./types/Pomodoro";
 import Note from "./types/Note";
 import { Event } from "./types/Event";
+import { useNavigate } from "react-router-dom";
 
 const HOME_MAX_NUM_NOTES = 4;
 const HOME_MAX_NOTE_TITLE_CHARS = 20;
@@ -15,6 +16,8 @@ function Home(): React.JSX.Element {
 	const [notes, setNotes] = React.useState([] as Note[]);
 	const [events, setEvents] = React.useState([] as Event[]);
 
+	const nav = useNavigate();
+
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
@@ -23,7 +26,7 @@ function Home(): React.JSX.Element {
 					const resBody = (await res.json()) as ResponseBody;
 					setPomodoros(resBody.value as Pomodoro[]);
 				} else {
-					setMessage("Errore nel ritrovamento delle sessioni pomodoro salvate");
+					nav("/login");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
