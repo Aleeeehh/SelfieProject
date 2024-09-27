@@ -57,7 +57,7 @@ h1 {
 
 .pannello {
 	display: flex;
-	background-color: rgb(206, 182, 163);
+	background-color: bisque;
 	margin: 10px auto;
 	border-radius: 16px;
 }

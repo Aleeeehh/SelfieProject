@@ -2,24 +2,47 @@ import React from "react";
 
 export default function Header(): React.JSX.Element {
 	return (
-		<header className="header">
+		<header className="" style={{ display: "flex", justifyContent: "", margin: "1vw" }}>
 			<a href="/" className="header-home">
-				<img src="/images/sloth.png" alt="sloth.png" />
+				<img src="/images/logo.jpeg" alt="logo.jpeg" />
 			</a>
-			<div className="nav-link-container">
-				<a className="nav-link" href="/calendar">
-					Calendario
-				</a>
-				<a className="nav-link" href="/pomodoro">
-					Pomodoro
-				</a>
-				<a className="nav-link" href="/notes">
-					Note
-				</a>
-				<a className="nav-link" href="/projects">
-					Progetti
-				</a>
-			</div>
+			<a className="btn secondary"
+				style={{
+					backgroundColor: "white",
+					color: "black",
+					borderColor: "gray",
+					marginLeft: "15px"
+				}} href="/calendar">
+				Calendario
+			</a>
+			<a className="btn secondary"
+				style={{
+					backgroundColor: "white",
+					color: "black",
+					borderColor: "gray",
+					marginLeft: "15px"
+				}} href="/pomodoro">
+				Pomodoro
+			</a>
+			<a className="btn secondary"
+				style={{
+					backgroundColor: "white",
+					color: "black",
+					borderColor: "gray",
+					marginLeft: "15px"
+				}} href="/notes">
+				Note
+			</a>
+			<a className="btn secondary"
+				style={{
+					backgroundColor: "white",
+					color: "black",
+					borderColor: "gray",
+					marginLeft: "15px"
+				}} href="/projects">
+				Progetti
+			</a>
+
 		</header>
 	);
 }

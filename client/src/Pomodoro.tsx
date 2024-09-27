@@ -38,7 +38,7 @@ const initialState: PomodoroData = {
 	message: MESSAGE.PRESS_START,
 	minutes: 0,
 	seconds: 0,
-	studying: false,
+	studying: true,
 	activeTimer: false,
 	intervalId: undefined,
 };
@@ -76,15 +76,21 @@ export default function Pomodoro(): React.JSX.Element {
 			return true;
 		}
 	}
+	function playRing(): void {
+		const ring = document.getElementById("ring") as HTMLAudioElement;
+		if (ring) {
+			ring.play();
+		}
+	}
 
 	function startProcess(): void {
 		if (inputCheck()) {
-			//suona il campanello
+			playRing();
 			clearInterval(data.intervalId);
 
 			const interval = setInterval(() => {
 				updateTimer();
-			}, 100);
+			}, 1000);
 
 			setData({
 				...data,
@@ -95,16 +101,15 @@ export default function Pomodoro(): React.JSX.Element {
 				status: STATUS.STUDY,
 				minutes: data.studyTime,
 				seconds: 0,
-				cycles: data.cycles - 1,
 			});
-			startAnimation();
+			startAnimation(true);
 		} else {
 			setData({ ...data, message: MESSAGE.ERROR });
 		}
 	}
 
 	function stopProcess(): void {
-		//suona campanello
+		playRing();
 		stopTimer();
 	}
 
@@ -125,7 +130,7 @@ export default function Pomodoro(): React.JSX.Element {
 
 	function updateTimer(): void {
 		setData((prevData) => {
-			var {
+			let {
 				minutes,
 				seconds,
 				cycles,
@@ -137,10 +142,10 @@ export default function Pomodoro(): React.JSX.Element {
 				activeTimer,
 			} = prevData;
 
-			seconds = seconds - 1;
+			seconds -= 1;
 			if (seconds < 0) {
 				seconds = 59;
-				minutes = minutes - 1;
+				minutes -= 1;
 			}
 
 			if (minutes < 0) {
@@ -155,15 +160,26 @@ export default function Pomodoro(): React.JSX.Element {
 					minutes = studyTime;
 					seconds = 0;
 				} else {
-					minutes = studying ? pauseTime : studyTime;
-					seconds = 0;
-
-					status = studying ? STATUS.PAUSE : STATUS.STUDY;
-
-					studying = !studying;
-
-					if (studying) cycles = cycles - 1;
-					startAnimation();
+					if (studying) {
+						// End of study session, enter pause
+						console.log("Start pause session");
+						status = STATUS.PAUSE;
+						studying = false;
+						playRing();
+						startAnimation(false); // Passa false per l'animazione di pausa
+						minutes = pauseTime;
+						seconds = 0;
+					} else {
+						// End of pause session, start next study session
+						console.log("Start study session");
+						status = STATUS.STUDY;
+						studying = true;
+						playRing();
+						startAnimation(true); // Passa true per l'animazione di studio
+						minutes = studyTime;
+						seconds = 0;
+						cycles -= 1;
+					}
 				}
 			}
 
@@ -182,17 +198,16 @@ export default function Pomodoro(): React.JSX.Element {
 		});
 	}
 
-	function startAnimation(): void {
+	function startAnimation(isStudying: boolean): void {
+		console.log(isStudying);
 		if (pomodoroRef.current) {
 			pomodoroRef.current.classList.remove("animate-pomodoro");
 			pomodoroRef.current.classList.remove("reverse-animate-pomodoro");
-			if (data.studying) {
+			if (isStudying) {
 				pomodoroRef.current.style.animationDuration = `${data.studyTime * 60}s`;
 				pomodoroRef.current.classList.add("animate-pomodoro");
-			}
-
-			if (!data.studying) {
-				pomodoroRef.current.style.animationDuration = `${data.studyTime * 60}s`;
+			} else {
+				pomodoroRef.current.style.animationDuration = `${data.pauseTime * 60}s`;
 				pomodoroRef.current.classList.add("reverse-animate-pomodoro");
 			}
 		}
@@ -218,14 +233,15 @@ export default function Pomodoro(): React.JSX.Element {
 	return (
 		<>
 			{message && <div>{message}</div>}
+			<audio id="ring" src="/images/ring.mp3"></audio>
 			<div className="pomodoro-container">
 				<header>
-					<h1 id="title">POMODORO TIMER</h1>
+					<h1 id="title" style={{ color: "white", fontWeight: "bold" }}>POMODORO TIMER</h1>
 				</header>
 				<div ref={pomodoroRef} className="pomodoro">
 					<img src="/images/tomato.png" alt="tomato.png" />
 					<div id="timer" className="timer">
-						{pad(data.minutes) + ":" + pad(data.seconds)}
+						{data.activeTimer ? `${pad(data.minutes)}:${pad(data.seconds)}` : ""}
 					</div>
 				</div>
 
