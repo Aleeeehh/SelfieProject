@@ -3,9 +3,9 @@ import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import { validDateString } from "../lib.js";
 import { Order } from "../enums.js";
-import NoteSchema from "../db/Note.js";
+import NoteSchema from "../schemas/Note.js";
 import type Note from "../types/Note.js";
-import UserSchema from "../db/User.js";
+import UserSchema from "../schemas/User.js";
 import { ObjectId } from "mongodb";
 
 const router: Router = Router();

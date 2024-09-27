@@ -6,7 +6,7 @@ export type Event = {
 	title: string;
 	startTime: Date;
 	endTime: Date;
-	frequency: Frequency;
+	recurring: Boolean;
 	location: string;
 	createdAt?: Date;
 	updatedAt?: Date;

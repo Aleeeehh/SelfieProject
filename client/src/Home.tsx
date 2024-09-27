@@ -40,7 +40,7 @@ function Home(): React.JSX.Element {
 
 					setNotes(resBody.value as Note[]);
 				} else {
-					setMessage("Errore nel ritrovamento delle note salvate");
+					nav("/login");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -52,7 +52,7 @@ function Home(): React.JSX.Element {
 					const resBody = (await res.json()) as ResponseBody;
 					setEvents(resBody.value as Event[]);
 				} else {
-					setMessage("Errore nel ritrovamento dei prossimi eventi");
+					nav("/login");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");

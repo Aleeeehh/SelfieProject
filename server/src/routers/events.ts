@@ -3,11 +3,20 @@ import { Request, Response, Router } from "express";
 import { Event } from "../types/Event.js";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
-import EventSchema from "../db/Event.js";
+import EventSchema from "../schemas/Event.js";
 import { validDateString } from "../lib.js";
 import moment from "moment";
 
 const router: Router = Router();
+
+function getEventsFromDBEvents(dbList: any[]): Event[] {
+	const eventList: Event[] = [];
+
+	for (const entry of dbList) {
+	}
+
+	return eventList;
+}
 
 router.get("/", async (req: Request, res: Response) => {
 	try {
@@ -40,11 +49,13 @@ router.get("/", async (req: Request, res: Response) => {
 		}
 
 		// TODO: filter per logged user
-		const foundEvents = await EventSchema.find(filter).lean();
+		const foundDBEvents = await EventSchema.find(filter).lean();
+
+		const eventList = getEventsFromDBEvents(foundDBEvents);
 
 		const events = [];
 
-		for (const event of foundEvents) {
+		for (const event of foundDBEvents) {
 			console.log("Creating evnet");
 			const newEvent: Event = {
 				id: event._id.toString(),
