@@ -188,3 +188,49 @@ button.btn:focus {
 	font-size: 0.8rem;
 	/* Rendi i bottoni più piccoli */
 }
+
+.date-cell {
+	background-color: white;
+	/* Colore di sfondo delle celle */
+	border: 1px solid #ccc;
+	/* Bordo delle celle */
+	display: flex;
+	justify-content: flex-end;
+	/* Allinea il contenuto a destra */
+	align-items: flex-start;
+	/* Allinea il contenuto in alto */
+	height: 100px;
+	/* Aumenta l'altezza delle celle */
+	box-sizing: border-box;
+	/* Assicura che il bordo sia incluso nelle dimensioni */
+	padding: 5px;
+	/* Aggiungi padding per distanziare il contenuto dai bordi */
+}
+
+.empty-cell {
+	background-color: transparent;
+	/* Celle vuote trasparenti */
+	border: none;
+	/* Nessun bordo per le celle vuote */
+}
+
+.date-grid-month {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 0;
+	border-collapse: collapse;
+}
+
+.date-grid-month button {
+	width: 100%;
+	height: 100%;
+	border: none;
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.date-grid-month button:hover,
+.date-grid-month button:focus {
+	background-color: bisque;
+	color: #FFFFFF;
+}

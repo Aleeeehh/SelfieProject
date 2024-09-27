@@ -319,13 +319,13 @@ export default function Calendar(): React.JSX.Element {
 						</button>
 					</div>
 					<div className="day-of-week">
-						<div>Su</div>
-						<div>Mo</div>
-						<div>Tu</div>
-						<div>We</div>
-						<div>Th</div>
-						<div>Fr</div>
-						<div>Sa</div>
+						<div>Dom</div>
+						<div>Lun</div>
+						<div>Mar</div>
+						<div>Mer</div>
+						<div>Gio</div>
+						<div>Ven</div>
+						<div>Sab</div>
 					</div>
 					<div className="date-grid">
 						{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
@@ -456,15 +456,17 @@ export default function Calendar(): React.JSX.Element {
 							console.log(dayOfWeek);
 							return null;
 						})()}
-						<div style={{ display: "flex", justifyContent: "space-between", maxWidth: "95%", marginLeft: "auto", marginRight: "auto" }}>
+						<div style={{ display: "flex", justifyContent: "space-between", maxWidth: "95%", marginLeft: "auto", marginRight: "auto", marginTop: "1vw" }}>
 							<div className="nome-data-week">
-								Dom {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -6, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -5, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, -4, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, -3, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, -2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, -1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 0, year, meseCorrente)}
+								<div style={{
+									color: "gray", fontWeight: 500, fontSize: "0.6em", letterSpacing: "0.1em",
+									fontVariant: "small-caps"
+								}}>Dom	{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -5, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, -4, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, -3, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, -2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, -1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 0, year, meseCorrente)}</div>
 								<div className="orario" style={{ fontSize: "0.8vw", width: "calc(100% - 10px)", flex: "1" }}>
 									<time>00:00</time>
 									<time>01:00</time>
@@ -494,13 +496,17 @@ export default function Calendar(): React.JSX.Element {
 								</div>
 							</div>
 							<div className="nome-data-week">
-								Lun {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -5, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -4, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, -3, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, -2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, -1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 0, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 1, year, meseCorrente)}
+								<div style={{
+									color: "gray", fontWeight: 500, fontSize: "0.6em", letterSpacing: "0.1em",
+									fontVariant: "small-caps"
+								}}>
+									Lun {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -5, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -4, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, -3, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, -2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, -1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 0, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 1, year, meseCorrente)}</div>
 								<div className="orario" style={{ fontSize: "0.8vw", width: "calc(100% - 10px)", flex: "1" }}>
 									<time>00:00</time>
 									<time>01:00</time>
@@ -530,13 +536,17 @@ export default function Calendar(): React.JSX.Element {
 								</div>
 							</div>
 							<div className="nome-data-week">
-								Mar {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -4, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -3, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, -2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, -1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 0, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 2, year, meseCorrente)}
+								<div style={{
+									color: "gray", fontWeight: 500, fontSize: "0.6em", letterSpacing: "0.1em",
+									fontVariant: "small-caps"
+								}}>
+									Mar {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -4, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -3, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, -2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, -1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 0, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 2, year, meseCorrente)}</div>
 								<div className="orario" style={{ fontSize: "0.8vw", width: "calc(100% - 10px)", flex: "1" }}>
 									<time>00:00</time>
 									<time>01:00</time>
@@ -566,13 +576,17 @@ export default function Calendar(): React.JSX.Element {
 								</div>
 							</div>
 							<div className="nome-data-week">
-								Mer {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -3, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, -1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, 0, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 3, year, meseCorrente)}
+								<div style={{
+									color: "gray", fontWeight: 500, fontSize: "0.6em", letterSpacing: "0.1em",
+									fontVariant: "small-caps"
+								}}>
+									Mer {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -3, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, -1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, 0, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 3, year, meseCorrente)}</div>
 								<div className="orario" style={{ fontSize: "0.8vw", width: "calc(100% - 10px)", flex: "1" }}>
 									<time>00:00</time>
 									<time>01:00</time>
@@ -602,13 +616,17 @@ export default function Calendar(): React.JSX.Element {
 								</div>
 							</div>
 							<div className="nome-data-week">
-								Gio {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, 0, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, 1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 3, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 4, year, meseCorrente)}
+								<div style={{
+									color: "gray", fontWeight: 500, fontSize: "0.6em", letterSpacing: "0.1em",
+									fontVariant: "small-caps"
+								}}>
+									Gio {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, -1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, 0, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, 1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 3, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 4, year, meseCorrente)}</div>
 								<div className="orario" style={{ fontSize: "0.8vw", width: "calc(100% - 10px)", flex: "1" }}>
 									<time>00:00</time>
 									<time>01:00</time>
@@ -638,13 +656,17 @@ export default function Calendar(): React.JSX.Element {
 								</div>
 							</div>
 							<div className="nome-data-week">
-								Ven {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, 0, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, 1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, 2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 3, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 4, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 5, year, meseCorrente)}
+								<div style={{
+									color: "gray", fontWeight: 500, fontSize: "0.6em", letterSpacing: "0.1em",
+									fontVariant: "small-caps"
+								}}>
+									Ven {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, -1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, 0, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, 1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, 2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 3, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 4, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 5, year, meseCorrente)}</div>
 								<div className="orario" style={{ fontSize: "0.8vw", width: "calc(100% - 10px)", flex: "1" }}>
 									<time>00:00</time>
 									<time>01:00</time>
@@ -674,13 +696,17 @@ export default function Calendar(): React.JSX.Element {
 								</div>
 							</div>
 							<div className="nome-data-week">
-								Sab {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, 0, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, 1, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, 2, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, 3, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 4, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 5, year, meseCorrente)}
-								{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 6, year, meseCorrente)}
+								<div style={{
+									color: "gray", fontWeight: 500, fontSize: "0.6em", letterSpacing: "0.1em",
+									fontVariant: "small-caps"
+								}}>
+									Sab {getDay(new Date(year, meseCorrente, day)) === 6 && getAdjustedDay(day, 0, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 5 && getAdjustedDay(day, 1, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 4 && getAdjustedDay(day, 2, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 3 && getAdjustedDay(day, 3, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 2 && getAdjustedDay(day, 4, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 1 && getAdjustedDay(day, 5, year, meseCorrente)}
+									{getDay(new Date(year, meseCorrente, day)) === 0 && getAdjustedDay(day, 6, year, meseCorrente)}</div>
 								<div className="orario" style={{ fontSize: "0.8vw", width: "calc(100% - 10px)", flex: "1" }}>
 									<time>00:00</time>
 									<time>01:00</time>
@@ -715,7 +741,42 @@ export default function Calendar(): React.JSX.Element {
 
 				</div>
 			</div >}
-			{activeButton === 2 && <div style={{ marginTop: "2vw" }}>Month</div>}
+			{
+				activeButton === 2 && <div style={{ marginTop: "2vw" }}>
+					<div className="nome-data-week" style={{ display: "flex", justifyContent: "center", marginTop: "2vw" }}>
+						<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "black", border: "0", width: "50px", marginRight: "10px" }} onClick={mesePrecedente}>{"<<"}</button>
+						<div>{Mesi[meseCorrente]} {year} </div>
+						<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "black", border: "0", width: "50px", marginLeft: "10px" }} onClick={meseSuccessivo}>{">>"}</button>
+					</div>
+					<div className="calendar col-11">
+						<div className="day-of-week" style={{ fontSize: "1.5vw" }}>
+							<div>Dom</div>
+							<div>Lun</div>
+							<div>Mar</div>
+							<div>Mer</div>
+							<div>Gio</div>
+							<div>Ven</div>
+							<div>Sab</div>
+						</div>
+						<div className="date-grid">
+							{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
+							{((): JSX.Element[] => {
+								return Array.from({
+									length: getDay(startOfMonth(new Date(year, meseCorrente)))
+								}).map((_, index) => (
+									<div key={index} className="date-cell empty-cell"></div>
+								));
+							})()}
+							{/* Genera i bottoni per i giorni del mese */}
+							{Array.from({ length: getDaysInMonth(new Date(year, meseCorrente)) }).map((_, day) => (
+								<div key={day + 1} className="date-cell">
+									<button onClick={handleDateClick}>{day + 1}</button>
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			}
 		</>
 	);
 }
