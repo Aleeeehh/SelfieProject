@@ -45,7 +45,6 @@ router.get("/", async (req: Request, res: Response) => {
 
 		// TODO: filter per logged user
 		const foundNotes = await NoteSchema.find(filter).lean();
-
 		const notes = [];
 
 		for (const note of foundNotes) {

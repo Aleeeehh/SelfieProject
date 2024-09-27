@@ -52,9 +52,6 @@
 	margin-top: 0.5em;
 }
 
-.date-grid button:first-child {
-	grid-column: 6;
-}
 
 .date-grid button {
 	position: relative;
@@ -112,18 +109,23 @@ button.btn:focus {
 	border: 2px solid black;
 }
 
-.nome-data {
+.nome-data-container {
 	color: black;
 	font-weight: bold;
 	font-size: 2.5vw;
 	margin-left: 58vw;
+	display: flex;
+	align-items: center;
 }
 
 .nome-data-week {
 	color: black;
 	font-weight: bold;
 	font-size: 2.5vw;
+	flex: 1;
 }
+
+
 
 .orario {
 	margin-left: auto;
@@ -174,4 +176,15 @@ button.btn:focus {
 	position: absolute;
 	top: 0;
 	left: 0;
+}
+
+.year-button {
+	background-color: bisque;
+	border: 0;
+	padding: 0;
+	width: 20px;
+	margin-left: 10px;
+	/* Aggiungi un po' di spazio tra le frecce e l'anno */
+	font-size: 0.8rem;
+	/* Rendi i bottoni più piccoli */
 }
