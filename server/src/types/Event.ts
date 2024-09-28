@@ -1,13 +1,21 @@
-import type { Frequency } from "../enums.js";
+type Recurrence = {
+	daysApart?: number | null;
+	daysOfWeek?: number[] | null;
+	daysOfMonth?: number[] | null;
+	repeatUntilDate?: Date | null;
+	repeatCount?: number | null;
+};
 
 export type Event = {
-	id: String;
-	owner: String;
+	id: string;
+	owner: string;
 	title: string;
 	startTime: Date;
 	endTime: Date;
-	frequency: Frequency;
-	location: string;
+	recurring: boolean;
+	recurrence?: Recurrence | null;
+	allDay?: boolean;
+	location?: string | null;
 	createdAt?: Date;
 	updatedAt?: Date;
 };

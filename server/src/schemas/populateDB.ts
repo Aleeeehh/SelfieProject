@@ -1,5 +1,4 @@
 // import { Event } from "../types/Event.js";
-import { Frequency } from "../enums.js";
 import { Event } from "../types/Event.js";
 import Note from "../types/Note.js";
 import Pomodoro from "../types/Pomodoro.js";
@@ -84,7 +83,7 @@ export async function createDummyEvents() {
 			title: "Sun Donato",
 			startTime: new Date("2024-01-12"),
 			endTime: new Date("2025-01-13"),
-			frequency: Frequency.ONCE,
+			recurring: false,
 			location: "Bologna",
 		},
 	];

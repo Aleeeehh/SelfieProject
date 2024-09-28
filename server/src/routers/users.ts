@@ -2,7 +2,7 @@ import { Request, Response, Router } from "express";
 
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
-import UserSchema from "../db/User.js";
+import UserSchema from "../schemas/User.js";
 import { validDateString } from "../lib.js";
 import User from "../types/User.js";
 import passport from "passport";
@@ -164,13 +164,11 @@ router.delete("/", checkAuthentication, async (req, res) => {
 		// send email token to confirm account deletion
 		console.log("Requested account deletion for user: ", user.username);
 
-		return res
-			.status(200)
-			.json({
-				status: ResponseStatus.GOOD,
-				message:
-					"Request completed: we sent an email to confirm that you want to delete the account.",
-			});
+		return res.status(200).json({
+			status: ResponseStatus.GOOD,
+			message:
+				"Request completed: we sent an email to confirm that you want to delete the account.",
+		});
 	} catch (error) {
 		console.log(error);
 
