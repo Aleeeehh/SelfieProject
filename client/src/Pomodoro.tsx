@@ -31,9 +31,9 @@ type PomodoroData = {
 };
 
 const initialState: PomodoroData = {
-	studyTime: 1,
-	pauseTime: 1,
-	cycles: 1,
+	studyTime: 30,
+	pauseTime: 5,
+	cycles: 5,
 	status: STATUS.BEGIN,
 	message: MESSAGE.PRESS_START,
 	minutes: 0,
@@ -90,7 +90,7 @@ export default function Pomodoro(): React.JSX.Element {
 
 			const interval = setInterval(() => {
 				updateTimer();
-			}, 1000);
+			}, 1000);		//mettere 1000
 
 			setData({
 				...data,
@@ -169,6 +169,7 @@ export default function Pomodoro(): React.JSX.Element {
 						startAnimation(false); // Passa false per l'animazione di pausa
 						minutes = pauseTime;
 						seconds = 0;
+						cycles -= 1;
 					} else {
 						// End of pause session, start next study session
 						console.log("Start study session");
@@ -178,7 +179,6 @@ export default function Pomodoro(): React.JSX.Element {
 						startAnimation(true); // Passa true per l'animazione di studio
 						minutes = studyTime;
 						seconds = 0;
-						cycles -= 1;
 					}
 				}
 			}
@@ -230,6 +230,112 @@ export default function Pomodoro(): React.JSX.Element {
 		}
 	}
 
+	function nextPhase(): void {
+		setData((prevData) => {
+			let {
+				minutes,
+				seconds,
+				cycles,
+				studyTime,
+				studying,
+				pauseTime,
+				status,
+				intervalId,
+				activeTimer,
+			} = prevData;
+
+			if (cycles === 0) {
+				clearInterval(prevData.intervalId);
+
+				intervalId = undefined;
+				activeTimer = false;
+				status = STATUS.END;
+
+				resetPomodoroColor();
+				minutes = studyTime;
+				seconds = 0;
+			} else {
+				if (studying) {
+					// End of study session, enter pause
+					console.log("Start pause session");
+					status = STATUS.PAUSE;
+					studying = false;
+					playRing();
+					startAnimation(false); // Passa false per l'animazione di pausa
+					minutes = pauseTime;
+					seconds = 0;
+					cycles -= 1;
+				} else {
+					// End of pause session, start next study session
+					console.log("Start study session");
+					status = STATUS.STUDY;
+					studying = true;
+					playRing();
+					startAnimation(true); // Passa true per l'animazione di studio
+					minutes = studyTime;
+					seconds = 0;
+				}
+			}
+
+			return {
+				...prevData,
+				minutes,
+				seconds,
+				cycles,
+				studyTime,
+				studying,
+				pauseTime,
+				status,
+				intervalId,
+				activeTimer,
+			} as PomodoroData;
+		});
+	}
+
+	function nextCycle(): void {
+		if (data.studying) {
+			nextPhase();
+			nextPhase();
+		}
+		else {
+			nextPhase();
+		}
+	}
+	
+	function repeatCycle(): void {
+		setData((prevData) => {
+			let {
+				minutes,
+				seconds,
+				cycles,
+				studyTime,
+				studying,
+				status,
+			} = prevData;
+			
+		if (!studying) {
+			cycles += 1;
+		}
+			status = STATUS.STUDY;
+			studying = true;
+			playRing();
+			startAnimation(true); // Passa true per l'animazione di studio
+			minutes = studyTime;
+			seconds = 0;
+
+		
+
+		return {
+			...prevData,
+			minutes,
+			seconds,
+			cycles,
+			studyTime,
+			studying,
+			status,
+		} as PomodoroData;
+		});
+	}
 	return (
 		<>
 			{message && <div>{message}</div>}
@@ -256,9 +362,9 @@ export default function Pomodoro(): React.JSX.Element {
 						{data.status}
 					</h4>
 
-					<div>
+					<div style={{display: "flex", justifyContent: "center"}}>
 						<button
-							id="start-button"
+							id="start-button"		//probabilmente non serve l'id
 							type="button"
 							className="btn btn-success"
 							onClick={startProcess}
@@ -266,12 +372,41 @@ export default function Pomodoro(): React.JSX.Element {
 							START
 						</button>
 						<button
-							id="stop-button"
+							id="stop-button"		//probabilmente non serve l'id
 							type="button"
 							className="btn btn-danger"
 							onClick={stopProcess}
 							disabled={!data.activeTimer}>
 							STOP
+						</button>
+					</div>
+					
+						<br/>
+
+					<div>
+						<button
+							id="next-button"		//probabilmente non serve l'id
+							type="button"
+							className="btn btn-warning"
+							onClick={nextPhase}
+							disabled={!data.activeTimer}>
+							NEXT PHASE
+						</button>
+						<button
+							id="next-button"		//probabilmente non serve l'id
+							type="button"
+							className="btn btn-warning"
+							onClick={nextCycle}
+							disabled={!data.activeTimer}>
+							NEXT CYCLE
+						</button>
+						<button
+							id="next-button"		//probabilmente non serve l'id
+							type="button"
+							className="btn btn-warning"
+							onClick={repeatCycle}
+							disabled={!data.activeTimer}>
+							REPEAT CYCLE
 						</button>
 					</div>
 
