@@ -1,13 +1,9 @@
 import mongoose from "mongoose";
 
 const RecurrenceSchema = new mongoose.Schema({
-	frequency: {
-		type: String,
-		enum: ["daily", "weekly", "monthly", "yearly", "custom"],
-		required: false,
-	},
+	daysApart: Number, // Repeat every X days
 	daysOfWeek: [Number], // 0 (Sunday) - 6 (Saturday)
-	customDays: [Number],
+	daysOfMonth: [Number],
 	repeatUntilDate: { type: Date }, // Repeat until a certain date
 	repeatCount: { type: Number }, // Number of times to repeat
 });
