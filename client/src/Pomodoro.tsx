@@ -28,6 +28,8 @@ type PomodoroData = {
 	studying: boolean;
 	activeTimer: boolean;
 	intervalId?: NodeJS.Timeout;
+	totMinutes: number;
+	totHours: number;
 };
 
 const initialState: PomodoroData = {
@@ -41,6 +43,8 @@ const initialState: PomodoroData = {
 	studying: true,
 	activeTimer: false,
 	intervalId: undefined,
+	totMinutes: 0,
+	totHours: 0,
 };
 
 export default function Pomodoro(): React.JSX.Element {
@@ -313,29 +317,83 @@ export default function Pomodoro(): React.JSX.Element {
 				status,
 			} = prevData;
 			
-		if (!studying) {
-			cycles += 1;
-		}
-			status = STATUS.STUDY;
-			studying = true;
-			playRing();
-			startAnimation(true); // Passa true per l'animazione di studio
-			minutes = studyTime;
-			seconds = 0;
+			if (!studying) {
+				cycles += 1;
+			}
+				status = STATUS.STUDY;
+				studying = true;
+				playRing();
+				startAnimation(true); // Passa true per l'animazione di studio
+				minutes = studyTime;
+				seconds = 0;
 
-		
+			
 
-		return {
-			...prevData,
-			minutes,
-			seconds,
-			cycles,
-			studyTime,
-			studying,
-			status,
-		} as PomodoroData;
+			return {
+				...prevData,
+				minutes,
+				seconds,
+				cycles,
+				studyTime,
+				studying,
+				status,
+			} as PomodoroData;
 		});
 	}
+
+	function proposalsMinutes(): void {
+		setData((prevData) => {
+			let {
+				cycles,
+				totHours,
+				totMinutes
+			} = prevData;
+			
+			cycles = Math.floor(totMinutes/35) + 1;	// +1 perchè ho i tasti per passare avanti
+													// quindi se il tempo totale è troppo non è un problema
+			return {
+				...prevData,
+				cycles,
+				totMinutes,
+				totHours
+			} as PomodoroData;
+		});
+	}
+
+	function proposalsHours(): void {
+		setData((prevData) => {
+			let {
+				minutes,
+				seconds,
+				cycles,
+				studyTime,
+				studying,
+				status,
+				totHours,
+				totMinutes
+			} = prevData;
+			
+			totMinutes = totHours * 60;
+			cycles = Math.floor(totMinutes / 35) + 1;
+		
+			return {
+				...prevData,
+				minutes,
+				seconds,
+				cycles,
+				studyTime,
+				studying,
+				status,
+				totMinutes,
+				totHours
+			} as PomodoroData;
+		});
+	}
+
+
+
+
+
 	return (
 		<>
 			{message && <div>{message}</div>}
@@ -456,6 +514,50 @@ export default function Pomodoro(): React.JSX.Element {
 						}
 						disabled={data.activeTimer}
 					/>
+				</div>
+				<div className="pannello totMinutes">
+					<label htmlFor="totMinutes"> Insert the total time of study </label>
+					<input
+						name="totMinutes"
+						type="number"
+						placeholder="Enter the total minutes"
+						id="totMinutes"
+						value={data.totMinutes}
+						onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+							setData({ ...data, totMinutes: parseInt(e.target.value) })
+						}
+						disabled={data.activeTimer}
+					/>
+					<button
+							id="minutesButton"		//probabilmente non serve l'id
+							type="button"
+							className="btn btn-success"
+							onClick={proposalsMinutes}
+							disabled={data.activeTimer}>
+							USE MINUTES
+					</button>
+				</div>
+				<div className="pannello totHours">
+					<label htmlFor="totHours"> Insert the total time of study </label>
+					<input
+						name="totHours"
+						type="number"
+						placeholder="Enter the total minutes"
+						id="totHours"
+						value={data.totHours}
+						onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+							setData({ ...data, totHours: parseInt(e.target.value) })
+						}
+						disabled={data.activeTimer}
+					/>
+					<button
+							id="hoursButton"		//probabilmente non serve l'id
+							type="button"
+							className="btn btn-success"
+							onClick={proposalsHours}
+							disabled={data.activeTimer}>
+							USE HOURS
+					</button>
 				</div>
 			</div>
 		</>
