@@ -10,11 +10,11 @@ import {
 	createDummyNotes,
 	createDummyPomodoros,
 	createDummyUsers,
-} from "./db/populateDB.js";
+} from "./schemas/populateDB.js";
 import passport from "passport";
 import * as passportStrategy from "passport-local";
 import MongoStore from "connect-mongo";
-import UserSchema from "./db/User.js";
+import UserSchema from "./schemas/User.js";
 
 // Connect to database
 // const DB_USER = "";
