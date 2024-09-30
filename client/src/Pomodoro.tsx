@@ -8,6 +8,8 @@ enum MESSAGE {
 	PRESS_START = "FILL THE SPACES AND PRESS START TO BEGIN!",
 	ERROR = "INSERT AN INTEGER NUMBER FOR STUDY TIME, PAUSE TIME AND STUDY CYCLES! (1-99)",
 	VOID = "",
+	MINUTES = "INSERT THE AMOUNT OF MINUTES OF STUDY (1-3465)",
+	HOURS = "INSERT THE AMOUNT OF HOURS OF STUDY (1-57)"
 }
 
 enum STATUS {
@@ -345,22 +347,31 @@ export default function Pomodoro(): React.JSX.Element {
 		setData((prevData) => {
 			let {
 				cycles,
-				totHours,
-				totMinutes
+				studyTime,
+				totMinutes,
+				pauseTime,
+				message,
 			} = prevData;
-			
-			if (totMinutes%35 !== 0) {
-				cycles = Math.floor(totMinutes / 35) + 1; // +1 perchè ho i tasti per passare avanti
-			}											  // quindi se il tempo totale è troppo non è un problema
-			else {
-				cycles = Math.floor(totMinutes / 35);
+			if (totMinutes <= 0 || totMinutes > 3465) {
+				setData({ ...data, message: MESSAGE.MINUTES });
 			}
-
+			else {
+				studyTime = 30;
+				pauseTime = 5;
+				if (totMinutes%35 !== 0) {
+					cycles = Math.floor(totMinutes / 35) + 1; // +1 perchè ho i tasti per passare avanti
+				}											  // quindi se il tempo totale è troppo non è un problema
+				else {
+					cycles = Math.floor(totMinutes / 35);
+				}
+			}
 			return {
 				...prevData,
 				cycles,
+				pauseTime,
+				studyTime,
+				message,
 				totMinutes,
-				totHours
 			} as PomodoroData;
 		});
 	}
@@ -368,34 +379,36 @@ export default function Pomodoro(): React.JSX.Element {
 	function proposalsHours(): void {
 		setData((prevData) => {
 			let {
-				minutes,
-				seconds,
 				cycles,
+				message,
 				studyTime,
-				studying,
-				status,
+				pauseTime,
 				totHours,
-				totMinutes
+				totMinutes,
 			} = prevData;
 			
 			totMinutes = totHours * 60;
-			if (totMinutes%35 !== 0) {
-				cycles = Math.floor(totMinutes / 35) + 1;
+			if (totMinutes <= 0 || totMinutes > 3465) {
+				setData({ ...data, message: MESSAGE.HOURS });
 			}
 			else {
-				cycles = Math.floor(totMinutes / 35);
-			}
-
+				studyTime = 30;
+				pauseTime = 5;
+				if (totMinutes%35 !== 0) {
+					cycles = Math.floor(totMinutes / 35) + 1;
+				}
+				else {
+					cycles = Math.floor(totMinutes / 35);
+				}
+			}	
 			return {
 				...prevData,
-				minutes,
-				seconds,
 				cycles,
+				message,
 				studyTime,
-				studying,
-				status,
+				pauseTime,
 				totMinutes,
-				totHours
+				totHours,
 			} as PomodoroData;
 		});
 	}
@@ -526,7 +539,7 @@ export default function Pomodoro(): React.JSX.Element {
 					/>
 				</div>
 				<div className="pannello totMinutes">
-					<label htmlFor="totMinutes"> Insert the total time of study </label>
+					<label htmlFor="totMinutes"> Total minutes of study </label>
 					<input
 						name="totMinutes"
 						type="number"
@@ -548,11 +561,11 @@ export default function Pomodoro(): React.JSX.Element {
 					</button>
 				</div>
 				<div className="pannello totHours">
-					<label htmlFor="totHours"> Insert the total time of study </label>
+					<label htmlFor="totHours"> Total hours of study </label>
 					<input
 						name="totHours"
 						type="number"
-						placeholder="Enter the total minutes"
+						placeholder="Enter the total hours"
 						id="totHours"
 						value={data.totHours}
 						onChange={(e: ChangeEvent<HTMLInputElement>): void =>
