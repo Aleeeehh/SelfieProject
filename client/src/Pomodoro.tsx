@@ -349,8 +349,13 @@ export default function Pomodoro(): React.JSX.Element {
 				totMinutes
 			} = prevData;
 			
-			cycles = Math.floor(totMinutes/35) + 1;	// +1 perchè ho i tasti per passare avanti
-													// quindi se il tempo totale è troppo non è un problema
+			if (totMinutes%35 !== 0) {
+				cycles = Math.floor(totMinutes / 35) + 1; // +1 perchè ho i tasti per passare avanti
+			}											  // quindi se il tempo totale è troppo non è un problema
+			else {
+				cycles = Math.floor(totMinutes / 35);
+			}
+
 			return {
 				...prevData,
 				cycles,
@@ -374,8 +379,13 @@ export default function Pomodoro(): React.JSX.Element {
 			} = prevData;
 			
 			totMinutes = totHours * 60;
-			cycles = Math.floor(totMinutes / 35) + 1;
-		
+			if (totMinutes%35 !== 0) {
+				cycles = Math.floor(totMinutes / 35) + 1;
+			}
+			else {
+				cycles = Math.floor(totMinutes / 35);
+			}
+
 			return {
 				...prevData,
 				minutes,
