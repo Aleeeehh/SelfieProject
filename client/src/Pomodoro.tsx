@@ -1,8 +1,11 @@
 import React from "react";
-
 import { useState, ChangeEvent, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./params/params";
+import { useNavigate } from "react-router-dom";
+import { ResponseBody } from "./types/ResponseBody";
+import { ResponseStatus } from "./types/ResponseStatus";
+import Pomodoro from "./types/Pomodoro";
 
 enum MESSAGE {
 	PRESS_START = "FILL THE SPACES AND PRESS START TO BEGIN!",
@@ -49,19 +52,33 @@ const initialState: PomodoroData = {
 	totHours: 0,
 };
 
-export default function Pomodoro(): React.JSX.Element {
+export default function Pomodoros(): React.JSX.Element {
 	const [data, setData] = useState(initialState);
 	const [message, setMessage] = useState("");
+	const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]);
 
 	const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
-	// On page load, get the previous pomodoro sessions for the user
+	const nav = useNavigate();
+	
+
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
 				const res = await fetch(`${SERVER_API}/pomodoro`);
-				console.log(res);
+				if (res.status !== 200) {
+					nav("/login");
+				}
 				// TODO: set session value as response
+				const data = (await res.json()) as ResponseBody;
+
+				console.log(data);
+
+				if (data.status === ResponseStatus.GOOD) {
+					setTomatoList(data.value as Pomodoro[]);
+				} else {
+					setMessage("Errore nel ritrovamento dei pomodoro");
+				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
 			}
@@ -425,6 +442,27 @@ export default function Pomodoro(): React.JSX.Element {
 				<header>
 					<h1 id="title" style={{ color: "white", fontWeight: "bold" }}>POMODORO TIMER</h1>
 				</header>
+				<div className="preview">
+					<div style={{fontWeight: "bold"}}>LISTA DI POMODORO PRECEDENTI:</div>
+					{tomatoList.map((pomodoro, index) => (
+						<button
+							key={index}
+							onClick={(): void => 
+								setData({ 
+									...data, 
+									studyTime: pomodoro.studyTime, 
+									pauseTime: pomodoro.pauseTime, 
+									cycles: pomodoro.cycles 
+								})
+							}
+							className="pomodoro-button"
+						>
+							{pomodoro.studyTime} min - {pomodoro.pauseTime} min - {pomodoro.cycles} cicli
+							<br />
+							{pomodoro.updatedAt?.toString()}
+						</button>
+					))}
+				</div>
 				<div ref={pomodoroRef} className="pomodoro">
 					<img src="/images/tomato.png" alt="tomato.png" />
 					<div id="timer" className="timer">

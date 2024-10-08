@@ -3,7 +3,6 @@
 	display: flex;
 	align-items: center;
 	margin: 1em auto;
-
 	height: calc(100vh-1em);
 	flex-direction: column;
 	background-color: rgba(57, 16, 16, 0.723);
@@ -123,9 +122,14 @@ h1 {
 	/* Fine dell'animazione: colore verde */
 }
 
-
-
-
 button {
 	width: 150px;
+}
+
+.preview {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+	margin: 50px 0px;
+    color: white;
 }
