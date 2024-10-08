@@ -59,7 +59,7 @@ server.use(
 		cookie: {
 			secure: false, // Set to true if using HTTPS
 			httpOnly: true,
-			maxAge: 60 * 1000 * 2, // Cookie expiration time
+			maxAge: 60 * 1000 * 60, // L'ultimo numero rappresenta il numero di minuti di durata di una sessione di login
 		},
 	})
 );

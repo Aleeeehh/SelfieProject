@@ -7,7 +7,6 @@ import { validDateString } from "../lib.js";
 import User from "../types/User.js";
 import passport from "passport";
 import { checkAuthentication } from "./api.js";
-
 const router: Router = Router();
 
 // get if the current user
@@ -15,6 +14,33 @@ router.get("/", (req: Request, res: Response) => {
 	if (req.user) return res.status(200).json({ status: ResponseStatus.GOOD, value: true });
 	else return res.status(402).json({ status: ResponseStatus.BAD, value: false });
 });
+
+//get current user informations
+
+/*
+router.get("/current", checkAuthentication, (req: Request, res: Response) => {
+	console.log(req.user);
+	if (req.user) {
+		// Se l'utente è autenticato, restituisci i dati dell'utente
+		return res.status(200).json({
+			status: ResponseStatus.GOOD,
+			value: {
+				id: req.user.id,
+				username: req.body.username, //?????
+				firstName: req.body.firstName, //?????
+				lastName: req.body.lastName, //?????
+				birthday: req.body.birthday, //?????
+			},
+		});
+	} else {
+		// Se l'utente non è autenticato, restituisci un errore
+		return res.status(401).json({
+			status: ResponseStatus.BAD,
+			message: "Utente non autenticato",
+		});
+	}
+});
+*/
 
 router.post("/register", async (req: Request, res: Response) => {
 	try {

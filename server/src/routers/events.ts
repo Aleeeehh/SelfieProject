@@ -38,8 +38,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -59,8 +59,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -73,8 +73,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -123,8 +123,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -143,8 +143,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -159,8 +159,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -272,11 +272,36 @@ router.get("/:id", async (req: Request, res: Response) => {
 	}
 });
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/", async (req: Request, res: Response) => { //gestore per le richieste POST a questa route /events
 	try {
-		// TODO: validate event input
-		// TODO: validate body fields
-		const event: Event = req.body as Event;
+		//Validazione dell'input
+		const { title, startTime, endTime, location } = req.body as Event;
+
+		if (!title || !startTime || !endTime || !location) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Tutti i campi dell'evento devono essere riempiti!",
+			});
+		}
+
+		if (new Date(startTime) > new Date(endTime)) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "La data di inizio non può essere collocata dopo la data di fine!",
+			});
+		}
+
+		const event: Event = {
+			id: "1",
+			title,
+			startTime,
+			endTime,
+			location,
+			owner: "Utente-Prova",
+			recurring: false, //assumo evento non ricorrente
+		};
+
+		console.log("Qui ci arrivo");
 
 		await EventSchema.create(event);
 		console.log("Inserted event: ", event);

@@ -2,6 +2,7 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ResponseBody } from "./types/ResponseBody";
+//import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./params/params";
 import { getDaysInMonth, startOfMonth, getDay } from "date-fns"; //funzioni di date-fns
@@ -34,8 +35,8 @@ const Mesi = [
 export default function Calendar(): React.JSX.Element {
 	const [title, setTitle] = React.useState("");
 	const [createEvent, setCreateEvent] = React.useState(false);
-	const [startDate, setStartDate] = React.useState(new Date());
-	const [endDate, setEndDate] = React.useState(new Date());
+	const [startTime, setStartTime] = React.useState(new Date());
+	const [endTime, setEndTime] = React.useState(new Date());
 	const [location, setLocation] = React.useState("");
 	const [meseCorrente, setMeseCorrente] = React.useState(new Date().getMonth()); //inizializzazione mese corrente
 	const [message, setMessage] = React.useState("");
@@ -158,9 +159,7 @@ export default function Calendar(): React.JSX.Element {
 	}, []);
 
 	// Toggle create event screen
-
 	//da implementare
-	//function changeDayWeek(day: number): void {}
 
 	function toggleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
@@ -175,17 +174,52 @@ export default function Calendar(): React.JSX.Element {
 		//changeDayWeek(dayValue);
 	}
 
+	/*
+	async function getCurrentUser(): Promise<User | null> {
+		try {
+			const res = await fetch(`${SERVER_API}/users/current`);
+			if (!res.ok) { // Controlla se la risposta non è ok
+				setMessage("Utente non autenticato");
+				return null; // Restituisci null se non autenticato
+			}
+			console.log(res);
+			const data: User = await res.json();
+			console.log(data);
+			return data;
+		} catch (e) {
+			setMessage("Impossibile recuperare l'utente corrente");
+			return null;
+		}
+	}
+		*/
+
+
 	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
-		// TODO: validate input
+		/*const currentUser = await getCurrentUser();
+		console.log("User corrente: ");
+		console.log(currentUser);
+		*/
+
+		//Validazione dell'input
+		if (!title || !startTime || !endTime || !location) {
+			setMessage("Tutti i campi dell'evento devono essere riempiti!");
+			return;
+		}
+
+		if (startTime > endTime) {
+			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			return;
+		}
+
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
 				title,
-				startDate,
-				endDate,
+				startTime,
+				endTime,
 				frequency: Frequency.ONCE,
 				location,
 			}),
@@ -399,28 +433,28 @@ export default function Calendar(): React.JSX.Element {
 										}
 									/>
 								</label>
-								<label htmlFor="startDate">
+								<label htmlFor="startTime">
 									Data Inizio
 									<div>
 										<DatePicker
 											className="btn border"
-											name="startDate"
-											selected={startDate}
+											name="startTime"
+											selected={startTime}
 											onChange={(date: Date | null): void => {
-												date && setStartDate(date);
+												date && setStartTime(date);
 											}}
 										/>
 									</div>
 								</label>
-								<label htmlFor="endDate">
+								<label htmlFor="endTime">
 									Data Fine
 									<div>
 										<DatePicker
 											className="btn border"
-											name="endDate"
-											selected={endDate}
+											name="endTime"
+											selected={endTime}
 											onChange={(date: Date | null): void => {
-												date && setEndDate(date);
+												date && setEndTime(date);
 											}}
 										/>
 									</div>

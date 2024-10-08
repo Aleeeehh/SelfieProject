@@ -10,7 +10,7 @@ const RecurrenceSchema = new mongoose.Schema({
 
 const eventSchema = new mongoose.Schema(
 	{
-		owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+		owner: { type: String, ref: "User", required: true },
 		startTime: { type: Date, required: true },
 		endTime: { type: Date, required: true },
 		title: { type: String, required: true },
