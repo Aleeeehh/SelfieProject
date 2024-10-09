@@ -43,9 +43,7 @@ export default function Calendar(): React.JSX.Element {
 	const [day, setDay] = React.useState(new Date().getDate());
 	const [activeButton, setActiveButton] = React.useState(0);
 	const [year, setYear] = React.useState(2024);
-	//const [dayWeek, setDayWeek] = React.useState(0);
-
-	const [_, setEventList] = React.useState([] as Event[]);
+	const [eventList, setEventList] = React.useState<Event[]>([]);
 
 	const nav = useNavigate();
 
@@ -59,7 +57,7 @@ export default function Calendar(): React.JSX.Element {
 
 				const data = (await res.json()) as ResponseBody;
 
-				console.log(data);
+				//console.log(data);
 
 				if (data.status === ResponseStatus.GOOD) {
 					setEventList(data.value);
@@ -150,13 +148,39 @@ export default function Calendar(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch(`${SERVER_API}/events`);
-				console.log(res);
+				const owner = "Utente-Prova";
+				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+				const data = await res.json();
+				console.log("Eventi trovati:", data);
+
+				if (data.status === ResponseStatus.GOOD) {
+					setEventList(data.value);
+					console.log("stampo data.value:", data.value);
+				}
+				else {
+					setMessage("Errore nel ritrovamento degli eventi");
+				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
 			}
 		})();
 	}, []);
+
+	React.useEffect(() => {
+		console.log("EventList aggiornato", eventList);
+	}, [eventList]); // Esegui questo effetto ogni volta che eventList cambia
+
+	//funzione per aggiungere pallino al giorno che contiene eventi
+	function hasEventsForDay(day: number): boolean {
+		return eventList.some(event => {
+			const eventDate = new Date(event.startTime).getDate();
+			const eventMonth = new Date(event.startTime).getMonth();
+			const eventYear = new Date(event.startTime).getFullYear();
+			return eventDate === day && eventMonth === meseCorrente && eventYear === year;
+		});
+	}
+
+
 
 	// Toggle create event screen
 	//da implementare
@@ -229,6 +253,8 @@ export default function Calendar(): React.JSX.Element {
 
 		setMessage(data.message || "Undefined error");
 		setCreateEvent(!createEvent);
+
+		window.location.reload()
 
 		// TODO: send post request to server
 		// TODO: handle response
@@ -406,9 +432,21 @@ export default function Calendar(): React.JSX.Element {
 							{Array.from({
 								length: getDaysInMonth(new Date(year, meseCorrente)),
 							}).map((_, day) => (
-								<button key={day + 1} onClick={handleDateClick}>
-									{day + 1}
-								</button>
+								<div key={day + 1} style={{ position: 'relative' }}> {/* Imposta position: relative */}
+									<button onClick={handleDateClick}>{day + 1}</button>
+									{hasEventsForDay(day + 1) && ( //true se ci sono eventi
+										<span style={{
+											position: 'absolute', // Posiziona il pallino in modo assoluto
+											bottom: '3px', // Posiziona il pallino sotto il bottone
+											left: '45%', // Centra orizzontalmente
+											transform: 'translateX(-50%)', // Centra il pallino
+											width: '8px',
+											height: '8px',
+											borderRadius: '50%',
+											backgroundColor: 'lightgray', // Colore del pallino
+										}} />
+									)}
+								</div>
 							))}
 						</div>
 					</div>
