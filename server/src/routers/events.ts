@@ -233,31 +233,37 @@ router.get("/", async (req: Request, res: Response) => {
 	}
 });
 
-router.get("/:id", async (req: Request, res: Response) => {
-	const eventId = req.params.id as string;
+router.get("/owner", async (req: Request, res: Response) => {
+	const ownerId = req.query.owner as string; //ottieni l'owner
+	console.log("questo è l'owner passato come query:" + ownerId);
 
 	try {
-		// TODO: validate param
-		// TODO: validate body fields
+		//Controllo se l'owner è stato inserito
+		if (!ownerId) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Owner è la stringa vuota"
+			});
+		}
 
-		const foundEvent: Event | null = await EventSchema.findById(eventId);
+		const foundDBEvents = await EventSchema.find({ owner: ownerId }).lean();
 
-		if (!foundEvent) {
+		if (foundDBEvents.length === 0) {
 			const resBody: ResponseBody = {
-				message: "Event with id " + eventId + " not found!",
+				message: "L'evento con l'owner" + ownerId + " Non è stato trovato!",
 				status: ResponseStatus.BAD,
 			};
 
 			return res.status(400).json(resBody);
 		}
 
-		console.log("Returning event: ", foundEvent);
+		console.log("Eventi trovati: ", foundDBEvents);
 
 		// TODO: filter the fields of the found event
 		const resBody: ResponseBody = {
-			message: "Event inserted into database",
+			message: "Evento ottenuto dal database",
 			status: ResponseStatus.GOOD,
-			value: foundEvent,
+			value: foundDBEvents,
 		};
 
 		return res.json(resBody);
@@ -300,8 +306,6 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 			owner: "Utente-Prova",
 			recurring: false, //assumo evento non ricorrente
 		};
-
-		console.log("Qui ci arrivo");
 
 		await EventSchema.create(event);
 		console.log("Inserted event: ", event);

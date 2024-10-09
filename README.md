@@ -33,11 +33,16 @@ mongod (lancia il databese)
 mongosh (shell mongo)
 ```
 
-# Visualizzare Eventi creati su MongoDB
+## Visualizzare Eventi creati su MongoDB
 ```(bash)
 mongosh
 use selfie_db
 db.events.find()
+```
+
+## Cancellare eventi all'interno di MongoDB
+```(bash)
+db.events.deleteOne({ owner: "Utente-Prova" })
 ```
 
 
