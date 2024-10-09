@@ -84,9 +84,14 @@ router.post("/", async (req: Request, res: Response) => {
 	try {
 		// TODO: validate pomodoro input
 		// TODO: validate body fields
-		const newPomodoro: Pomodoro = req.body as Pomodoro;
 
-		await PomodoroSchema.create(newPomodoro);
+		const studyTime = req.body.studyTime as number;
+		const pauseTime = req.body.pauseTime as number;
+		const cycles = req.body.cycles as number;
+		const owner = req.user?.id;
+
+        const newPomodoro = await PomodoroSchema.create({ studyTime, pauseTime, cycles, owner });
+        
 		console.log("Inserted pomodoro: ", newPomodoro);
 
 		const resBody: ResponseBody = {

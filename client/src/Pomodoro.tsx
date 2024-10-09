@@ -126,10 +126,59 @@ export default function Pomodoros(): React.JSX.Element {
 				seconds: 0,
 			});
 			startAnimation(true);
+			
 		} else {
 			setData({ ...data, message: MESSAGE.ERROR });
 		}
 	}
+
+	async function handleSavePomodoroConfig(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+
+		try {
+			const pomodoroConfig = {
+				studyTime: data.studyTime,
+				pauseTime: data.pauseTime,
+				cycles: data.cycles,
+				owner: "" ,
+			};
+			console.log("Dati inviati al server:", pomodoroConfig);
+
+			const res = await fetch(`${SERVER_API}/pomodoro`, {
+				method: "POST",
+				body: JSON.stringify(pomodoroConfig),
+				headers: { "Content-Type": "application/json" },
+			});
+	
+			const resBody = await res.json();
+	
+			if (resBody.status === ResponseStatus.GOOD) {
+				alert("Configurazione Pomodoro salvata correttamente!");
+				startProcess();
+				//await updateTomatoList();
+			} else {
+				setMessage("Errore nel salvataggio della configurazione");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
+	
+	//Funzione per aggiornare la lista dei pomodori in tempo reale (non funziona al momento)
+
+	/*const updateTomatoList = async (): Promise<void> => {
+		try {
+			const response = await fetch(`${SERVER_API}/pomodoro`);
+			if (!response.ok) {
+				throw new Error('Failed to fetch pomodori');
+			}
+			const fetchedTomatoes = await response.json();
+			setTomatoList(fetchedTomatoes);
+		} catch (error) {
+			console.error(error);
+		}
+	};*/
+	
 
 	function stopProcess(): void {
 		playRing();
@@ -443,23 +492,22 @@ export default function Pomodoros(): React.JSX.Element {
 					<h1 id="title" style={{ color: "white", fontWeight: "bold" }}>POMODORO TIMER</h1>
 				</header>
 				<div className="preview">
-					<div style={{fontWeight: "bold"}}>LISTA DI POMODORO PRECEDENTI:</div>
-					{tomatoList.map((pomodoro, index) => (
+					<div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
+					{tomatoList.slice(-3).map((pomodoro, index) => (
 						<button
+							className="previous-pomodoros"
 							key={index}
-							onClick={(): void => 
-								setData({ 
-									...data, 
-									studyTime: pomodoro.studyTime, 
-									pauseTime: pomodoro.pauseTime, 
-									cycles: pomodoro.cycles 
+							onClick={(): void =>
+								setData({
+									...data,
+									studyTime: pomodoro.studyTime,
+									pauseTime: pomodoro.pauseTime,
+									cycles: pomodoro.cycles,
 								})
 							}
-							className="pomodoro-button"
 						>
 							{pomodoro.studyTime} min - {pomodoro.pauseTime} min - {pomodoro.cycles} cicli
 							<br />
-							{pomodoro.updatedAt?.toString()}
 						</button>
 					))}
 				</div>
@@ -486,7 +534,7 @@ export default function Pomodoros(): React.JSX.Element {
 							id="start-button"		//probabilmente non serve l'id
 							type="button"
 							className="btn btn-success"
-							onClick={startProcess}
+							onClick={handleSavePomodoroConfig}
 							disabled={data.activeTimer}>
 							START
 						</button>
