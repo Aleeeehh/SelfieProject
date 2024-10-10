@@ -297,14 +297,26 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 			});
 		}
 
+		const startTimeDate = new Date(startTime);
+		startTimeDate.setHours(startTimeDate.getHours() + 2); // Aggiungi 2 ore
+
+
+		const endTimeDate = new Date(endTime);
+		endTimeDate.setHours(endTimeDate.getHours() + 2); // Aggiungi 2 ore
+
+		const now = new Date();
+		now.setHours(now.getHours() + 2);
+
 		const event: Event = {
 			id: "1",
 			title,
-			startTime,
-			endTime,
+			startTime: startTimeDate,
+			endTime: endTimeDate,
 			location,
 			owner: "Utente-Prova",
 			recurring: false, //assumo evento non ricorrente
+			createdAt: now,
+			updatedAt: now,
 		};
 
 		await EventSchema.create(event);
