@@ -1,7 +1,7 @@
 import { Request, Response, Router } from "express";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
-import PomodoroSchema from "../db/Pomodoro.js";
+import PomodoroSchema from "../schemas/Pomodoro.js";
 import type Pomodoro from "../types/Pomodoro.js";
 
 const router: Router = Router();

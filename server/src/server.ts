@@ -10,11 +10,11 @@ import {
 	createDummyNotes,
 	createDummyPomodoros,
 	createDummyUsers,
-} from "./db/populateDB.js";
+} from "./schemas/populateDB.js";
 import passport from "passport";
 import * as passportStrategy from "passport-local";
 import MongoStore from "connect-mongo";
-import UserSchema from "./db/User.js";
+import UserSchema from "./schemas/User.js";
 
 // Connect to database
 // const DB_USER = "";
@@ -59,7 +59,7 @@ server.use(
 		cookie: {
 			secure: false, // Set to true if using HTTPS
 			httpOnly: true,
-			maxAge: 60 * 1000 * 2, // Cookie expiration time
+			maxAge: 60 * 1000 * 60, // L'ultimo numero rappresenta il numero di minuti di durata di una sessione di login
 		},
 	})
 );

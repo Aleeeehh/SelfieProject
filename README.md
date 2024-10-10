@@ -33,5 +33,18 @@ mongod (lancia il databese)
 mongosh (shell mongo)
 ```
 
+## Visualizzare Eventi creati su MongoDB
+```(bash)
+mongosh
+use selfie_db
+db.events.find()
+```
+
+## Cancellare eventi all'interno di MongoDB
+```(bash)
+db.events.deleteOne({ owner: "Utente-Prova" })
+```
+
+
 Comandi MondoDB: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/#std-label-install-mdb-community-macos
 
