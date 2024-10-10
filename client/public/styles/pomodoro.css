@@ -140,3 +140,22 @@ button {
 	border-radius: 16px;
 	width: 150px;
 }
+
+
+
+
+
+.create-event-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.create-event-container>form {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+}
+
+.border {
+	border: 2px solid black;
+}

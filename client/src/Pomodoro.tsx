@@ -7,6 +7,10 @@ import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Pomodoro from "./types/Pomodoro";
 
+import DatePicker from "react-datepicker";	//to create pomodoro events
+//import Time from "react-datepicker/dist/time";
+
+
 enum MESSAGE {
 	PRESS_START = "FILL THE SPACES AND PRESS START TO BEGIN!",
 	ERROR = "INSERT AN INTEGER NUMBER FOR STUDY TIME, PAUSE TIME AND STUDY CYCLES! (1-99)",
@@ -37,6 +41,18 @@ type PomodoroData = {
 	totHours: number;
 };
 
+type PomodoroEvent = {
+	title: string;
+	startDate: Date;
+	endDate: Date;
+};
+
+const initialPomEvent: PomodoroEvent = {
+	title: "",
+	startDate: new Date(),
+	endDate: new Date(),
+};
+
 const initialState: PomodoroData = {
 	studyTime: 30,
 	pauseTime: 5,
@@ -54,6 +70,7 @@ const initialState: PomodoroData = {
 
 export default function Pomodoros(): React.JSX.Element {
 	const [data, setData] = useState(initialState);
+	const [pomEvent, setPomEvent] = useState(initialPomEvent);
 	const [message, setMessage] = useState("");
 	const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]);
 
@@ -486,11 +503,15 @@ export default function Pomodoros(): React.JSX.Element {
 	return (
 		<>
 			{message && <div>{message}</div>}
+
 			<audio id="ring" src="/images/ring.mp3"></audio>
+
 			<div className="pomodoro-container">
+				
 				<header>
 					<h1 id="title" style={{ color: "white", fontWeight: "bold" }}>POMODORO TIMER</h1>
 				</header>
+
 				<div className="preview">
 					<div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
 					{tomatoList.slice(-3).map((pomodoro, index) => (
@@ -511,6 +532,7 @@ export default function Pomodoros(): React.JSX.Element {
 						</button>
 					))}
 				</div>
+
 				<div ref={pomodoroRef} className="pomodoro">
 					<img src="/images/tomato.png" alt="tomato.png" />
 					<div id="timer" className="timer">
@@ -538,6 +560,7 @@ export default function Pomodoros(): React.JSX.Element {
 							disabled={data.activeTimer}>
 							START
 						</button>
+						
 						<button
 							id="stop-button"		//probabilmente non serve l'id
 							type="button"
@@ -559,6 +582,7 @@ export default function Pomodoros(): React.JSX.Element {
 							disabled={!data.activeTimer}>
 							NEXT PHASE
 						</button>
+
 						<button
 							id="next-button"		//probabilmente non serve l'id
 							type="button"
@@ -567,6 +591,7 @@ export default function Pomodoros(): React.JSX.Element {
 							disabled={!data.activeTimer}>
 							NEXT CYCLE
 						</button>
+
 						<button
 							id="next-button"		//probabilmente non serve l'id
 							type="button"
@@ -610,6 +635,7 @@ export default function Pomodoros(): React.JSX.Element {
 						disabled={data.activeTimer}
 					/>
 				</div>
+
 				<div className="pannello studyCycles">
 					<label htmlFor="inputCycles"> Number of study cycles </label>
 					<input
@@ -624,6 +650,7 @@ export default function Pomodoros(): React.JSX.Element {
 						disabled={data.activeTimer}
 					/>
 				</div>
+
 				<div className="pannello totMinutes">
 					<label htmlFor="totMinutes"> Total minutes of study </label>
 					<input
@@ -646,6 +673,7 @@ export default function Pomodoros(): React.JSX.Element {
 							USE MINUTES
 					</button>
 				</div>
+
 				<div className="pannello totHours">
 					<label htmlFor="totHours"> Total hours of study </label>
 					<input
@@ -668,6 +696,73 @@ export default function Pomodoros(): React.JSX.Element {
 							USE HOURS
 					</button>
 				</div>
+
+				<div className="create-event-container col-2">
+					<form>
+
+						<label htmlFor="title">
+							Title
+							<input
+								className="btn border"
+								type="text"
+								name="title"
+								value={pomEvent.title}
+								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+									setPomEvent({ ...pomEvent, title: e.target.value })}
+								
+							/>
+						</label>
+
+						<label htmlFor="startTime">
+							Data Inizio
+							<div>
+								<DatePicker
+									className="btn border"
+									name="startTime"
+									selected={pomEvent.startDate}
+									onChange={(date: Date | null): void => {
+										date && setPomEvent({ ...pomEvent, startDate: date });
+									}}
+									showTimeSelect // Abilita la selezione del tempo
+									dateFormat="Pp" // Mostra la data e l'ora
+									timeFormat="HH:mm" // Formato per l'orario
+									timeIntervals={15} // Intervalli di 15 minuti
+									timeCaption="Orario Inizio" // Etichetta dell'orario
+								/>
+							</div>
+						</label>
+						<label htmlFor="endTime">
+							Data Fine
+							<div>
+								<DatePicker
+									className="btn border"
+									name="endTime"
+									selected={pomEvent.endDate}
+									onChange={(date: Date | null): void => {
+										date && setPomEvent({ ...pomEvent, endDate: date });
+									}}
+									showTimeSelect // Abilita la selezione del tempo
+									dateFormat="Pp" // Mostra la data e l'ora
+									timeFormat="HH:mm" // Formato per l'orario
+									timeIntervals={15} // Intervalli di 15 minuti
+									timeCaption="Orario Fine" // Etichetta dell'orario
+								/>
+							</div>
+						</label>
+						
+						<button
+							className="btn btn-primary"
+							style={{
+								backgroundColor: "bisque",
+								color: "white",
+								border: "0",
+							}}
+							onClick={(): void => {}}>
+							Create Event
+						</button>
+					</form>
+				</div>
+
 			</div>
 		</>
 	);
