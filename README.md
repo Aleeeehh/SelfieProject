@@ -19,10 +19,10 @@ npm run dev
 ```
 
 
-## Lanciare Server e Client insieme
+## Lanciare Server e Client insieme, dentro il tuo specifico branch
 
 ```(bash)
-./start.sh (dentro selfie)
+./start.sh (anche per aggiornare la pagina sul browser)
 ```
 
 ## Lanciare MongoDB

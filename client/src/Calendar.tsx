@@ -149,13 +149,14 @@ export default function Calendar(): React.JSX.Element {
 		(async (): Promise<void> => {
 			try {
 				const owner = "Utente-Prova";
+				console.log("Questo è l'ownerr:", owner);
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
 				console.log("Eventi trovati:", data);
 
 				if (data.status === ResponseStatus.GOOD) {
 					setEventList(data.value);
-					console.log("stampo data.value:", data.value);
+					console.log("stampo data.valuess:", data.value);
 				}
 				else {
 					setMessage("Errore nel ritrovamento degli eventi");
@@ -242,12 +243,19 @@ export default function Calendar(): React.JSX.Element {
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
 				title,
-				startTime,
-				endTime,
+				startTime: startTime.toISOString(),
+				endTime: endTime.toISOString(),
 				frequency: Frequency.ONCE,
 				location,
 			}),
 		});
+
+		if (!res.ok) {
+			const errorData = await res.json();
+			console.error("Error response:", errorData);
+			setMessage("Errore durante la creazione dell'evento: " + errorData.message);
+			return;
+		}
 
 		const data: ResponseBody = (await res.json()) as ResponseBody;
 
@@ -479,7 +487,26 @@ export default function Calendar(): React.JSX.Element {
 											name="startTime"
 											selected={startTime}
 											onChange={(date: Date | null): void => {
-												date && setStartTime(date);
+												if (date) {
+													// Aggiorna la data mantenendo l'orario attuale
+													const newDate = new Date(startTime);
+													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+													setStartTime(newDate);
+												}
+											}}
+										/>
+									</div>
+
+									<div>
+										<input
+											className="btn border"
+											type="time"
+											value={`${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+												const [hours, minutes] = e.target.value.split(':');
+												const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
+												newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+												setStartTime(newDate); // Imposta il nuovo oggetto Date
 											}}
 										/>
 									</div>
@@ -492,7 +519,26 @@ export default function Calendar(): React.JSX.Element {
 											name="endTime"
 											selected={endTime}
 											onChange={(date: Date | null): void => {
-												date && setEndTime(date);
+												if (date) {
+													// Aggiorna la data mantenendo l'orario attuale
+													const newDate = new Date(endTime);
+													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+													setEndTime(newDate);
+												}
+											}}
+										/>
+									</div>
+
+									<div>
+										<input
+											className="btn border"
+											type="time"
+											value={`${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+												const [hours, minutes] = e.target.value.split(':');
+												const newDate = new Date(endTime);
+												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+												setEndTime(newDate); // Imposta il nuovo oggetto Date
 											}}
 										/>
 									</div>
@@ -551,539 +597,544 @@ export default function Calendar(): React.JSX.Element {
 						<time>23:00</time>
 						<time>00:00</time>
 					</div>
-				</div>
-			)}
+				</div >
+			)
+			}
 
-			{activeButton === 1 && (
-				<div>
-					<div
-						className="nome-data-week"
-						style={{ display: "flex", justifyContent: "center", marginTop: "2vw" }}>
-						<button
-							className="btn btn-primary"
-							style={{
-								backgroundColor: "bisque",
-								color: "black",
-								border: "0",
-								width: "50px",
-								marginRight: "10px",
-							}}
-							onClick={prevWeek}>
-							{"<<"}
-						</button>
-						<div>
-							{Mesi[meseCorrente]} {year}{" "}
-						</div>
-						<button
-							className="btn btn-primary"
-							style={{
-								backgroundColor: "bisque",
-								color: "black",
-								border: "0",
-								width: "50px",
-								marginLeft: "10px",
-							}}
-							onClick={nextWeek}>
-							{">>"}
-						</button>
-					</div>
-
-					<div className="row" style={{ display: "flex", justifyContent: "center" }}>
-						<div className="col-12">
-							{((): JSX.Element | null => {
-								const dayOfWeek = getDay(new Date(year, meseCorrente, day));
-								console.log(dayOfWeek);
-								return null;
-							})()}
-							<div
+			{
+				activeButton === 1 && (
+					<div>
+						<div
+							className="nome-data-week"
+							style={{ display: "flex", justifyContent: "center", marginTop: "2vw" }}>
+							<button
+								className="btn btn-primary"
 								style={{
-									display: "flex",
-									justifyContent: "space-between",
-									maxWidth: "95%",
-									marginLeft: "auto",
-									marginRight: "auto",
-									marginTop: "1vw",
-								}}>
-								<div className="nome-data-week">
-									<div
-										style={{
-											color: "gray",
-											fontWeight: 500,
-											fontSize: "0.6em",
-											letterSpacing: "0.1em",
-											fontVariant: "small-caps",
-										}}>
-										Dom{" "}
-										{getDay(new Date(year, meseCorrente, day)) === 5 &&
-											getAdjustedDay(day, -5, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 4 &&
-											getAdjustedDay(day, -4, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 3 &&
-											getAdjustedDay(day, -3, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 2 &&
-											getAdjustedDay(day, -2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 1 &&
-											getAdjustedDay(day, -1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 0 &&
-											getAdjustedDay(day, 0, year, meseCorrente)}
+									backgroundColor: "bisque",
+									color: "black",
+									border: "0",
+									width: "50px",
+									marginRight: "10px",
+								}}
+								onClick={prevWeek}>
+								{"<<"}
+							</button>
+							<div>
+								{Mesi[meseCorrente]} {year}{" "}
+							</div>
+							<button
+								className="btn btn-primary"
+								style={{
+									backgroundColor: "bisque",
+									color: "black",
+									border: "0",
+									width: "50px",
+									marginLeft: "10px",
+								}}
+								onClick={nextWeek}>
+								{">>"}
+							</button>
+						</div>
+
+						<div className="row" style={{ display: "flex", justifyContent: "center" }}>
+							<div className="col-12">
+								{((): JSX.Element | null => {
+									const dayOfWeek = getDay(new Date(year, meseCorrente, day));
+									console.log(dayOfWeek);
+									return null;
+								})()}
+								<div
+									style={{
+										display: "flex",
+										justifyContent: "space-between",
+										maxWidth: "95%",
+										marginLeft: "auto",
+										marginRight: "auto",
+										marginTop: "1vw",
+									}}>
+									<div className="nome-data-week">
+										<div
+											style={{
+												color: "gray",
+												fontWeight: 500,
+												fontSize: "0.6em",
+												letterSpacing: "0.1em",
+												fontVariant: "small-caps",
+											}}>
+											Dom{" "}
+											{getDay(new Date(year, meseCorrente, day)) === 5 &&
+												getAdjustedDay(day, -5, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 4 &&
+												getAdjustedDay(day, -4, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 3 &&
+												getAdjustedDay(day, -3, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 2 &&
+												getAdjustedDay(day, -2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 1 &&
+												getAdjustedDay(day, -1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 0 &&
+												getAdjustedDay(day, 0, year, meseCorrente)}
+										</div>
+										<div
+											className="orario"
+											style={{
+												fontSize: "0.8vw",
+												width: "calc(100% - 10px)",
+												flex: "1",
+											}}>
+											<time>00:00</time>
+											<time>01:00</time>
+											<time>02:00</time>
+											<time>03:00</time>
+											<time>04:00</time>
+											<time>05:00</time>
+											<time>06:00</time>
+											<time>07:00</time>
+											<time>08:00</time>
+											<time>09:00</time>
+											<time>10:00</time>
+											<time>11:00</time>
+											<time>12:00</time>
+											<time>13:00</time>
+											<time>14:00</time>
+											<time>15:00</time>
+											<time>16:00</time>
+											<time>17:00</time>
+											<time>18:00</time>
+											<time>19:00</time>
+											<time>20:00</time>
+											<time>21:00</time>
+											<time>22:00</time>
+											<time>23:00</time>
+											<time>00:00</time>
+										</div>
 									</div>
-									<div
-										className="orario"
-										style={{
-											fontSize: "0.8vw",
-											width: "calc(100% - 10px)",
-											flex: "1",
-										}}>
-										<time>00:00</time>
-										<time>01:00</time>
-										<time>02:00</time>
-										<time>03:00</time>
-										<time>04:00</time>
-										<time>05:00</time>
-										<time>06:00</time>
-										<time>07:00</time>
-										<time>08:00</time>
-										<time>09:00</time>
-										<time>10:00</time>
-										<time>11:00</time>
-										<time>12:00</time>
-										<time>13:00</time>
-										<time>14:00</time>
-										<time>15:00</time>
-										<time>16:00</time>
-										<time>17:00</time>
-										<time>18:00</time>
-										<time>19:00</time>
-										<time>20:00</time>
-										<time>21:00</time>
-										<time>22:00</time>
-										<time>23:00</time>
-										<time>00:00</time>
+									<div className="nome-data-week">
+										<div
+											style={{
+												color: "gray",
+												fontWeight: 500,
+												fontSize: "0.6em",
+												letterSpacing: "0.1em",
+												fontVariant: "small-caps",
+											}}>
+											Lun{" "}
+											{getDay(new Date(year, meseCorrente, day)) === 6 &&
+												getAdjustedDay(day, -5, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 5 &&
+												getAdjustedDay(day, -4, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 4 &&
+												getAdjustedDay(day, -3, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 3 &&
+												getAdjustedDay(day, -2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 2 &&
+												getAdjustedDay(day, -1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 1 &&
+												getAdjustedDay(day, 0, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 0 &&
+												getAdjustedDay(day, 1, year, meseCorrente)}
+										</div>
+										<div
+											className="orario"
+											style={{
+												fontSize: "0.8vw",
+												width: "calc(100% - 10px)",
+												flex: "1",
+											}}>
+											<time>00:00</time>
+											<time>01:00</time>
+											<time>02:00</time>
+											<time>03:00</time>
+											<time>04:00</time>
+											<time>05:00</time>
+											<time>06:00</time>
+											<time>07:00</time>
+											<time>08:00</time>
+											<time>09:00</time>
+											<time>10:00</time>
+											<time>11:00</time>
+											<time>12:00</time>
+											<time>13:00</time>
+											<time>14:00</time>
+											<time>15:00</time>
+											<time>16:00</time>
+											<time>17:00</time>
+											<time>18:00</time>
+											<time>19:00</time>
+											<time>20:00</time>
+											<time>21:00</time>
+											<time>22:00</time>
+											<time>23:00</time>
+											<time>00:00</time>
+										</div>
 									</div>
-								</div>
-								<div className="nome-data-week">
-									<div
-										style={{
-											color: "gray",
-											fontWeight: 500,
-											fontSize: "0.6em",
-											letterSpacing: "0.1em",
-											fontVariant: "small-caps",
-										}}>
-										Lun{" "}
-										{getDay(new Date(year, meseCorrente, day)) === 6 &&
-											getAdjustedDay(day, -5, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 5 &&
-											getAdjustedDay(day, -4, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 4 &&
-											getAdjustedDay(day, -3, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 3 &&
-											getAdjustedDay(day, -2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 2 &&
-											getAdjustedDay(day, -1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 1 &&
-											getAdjustedDay(day, 0, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 0 &&
-											getAdjustedDay(day, 1, year, meseCorrente)}
+									<div className="nome-data-week">
+										<div
+											style={{
+												color: "gray",
+												fontWeight: 500,
+												fontSize: "0.6em",
+												letterSpacing: "0.1em",
+												fontVariant: "small-caps",
+											}}>
+											Mar{" "}
+											{getDay(new Date(year, meseCorrente, day)) === 6 &&
+												getAdjustedDay(day, -4, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 5 &&
+												getAdjustedDay(day, -3, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 4 &&
+												getAdjustedDay(day, -2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 3 &&
+												getAdjustedDay(day, -1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 2 &&
+												getAdjustedDay(day, 0, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 1 &&
+												getAdjustedDay(day, 1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 0 &&
+												getAdjustedDay(day, 2, year, meseCorrente)}
+										</div>
+										<div
+											className="orario"
+											style={{
+												fontSize: "0.8vw",
+												width: "calc(100% - 10px)",
+												flex: "1",
+											}}>
+											<time>00:00</time>
+											<time>01:00</time>
+											<time>02:00</time>
+											<time>03:00</time>
+											<time>04:00</time>
+											<time>05:00</time>
+											<time>06:00</time>
+											<time>07:00</time>
+											<time>08:00</time>
+											<time>09:00</time>
+											<time>10:00</time>
+											<time>11:00</time>
+											<time>12:00</time>
+											<time>13:00</time>
+											<time>14:00</time>
+											<time>15:00</time>
+											<time>16:00</time>
+											<time>17:00</time>
+											<time>18:00</time>
+											<time>19:00</time>
+											<time>20:00</time>
+											<time>21:00</time>
+											<time>22:00</time>
+											<time>23:00</time>
+											<time>00:00</time>
+										</div>
 									</div>
-									<div
-										className="orario"
-										style={{
-											fontSize: "0.8vw",
-											width: "calc(100% - 10px)",
-											flex: "1",
-										}}>
-										<time>00:00</time>
-										<time>01:00</time>
-										<time>02:00</time>
-										<time>03:00</time>
-										<time>04:00</time>
-										<time>05:00</time>
-										<time>06:00</time>
-										<time>07:00</time>
-										<time>08:00</time>
-										<time>09:00</time>
-										<time>10:00</time>
-										<time>11:00</time>
-										<time>12:00</time>
-										<time>13:00</time>
-										<time>14:00</time>
-										<time>15:00</time>
-										<time>16:00</time>
-										<time>17:00</time>
-										<time>18:00</time>
-										<time>19:00</time>
-										<time>20:00</time>
-										<time>21:00</time>
-										<time>22:00</time>
-										<time>23:00</time>
-										<time>00:00</time>
+									<div className="nome-data-week">
+										<div
+											style={{
+												color: "gray",
+												fontWeight: 500,
+												fontSize: "0.6em",
+												letterSpacing: "0.1em",
+												fontVariant: "small-caps",
+											}}>
+											Mer{" "}
+											{getDay(new Date(year, meseCorrente, day)) === 6 &&
+												getAdjustedDay(day, -3, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 5 &&
+												getAdjustedDay(day, -2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 4 &&
+												getAdjustedDay(day, -1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 3 &&
+												getAdjustedDay(day, 0, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 2 &&
+												getAdjustedDay(day, 1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 1 &&
+												getAdjustedDay(day, 2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 0 &&
+												getAdjustedDay(day, 3, year, meseCorrente)}
+										</div>
+										<div
+											className="orario"
+											style={{
+												fontSize: "0.8vw",
+												width: "calc(100% - 10px)",
+												flex: "1",
+											}}>
+											<time>00:00</time>
+											<time>01:00</time>
+											<time>02:00</time>
+											<time>03:00</time>
+											<time>04:00</time>
+											<time>05:00</time>
+											<time>06:00</time>
+											<time>07:00</time>
+											<time>08:00</time>
+											<time>09:00</time>
+											<time>10:00</time>
+											<time>11:00</time>
+											<time>12:00</time>
+											<time>13:00</time>
+											<time>14:00</time>
+											<time>15:00</time>
+											<time>16:00</time>
+											<time>17:00</time>
+											<time>18:00</time>
+											<time>19:00</time>
+											<time>20:00</time>
+											<time>21:00</time>
+											<time>22:00</time>
+											<time>23:00</time>
+											<time>00:00</time>
+										</div>
 									</div>
-								</div>
-								<div className="nome-data-week">
-									<div
-										style={{
-											color: "gray",
-											fontWeight: 500,
-											fontSize: "0.6em",
-											letterSpacing: "0.1em",
-											fontVariant: "small-caps",
-										}}>
-										Mar{" "}
-										{getDay(new Date(year, meseCorrente, day)) === 6 &&
-											getAdjustedDay(day, -4, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 5 &&
-											getAdjustedDay(day, -3, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 4 &&
-											getAdjustedDay(day, -2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 3 &&
-											getAdjustedDay(day, -1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 2 &&
-											getAdjustedDay(day, 0, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 1 &&
-											getAdjustedDay(day, 1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 0 &&
-											getAdjustedDay(day, 2, year, meseCorrente)}
+									<div className="nome-data-week">
+										<div
+											style={{
+												color: "gray",
+												fontWeight: 500,
+												fontSize: "0.6em",
+												letterSpacing: "0.1em",
+												fontVariant: "small-caps",
+											}}>
+											Gio{" "}
+											{getDay(new Date(year, meseCorrente, day)) === 6 &&
+												getAdjustedDay(day, -2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 5 &&
+												getAdjustedDay(day, -1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 4 &&
+												getAdjustedDay(day, 0, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 3 &&
+												getAdjustedDay(day, 1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 2 &&
+												getAdjustedDay(day, 2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 1 &&
+												getAdjustedDay(day, 3, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 0 &&
+												getAdjustedDay(day, 4, year, meseCorrente)}
+										</div>
+										<div
+											className="orario"
+											style={{
+												fontSize: "0.8vw",
+												width: "calc(100% - 10px)",
+												flex: "1",
+											}}>
+											<time>00:00</time>
+											<time>01:00</time>
+											<time>02:00</time>
+											<time>03:00</time>
+											<time>04:00</time>
+											<time>05:00</time>
+											<time>06:00</time>
+											<time>07:00</time>
+											<time>08:00</time>
+											<time>09:00</time>
+											<time>10:00</time>
+											<time>11:00</time>
+											<time>12:00</time>
+											<time>13:00</time>
+											<time>14:00</time>
+											<time>15:00</time>
+											<time>16:00</time>
+											<time>17:00</time>
+											<time>18:00</time>
+											<time>19:00</time>
+											<time>20:00</time>
+											<time>21:00</time>
+											<time>22:00</time>
+											<time>23:00</time>
+											<time>00:00</time>
+										</div>
 									</div>
-									<div
-										className="orario"
-										style={{
-											fontSize: "0.8vw",
-											width: "calc(100% - 10px)",
-											flex: "1",
-										}}>
-										<time>00:00</time>
-										<time>01:00</time>
-										<time>02:00</time>
-										<time>03:00</time>
-										<time>04:00</time>
-										<time>05:00</time>
-										<time>06:00</time>
-										<time>07:00</time>
-										<time>08:00</time>
-										<time>09:00</time>
-										<time>10:00</time>
-										<time>11:00</time>
-										<time>12:00</time>
-										<time>13:00</time>
-										<time>14:00</time>
-										<time>15:00</time>
-										<time>16:00</time>
-										<time>17:00</time>
-										<time>18:00</time>
-										<time>19:00</time>
-										<time>20:00</time>
-										<time>21:00</time>
-										<time>22:00</time>
-										<time>23:00</time>
-										<time>00:00</time>
+									<div className="nome-data-week">
+										<div
+											style={{
+												color: "gray",
+												fontWeight: 500,
+												fontSize: "0.6em",
+												letterSpacing: "0.1em",
+												fontVariant: "small-caps",
+											}}>
+											Ven{" "}
+											{getDay(new Date(year, meseCorrente, day)) === 6 &&
+												getAdjustedDay(day, -1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 5 &&
+												getAdjustedDay(day, 0, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 4 &&
+												getAdjustedDay(day, 1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 3 &&
+												getAdjustedDay(day, 2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 2 &&
+												getAdjustedDay(day, 3, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 1 &&
+												getAdjustedDay(day, 4, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 0 &&
+												getAdjustedDay(day, 5, year, meseCorrente)}
+										</div>
+										<div
+											className="orario"
+											style={{
+												fontSize: "0.8vw",
+												width: "calc(100% - 10px)",
+												flex: "1",
+											}}>
+											<time>00:00</time>
+											<time>01:00</time>
+											<time>02:00</time>
+											<time>03:00</time>
+											<time>04:00</time>
+											<time>05:00</time>
+											<time>06:00</time>
+											<time>07:00</time>
+											<time>08:00</time>
+											<time>09:00</time>
+											<time>10:00</time>
+											<time>11:00</time>
+											<time>12:00</time>
+											<time>13:00</time>
+											<time>14:00</time>
+											<time>15:00</time>
+											<time>16:00</time>
+											<time>17:00</time>
+											<time>18:00</time>
+											<time>19:00</time>
+											<time>20:00</time>
+											<time>21:00</time>
+											<time>22:00</time>
+											<time>23:00</time>
+											<time>00:00</time>
+										</div>
 									</div>
-								</div>
-								<div className="nome-data-week">
-									<div
-										style={{
-											color: "gray",
-											fontWeight: 500,
-											fontSize: "0.6em",
-											letterSpacing: "0.1em",
-											fontVariant: "small-caps",
-										}}>
-										Mer{" "}
-										{getDay(new Date(year, meseCorrente, day)) === 6 &&
-											getAdjustedDay(day, -3, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 5 &&
-											getAdjustedDay(day, -2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 4 &&
-											getAdjustedDay(day, -1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 3 &&
-											getAdjustedDay(day, 0, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 2 &&
-											getAdjustedDay(day, 1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 1 &&
-											getAdjustedDay(day, 2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 0 &&
-											getAdjustedDay(day, 3, year, meseCorrente)}
-									</div>
-									<div
-										className="orario"
-										style={{
-											fontSize: "0.8vw",
-											width: "calc(100% - 10px)",
-											flex: "1",
-										}}>
-										<time>00:00</time>
-										<time>01:00</time>
-										<time>02:00</time>
-										<time>03:00</time>
-										<time>04:00</time>
-										<time>05:00</time>
-										<time>06:00</time>
-										<time>07:00</time>
-										<time>08:00</time>
-										<time>09:00</time>
-										<time>10:00</time>
-										<time>11:00</time>
-										<time>12:00</time>
-										<time>13:00</time>
-										<time>14:00</time>
-										<time>15:00</time>
-										<time>16:00</time>
-										<time>17:00</time>
-										<time>18:00</time>
-										<time>19:00</time>
-										<time>20:00</time>
-										<time>21:00</time>
-										<time>22:00</time>
-										<time>23:00</time>
-										<time>00:00</time>
-									</div>
-								</div>
-								<div className="nome-data-week">
-									<div
-										style={{
-											color: "gray",
-											fontWeight: 500,
-											fontSize: "0.6em",
-											letterSpacing: "0.1em",
-											fontVariant: "small-caps",
-										}}>
-										Gio{" "}
-										{getDay(new Date(year, meseCorrente, day)) === 6 &&
-											getAdjustedDay(day, -2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 5 &&
-											getAdjustedDay(day, -1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 4 &&
-											getAdjustedDay(day, 0, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 3 &&
-											getAdjustedDay(day, 1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 2 &&
-											getAdjustedDay(day, 2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 1 &&
-											getAdjustedDay(day, 3, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 0 &&
-											getAdjustedDay(day, 4, year, meseCorrente)}
-									</div>
-									<div
-										className="orario"
-										style={{
-											fontSize: "0.8vw",
-											width: "calc(100% - 10px)",
-											flex: "1",
-										}}>
-										<time>00:00</time>
-										<time>01:00</time>
-										<time>02:00</time>
-										<time>03:00</time>
-										<time>04:00</time>
-										<time>05:00</time>
-										<time>06:00</time>
-										<time>07:00</time>
-										<time>08:00</time>
-										<time>09:00</time>
-										<time>10:00</time>
-										<time>11:00</time>
-										<time>12:00</time>
-										<time>13:00</time>
-										<time>14:00</time>
-										<time>15:00</time>
-										<time>16:00</time>
-										<time>17:00</time>
-										<time>18:00</time>
-										<time>19:00</time>
-										<time>20:00</time>
-										<time>21:00</time>
-										<time>22:00</time>
-										<time>23:00</time>
-										<time>00:00</time>
-									</div>
-								</div>
-								<div className="nome-data-week">
-									<div
-										style={{
-											color: "gray",
-											fontWeight: 500,
-											fontSize: "0.6em",
-											letterSpacing: "0.1em",
-											fontVariant: "small-caps",
-										}}>
-										Ven{" "}
-										{getDay(new Date(year, meseCorrente, day)) === 6 &&
-											getAdjustedDay(day, -1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 5 &&
-											getAdjustedDay(day, 0, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 4 &&
-											getAdjustedDay(day, 1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 3 &&
-											getAdjustedDay(day, 2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 2 &&
-											getAdjustedDay(day, 3, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 1 &&
-											getAdjustedDay(day, 4, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 0 &&
-											getAdjustedDay(day, 5, year, meseCorrente)}
-									</div>
-									<div
-										className="orario"
-										style={{
-											fontSize: "0.8vw",
-											width: "calc(100% - 10px)",
-											flex: "1",
-										}}>
-										<time>00:00</time>
-										<time>01:00</time>
-										<time>02:00</time>
-										<time>03:00</time>
-										<time>04:00</time>
-										<time>05:00</time>
-										<time>06:00</time>
-										<time>07:00</time>
-										<time>08:00</time>
-										<time>09:00</time>
-										<time>10:00</time>
-										<time>11:00</time>
-										<time>12:00</time>
-										<time>13:00</time>
-										<time>14:00</time>
-										<time>15:00</time>
-										<time>16:00</time>
-										<time>17:00</time>
-										<time>18:00</time>
-										<time>19:00</time>
-										<time>20:00</time>
-										<time>21:00</time>
-										<time>22:00</time>
-										<time>23:00</time>
-										<time>00:00</time>
-									</div>
-								</div>
-								<div className="nome-data-week">
-									<div
-										style={{
-											color: "gray",
-											fontWeight: 500,
-											fontSize: "0.6em",
-											letterSpacing: "0.1em",
-											fontVariant: "small-caps",
-										}}>
-										Sab{" "}
-										{getDay(new Date(year, meseCorrente, day)) === 6 &&
-											getAdjustedDay(day, 0, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 5 &&
-											getAdjustedDay(day, 1, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 4 &&
-											getAdjustedDay(day, 2, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 3 &&
-											getAdjustedDay(day, 3, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 2 &&
-											getAdjustedDay(day, 4, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 1 &&
-											getAdjustedDay(day, 5, year, meseCorrente)}
-										{getDay(new Date(year, meseCorrente, day)) === 0 &&
-											getAdjustedDay(day, 6, year, meseCorrente)}
-									</div>
-									<div
-										className="orario"
-										style={{
-											fontSize: "0.8vw",
-											width: "calc(100% - 10px)",
-											flex: "1",
-										}}>
-										<time>00:00</time>
-										<time>01:00</time>
-										<time>02:00</time>
-										<time>03:00</time>
-										<time>04:00</time>
-										<time>05:00</time>
-										<time>06:00</time>
-										<time>07:00</time>
-										<time>08:00</time>
-										<time>09:00</time>
-										<time>10:00</time>
-										<time>11:00</time>
-										<time>12:00</time>
-										<time>13:00</time>
-										<time>14:00</time>
-										<time>15:00</time>
-										<time>16:00</time>
-										<time>17:00</time>
-										<time>18:00</time>
-										<time>19:00</time>
-										<time>20:00</time>
-										<time>21:00</time>
-										<time>22:00</time>
-										<time>23:00</time>
-										<time>00:00</time>
+									<div className="nome-data-week">
+										<div
+											style={{
+												color: "gray",
+												fontWeight: 500,
+												fontSize: "0.6em",
+												letterSpacing: "0.1em",
+												fontVariant: "small-caps",
+											}}>
+											Sab{" "}
+											{getDay(new Date(year, meseCorrente, day)) === 6 &&
+												getAdjustedDay(day, 0, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 5 &&
+												getAdjustedDay(day, 1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 4 &&
+												getAdjustedDay(day, 2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 3 &&
+												getAdjustedDay(day, 3, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 2 &&
+												getAdjustedDay(day, 4, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 1 &&
+												getAdjustedDay(day, 5, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 0 &&
+												getAdjustedDay(day, 6, year, meseCorrente)}
+										</div>
+										<div
+											className="orario"
+											style={{
+												fontSize: "0.8vw",
+												width: "calc(100% - 10px)",
+												flex: "1",
+											}}>
+											<time>00:00</time>
+											<time>01:00</time>
+											<time>02:00</time>
+											<time>03:00</time>
+											<time>04:00</time>
+											<time>05:00</time>
+											<time>06:00</time>
+											<time>07:00</time>
+											<time>08:00</time>
+											<time>09:00</time>
+											<time>10:00</time>
+											<time>11:00</time>
+											<time>12:00</time>
+											<time>13:00</time>
+											<time>14:00</time>
+											<time>15:00</time>
+											<time>16:00</time>
+											<time>17:00</time>
+											<time>18:00</time>
+											<time>19:00</time>
+											<time>20:00</time>
+											<time>21:00</time>
+											<time>22:00</time>
+											<time>23:00</time>
+											<time>00:00</time>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
-			)}
-			{activeButton === 2 && (
-				<div style={{ marginTop: "2vw" }}>
-					<div
-						className="nome-data-week"
-						style={{ display: "flex", justifyContent: "center", marginTop: "2vw" }}>
-						<button
-							className="btn btn-primary"
-							style={{
-								backgroundColor: "bisque",
-								color: "black",
-								border: "0",
-								width: "50px",
-								marginRight: "10px",
-							}}
-							onClick={mesePrecedente}>
-							{"<<"}
-						</button>
-						<div>
-							{Mesi[meseCorrente]} {year}{" "}
+				)
+			}
+			{
+				activeButton === 2 && (
+					<div style={{ marginTop: "2vw" }}>
+						<div
+							className="nome-data-week"
+							style={{ display: "flex", justifyContent: "center", marginTop: "2vw" }}>
+							<button
+								className="btn btn-primary"
+								style={{
+									backgroundColor: "bisque",
+									color: "black",
+									border: "0",
+									width: "50px",
+									marginRight: "10px",
+								}}
+								onClick={mesePrecedente}>
+								{"<<"}
+							</button>
+							<div>
+								{Mesi[meseCorrente]} {year}{" "}
+							</div>
+							<button
+								className="btn btn-primary"
+								style={{
+									backgroundColor: "bisque",
+									color: "black",
+									border: "0",
+									width: "50px",
+									marginLeft: "10px",
+								}}
+								onClick={meseSuccessivo}>
+								{">>"}
+							</button>
 						</div>
-						<button
-							className="btn btn-primary"
-							style={{
-								backgroundColor: "bisque",
-								color: "black",
-								border: "0",
-								width: "50px",
-								marginLeft: "10px",
-							}}
-							onClick={meseSuccessivo}>
-							{">>"}
-						</button>
+						<div className="calendar col-11">
+							<div className="day-of-week" style={{ fontSize: "1.5vw" }}>
+								<div>Dom</div>
+								<div>Lun</div>
+								<div>Mar</div>
+								<div>Mer</div>
+								<div>Gio</div>
+								<div>Ven</div>
+								<div>Sab</div>
+							</div>
+							<div className="date-grid">
+								{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
+								{((): JSX.Element[] => {
+									return Array.from({
+										length: getDay(startOfMonth(new Date(year, meseCorrente))),
+									}).map((_, index) => (
+										<div key={index} className="date-cell empty-cell"></div>
+									));
+								})()}
+								{/* Genera i bottoni per i giorni del mese */}
+								{Array.from({
+									length: getDaysInMonth(new Date(year, meseCorrente)),
+								}).map((_, day) => (
+									<div key={day + 1} className="date-cell">
+										<button onClick={handleDateClick}>{day + 1}</button>
+									</div>
+								))}
+							</div>
+						</div>
 					</div>
-					<div className="calendar col-11">
-						<div className="day-of-week" style={{ fontSize: "1.5vw" }}>
-							<div>Dom</div>
-							<div>Lun</div>
-							<div>Mar</div>
-							<div>Mer</div>
-							<div>Gio</div>
-							<div>Ven</div>
-							<div>Sab</div>
-						</div>
-						<div className="date-grid">
-							{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
-							{((): JSX.Element[] => {
-								return Array.from({
-									length: getDay(startOfMonth(new Date(year, meseCorrente))),
-								}).map((_, index) => (
-									<div key={index} className="date-cell empty-cell"></div>
-								));
-							})()}
-							{/* Genera i bottoni per i giorni del mese */}
-							{Array.from({
-								length: getDaysInMonth(new Date(year, meseCorrente)),
-							}).map((_, day) => (
-								<div key={day + 1} className="date-cell">
-									<button onClick={handleDateClick}>{day + 1}</button>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-			)}
+				)
+			}
 		</>
 	);
 }

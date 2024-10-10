@@ -9,7 +9,7 @@ import passport from "passport";
 import { checkAuthentication } from "./api.js";
 const router: Router = Router();
 
-// get if the current user
+
 router.get("/", (req: Request, res: Response) => {
 	if (req.user) return res.status(200).json({ status: ResponseStatus.GOOD, value: true });
 	else return res.status(402).json({ status: ResponseStatus.BAD, value: false });
