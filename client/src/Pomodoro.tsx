@@ -26,6 +26,12 @@ enum STATUS {
 	END = "END OF SESSION",
 }
 
+enum Frequency {
+	ONCE = "once",
+	DAILY = "day",
+	WEEKLY = "week",
+}
+
 type PomodoroData = {
 	studyTime: number;
 	pauseTime: number;
@@ -42,15 +48,20 @@ type PomodoroData = {
 };
 
 type PomodoroEvent = {
+	addTitle: boolean;
 	title: string;
-	startDate: Date;
-	endDate: Date;
+	startTime: Date;
+	endTime: Date;
+	location: string;
 };
 
 const initialPomEvent: PomodoroEvent = {
+	addTitle: true,
 	title: "",
-	startDate: new Date(),
-	endDate: new Date(),
+	startTime: new Date(),
+	endTime: new Date(),
+	location: "Napule",	//obviously it has to be changed but without something 
+						//it gave me an error so I choosed a città chiù bell 'rò munn!!
 };
 
 const initialState: PomodoroData = {
@@ -435,6 +446,7 @@ export default function Pomodoros(): React.JSX.Element {
 				pauseTime,
 				message,
 			} = prevData;
+
 			if (totMinutes <= 0 || totMinutes > 3465) {
 				setData({ ...data, message: MESSAGE.MINUTES });
 			}
@@ -496,8 +508,65 @@ export default function Pomodoros(): React.JSX.Element {
 		});
 	}
 
-	//comentoo
+	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
 
+		/*const currentUser = await getCurrentUser();
+		console.log("User corrente: ");
+		console.log(currentUser);
+		*/
+
+		//Validazione dell'input
+		if (!pomEvent.title || !pomEvent.startTime || !pomEvent.endTime) {
+			setMessage("Tutti i campi dell'evento devono essere riempiti!");
+			return;
+		}
+
+		if (pomEvent.startTime > pomEvent.endTime) {
+			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			return;
+		}
+
+		const res = await fetch(`${SERVER_API}/events`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				title: pomEvent.title,
+				startTime: pomEvent.startTime.toISOString(),
+				endTime: pomEvent.endTime.toISOString(),
+				frequency: Frequency.ONCE,
+				location: pomEvent.location,
+			}),
+		});
+
+		console.log(pomEvent.title, pomEvent.startTime, pomEvent.endTime, pomEvent.location)
+
+		if (!res.ok) {
+			const errorData = await res.json();
+			console.error("Error response:", errorData);
+			setMessage("Errore durante la creazione dell'evento: " + errorData.message);
+			return;
+		}
+
+		const data: ResponseBody = (await res.json()) as ResponseBody;
+
+		setMessage(data.message || "Undefined error");
+
+		window.location.reload()
+
+		// TODO: send post request to server
+		// TODO: handle response
+	}
+
+	function toggleEventTitle(): void {
+		if (pomEvent.addTitle) {
+			// Se addTitle è true (campo titolo visibile), lo disabilitiamo e impostiamo il titolo predefinito
+			setPomEvent({ ...pomEvent, title: "Pomodoro Session", addTitle: false });
+		} else {
+			// Se addTitle è false, riabilitiamo il campo per inserire un titolo personalizzato
+			setPomEvent({ ...pomEvent, title: "", addTitle: true });
+		}
+	}
 
 
 	return (
@@ -700,18 +769,29 @@ export default function Pomodoros(): React.JSX.Element {
 				<div className="create-event-container col-2">
 					<form>
 
-						<label htmlFor="title">
-							Title
-							<input
-								className="btn border"
-								type="text"
-								name="title"
-								value={pomEvent.title}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setPomEvent({ ...pomEvent, title: e.target.value })}
-								
-							/>
-						</label>
+					<label htmlFor="useDefaultTitle">
+						Is it a "Pomodoro Session"
+						<input
+							type="checkbox"
+							name="useDefaultTitle"
+							onClick={toggleEventTitle}
+						/>
+                	</label>
+
+						{pomEvent.addTitle && (
+							<label htmlFor="title">
+								Title
+								<input
+									className="btn border"
+									type="text"
+									name="title"
+									value={pomEvent.title}
+									onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+										setPomEvent({ ...pomEvent, title: e.target.value })}
+									
+								/>
+							</label>
+						)}
 
 						<label htmlFor="startTime">
 							Data Inizio
@@ -719,33 +799,62 @@ export default function Pomodoros(): React.JSX.Element {
 								<DatePicker
 									className="btn border"
 									name="startTime"
-									selected={pomEvent.startDate}
+									selected={pomEvent.startTime}
 									onChange={(date: Date | null): void => {
-										date && setPomEvent({ ...pomEvent, startDate: date });
+										if (date) {
+											// Aggiorna la data mantenendo l'orario attuale
+											const newDate = new Date(pomEvent.startTime);
+											newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+											setPomEvent({ ...pomEvent, startTime: newDate });
+										}
 									}}
-									showTimeSelect // Abilita la selezione del tempo
-									dateFormat="Pp" // Mostra la data e l'ora
-									timeFormat="HH:mm" // Formato per l'orario
-									timeIntervals={15} // Intervalli di 15 minuti
-									timeCaption="Orario Inizio" // Etichetta dell'orario
+								/>
+							</div>
+
+							<div>
+								<input
+									className="btn border"
+									type="time"
+									value={`${pomEvent.startTime.getHours().toString().padStart(2, '0')}:${pomEvent.startTime.getMinutes().toString().padStart(2, '0')}`}
+									onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+										const [hours, minutes] = e.target.value.split(':');
+										const newDate = new Date(pomEvent.startTime); // Crea un nuovo oggetto Date basato su startTime
+										newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+										setPomEvent({ ...pomEvent, startTime: newDate });// Imposta il nuovo oggetto Date
+									}}
 								/>
 							</div>
 						</label>
+
 						<label htmlFor="endTime">
 							Data Fine
 							<div>
 								<DatePicker
 									className="btn border"
 									name="endTime"
-									selected={pomEvent.endDate}
+									selected={pomEvent.endTime}
 									onChange={(date: Date | null): void => {
-										date && setPomEvent({ ...pomEvent, endDate: date });
+										if (date) {
+											// Aggiorna la data mantenendo l'orario attuale
+											const newDate = new Date(pomEvent.endTime);
+											newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+											setPomEvent({ ...pomEvent, endTime: newDate });
+										}
 									}}
-									showTimeSelect // Abilita la selezione del tempo
-									dateFormat="Pp" // Mostra la data e l'ora
-									timeFormat="HH:mm" // Formato per l'orario
-									timeIntervals={15} // Intervalli di 15 minuti
-									timeCaption="Orario Fine" // Etichetta dell'orario
+								/>
+							</div>
+
+							<div>
+								<input
+									className="btn border"
+									type="time"
+									value={`${pomEvent.endTime.getHours().toString().padStart(2, '0')}:${pomEvent.endTime.getMinutes().toString().padStart(2, '0')}`}
+									onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+										const [hours, minutes] = e.target.value.split(':');
+										const newDate = new Date(pomEvent.endTime);
+										newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+										setPomEvent({ ...pomEvent, endTime: newDate }); // Imposta il nuovo oggetto Date
+									}}
 								/>
 							</div>
 						</label>
@@ -757,7 +866,7 @@ export default function Pomodoros(): React.JSX.Element {
 								color: "white",
 								border: "0",
 							}}
-							onClick={(): void => {}}>
+							onClick={handleCreateEvent}>
 							Create Event
 						</button>
 					</form>

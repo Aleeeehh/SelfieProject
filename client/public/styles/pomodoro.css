@@ -143,8 +143,7 @@ button {
 
 
 
-
-
+/*CSS per il form create event*/
 .create-event-container {
 	display: flex;
 	flex-direction: column;
