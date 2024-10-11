@@ -2,7 +2,7 @@ import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ResponseBody } from "./types/ResponseBody";
-//import User from "./types/User";
+import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./params/params";
 import { getDaysInMonth, startOfMonth, getDay } from "date-fns"; //funzioni di date-fns
@@ -148,7 +148,10 @@ export default function Calendar(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const owner = "Utente-Prova";
+				const currentUser = await getCurrentUser();
+				console.log("Valore ottenuto:", currentUser);
+
+				const owner = currentUser.value.username;;
 				console.log("Questo è l'ownerr:", owner);
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
@@ -191,41 +194,69 @@ export default function Calendar(): React.JSX.Element {
 		setCreateEvent(!createEvent);
 	}
 
-	function handleDateClick(e: React.MouseEvent<HTMLButtonElement>): void {
+	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+
+
+
+		console.log(day, Mesi[meseCorrente], year);
+		console.log(day, meseCorrente, year);
 		const dayValue = Number(e.currentTarget.textContent);
 		console.log("Clicked day:", dayValue); // Log per il debug
 		setDay(dayValue);
-		//changeDayWeek(dayValue);
+		/*
+			try {
+		
+					const date = new Date();
+					date.setDate(dayValue);
+					date.setMonth(meseCorrente);
+					date.setFullYear(year);
+					console.log(date);
+		
+					const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							date: date.toISOString(),
+						}),
+					});
+					const data = await res.json();
+					console.log("Questi sono gli eventi del giorno:", data);
+		
+				}
+		
+				catch (e) {
+					console.error("Si è verificato un errore durante il recupero degli eventi del giorno:", e);
+				}
+					*/
+
+
 	}
 
-	/*
-	async function getCurrentUser(): Promise<User | null> {
+
+	async function getCurrentUser(): Promise<Promise<any> | null> {
 		try {
-			const res = await fetch(`${SERVER_API}/users/current`);
+			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) { // Controlla se la risposta non è ok
 				setMessage("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
-			console.log(res);
+			console.log("Questa è la risposta alla GET per ottenere lo user", res);
 			const data: User = await res.json();
-			console.log(data);
+			console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
 			setMessage("Impossibile recuperare l'utente corrente");
 			return null;
 		}
 	}
-		*/
+
 
 
 	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
-		/*const currentUser = await getCurrentUser();
-		console.log("User corrente: ");
-		console.log(currentUser);
-		*/
+
 
 		//Validazione dell'input
 		if (!title || !startTime || !endTime || !location) {
@@ -238,10 +269,16 @@ export default function Calendar(): React.JSX.Element {
 			return;
 		}
 
+		const currentUser = await getCurrentUser();
+		console.log("Valore ottenuto:", currentUser);
+
+		const owner = currentUser.value.username;;
+
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
+				owner,
 				title,
 				startTime: startTime.toISOString(),
 				endTime: endTime.toISOString(),

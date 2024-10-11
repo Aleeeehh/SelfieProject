@@ -5,6 +5,7 @@ import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import EventSchema from "../schemas/Event.js";
 import { validDateString } from "../lib.js";
+import { start } from "repl";
 
 const router: Router = Router();
 
@@ -181,6 +182,26 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 	return eventList;
 }
 
+function minutesApprossimation(minutes: number): number {
+	console.log("Minuti dell'orario", minutes);
+	if (minutes % 10 === 0) {
+		return minutes;
+	}
+	else {
+		if (minutes % 10 < 5) {
+			console.log("L'unità è < 5, allora stampo:", (minutes - (minutes % 10)))
+			return (minutes - (minutes % 10))
+		}
+
+		else {
+			return (minutes + (10 - (minutes % 10)))
+
+		}
+
+
+	}
+}
+
 router.get("/", async (req: Request, res: Response) => {
 	try {
 		const dateFromStr = req.query.from as string | undefined;
@@ -281,7 +302,7 @@ router.get("/owner", async (req: Request, res: Response) => {
 router.post("/", async (req: Request, res: Response) => { //gestore per le richieste POST a questa route /events
 	try {
 		//Validazione dell'input
-		const { title, startTime, endTime, location } = req.body as Event;
+		const { owner, title, startTime, endTime, location } = req.body as Event;
 
 		if (!title || !startTime || !endTime || !location) {
 			return res.status(400).json({
@@ -299,10 +320,16 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 
 		const startTimeDate = new Date(startTime);
 		startTimeDate.setHours(startTimeDate.getHours() + 2); // Aggiungi 2 ore
+		startTimeDate.setMinutes(minutesApprossimation(startTimeDate.getMinutes())); //approssima i minuti alla decina
+		startTimeDate.setSeconds(0); // trascura i secondi
+		startTimeDate.setMilliseconds(0); // trascura i millisecondi
 
 
 		const endTimeDate = new Date(endTime);
 		endTimeDate.setHours(endTimeDate.getHours() + 2); // Aggiungi 2 ore
+		endTimeDate.setMinutes(minutesApprossimation(endTimeDate.getMinutes())); //approssima i minuti alla decina
+		endTimeDate.setSeconds(0); //trascura i secondi
+		endTimeDate.setMilliseconds(0); //trascura i millisecondi
 
 		const now = new Date();
 		now.setHours(now.getHours() + 2);
@@ -313,7 +340,7 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 			startTime: startTimeDate,
 			endTime: endTimeDate,
 			location,
-			owner: "Utente-Prova",
+			owner,
 			recurring: false, //assumo evento non ricorrente
 			createdAt: now,
 			updatedAt: now,
@@ -338,6 +365,46 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 		return res.status(500).json(resBody);
 	}
 });
+/*
+router.post("/eventsOfDay", async (req: Request, res: Response) => {
+	const { date } = req.body;
+
+	const giornoSelezionato = new Date(date);
+	console.log("Data ottenuta:", giornoSelezionato);
+
+	// Definisci l'inizio e la fine del giorno
+	const startOfDay = new Date(giornoSelezionato.getFullYear(), giornoSelezionato.getMonth(), giornoSelezionato.getDate(), 0, 0, 0, 0); // Inizio del giorno
+	const endOfDay = new Date(giornoSelezionato.getFullYear(), giornoSelezionato.getMonth(), giornoSelezionato.getDate(), 23, 59, 59, 999); // Fine del giorno
+
+	console.log("Inizio del giorno:", startOfDay);
+	console.log("Fine del giorno:", endOfDay);
+
+	try {
+		// Trova gli eventi per quella data
+		const events = await EventSchema.find({
+			startTime: {
+				$gte: startOfDay, // Maggiore o uguale all'inizio del giorno
+				$lt: endOfDay,    // Minore alla fine del giorno
+			},
+		});
+
+		const resBody: ResponseBody = {
+			message: "Eventi del giorno ottenuti dal database",
+			status: ResponseStatus.GOOD,
+			value: events,
+		};
+
+		return res.json(resBody);
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({
+			status: ResponseStatus.BAD,
+			message: "Errore durante la ricerca degli eventi.",
+		});
+	}
+});
+*/
+
 
 router.put("/:id", async (req: Request, res: Response) => {
 	const eventId = req.params.id as string;
