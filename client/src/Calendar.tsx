@@ -312,7 +312,7 @@ export default function Calendar(): React.JSX.Element {
 		const currentUser = await getCurrentUser();
 		console.log("Valore ottenuto:", currentUser);
 
-		const owner = currentUser.value.username;;
+		const owner = currentUser.value.username;
 
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
