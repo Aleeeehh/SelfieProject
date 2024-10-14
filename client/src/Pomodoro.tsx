@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Pomodoro from "./types/Pomodoro";
+import User from "./types/User";
+
 
 import DatePicker from "react-datepicker";	//to create pomodoro events
 //import Time from "react-datepicker/dist/time";
@@ -527,10 +529,12 @@ export default function Pomodoros(): React.JSX.Element {
 			return;
 		}
 
+		const currentUser = await getCurrentUser();
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
+				owner: currentUser.value.username,
 				title: pomEvent.title,
 				startTime: pomEvent.startTime.toISOString(),
 				endTime: pomEvent.endTime.toISOString(),
@@ -556,6 +560,23 @@ export default function Pomodoros(): React.JSX.Element {
 
 		// TODO: send post request to server
 		// TODO: handle response
+	}
+
+	async function getCurrentUser(): Promise<Promise<any> | null> {
+		try {
+			const res = await fetch(`${SERVER_API}/users`);
+			if (!res.ok) { // Controlla se la risposta non è ok
+				setMessage("Utente non autenticato");
+				return null; // Restituisci null se non autenticato
+			}
+			console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			const data: User = await res.json();
+			console.log("Questo è il json della risposta", data);
+			return data;
+		} catch (e) {
+			setMessage("Impossibile recuperare l'utente corrente");
+			return null;
+		}
 	}
 
 	function toggleEventTitle(): void {
