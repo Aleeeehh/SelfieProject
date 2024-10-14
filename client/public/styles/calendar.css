@@ -132,10 +132,25 @@ button.btn:focus {
 	margin-right: auto;
 	display: flex;
 	flex-direction: column;
-	max-height: 400px;
+	max-height: 500px;
 	overflow-y: auto;
+	overflow-x: hidden;
 	width: 100%;
+}
 
+.evento {
+	position: absolute;
+	display: flex;
+	/* Posizionamento assoluto */
+	color: rgb(155, 223, 212);
+	font-weight: bold;
+	background-color: rgba(155, 223, 212, 0.5);
+	justify-content: center;
+	border: 2px solid rgb(155, 223, 212);
+	/* Bordo del quadrato */
+	z-index: 10;
+	border-radius: 10px;
+	padding: 0;
 }
 
 .orario time {

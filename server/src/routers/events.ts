@@ -5,6 +5,7 @@ import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import EventSchema from "../schemas/Event.js";
 import { validDateString } from "../lib.js";
+import { start } from "repl";
 
 const router: Router = Router();
 
@@ -181,6 +182,26 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 	return eventList;
 }
 
+function minutesApprossimation(minutes: number): number {
+	console.log("Minuti dell'orario", minutes);
+	if (minutes % 10 === 0) {
+		return minutes;
+	}
+	else {
+		if (minutes % 10 < 5) {
+			console.log("L'unità è < 5, allora stampo:", (minutes - (minutes % 10)))
+			return (minutes - (minutes % 10))
+		}
+
+		else {
+			return (minutes + (10 - (minutes % 10)))
+
+		}
+
+
+	}
+}
+
 router.get("/", async (req: Request, res: Response) => {
 	try {
 		const dateFromStr = req.query.from as string | undefined;
@@ -281,7 +302,7 @@ router.get("/owner", async (req: Request, res: Response) => {
 router.post("/", async (req: Request, res: Response) => { //gestore per le richieste POST a questa route /events
 	try {
 		//Validazione dell'input
-		const { title, startTime, endTime, location } = req.body as Event;
+		const { owner, title, startTime, endTime, location } = req.body as Event;
 
 		if (!title || !startTime || !endTime || !location) {
 			return res.status(400).json({
@@ -299,10 +320,16 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 
 		const startTimeDate = new Date(startTime);
 		startTimeDate.setHours(startTimeDate.getHours() + 2); // Aggiungi 2 ore
+		startTimeDate.setMinutes(minutesApprossimation(startTimeDate.getMinutes())); //approssima i minuti alla decina
+		startTimeDate.setSeconds(0); // trascura i secondi
+		startTimeDate.setMilliseconds(0); // trascura i millisecondi
 
 
 		const endTimeDate = new Date(endTime);
 		endTimeDate.setHours(endTimeDate.getHours() + 2); // Aggiungi 2 ore
+		endTimeDate.setMinutes(minutesApprossimation(endTimeDate.getMinutes())); //approssima i minuti alla decina
+		endTimeDate.setSeconds(0); //trascura i secondi
+		endTimeDate.setMilliseconds(0); //trascura i millisecondi
 
 		const now = new Date();
 		now.setHours(now.getHours() + 2);
@@ -313,7 +340,7 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 			startTime: startTimeDate,
 			endTime: endTimeDate,
 			location,
-			owner: "Utente-Prova",
+			owner,
 			recurring: false, //assumo evento non ricorrente
 			createdAt: now,
 			updatedAt: now,
@@ -338,6 +365,49 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 		return res.status(500).json(resBody);
 	}
 });
+
+
+//INEFFICIENTE MA FUNZIONANTE, DA OTTIMIZZARE!
+router.post("/eventsOfDay", async (req: Request, res: Response) => {
+	const { date } = req.body;
+
+	const giornoSelezionato = new Date(date);
+	const selectedDay = giornoSelezionato.getDate(); // Ottieni il giorno del mese
+	const selectedMonth = giornoSelezionato.getMonth(); // Ottieni il mese
+	const selectedYear = giornoSelezionato.getFullYear(); // Ottieni l'anno
+
+	try {
+
+
+		// Trova tutti gli eventi
+		const allEvents = await EventSchema.find().lean(); // .lean() per ottenere oggetti JavaScript semplici
+
+		// Filtra gli eventi per il giorno selezionato
+		const filteredEvents = allEvents.filter(event => {
+			const eventDate = new Date(event.startTime);
+			return (
+				eventDate.getDate() === selectedDay &&
+				eventDate.getMonth() === selectedMonth &&
+				eventDate.getFullYear() === selectedYear
+			);
+		});
+
+		const resBody = {
+			message: "Eventi filtrati per il giorno selezionato",
+			status: "success",
+			value: filteredEvents,
+		};
+
+		return res.json(resBody);
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({
+			status: ResponseStatus.BAD,
+			message: "Errore durante la ricerca degli eventi.",
+		});
+	}
+});
+
 
 router.put("/:id", async (req: Request, res: Response) => {
 	const eventId = req.params.id as string;
