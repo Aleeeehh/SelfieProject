@@ -44,7 +44,12 @@ export default function Calendar(): React.JSX.Element {
 	const [activeButton, setActiveButton] = React.useState(0);
 	const [year, setYear] = React.useState(2024);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
-
+	/*
+	const [eventName, setEventName] = React.useState("");
+	const [eventHeight, setEventHeight] = React.useState(0);
+	const [eventTop, setEventTop] = React.useState(0);
+	*/
+	const [eventPositions, setEventPositions] = React.useState<{ top: number; height: number; name: string }[]>([]);
 	const nav = useNavigate();
 
 	React.useEffect(() => {
@@ -127,21 +132,25 @@ export default function Calendar(): React.JSX.Element {
 	}
 
 	function mesePrecedente(): void {
+		setEventPositions([]);
 		if (meseCorrente === 0) {
 			setMeseCorrente((meseCorrente - 1 + 12) % 12);
 			setYear(year - 1);
 		} else {
 			setMeseCorrente((meseCorrente - 1 + 12) % 12);
 		}
+		//handleDateClick(day);
 	}
 
 	function meseSuccessivo(): void {
+		setEventPositions([]);
 		if (meseCorrente === 11) {
 			setMeseCorrente((meseCorrente + 1) % 12);
 			setYear(year + 1);
 		} else {
 			setMeseCorrente((meseCorrente + 1) % 12);
 		}
+		//handleDateClick(day);
 	}
 
 	// On page load, get the events for the user
@@ -194,43 +203,74 @@ export default function Calendar(): React.JSX.Element {
 		setCreateEvent(!createEvent);
 	}
 
-	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
-
-
-
+	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
+		//e.preventDefault();
+		setEventPositions([]);
+		let dayValue: number;
 		console.log(day, Mesi[meseCorrente], year);
 		console.log(day, meseCorrente, year);
-		const dayValue = Number(e.currentTarget.textContent);
+		if (typeof e === "number") {
+			dayValue = e;
+		}
+		else {
+			dayValue = Number(e.currentTarget.textContent);
+		}
 		console.log("Clicked day:", dayValue); // Log per il debug
 		setDay(dayValue);
-		/*
-			try {
-		
-					const date = new Date();
-					date.setDate(dayValue);
-					date.setMonth(meseCorrente);
-					date.setFullYear(year);
-					console.log(date);
-		
-					const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							date: date.toISOString(),
-						}),
-					});
-					const data = await res.json();
-					console.log("Questi sono gli eventi del giorno:", data);
-		
-				}
-		
-				catch (e) {
-					console.error("Si è verificato un errore durante il recupero degli eventi del giorno:", e);
-				}
-					*/
+
+		try {
+
+			const date = new Date();
+			date.setDate(dayValue);
+			date.setMonth(meseCorrente);
+			date.setFullYear(year);
+			console.log(date);
+
+			const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					date: date.toISOString(),
+				}),
+			});
+			const data = await res.json();
+			console.log("Questi sono gli eventi del giorno:", data)
+
+			const eventi = data.value; //ottieni la lista di eventi
+			if (eventi && eventi.length > 0) {
+				const positions = eventi.map((evento: Event) => {
+					if (evento && evento.startTime) {
+						const oraInizioEvento = new Date(evento.startTime).getHours() - 2;
+						const minutiInizioEvento = new Date(evento.startTime).getMinutes();
+						const minutiFineEvento = new Date(evento.endTime).getMinutes();
+						const oraFineEvento = new Date(evento.endTime).getHours() - 2;
+
+						// Calcola la posizione e l'altezza per ogni evento
+						const topPosition = (54 * oraInizioEvento) + (54 * (minutiInizioEvento / 60)); // Posizione verticale
+						const eventHeight = 54 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
+
+						const nomeEvento = evento.title;
+
+						return { top: topPosition, height: eventHeight, name: nomeEvento };
+					}
+					return null; // Ritorna null se l'evento non è valido
+				}).filter(Boolean); // Rimuove eventuali null
+
+				// Imposta le posizioni degli eventi nello stato
+				setEventPositions(positions);
+			}
+			else {
+				console.log("Nessun evento trovato, oppure startTime non disponibile");
+			}
+			console.log("Queste sono le posizioni degli eventi ottenuti:", eventPositions);
 
 
+
+		}
+
+		catch (e) {
+			console.error("Si è verificato un errore durante il recupero degli eventi del giorno:", e);
+		}
 	}
 
 
@@ -380,7 +420,10 @@ export default function Calendar(): React.JSX.Element {
 							{year}
 							<button
 								className="year-button "
-								onClick={(): void => setYear(year - 1)}>
+								onClick={(): void => {
+									setEventPositions([]); // Svuota l'array delle posizioni
+									setYear(year - 1); // Decrementa l'anno
+								}}>
 								-
 							</button>
 							<button className="year-button" onClick={(): void => setYear(year + 1)}>
@@ -483,7 +526,7 @@ export default function Calendar(): React.JSX.Element {
 										<span style={{
 											position: 'absolute', // Posiziona il pallino in modo assoluto
 											bottom: '3px', // Posiziona il pallino sotto il bottone
-											left: '45%', // Centra orizzontalmente
+											left: '32%', // Centra orizzontalmente
 											transform: 'translateX(-50%)', // Centra il pallino
 											width: '8px',
 											height: '8px',
@@ -608,6 +651,20 @@ export default function Calendar(): React.JSX.Element {
 						</div>
 					)}
 					<div className="orario col-5">
+						{eventPositions.map((event, index) => (
+							<div
+								key={index} // Assicurati di fornire una chiave unica per ogni elemento
+								className="evento"
+								style={{
+									top: `${event.top}px`, // Imposta la posizione verticale
+									height: `${event.height}px`, // Imposta l'altezza dell'evento
+									width: "95%",
+									position: "absolute", // Assicurati che sia posizionato correttamente
+								}}
+							>
+								{event.name} {/* Nome dell'evento */}
+							</div>
+						))}
 						<time>00:00</time>
 						<time>01:00</time>
 						<time>02:00</time>

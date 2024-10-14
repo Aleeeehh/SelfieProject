@@ -365,33 +365,37 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 		return res.status(500).json(resBody);
 	}
 });
-/*
+
+
+//INEFFICIENTE MA FUNZIONANTE, DA OTTIMIZZARE!
 router.post("/eventsOfDay", async (req: Request, res: Response) => {
 	const { date } = req.body;
 
 	const giornoSelezionato = new Date(date);
-	console.log("Data ottenuta:", giornoSelezionato);
-
-	// Definisci l'inizio e la fine del giorno
-	const startOfDay = new Date(giornoSelezionato.getFullYear(), giornoSelezionato.getMonth(), giornoSelezionato.getDate(), 0, 0, 0, 0); // Inizio del giorno
-	const endOfDay = new Date(giornoSelezionato.getFullYear(), giornoSelezionato.getMonth(), giornoSelezionato.getDate(), 23, 59, 59, 999); // Fine del giorno
-
-	console.log("Inizio del giorno:", startOfDay);
-	console.log("Fine del giorno:", endOfDay);
+	const selectedDay = giornoSelezionato.getDate(); // Ottieni il giorno del mese
+	const selectedMonth = giornoSelezionato.getMonth(); // Ottieni il mese
+	const selectedYear = giornoSelezionato.getFullYear(); // Ottieni l'anno
 
 	try {
-		// Trova gli eventi per quella data
-		const events = await EventSchema.find({
-			startTime: {
-				$gte: startOfDay, // Maggiore o uguale all'inizio del giorno
-				$lt: endOfDay,    // Minore alla fine del giorno
-			},
+
+
+		// Trova tutti gli eventi
+		const allEvents = await EventSchema.find().lean(); // .lean() per ottenere oggetti JavaScript semplici
+
+		// Filtra gli eventi per il giorno selezionato
+		const filteredEvents = allEvents.filter(event => {
+			const eventDate = new Date(event.startTime);
+			return (
+				eventDate.getDate() === selectedDay &&
+				eventDate.getMonth() === selectedMonth &&
+				eventDate.getFullYear() === selectedYear
+			);
 		});
 
-		const resBody: ResponseBody = {
-			message: "Eventi del giorno ottenuti dal database",
-			status: ResponseStatus.GOOD,
-			value: events,
+		const resBody = {
+			message: "Eventi filtrati per il giorno selezionato",
+			status: "success",
+			value: filteredEvents,
 		};
 
 		return res.json(resBody);
@@ -403,7 +407,6 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
 		});
 	}
 });
-*/
 
 
 router.put("/:id", async (req: Request, res: Response) => {
