@@ -44,6 +44,7 @@ export default function Calendar(): React.JSX.Element {
 	const [activeButton, setActiveButton] = React.useState(0);
 	const [year, setYear] = React.useState(2024);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
+	const [addTitle, setAddTitle] = React.useState(true);
 	/*
 	const [eventName, setEventName] = React.useState("");
 	const [eventHeight, setEventHeight] = React.useState(0);
@@ -369,6 +370,17 @@ export default function Calendar(): React.JSX.Element {
 		return newDay;
 	}
 
+	function toggleEventTitle(): void {
+		if (addTitle) {
+			setTitle("Pomodoro Session");
+			setAddTitle(false);
+		} else {
+			setTitle("");
+			setAddTitle(true);
+		}
+	}
+
+
 	return (
 		<>
 			{message && <div>{message}</div>}
@@ -547,18 +559,29 @@ export default function Calendar(): React.JSX.Element {
 								Close
 							</button>
 							<form>
-								<label htmlFor="title">
-									Title
+								<label htmlFor="useDefaultTitle">
+									Is it a "Pomodoro Session"?
 									<input
-										className="btn border"
-										type="text"
-										name="title"
-										value={title}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-											setTitle(e.target.value)
-										}
+										type="checkbox"
+										name="useDefaultTitle"
+										onClick={toggleEventTitle}
+										style={{ marginLeft: "5px" }}
 									/>
 								</label>
+								{addTitle && (
+									<label htmlFor="title">
+										Title
+										<input
+											className="btn border"
+											type="text"
+											name="title"
+											value={title}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+												setTitle(e.target.value)
+											}
+										/>
+									</label>
+								)}
 								<label htmlFor="startTime">
 									Data Inizio
 									<div>
