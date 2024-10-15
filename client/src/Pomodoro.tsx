@@ -2,7 +2,7 @@ import React from "react";
 import { useState, ChangeEvent, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./params/params";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Pomodoro from "./types/Pomodoro";
@@ -59,11 +59,10 @@ type PomodoroEvent = {
 
 const initialPomEvent: PomodoroEvent = {
 	addTitle: true,
-	title: "",
+	title: "Pomodoro Session",
 	startTime: new Date(),
 	endTime: new Date(),
-	location: "Napule",	//obviously it has to be changed but without something 
-						//it gave me an error so I choosed a città chiù bell 'rò munn!!
+	location: "",
 };
 
 const initialState: PomodoroData = {
@@ -90,6 +89,17 @@ export default function Pomodoros(): React.JSX.Element {
 	const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
 	const nav = useNavigate();
+
+	//setup per ricevere la durata dell'evento pomodoro cliccando dall'evento sul calendario
+	const location = useLocation();
+
+	const getQueryParams = (): number => {
+		const params = new URLSearchParams(location.search); // Ottieni i parametri della query
+		const duration = params.get('duration'); // Leggi il parametro "duration"
+		return duration ? parseInt(duration) : 0; // Restituisci la durata come numero, oppure 0 se non è definita
+	  };
+	
+	const duration = getQueryParams(); // Ottieni la durata dal query param
 	
 
 	React.useEffect(() => {
@@ -112,7 +122,39 @@ export default function Pomodoros(): React.JSX.Element {
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
 			}
-		})();
+
+			//gestione della durata derivata dall'evento
+			console.log("La durata dell'evento pomodoro è: " + duration);
+			if (duration !== 0){
+			setData((prevData) => {
+				let {
+					cycles,
+					studyTime,
+					totMinutes,
+					pauseTime,
+				} = prevData;
+				
+				totMinutes = duration;
+
+				studyTime = 30;
+				pauseTime = 5;
+
+				if (totMinutes%35 !== 0) {
+					cycles = Math.floor(totMinutes / 35) + 1; // +1 perchè ho i tasti per passare avanti
+				}											  // quindi se il tempo totale è troppo non è un problema
+				else {
+					cycles = Math.floor(totMinutes / 35);
+				}
+
+				return {
+					...prevData,
+					cycles,
+					pauseTime,
+					studyTime,
+					totMinutes,
+				} as PomodoroData;
+			});
+		}})();
 	}, []);
 
 	function inputCheck(): boolean {
@@ -513,13 +555,8 @@ export default function Pomodoros(): React.JSX.Element {
 	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
-		/*const currentUser = await getCurrentUser();
-		console.log("User corrente: ");
-		console.log(currentUser);
-		*/
-
 		//Validazione dell'input
-		if (!pomEvent.title || !pomEvent.startTime || !pomEvent.endTime) {
+		if (!pomEvent.title || !pomEvent.startTime || !pomEvent.endTime || !pomEvent.location) {
 			setMessage("Tutti i campi dell'evento devono essere riempiti!");
 			return;
 		}
@@ -579,16 +616,6 @@ export default function Pomodoros(): React.JSX.Element {
 		}
 	}
 
-	function toggleEventTitle(): void {
-		if (pomEvent.addTitle) {
-			// Se addTitle è true (campo titolo visibile), lo disabilitiamo e impostiamo il titolo predefinito
-			setPomEvent({ ...pomEvent, title: "Pomodoro Session", addTitle: false });
-		} else {
-			// Se addTitle è false, riabilitiamo il campo per inserire un titolo personalizzato
-			setPomEvent({ ...pomEvent, title: "", addTitle: true });
-		}
-	}
-
 
 	return (
 		<>
@@ -599,7 +626,7 @@ export default function Pomodoros(): React.JSX.Element {
 			<div className="pomodoro-container">
 				
 				<header>
-					<h1 id="title" style={{ color: "white", fontWeight: "bold" }}>POMODORO TIMER</h1>
+					<h1 id="title" style={{ color: "black", fontWeight: "bold" }}>POMODORO TIMER</h1>
 				</header>
 
 				<div className="preview">
@@ -645,7 +672,7 @@ export default function Pomodoros(): React.JSX.Element {
 						<button
 							id="start-button"		//probabilmente non serve l'id
 							type="button"
-							className="btn btn-success"
+							className="btn btn-success border"
 							onClick={handleSavePomodoroConfig}
 							disabled={data.activeTimer}>
 							START
@@ -654,7 +681,7 @@ export default function Pomodoros(): React.JSX.Element {
 						<button
 							id="stop-button"		//probabilmente non serve l'id
 							type="button"
-							className="btn btn-danger"
+							className="btn btn-danger border"
 							onClick={stopProcess}
 							disabled={!data.activeTimer}>
 							STOP
@@ -667,7 +694,7 @@ export default function Pomodoros(): React.JSX.Element {
 						<button
 							id="next-button"		//probabilmente non serve l'id
 							type="button"
-							className="btn btn-warning"
+							className="btn btn-warning border"
 							onClick={nextPhase}
 							disabled={!data.activeTimer}>
 							NEXT PHASE
@@ -676,7 +703,7 @@ export default function Pomodoros(): React.JSX.Element {
 						<button
 							id="next-button"		//probabilmente non serve l'id
 							type="button"
-							className="btn btn-warning"
+							className="btn btn-warning border"
 							onClick={nextCycle}
 							disabled={!data.activeTimer}>
 							NEXT CYCLE
@@ -685,7 +712,7 @@ export default function Pomodoros(): React.JSX.Element {
 						<button
 							id="next-button"		//probabilmente non serve l'id
 							type="button"
-							className="btn btn-warning"
+							className="btn btn-warning border"
 							onClick={repeatCycle}
 							disabled={!data.activeTimer}>
 							REPEAT CYCLE
@@ -695,7 +722,7 @@ export default function Pomodoros(): React.JSX.Element {
 					<p className="paragraph">{data.message}</p>
 				</div>
 
-				<div className="pannello studyTime">
+				<div className="pannello studyTime border">
 					<label htmlFor="inputStudy">Study time in minutes</label>
 					<input
 						name="inputStudy"
@@ -711,7 +738,7 @@ export default function Pomodoros(): React.JSX.Element {
 					/>
 				</div>
 
-				<div className="pannello breakTime">
+				<div className="pannello breakTime border">
 					<label htmlFor="inputPause"> Break time in minutes </label>
 					<input
 						name="inputPause"
@@ -726,7 +753,7 @@ export default function Pomodoros(): React.JSX.Element {
 					/>
 				</div>
 
-				<div className="pannello studyCycles">
+				<div className="pannello studyCycles border">
 					<label htmlFor="inputCycles"> Number of study cycles </label>
 					<input
 						name="inputCycles"
@@ -741,7 +768,7 @@ export default function Pomodoros(): React.JSX.Element {
 					/>
 				</div>
 
-				<div className="pannello totMinutes">
+				<div className="pannello totMinutes border">
 					<label htmlFor="totMinutes"> Total minutes of study </label>
 					<input
 						name="totMinutes"
@@ -764,7 +791,7 @@ export default function Pomodoros(): React.JSX.Element {
 					</button>
 				</div>
 
-				<div className="pannello totHours">
+				<div className="pannello totHours border">
 					<label htmlFor="totHours"> Total hours of study </label>
 					<input
 						name="totHours"
@@ -788,37 +815,14 @@ export default function Pomodoros(): React.JSX.Element {
 				</div>
 
 				<div className="create-event-container col-2">
+					<h4>Organize your next Pomodoro Session</h4>
 					<form>
-
-					<label htmlFor="useDefaultTitle">
-						Is it a "Pomodoro Session"
-						<input
-							type="checkbox"
-							name="useDefaultTitle"
-							onClick={toggleEventTitle}
-						/>
-                	</label>
-
-						{pomEvent.addTitle && (
-							<label htmlFor="title">
-								Title
-								<input
-									className="btn border"
-									type="text"
-									name="title"
-									value={pomEvent.title}
-									onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-										setPomEvent({ ...pomEvent, title: e.target.value })}
-									
-								/>
-							</label>
-						)}
-
+						
 						<label htmlFor="startTime">
 							Data Inizio
 							<div>
 								<DatePicker
-									className="btn border"
+									className="btn border createEventinput"
 									name="startTime"
 									selected={pomEvent.startTime}
 									onChange={(date: Date | null): void => {
@@ -834,7 +838,7 @@ export default function Pomodoros(): React.JSX.Element {
 
 							<div>
 								<input
-									className="btn border"
+									className="btn border createEventinput"
 									type="time"
 									value={`${pomEvent.startTime.getHours().toString().padStart(2, '0')}:${pomEvent.startTime.getMinutes().toString().padStart(2, '0')}`}
 									onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -851,7 +855,7 @@ export default function Pomodoros(): React.JSX.Element {
 							Data Fine
 							<div>
 								<DatePicker
-									className="btn border"
+									className="btn border createEventinput"
 									name="endTime"
 									selected={pomEvent.endTime}
 									onChange={(date: Date | null): void => {
@@ -867,7 +871,7 @@ export default function Pomodoros(): React.JSX.Element {
 
 							<div>
 								<input
-									className="btn border"
+									className="btn border createEventinput"
 									type="time"
 									value={`${pomEvent.endTime.getHours().toString().padStart(2, '0')}:${pomEvent.endTime.getMinutes().toString().padStart(2, '0')}`}
 									onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -879,12 +883,25 @@ export default function Pomodoros(): React.JSX.Element {
 								/>
 							</div>
 						</label>
+						<label htmlFor="location">
+								Luogo
+								<div>
+									<input
+										className="btn border createEventinput"
+										type="text"
+										name="location"
+										value={pomEvent.location}
+										onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+											setPomEvent({ ...pomEvent, location: e.target.value })}
+									/>
+								</div>
+						</label>
 						
 						<button
 							className="btn btn-primary"
 							style={{
 								backgroundColor: "bisque",
-								color: "white",
+								color: "black",
 								border: "0",
 							}}
 							onClick={handleCreateEvent}>
