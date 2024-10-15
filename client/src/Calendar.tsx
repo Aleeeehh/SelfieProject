@@ -389,6 +389,17 @@ export default function Calendar(): React.JSX.Element {
 			return;
 		}
 
+		const start = new Date(startTime).getTime();
+		const end = new Date(endTime).getTime();
+
+		//l'evento che creo dura almeno 30 minuti?
+		if ((end - start) / (1000 * 60) < 30) {
+			setMessage("L'evento deve durare almeno 30 minuti");
+			return;
+		}
+
+
+
 		const currentUser = await getCurrentUser();
 		console.log("Valore ottenuto:", currentUser);
 
@@ -642,7 +653,7 @@ export default function Calendar(): React.JSX.Element {
 							</button>
 							<form>
 								<label htmlFor="useDefaultTitle">
-									Is it a "Pomodoro Session"?
+									Pomodoro Session?
 									<input
 										type="checkbox"
 										name="useDefaultTitle"
@@ -760,43 +771,58 @@ export default function Calendar(): React.JSX.Element {
 
 						<div>
 							{eventPositions.map((event, index) => (
-								<div
-									key={index} // Assicurati di fornire una chiave unica per ogni elemento
-									className="evento"
-									style={{
-										top: `${event.top}px`, // Imposta la posizione verticale
-										height: `${event.height}px`, // Imposta l'altezza dell'evento
-										width: `calc(95%/${event.width})`,
-										position: "absolute", // Assicurati che sia posizionato correttamente
-										color: event.type ? undefined : "red", // Imposta il colore in base a event.type
-										borderColor: event.type ? undefined : "red",
-										backgroundColor: event.type ? undefined : "rgba(249, 67, 67, 0.5)",
-										marginLeft: `${event.marginLeft}%`,
-									}}
-								>
-									{/* Controlla se l'evento è "Pomodoro Session" per renderlo un link */}
-									{(!event.type) ? (
-										console.log("Event Positions:", eventPositions),
-										<Link
-											to={`/pomodoro?duration=${
-												// Funzione per calcolare la durata dell'evento e scriverlo come query param
-												((startTime, endTime): number => {
-													console.log("startTime:", startTime, "endTime:", endTime);
-													const start = new Date(startTime); // Crea un oggetto Date per l'inizio
-													const end = new Date(endTime); // Crea un oggetto Date per la fine
-													const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-													console.log(totMin); // Durata in minuti
-													return totMin
-												})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-												}`}
-											style={{ color: "red" }} // Imposta il colore rosso per il link
+								// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+								!event.type ? (
+									<Link
+										to={`/pomodoro?duration=${
+											// Funzione per calcolare la durata dell'evento e scriverlo come query param
+											((startTime, endTime): number => {
+												const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+												const end = new Date(endTime); // Crea un oggetto Date per la fine
+												const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+												return totMin;
+											})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+											}`}
+										key={index} // Assicurati di fornire una chiave unica per ogni elemento
+										style={{ textDecoration: 'none' }} // Rimuove l'eventuale sottolineatura del link
+									>
+										<div
+											key={index} // Assicurati di fornire una chiave unica per ogni elemento
+											className="evento"
+											style={{
+												top: `${event.top}px`, // Imposta la posizione verticale
+												height: `${event.height}px`, // Imposta l'altezza dell'evento
+												width: `calc(95%/${event.width})`,
+												position: "absolute", // Assicurati che sia posizionato correttamente
+												color: "red", // Colore rosso se event.type è false
+												borderColor: "red",
+												backgroundColor: "rgba(249, 67, 67, 0.5)",
+												marginLeft: `${event.marginLeft}%`,
+												cursor: "pointer", // Imposta il puntatore come non cliccabile
+											}}
 										>
 											{event.name}
-										</Link>
-									) : (
-										event.name // Altrimenti mostra solo il nome dell'evento
-									)}
-								</div>
+										</div>
+									</Link>
+								) : (
+									<div
+										className="evento"
+										style={{
+											top: `${event.top}px`, // Imposta la posizione verticale
+											height: `${event.height}px`, // Imposta l'altezza dell'evento
+											width: `calc(95%/${event.width})`,
+											position: "absolute", // Assicurati che sia posizionato correttamente
+											color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+											borderColor: "rgb(155, 223, 212)",
+											backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+											marginLeft: `${event.marginLeft}%`,
+											cursor: "default", // Imposta il puntatore come cliccabile
+										}}
+									>
+										{event.name}
+									</div>
+
+								)
 							))}
 						</div>
 
