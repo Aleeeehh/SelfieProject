@@ -205,6 +205,8 @@ export default function Calendar(): React.JSX.Element {
 		setCreateEvent(!createEvent);
 	}
 
+
+
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
 		//e.preventDefault();
 		setEventPositions([]);
@@ -283,7 +285,7 @@ export default function Calendar(): React.JSX.Element {
 
 							// Controlla se gli eventi si sovrappongono
 							if (startTime < otherEndTime && endTime > otherStartTime) {
-								console.log("Trovato evento con medesimo orario (il primo avviso è sè stesso), iterazione numero " + i);
+								//console.log("Trovato evento con medesimo orario (il primo avviso è sè stesso), iterazione numero " + i);
 								// Incrementa il contatore per l'evento corrente
 								overlapCount[index] = (overlapCount[index] || 0) + 1;
 								// Incrementa il contatore per l'altro evento
@@ -352,6 +354,27 @@ export default function Calendar(): React.JSX.Element {
 			console.error("Si è verificato un errore durante il recupero degli eventi del giorno:", e);
 		}
 	}
+	/*
+		async function deleteEvent(id: string): Promise<void> {
+			try {
+				const res = await fetch(`${SERVER_API}/events`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						event_id: id,
+					}),
+				});
+				const data = await res.json();
+	
+				console.log("EVENTO ELIMINATO:", data);
+				return data;
+			}
+			catch (e) {
+				setMessage("Errore nell'eliminazione dell'evento");
+				return;
+			}
+		}
+		*/
 
 
 	async function getCurrentUser(): Promise<Promise<any> | null> {
@@ -798,10 +821,24 @@ export default function Calendar(): React.JSX.Element {
 												borderColor: "red",
 												backgroundColor: "rgba(249, 67, 67, 0.5)",
 												marginLeft: `${event.marginLeft}%`,
-												cursor: "pointer", // Imposta il puntatore come non cliccabile
+												cursor: "pointer",
 											}}
 										>
 											{event.name}
+											<div className="position-relative">
+												{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+												<i className="bi bi-trash position-absolute"
+													style={{
+														bottom: "2px", // Posiziona l'icona a 10px dal fondo
+														right: "2px",  // Posiziona l'icona a 10px dal lato destro
+														fontSize: "1.5rem",
+
+														color: "red",
+														cursor: "pointer"
+													}}
+												></i>
+											</div>
+
 										</div>
 									</Link>
 								) : (
@@ -816,10 +853,25 @@ export default function Calendar(): React.JSX.Element {
 											borderColor: "rgb(155, 223, 212)",
 											backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
 											marginLeft: `${event.marginLeft}%`,
-											cursor: "default", // Imposta il puntatore come cliccabile
+											cursor: "default",
 										}}
 									>
 										{event.name}
+										<div className="position-relative" >
+											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+											<i className="bi bi-trash position-absolute"
+												style={{
+													bottom: "2px", // Posiziona l'icona a 10px dal fondo
+													right: "2px",  // Posiziona l'icona a 10px dal lato destro
+													fontSize: "1.5rem",
+													margin: 0,
+													padding: 0,
+													color: "rgb(155, 223, 212)",
+													cursor: "pointer"
+												}}
+											></i>
+										</div>
+
 									</div>
 
 								)

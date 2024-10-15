@@ -366,6 +366,33 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 	}
 });
 
+/*
+router.post("/deleteEvent", async (req: Request, res: Response) => {
+	const { event_id } = req.body;
+	try {
+		const eventoEliminato = await EventSchema.find({ _id: event_id });
+		await EventSchema.deleteOne({ _id: event_id });
+
+		const resBody = {
+			message: "Evento eliminato con successo",
+			status: "success",
+			value: eventoEliminato,
+		};
+
+		return res.json(resBody);
+
+	}
+
+	catch (e) {
+		const resBody = {
+			message: "Errore nell'eliminazione dell'evento",
+			status: ResponseStatus.BAD,
+		};
+		return res.json(resBody);
+	}
+});
+*/
+
 
 //INEFFICIENTE MA FUNZIONANTE, DA OTTIMIZZARE!
 router.post("/eventsOfDay", async (req: Request, res: Response) => {
