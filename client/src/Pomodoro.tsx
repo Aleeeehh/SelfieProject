@@ -2,7 +2,7 @@ import React from "react";
 import { useState, ChangeEvent, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./params/params";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Pomodoro from "./types/Pomodoro";
@@ -89,6 +89,17 @@ export default function Pomodoros(): React.JSX.Element {
 	const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
 	const nav = useNavigate();
+
+	//setup per ricevere la durata dell'evento pomodoro cliccando dall'evento sul calendario
+	const location = useLocation();
+
+	const getQueryParams = (): number => {
+		const params = new URLSearchParams(location.search); // Ottieni i parametri della query
+		const duration = params.get('duration'); // Leggi il parametro "duration"
+		return duration ? parseInt(duration) : 0; // Restituisci la durata come numero, oppure 0 se non è definita
+	  };
+	
+	const duration = getQueryParams(); // Ottieni la durata dal query param
 	
 
 	React.useEffect(() => {
@@ -111,7 +122,39 @@ export default function Pomodoros(): React.JSX.Element {
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
 			}
-		})();
+
+			//gestione della durata derivata dall'evento
+			console.log("La durata dell'evento pomodoro è: " + duration);
+			if (duration !== 0){
+			setData((prevData) => {
+				let {
+					cycles,
+					studyTime,
+					totMinutes,
+					pauseTime,
+				} = prevData;
+				
+				totMinutes = duration;
+
+				studyTime = 30;
+				pauseTime = 5;
+
+				if (totMinutes%35 !== 0) {
+					cycles = Math.floor(totMinutes / 35) + 1; // +1 perchè ho i tasti per passare avanti
+				}											  // quindi se il tempo totale è troppo non è un problema
+				else {
+					cycles = Math.floor(totMinutes / 35);
+				}
+
+				return {
+					...prevData,
+					cycles,
+					pauseTime,
+					studyTime,
+					totMinutes,
+				} as PomodoroData;
+			});
+		}})();
 	}, []);
 
 	function inputCheck(): boolean {

@@ -7,7 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./params/params";
 import { getDaysInMonth, startOfMonth, getDay } from "date-fns"; //funzioni di date-fns
 import { ResponseStatus } from "./types/ResponseStatus";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Event } from "./types/Event";
 
 enum Frequency {
@@ -50,7 +50,7 @@ export default function Calendar(): React.JSX.Element {
 	const [eventHeight, setEventHeight] = React.useState(0);
 	const [eventTop, setEventTop] = React.useState(0);
 	*/
-	const [eventPositions, setEventPositions] = React.useState<{ top: number; height: number; name: string }[]>([]);
+	const [eventPositions, setEventPositions] = React.useState<{ top: number; height: number; name: string; startTime: string; endTime: string; }[]>([]);
 	const nav = useNavigate();
 
 	React.useEffect(() => {
@@ -252,7 +252,10 @@ export default function Calendar(): React.JSX.Element {
 
 						const nomeEvento = evento.title;
 
-						return { top: topPosition, height: eventHeight, name: nomeEvento };
+						const momentStartEvent = new Date(evento.startTime).getTime();
+						const momentEndEvent = new Date(evento.endTime).getTime();
+
+						return { top: topPosition, height: eventHeight, name: nomeEvento, startTime: momentStartEvent , endTime: momentEndEvent };
 					}
 					return null; // Ritorna null se l'evento non è valido
 				}).filter(Boolean); // Rimuove eventuali null
@@ -685,7 +688,31 @@ export default function Calendar(): React.JSX.Element {
 									position: "absolute", // Assicurati che sia posizionato correttamente
 								}}
 							>
-								{event.name} {/* Nome dell'evento */}
+								
+								{/* Controlla se l'evento è "Pomodoro Session" per renderlo un link */}
+								{event.name === "Pomodoro Session" ? (
+										console.log("Event Positions:", eventPositions),
+
+								<Link
+									to={`/pomodoro?duration=${
+										// Funzione per calcolare la durata dell'evento e scriverlo come query param
+										((startTime, endTime): number => {
+										console.log("startTime:", startTime, "endTime:", endTime);
+
+										const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+										const end = new Date(endTime); // Crea un oggetto Date per la fine
+										const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+
+										console.log(totMin); // Durata in minuti
+										return totMin 
+										})(event.startTime, event.endTime) // Passa startTime e endTime
+									}`}
+									>
+									{event.name}
+							  	</Link>
+								) : (
+								event.name // Altrimenti mostra solo il nome dell'evento
+								)}
 							</div>
 						))}
 						<time>00:00</time>
