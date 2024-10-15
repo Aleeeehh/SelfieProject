@@ -789,6 +789,7 @@ export default function Calendar(): React.JSX.Element {
 													return totMin
 												})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
 												}`}
+											style={{ color: "red" }} // Imposta il colore rosso per il link
 										>
 											{event.name}
 										</Link>
