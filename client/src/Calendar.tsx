@@ -49,7 +49,7 @@ export default function Calendar(): React.JSX.Element {
 	const [eventHeight, setEventHeight] = React.useState(0);
 	const [eventTop, setEventTop] = React.useState(0);
 	*/
-	const [eventPositions, setEventPositions] = React.useState<{ top: number; height: number; name: string }[]>([]);
+	const [eventPositions, setEventPositions] = React.useState<{ top: number; height: number; name: string; type: boolean, width: number, marginLeft: number }[]>([]);
 	const nav = useNavigate();
 
 	React.useEffect(() => {
@@ -250,19 +250,96 @@ export default function Calendar(): React.JSX.Element {
 						const eventHeight = 54 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
 
 						const nomeEvento = evento.title;
+						var tipoEvento = true; //se l'evento è un evento (non un pomodoro), metto type a true
+						if (evento.title === "Pomodoro Session") {
+							tipoEvento = false; //se l'evento è un pomodoro, metto type a false
+						}
 
-						return { top: topPosition, height: eventHeight, name: nomeEvento };
+						return { top: topPosition, height: eventHeight, name: nomeEvento, type: tipoEvento, width: 1, marginLeft: 0, event: evento };
 					}
 					return null; // Ritorna null se l'evento non è valido
 				}).filter(Boolean); // Rimuove eventuali null
 
-				// Imposta le posizioni degli eventi nello stato
-				setEventPositions(positions);
+				//console.log("STAMPO POSITIONS: ", positions);
+
+
+
+				// Mappa per tenere traccia delle sovrapposizioni
+				const overlapCount: { [key: string]: number } = {};
+
+				// Controlla le sovrapposizioni usando l'array eventi
+				eventi.forEach((evento: Event, index: number) => {
+					const startTime = new Date(evento.startTime).getTime(); // Tempo di inizio in millisecondi
+					const endTime = new Date(evento.endTime).getTime(); // Tempo di fine in millisecondi
+
+					for (let i = 0; i < eventi.length; i++) {
+						if (i !== index) {
+							const otherEvent = eventi[i];
+							const otherStartTime = new Date(otherEvent.startTime).getTime(); // Tempo di inizio dell'altro evento
+							const otherEndTime = new Date(otherEvent.endTime).getTime(); // Tempo di fine dell'altro evento
+
+							// Controlla se gli eventi si sovrappongono
+							if (startTime < otherEndTime && endTime > otherStartTime) {
+								console.log("Trovato evento con medesimo orario (il primo avviso è sè stesso), iterazione numero " + i);
+								// Incrementa il contatore per l'evento corrente
+								overlapCount[index] = (overlapCount[index] || 0) + 1;
+								// Incrementa il contatore per l'altro evento
+								overlapCount[i] = (overlapCount[i] || 0);
+							}
+						}
+					}
+				});
+
+				// Aggiorna il parametro width in base al numero di sovrapposizioni
+				const finalPositions = positions.map((event: Event, index: number) => {
+					const count = (overlapCount[index] || 0) + 1; // Aggiungi 1 per includere l'evento stesso
+					return {
+						...event,
+						//marginLeft: count,
+						width: count, // Imposta la larghezza in base al numero di eventi sovrapposti
+					};
+				});
+
+				//ordino gli eventi dall'alto verso il basso nella visualizzazione (secondo parametro top)
+				finalPositions.sort((a: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event },
+					b: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number, event: Event }) => {
+					return a.top - b.top; // Ordina in base al valore di top
+				});
+
+
+				console.log("POSIZIONI FINALI EVENTI:", finalPositions);
+
+				finalPositions.forEach((position: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number, event: Event }, index: number) => {
+					if (index > 0) {
+						const previousPosition = finalPositions[index - 1];
+						// Controlla se l'evento corrente è sovrapposto al precedente, controllando width
+						// (numero eventi sovrapposti) e ora inizio degli eventi (per controllare bug)
+						if (position.width === previousPosition.width && position.event.startTime <= previousPosition.event.endTime) {
+							// Se sono contigui, calcola il marginLeft
+
+							position.marginLeft = previousPosition.marginLeft + 95 / position.width;
+						} else {
+							// Altrimenti, non c'è margine
+							position.marginLeft = 0;
+						}
+					} else {
+						// Per il primo evento, non c'è margine
+						position.marginLeft = 0;
+					}
+				});
+
+
+
+
+
+
+
+				setEventPositions(finalPositions);
 			}
 			else {
-				console.log("Nessun evento trovato, oppure startTime non disponibile");
+				console.log("Nessun evento trovato per questo giorno");
 			}
-			console.log("Queste sono le posizioni degli eventi ottenuti:", eventPositions);
+			//console.log("Queste sono le posizioni degli eventi ottenuti:", eventPositions);
 
 
 
@@ -426,7 +503,10 @@ export default function Calendar(): React.JSX.Element {
 								}}>
 								-
 							</button>
-							<button className="year-button" onClick={(): void => setYear(year + 1)}>
+							<button className="year-button" onClick={(): void => {
+								setEventPositions([]); // Svuota l'array delle posizioni
+								setYear(year + 1); // Decrementa l'anno
+							}}>
 								+
 							</button>
 						</div>
@@ -651,20 +731,30 @@ export default function Calendar(): React.JSX.Element {
 						</div>
 					)}
 					<div className="orario col-5">
-						{eventPositions.map((event, index) => (
-							<div
-								key={index} // Assicurati di fornire una chiave unica per ogni elemento
-								className="evento"
-								style={{
-									top: `${event.top}px`, // Imposta la posizione verticale
-									height: `${event.height}px`, // Imposta l'altezza dell'evento
-									width: "95%",
-									position: "absolute", // Assicurati che sia posizionato correttamente
-								}}
-							>
-								{event.name} {/* Nome dell'evento */}
-							</div>
-						))}
+
+
+						<div>
+							{eventPositions.map((event, index) => (
+								<div
+									key={index} // Assicurati di fornire una chiave unica per ogni elemento
+									className="evento"
+									style={{
+										top: `${event.top}px`, // Imposta la posizione verticale
+										height: `${event.height}px`, // Imposta l'altezza dell'evento
+										width: `calc(95%/${event.width})`,
+										position: "absolute", // Assicurati che sia posizionato correttamente
+										color: event.type ? undefined : "red", // Imposta il colore in base a event.type
+										borderColor: event.type ? undefined : "red",
+										backgroundColor: event.type ? undefined : "rgba(249, 67, 67, 0.5)",
+										marginLeft: `${event.marginLeft}%`,
+									}}
+								>
+									{event.name} {/* Nome dell'evento */}
+								</div>
+							))}
+						</div>
+
+
 						<time>00:00</time>
 						<time>01:00</time>
 						<time>02:00</time>
