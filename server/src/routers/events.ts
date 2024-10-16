@@ -352,6 +352,7 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 		const resBody: ResponseBody = {
 			message: "Event inserted into database",
 			status: ResponseStatus.GOOD,
+			value: event,
 		};
 
 		return res.json(resBody);

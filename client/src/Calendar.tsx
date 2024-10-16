@@ -37,6 +37,7 @@ export default function Calendar(): React.JSX.Element {
 	const [title, setTitle] = React.useState("");
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(new Date());
+	const [renderKey, setRenderKey] = React.useState(0);
 	const [endTime, setEndTime] = React.useState(() => {
 		const now = new Date();
 		now.setMinutes(now.getMinutes() + 30);
@@ -79,6 +80,32 @@ export default function Calendar(): React.JSX.Element {
 				setMessage("Impossibile raggiungere il server");
 			}
 		})();
+	}, []);
+
+	async function loadEvents(): Promise<void> {
+		try {
+			const currentUser = await getCurrentUser();
+			console.log("Valore ottenuto:", currentUser);
+
+			const owner = currentUser.value.username;
+			console.log("Questo è l'owner:", owner);
+			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+			const data = await res.json();
+			console.log("Eventi trovati:", data);
+
+			if (data.status === ResponseStatus.GOOD) {
+				setEventList(data.value);
+				console.log("stampo data.values:", data.value);
+			} else {
+				setMessage("Errore nel ritrovamento degli eventi");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
+
+	React.useEffect(() => {
+		loadEvents();
 	}, []);
 
 	function dayMode(e: React.MouseEvent<HTMLButtonElement>): void {
@@ -192,10 +219,10 @@ export default function Calendar(): React.JSX.Element {
 	//funzione per aggiungere pallino al giorno che contiene eventi
 	function hasEventsForDay(day: number): boolean {
 		return eventList.some(event => {
-			const eventDate = new Date(event.startTime).getDate();
-			const eventMonth = new Date(event.startTime).getMonth();
-			const eventYear = new Date(event.startTime).getFullYear();
-			return eventDate === day && eventMonth === meseCorrente && eventYear === year;
+			const eventDate = new Date(event.startTime);
+			return eventDate.getDate() === day &&
+				eventDate.getMonth() === meseCorrente &&
+				eventDate.getFullYear() === year;
 		});
 	}
 
@@ -212,12 +239,15 @@ export default function Calendar(): React.JSX.Element {
 
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
+		//console.log("SITUAZIONE EVENT LIST PRIMA DEL CLICK:", eventList);
 		//e.preventDefault();
 		setEventPositions([]);
-		console.log("CIAOOOOOOOOOOOOOOOOOOOOOOOOOOOO", e);
+		setRenderKey(prevKey => prevKey + 1);
+		console.log("renderKey:", renderKey);
+		console.log("Questo è ciò che viene passato in input alla handleDateClick:", e);
 		let dayValue: number;
-		console.log(day, Mesi[meseCorrente], year);
-		console.log(day, meseCorrente, year);
+		//console.log(day, Mesi[meseCorrente], year);
+		//console.log(day, meseCorrente, year);
 		if (typeof e === "number") {
 			dayValue = e;
 		}
@@ -243,7 +273,7 @@ export default function Calendar(): React.JSX.Element {
 				}),
 			});
 			const data = await res.json();
-			console.log("Questi sono gli eventi del giorno:", data)
+			//console.log("Questi sono gli eventi del giorno:", data)
 
 			const eventi = data.value; //ottieni la lista di eventi
 			if (eventi && eventi.length > 0) {
@@ -317,7 +347,7 @@ export default function Calendar(): React.JSX.Element {
 				});
 
 
-				console.log("POSIZIONI FINALI EVENTI:", finalPositions);
+				//console.log("POSIZIONI FINALI EVENTI:", finalPositions);
 
 				finalPositions.forEach((position: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number, event: Event }, index: number) => {
 					if (index > 0) {
@@ -339,11 +369,6 @@ export default function Calendar(): React.JSX.Element {
 				});
 
 
-
-
-
-
-
 				setEventPositions(finalPositions);
 			}
 			else {
@@ -361,9 +386,9 @@ export default function Calendar(): React.JSX.Element {
 	}
 
 	async function handleDeleteEvent(id: string): Promise<void> {
-		console.log("day:", day);
+		//console.log("day:", day);
 		try {
-			console.log("Evento da eliminare:", id);
+			//console.log("Evento da eliminare:", id);
 			const res = await fetch(`${SERVER_API}/events/deleteEvent`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -373,7 +398,11 @@ export default function Calendar(): React.JSX.Element {
 			});
 			const data = await res.json();
 
-			console.log("EVENTO ELIMINATO:", data);
+			//console.log("EVENTO ELIMINATO:", data);
+			//elimina l'evento dalla eventList
+			console.log("Event list prima dell'eliminazione:", eventList);
+			setEventList(prevEventList => prevEventList.filter(event => event._id !== id))
+			console.log("Event list aggiornata:", eventList);
 			handleDateClick(day);
 			return data;
 
@@ -394,9 +423,9 @@ export default function Calendar(): React.JSX.Element {
 				setMessage("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
-			console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
 			const data: User = await res.json();
-			console.log("Questo è il json della risposta", data);
+			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
 			setMessage("Impossibile recuperare l'utente corrente");
@@ -434,7 +463,7 @@ export default function Calendar(): React.JSX.Element {
 
 
 		const currentUser = await getCurrentUser();
-		console.log("Valore ottenuto:", currentUser);
+		//("Valore ottenuto:", currentUser);
 
 		const owner = currentUser.value.username;
 
@@ -458,12 +487,18 @@ export default function Calendar(): React.JSX.Element {
 			return;
 		}
 
+
 		const data: ResponseBody = (await res.json()) as ResponseBody;
+		console.log("Questo è l'evento creato:", data.value);
+		//console.log("Event list prima dell'aggiornamento:", eventList);
+
+		// Aggiorna la lista degli eventi
+		await loadEvents();
 
 		setMessage(data.message || "Undefined error");
 		setCreateEvent(!createEvent);
 
-		window.location.reload()
+		//window.location.reload()
 
 		// TODO: send post request to server
 		// TODO: handle response
@@ -647,7 +682,7 @@ export default function Calendar(): React.JSX.Element {
 							<div>Ven</div>
 							<div>Sab</div>
 						</div>
-						<div className="date-grid">
+						<div className="date-grid" key={renderKey}>
 							{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
 							{((): JSX.Element[] => {
 								return Array.from({
@@ -957,8 +992,8 @@ export default function Calendar(): React.JSX.Element {
 						<div className="row" style={{ display: "flex", justifyContent: "center" }}>
 							<div className="col-12">
 								{((): JSX.Element | null => {
-									const dayOfWeek = getDay(new Date(year, meseCorrente, day));
-									console.log(dayOfWeek);
+									//const dayOfWeek = getDay(new Date(year, meseCorrente, day));
+									//console.log(dayOfWeek);
 									return null;
 								})()}
 								<div
