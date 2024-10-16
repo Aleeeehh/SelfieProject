@@ -37,7 +37,12 @@ export default function Calendar(): React.JSX.Element {
 	const [title, setTitle] = React.useState("");
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(new Date());
-	const [endTime, setEndTime] = React.useState(new Date());
+	const [renderKey, setRenderKey] = React.useState(0);
+	const [endTime, setEndTime] = React.useState(() => {
+		const now = new Date();
+		now.setMinutes(now.getMinutes() + 30);
+		return now;
+	});
 	const [location, setLocation] = React.useState("");
 	const [meseCorrente, setMeseCorrente] = React.useState(new Date().getMonth()); //inizializzazione mese corrente
 	const [message, setMessage] = React.useState("");
@@ -76,6 +81,40 @@ export default function Calendar(): React.JSX.Element {
 			}
 		})();
 	}, []);
+
+	async function loadEvents(): Promise<void> {
+		try {
+			const currentUser = await getCurrentUser();
+			console.log("Valore ottenuto:", currentUser);
+
+			const owner = currentUser.value.username;
+			console.log("Questo è l'owner:", owner);
+			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+			const data = await res.json();
+			console.log("Eventi trovati:", data);
+
+			if (data.status === ResponseStatus.GOOD) {
+				setEventList(data.value);
+				console.log("stampo data.values:", data.value);
+			} else {
+				setMessage("Errore nel ritrovamento degli eventi");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
+
+	React.useEffect(() => {
+		loadEvents();
+	}, []);
+
+	React.useEffect(() => {
+		handleDateClick(day);
+	}, [meseCorrente]);
+
+	React.useEffect(() => {
+		handleDateClick(day);
+	}, [year]);
 
 	function dayMode(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
@@ -134,6 +173,8 @@ export default function Calendar(): React.JSX.Element {
 	}
 
 	function mesePrecedente(): void {
+		const nuovoMese = (meseCorrente - 1) % 12;
+		const nuovoAnno = year + (nuovoMese === 0 ? 1 : 0);
 		setEventPositions([]);
 		if (meseCorrente === 0) {
 			setMeseCorrente((meseCorrente - 1 + 12) % 12);
@@ -141,18 +182,46 @@ export default function Calendar(): React.JSX.Element {
 		} else {
 			setMeseCorrente((meseCorrente - 1 + 12) % 12);
 		}
-		//handleDateClick(day);
+
+		if ((nuovoMese === 3 || nuovoMese === 5 || nuovoMese === 8 || nuovoMese === 10) && day === 31) {
+			setDay(30);
+		}
+
+		if (nuovoMese === 1 && (day === 29 || day === 30 || day === 31)) {
+			// Controlla se l'anno è bisestile
+			if (nuovoAnno % 4 === 0 && (nuovoAnno % 100 !== 0 || nuovoAnno % 400 === 0)) {
+				// Anno bisestile
+				setDay(29);
+			} else {
+				// Anno normale
+				setDay(28);
+			}
+		}
 	}
 
 	function meseSuccessivo(): void {
 		setEventPositions([]);
+		const nuovoMese = (meseCorrente + 1) % 12;
+		const nuovoAnno = year + (nuovoMese === 0 ? 1 : 0);
 		if (meseCorrente === 11) {
 			setMeseCorrente((meseCorrente + 1) % 12);
 			setYear(year + 1);
 		} else {
 			setMeseCorrente((meseCorrente + 1) % 12);
 		}
-		//handleDateClick(day);
+		if ((nuovoMese === 3 || nuovoMese === 5 || nuovoMese === 8 || nuovoMese === 10) && day === 31) {
+			setDay(30);
+		}
+		if (nuovoMese === 1 && (day === 29 || day === 30 || day === 31)) {
+			// Controlla se l'anno è bisestile
+			if (nuovoAnno % 4 === 0 && (nuovoAnno % 100 !== 0 || nuovoAnno % 400 === 0)) {
+				// Anno bisestile
+				setDay(29);
+			} else {
+				// Anno normale
+				setDay(28);
+			}
+		}
 	}
 
 	// On page load, get the events for the user
@@ -188,10 +257,10 @@ export default function Calendar(): React.JSX.Element {
 	//funzione per aggiungere pallino al giorno che contiene eventi
 	function hasEventsForDay(day: number): boolean {
 		return eventList.some(event => {
-			const eventDate = new Date(event.startTime).getDate();
-			const eventMonth = new Date(event.startTime).getMonth();
-			const eventYear = new Date(event.startTime).getFullYear();
-			return eventDate === day && eventMonth === meseCorrente && eventYear === year;
+			const eventDate = new Date(event.startTime);
+			return eventDate.getDate() === day &&
+				eventDate.getMonth() === meseCorrente &&
+				eventDate.getFullYear() === year;
 		});
 	}
 
@@ -205,13 +274,18 @@ export default function Calendar(): React.JSX.Element {
 		setCreateEvent(!createEvent);
 	}
 
+
+
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
+		//console.log("SITUAZIONE EVENT LIST PRIMA DEL CLICK:", eventList);
 		//e.preventDefault();
 		setEventPositions([]);
-		console.log("CIAOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+		setRenderKey(prevKey => prevKey + 1);
+		console.log("renderKey:", renderKey);
+		console.log("Questo è ciò che viene passato in input alla handleDateClick:", e);
 		let dayValue: number;
-		console.log(day, Mesi[meseCorrente], year);
-		console.log(day, meseCorrente, year);
+		//console.log(day, Mesi[meseCorrente], year);
+		//console.log(day, meseCorrente, year);
 		if (typeof e === "number") {
 			dayValue = e;
 		}
@@ -225,6 +299,7 @@ export default function Calendar(): React.JSX.Element {
 
 			const date = new Date();
 			date.setDate(dayValue);
+			console.log("Questo è il mese corrente:", meseCorrente);
 			date.setMonth(meseCorrente);
 			date.setFullYear(year);
 			console.log(date);
@@ -237,7 +312,7 @@ export default function Calendar(): React.JSX.Element {
 				}),
 			});
 			const data = await res.json();
-			console.log("Questi sono gli eventi del giorno:", data)
+			//console.log("Questi sono gli eventi del giorno:", data)
 
 			const eventi = data.value; //ottieni la lista di eventi
 			if (eventi && eventi.length > 0) {
@@ -258,6 +333,7 @@ export default function Calendar(): React.JSX.Element {
 							tipoEvento = false; //se l'evento è un pomodoro, metto type a false
 						}
 
+						//console.log("stampa l'evento con i propri campi:", evento);
 						return { top: topPosition, height: eventHeight, name: nomeEvento, type: tipoEvento, width: 1, marginLeft: 0, event: evento };
 					}
 					return null; // Ritorna null se l'evento non è valido
@@ -283,7 +359,7 @@ export default function Calendar(): React.JSX.Element {
 
 							// Controlla se gli eventi si sovrappongono
 							if (startTime < otherEndTime && endTime > otherStartTime) {
-								console.log("Trovato evento con medesimo orario (il primo avviso è sè stesso), iterazione numero " + i);
+								//console.log("Trovato evento con medesimo orario (il primo avviso è sè stesso), iterazione numero " + i);
 								// Incrementa il contatore per l'evento corrente
 								overlapCount[index] = (overlapCount[index] || 0) + 1;
 								// Incrementa il contatore per l'altro evento
@@ -310,7 +386,7 @@ export default function Calendar(): React.JSX.Element {
 				});
 
 
-				console.log("POSIZIONI FINALI EVENTI:", finalPositions);
+				//console.log("POSIZIONI FINALI EVENTI:", finalPositions);
 
 				finalPositions.forEach((position: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number, event: Event }, index: number) => {
 					if (index > 0) {
@@ -332,11 +408,6 @@ export default function Calendar(): React.JSX.Element {
 				});
 
 
-
-
-
-
-
 				setEventPositions(finalPositions);
 			}
 			else {
@@ -353,6 +424,36 @@ export default function Calendar(): React.JSX.Element {
 		}
 	}
 
+	async function handleDeleteEvent(id: string): Promise<void> {
+		//console.log("day:", day);
+		try {
+			//console.log("Evento da eliminare:", id);
+			const res = await fetch(`${SERVER_API}/events/deleteEvent`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					event_id: id,
+				}),
+			});
+			const data = await res.json();
+
+			//console.log("EVENTO ELIMINATO:", data);
+			//elimina l'evento dalla eventList
+			console.log("Event list prima dell'eliminazione:", eventList);
+			setEventList(prevEventList => prevEventList.filter(event => event._id !== id))
+			console.log("Event list aggiornata:", eventList);
+			handleDateClick(day);
+			return data;
+
+		}
+		catch (e) {
+			setMessage("Errore nell'eliminazione dell'evento");
+			return;
+		}
+
+	}
+
+
 
 	async function getCurrentUser(): Promise<Promise<any> | null> {
 		try {
@@ -361,9 +462,9 @@ export default function Calendar(): React.JSX.Element {
 				setMessage("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
-			console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
 			const data: User = await res.json();
-			console.log("Questo è il json della risposta", data);
+			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
 			setMessage("Impossibile recuperare l'utente corrente");
@@ -389,8 +490,19 @@ export default function Calendar(): React.JSX.Element {
 			return;
 		}
 
+		const start = new Date(startTime).getTime();
+		const end = new Date(endTime).getTime();
+
+		//l'evento che creo dura almeno 30 minuti?
+		if ((end - start) / (1000 * 60) < 30) {
+			setMessage("L'evento deve durare almeno 30 minuti");
+			return;
+		}
+
+
+
 		const currentUser = await getCurrentUser();
-		console.log("Valore ottenuto:", currentUser);
+		//("Valore ottenuto:", currentUser);
 
 		const owner = currentUser.value.username;
 
@@ -414,12 +526,19 @@ export default function Calendar(): React.JSX.Element {
 			return;
 		}
 
-		const data: ResponseBody = (await res.json()) as ResponseBody;
 
-		setMessage(data.message || "Undefined error");
+		//const data: ResponseBody = (await res.json()) as ResponseBody;
+		//console.log("Questo è l'evento creato:", data.value);
+		//console.log("Event list prima dell'aggiornamento:", eventList);
+
+		// Aggiorna la lista degli eventi
+		await loadEvents();
+		handleDateClick(startTime.getDate());
+
+		//setMessage(data.message || "Undefined error");
 		setCreateEvent(!createEvent);
 
-		window.location.reload()
+		//window.location.reload()
 
 		// TODO: send post request to server
 		// TODO: handle response
@@ -603,7 +722,7 @@ export default function Calendar(): React.JSX.Element {
 							<div>Ven</div>
 							<div>Sab</div>
 						</div>
-						<div className="date-grid">
+						<div className="date-grid" key={renderKey}>
 							{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
 							{((): JSX.Element[] => {
 								return Array.from({
@@ -642,7 +761,7 @@ export default function Calendar(): React.JSX.Element {
 							</button>
 							<form>
 								<label htmlFor="useDefaultTitle">
-									Is it a "Pomodoro Session"?
+									Pomodoro Session?
 									<input
 										type="checkbox"
 										name="useDefaultTitle"
@@ -718,7 +837,7 @@ export default function Calendar(): React.JSX.Element {
 										<input
 											className="btn border"
 											type="time"
-											value={`${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`}
+											value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
 											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 												const [hours, minutes] = e.target.value.split(':');
 												const newDate = new Date(endTime);
@@ -760,43 +879,90 @@ export default function Calendar(): React.JSX.Element {
 
 						<div>
 							{eventPositions.map((event, index) => (
-								<div
-									key={index} // Assicurati di fornire una chiave unica per ogni elemento
-									className="evento"
-									style={{
-										top: `${event.top}px`, // Imposta la posizione verticale
-										height: `${event.height}px`, // Imposta l'altezza dell'evento
-										width: `calc(95%/${event.width})`,
-										position: "absolute", // Assicurati che sia posizionato correttamente
-										color: event.type ? undefined : "red", // Imposta il colore in base a event.type
-										borderColor: event.type ? undefined : "red",
-										backgroundColor: event.type ? undefined : "rgba(249, 67, 67, 0.5)",
-										marginLeft: `${event.marginLeft}%`,
-									}}
-								>
-									{/* Controlla se l'evento è "Pomodoro Session" per renderlo un link */}
-									{(!event.type) ? (
-										console.log("Event Positions:", eventPositions),
-										<Link
-											to={`/pomodoro?duration=${
-												// Funzione per calcolare la durata dell'evento e scriverlo come query param
-												((startTime, endTime): number => {
-													console.log("startTime:", startTime, "endTime:", endTime);
-													const start = new Date(startTime); // Crea un oggetto Date per l'inizio
-													const end = new Date(endTime); // Crea un oggetto Date per la fine
-													const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-													console.log(totMin); // Durata in minuti
-													return totMin
-												})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-												}`}
-											style={{ color: "red" }} // Imposta il colore rosso per il link
-										>
-											{event.name}
-										</Link>
-									) : (
-										event.name // Altrimenti mostra solo il nome dell'evento
-									)}
-								</div>
+								// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+								!event.type ? (
+
+									<div
+										key={index} // Assicurati di fornire una chiave unica per ogni elemento
+										className="evento"
+										style={{
+											top: `${event.top}px`, // Imposta la posizione verticale
+											height: `${event.height}px`, // Imposta l'altezza dell'evento
+											width: `calc(95%/${event.width})`,
+											position: "absolute", // Assicurati che sia posizionato correttamente
+											color: "red", // Colore rosso se event.type è false
+											borderColor: "red",
+											backgroundColor: "rgba(249, 67, 67, 0.5)",
+											marginLeft: `${event.marginLeft}%`,
+											cursor: "default", // Imposta il cursore di default per l'intero evento
+										}}
+									>
+										<div style={{ color: "red" }}>
+											<Link
+												to={`/pomodoro?duration=${
+													// Funzione per calcolare la durata dell'evento e scriverlo come query param
+													((startTime, endTime): number => {
+														const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+														const end = new Date(endTime); // Crea un oggetto Date per la fine
+														const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+														return totMin;
+													})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+													}`}
+												style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+											>
+												{event.name}
+											</Link>
+										</div>
+										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+											<i className="bi bi-trash position-absolute"
+												style={{
+													bottom: "2px", // Posiziona l'icona a 10px dal fondo
+													right: "50%",  // Posiziona l'icona a 10px dal lato destro
+													fontSize: "1.5rem",
+													margin: 0,
+													padding: 0,
+													color: "red",
+													cursor: "pointer"
+												}}
+											></i>
+										</div>
+									</div>
+
+								) : (
+									<div
+										className="evento"
+										style={{
+											top: `${event.top}px`, // Imposta la posizione verticale
+											height: `${event.height}px`, // Imposta l'altezza dell'evento
+											width: `calc(95%/${event.width})`,
+											position: "absolute", // Assicurati che sia posizionato correttamente
+											color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+											borderColor: "rgb(155, 223, 212)",
+											backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+											marginLeft: `${event.marginLeft}%`,
+											cursor: "default",
+										}}
+									>
+										{event.name}
+										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+											<i className="bi bi-trash position-absolute"
+												style={{
+													bottom: "2px", // Posiziona l'icona a 10px dal fondo
+													right: "50%",  // Posiziona l'icona a 10px dal lato destro
+													fontSize: "1.5rem",
+													margin: 0,
+													padding: 0,
+													color: "rgb(155, 223, 212)",
+													cursor: "pointer"
+												}}
+											></i>
+										</div>
+
+									</div>
+
+								)
 							))}
 						</div>
 
@@ -869,8 +1035,8 @@ export default function Calendar(): React.JSX.Element {
 						<div className="row" style={{ display: "flex", justifyContent: "center" }}>
 							<div className="col-12">
 								{((): JSX.Element | null => {
-									const dayOfWeek = getDay(new Date(year, meseCorrente, day));
-									console.log(dayOfWeek);
+									//const dayOfWeek = getDay(new Date(year, meseCorrente, day));
+									//console.log(dayOfWeek);
 									return null;
 								})()}
 								<div
