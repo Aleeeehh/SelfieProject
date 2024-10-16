@@ -271,6 +271,8 @@ export default function Calendar(): React.JSX.Element {
 
 	function toggleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
+		setAddTitle(true); //Resetta la checkbox per il titolo altrimenti si inverte la logica
+		setTitle(""); //Resetta il titolo altrimenti sarebbe "Pomodoro Session"
 		setCreateEvent(!createEvent);
 	}
 
