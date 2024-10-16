@@ -57,14 +57,6 @@ type PomodoroEvent = {
 	location: string;
 };
 
-const initialPomEvent: PomodoroEvent = {
-	addTitle: true,
-	title: "Pomodoro Session",
-	startTime: new Date(),
-	endTime: new Date(),
-	location: "",
-};
-
 const initialState: PomodoroData = {
 	studyTime: 30,
 	pauseTime: 5,
@@ -80,11 +72,30 @@ const initialState: PomodoroData = {
 	totHours: 0,
 };
 
+const initialPomEvent: PomodoroEvent = {
+	addTitle: true,
+	title: "Pomodoro Session",
+	startTime: new Date(),
+	endTime: new Date(),
+	location: "",
+};
+
+
+
+
+		//TODO: aggiornare in tempo reale i pomodori recenti
+
+
+
+
+
 export default function Pomodoros(): React.JSX.Element {
 	const [data, setData] = useState(initialState);
 	const [pomEvent, setPomEvent] = useState(initialPomEvent);
 	const [message, setMessage] = useState("");
-	const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]);
+	const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]); //per pomodori recenti
+	const [eventList, setEventList] = React.useState<Event[]>([]); //per eventi dello user attuale
+	const [initialCycles, setInitialCycles] = React.useState(0);
 
 	const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
@@ -123,38 +134,12 @@ export default function Pomodoros(): React.JSX.Element {
 				setMessage("Impossibile raggiungere il server");
 			}
 
-			//gestione della durata derivata dall'evento
+			//Gestione della durata derivata dall'evento, se arrivo da un evento calendario imposto la sua durata come proposta
 			console.log("La durata dell'evento pomodoro è: " + duration);
 			if (duration !== 0){
-			setData((prevData) => {
-				let {
-					cycles,
-					studyTime,
-					totMinutes,
-					pauseTime,
-				} = prevData;
-				
-				totMinutes = duration;
-
-				studyTime = 30;
-				pauseTime = 5;
-
-				if (totMinutes%35 !== 0) {
-					cycles = Math.floor(totMinutes / 35) + 1; // +1 perchè ho i tasti per passare avanti
-				}											  // quindi se il tempo totale è troppo non è un problema
-				else {
-					cycles = Math.floor(totMinutes / 35);
-				}
-
-				return {
-					...prevData,
-					cycles,
-					pauseTime,
-					studyTime,
-					totMinutes,
-				} as PomodoroData;
-			});
-		}})();
+				proposalsMinutes(duration);
+			}
+		})();
 	}, []);
 
 	function inputCheck(): boolean {
@@ -181,11 +166,12 @@ export default function Pomodoros(): React.JSX.Element {
 	function startProcess(): void {
 		if (inputCheck()) {
 			playRing();
+			setInitialCycles(data.cycles);
 			clearInterval(data.intervalId);
 
 			const interval = setInterval(() => {
 				updateTimer();
-			}, 1000);		//mettere 1000
+			}, 1000);
 
 			setData({
 				...data,
@@ -255,6 +241,7 @@ export default function Pomodoros(): React.JSX.Element {
 	function stopProcess(): void {
 		playRing();
 		stopTimer();
+		if (duration !== 0 && data.cycles > 0) handleLeftTime(); //Se arrivo da un evento e non ho finito i cicli previsti
 	}
 
 	function stopTimer(): void {
@@ -270,6 +257,66 @@ export default function Pomodoros(): React.JSX.Element {
 		});
 
 		resetPomodoroColor();
+	}
+
+	function handleLeftTime(): void {
+		(async (): Promise<void> => {
+			try {
+				const currentUser = await getCurrentUser();
+				console.log("Valore ottenuto:", currentUser);
+
+				const owner = currentUser.value.username;;
+				console.log("Questo è l'ownerr:", owner);
+				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+				const date = await res.json();
+				console.log("Eventi trovati:", data);
+
+				if (date.status === ResponseStatus.GOOD) {
+					setEventList(date.value);
+					console.log(eventList);
+					console.log("stampo data.valuess:", date.value);
+
+					const pomodoroEvent = date.value.find(
+						(event: any) => event.title === "Pomodoro Session"
+					);
+					if (pomodoroEvent) {
+					console.log("Trovato un evento 'Pomodoro Session':", pomodoroEvent);
+					
+					//Dalla durata totale elimino i cicli completati
+					const timeToAdd = duration - ((data.studyTime + data.pauseTime) * (initialCycles - data.cycles));
+
+					//Aggiungere il tempo rimanente all'evento trovato
+					const updatedEndTime = new Date(pomodoroEvent.endTime);
+					updatedEndTime.setMinutes(updatedEndTime.getMinutes() + timeToAdd);
+
+					//Effettuare una richiesta PUT per aggiornare l'evento
+					const updateRes = await fetch(`${SERVER_API}/events/${pomodoroEvent._id}`, {
+						method: "PUT",
+						headers: {
+						"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+						...pomodoroEvent,
+						endTime: updatedEndTime,
+						}),
+					});
+					if (updateRes.ok) {
+						console.log("Evento aggiornato correttamente con il tempo rimanente.");
+					} else {
+						console.log("Errore nell'aggiornamento dell'evento.");
+					}
+				  } else {
+					console.log("Nessun evento 'Pomodoro Session' trovato.");
+				  }
+				}
+				else {
+					setMessage("Errore nel ritrovamento degli eventi");
+				}
+			} catch (e) {
+				setMessage("Impossibile raggiungere il server");
+			}
+		})();
+
 	}
 
 	function updateTimer(): void {
@@ -481,7 +528,7 @@ export default function Pomodoros(): React.JSX.Element {
 		});
 	}
 
-	function proposalsMinutes(): void {
+	function proposalsMinutes(inputMinutes?: number): void {
 		setData((prevData) => {
 			let {
 				cycles,
@@ -491,18 +538,81 @@ export default function Pomodoros(): React.JSX.Element {
 				message,
 			} = prevData;
 
+			if (inputMinutes !== undefined) {
+				totMinutes = inputMinutes;
+			}
+
 			if (totMinutes <= 0 || totMinutes > 3465) {
 				setData({ ...data, message: MESSAGE.MINUTES });
 			}
 			else {
-				studyTime = 30;
-				pauseTime = 5;
-				if (totMinutes%35 !== 0) {
-					cycles = Math.floor(totMinutes / 35) + 1; // +1 perchè ho i tasti per passare avanti
-				}											  // quindi se il tempo totale è troppo non è un problema
-				else {
-					cycles = Math.floor(totMinutes / 35);
+				if (totMinutes % 30 === 0) {
+					studyTime = 25;
+					pauseTime = 5;
+					cycles = Math.floor(totMinutes / 30);
 				}
+				else if (totMinutes < 90) {
+					const divBy12 = Math.floor(totMinutes/12);
+					const decimalMultiplied = ((totMinutes/12) - divBy12) * 100;
+				
+					studyTime = (decimalMultiplied > 50 ? divBy12 + 1 : divBy12) * 5;
+					pauseTime = decimalMultiplied === 0 ? divBy12 : divBy12 + (decimalMultiplied <= 50 ? 1 : 0);
+				
+					cycles = 2;
+				}
+				else if (totMinutes > 90 && totMinutes < 135) {
+					const divBy18 = Math.floor(totMinutes/18);
+					const decimalMultiplied = ((totMinutes/18) - divBy18) * 100;
+				
+					studyTime = (decimalMultiplied > 50 ? divBy18 + 1 : divBy18) * 5;
+					pauseTime = decimalMultiplied === 0 ? divBy18 : divBy18 + (decimalMultiplied <= 50 ? 1 : 0);
+				
+					cycles = 3;
+				}
+				else if (totMinutes >= 135 && totMinutes < 180) {
+					const divBy24 = Math.floor(totMinutes/24);
+					const decimalMultiplied = ((totMinutes/24) - divBy24) * 100;
+				
+					studyTime = (decimalMultiplied > 50 ? divBy24 + 1 : divBy24) * 5;
+					pauseTime = decimalMultiplied === 0 ? divBy24 : divBy24 + (decimalMultiplied <= 50 ? 1 : 0);
+				
+					cycles = 4;
+				}
+				else if (totMinutes > 180 && totMinutes < 225) {
+					const divBy30 = Math.floor(totMinutes/30);
+					const decimalMultiplied = ((totMinutes/30) - divBy30) * 100;
+				
+					studyTime = (decimalMultiplied > 50 ? divBy30 + 1 : divBy30) * 5;
+					pauseTime = decimalMultiplied === 0 ? divBy30 : divBy30 + (decimalMultiplied <= 50 ? 1 : 0);
+				
+					cycles = 5;
+				}
+				else if (totMinutes >= 225 && totMinutes < 270) {
+					const divBy36 = Math.floor(totMinutes/36);
+					const decimalMultiplied = ((totMinutes/36) - divBy36) * 100;
+				
+					studyTime = (decimalMultiplied > 50 ? divBy36 + 1 : divBy36) * 5;
+					pauseTime = decimalMultiplied === 0 ? divBy36 : divBy36 + (decimalMultiplied <= 50 ? 2 : 0);
+				
+					cycles = 6;
+				}
+				else if (totMinutes > 270 && totMinutes < 315) {
+					const divBy42 = Math.floor(totMinutes/42);
+					const decimalMultiplied = ((totMinutes/42) - divBy42) * 100;
+				
+					studyTime = (decimalMultiplied > 50 ? divBy42 + 1 : divBy42) * 5;
+					pauseTime = decimalMultiplied === 0 ? divBy42 : divBy42 + (decimalMultiplied <= 50 ? 2 : 0);
+				
+					cycles = 7;
+				}
+				else {
+					studyTime = 30;
+					pauseTime = 5;
+					cycles = Math.floor(totMinutes/35);
+				}
+				
+
+				//TODO: verificare che l'aggiornamento del pomodoro successivo sia corretto, aggiungere la gestione in caso di assenza di un pomodoro successivo, ritoccare i pomodori recenti nella Home		
 			}
 			return {
 				...prevData,
@@ -531,14 +641,9 @@ export default function Pomodoros(): React.JSX.Element {
 				setData({ ...data, message: MESSAGE.HOURS });
 			}
 			else {
-				studyTime = 30;
+				studyTime = 25;
 				pauseTime = 5;
-				if (totMinutes%35 !== 0) {
-					cycles = Math.floor(totMinutes / 35) + 1;
-				}
-				else {
-					cycles = Math.floor(totMinutes / 35);
-				}
+				cycles = Math.floor(totMinutes / 30);
 			}	
 			return {
 				...prevData,
@@ -785,7 +890,7 @@ export default function Pomodoros(): React.JSX.Element {
 							id="minutesButton"		//probabilmente non serve l'id
 							type="button"
 							className="btn btn-success"
-							onClick={proposalsMinutes}
+							onClick={():void => proposalsMinutes()}
 							disabled={data.activeTimer}>
 							USE MINUTES
 					</button>
