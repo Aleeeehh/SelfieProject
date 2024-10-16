@@ -83,7 +83,7 @@ const initialPomEvent: PomodoroEvent = {
 
 
 
-		//TODO: aggiornare in tempo reale i pomodori recenti
+		//TODO: aggiungere la gestione in caso di assenza di un pomodoro successivo, ritoccare i pomodori recenti nella Home, aggiornare in tempo reale i pomodori recenti
 
 
 
@@ -609,10 +609,7 @@ export default function Pomodoros(): React.JSX.Element {
 					studyTime = 30;
 					pauseTime = 5;
 					cycles = Math.floor(totMinutes/35);
-				}
-				
-
-				//TODO: verificare che l'aggiornamento del pomodoro successivo sia corretto, aggiungere la gestione in caso di assenza di un pomodoro successivo, ritoccare i pomodori recenti nella Home		
+				}		
 			}
 			return {
 				...prevData,
