@@ -37,7 +37,11 @@ export default function Calendar(): React.JSX.Element {
 	const [title, setTitle] = React.useState("");
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(new Date());
-	const [endTime, setEndTime] = React.useState(new Date());
+	const [endTime, setEndTime] = React.useState(() => {
+		const now = new Date();
+		now.setMinutes(now.getMinutes() + 30);
+		return now;
+	});
 	const [location, setLocation] = React.useState("");
 	const [meseCorrente, setMeseCorrente] = React.useState(new Date().getMonth()); //inizializzazione mese corrente
 	const [message, setMessage] = React.useState("");
@@ -152,7 +156,7 @@ export default function Calendar(): React.JSX.Element {
 		} else {
 			setMeseCorrente((meseCorrente + 1) % 12);
 		}
-		//handleDateClick(day);
+		//handleDateClick(5);
 	}
 
 	// On page load, get the events for the user
@@ -210,7 +214,7 @@ export default function Calendar(): React.JSX.Element {
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
 		//e.preventDefault();
 		setEventPositions([]);
-		console.log("CIAOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+		console.log("CIAOOOOOOOOOOOOOOOOOOOOOOOOOOOO", e);
 		let dayValue: number;
 		console.log(day, Mesi[meseCorrente], year);
 		console.log(day, meseCorrente, year);
@@ -260,6 +264,7 @@ export default function Calendar(): React.JSX.Element {
 							tipoEvento = false; //se l'evento è un pomodoro, metto type a false
 						}
 
+						//console.log("stampa l'evento con i propri campi:", evento);
 						return { top: topPosition, height: eventHeight, name: nomeEvento, type: tipoEvento, width: 1, marginLeft: 0, event: evento };
 					}
 					return null; // Ritorna null se l'evento non è valido
@@ -354,27 +359,32 @@ export default function Calendar(): React.JSX.Element {
 			console.error("Si è verificato un errore durante il recupero degli eventi del giorno:", e);
 		}
 	}
-	/*
-		async function deleteEvent(id: string): Promise<void> {
-			try {
-				const res = await fetch(`${SERVER_API}/events`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						event_id: id,
-					}),
-				});
-				const data = await res.json();
-	
-				console.log("EVENTO ELIMINATO:", data);
-				return data;
-			}
-			catch (e) {
-				setMessage("Errore nell'eliminazione dell'evento");
-				return;
-			}
+
+	async function handleDeleteEvent(id: string): Promise<void> {
+		console.log("day:", day);
+		try {
+			console.log("Evento da eliminare:", id);
+			const res = await fetch(`${SERVER_API}/events/deleteEvent`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					event_id: id,
+				}),
+			});
+			const data = await res.json();
+
+			console.log("EVENTO ELIMINATO:", data);
+			handleDateClick(day);
+			return data;
+
 		}
-		*/
+		catch (e) {
+			setMessage("Errore nell'eliminazione dell'evento");
+			return;
+		}
+
+	}
+
 
 
 	async function getCurrentUser(): Promise<Promise<any> | null> {
@@ -752,7 +762,7 @@ export default function Calendar(): React.JSX.Element {
 										<input
 											className="btn border"
 											type="time"
-											value={`${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`}
+											value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
 											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 												const [hours, minutes] = e.target.value.split(':');
 												const newDate = new Date(endTime);
@@ -825,12 +835,12 @@ export default function Calendar(): React.JSX.Element {
 											}}
 										>
 											{event.name}
-											<div className="position-relative">
+											<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
 												{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
 												<i className="bi bi-trash position-absolute"
 													style={{
 														bottom: "2px", // Posiziona l'icona a 10px dal fondo
-														right: "2px",  // Posiziona l'icona a 10px dal lato destro
+														right: "50%",  // Posiziona l'icona a 10px dal lato destro
 														fontSize: "1.5rem",
 
 														color: "red",
@@ -857,12 +867,12 @@ export default function Calendar(): React.JSX.Element {
 										}}
 									>
 										{event.name}
-										<div className="position-relative" >
+										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
 											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
 											<i className="bi bi-trash position-absolute"
 												style={{
 													bottom: "2px", // Posiziona l'icona a 10px dal fondo
-													right: "2px",  // Posiziona l'icona a 10px dal lato destro
+													right: "50%",  // Posiziona l'icona a 10px dal lato destro
 													fontSize: "1.5rem",
 													margin: 0,
 													padding: 0,

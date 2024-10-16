@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-
+import mongoose from "mongoose";
 import { Event } from "../types/Event.js";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
@@ -366,18 +366,23 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 	}
 });
 
-/*
+
 router.post("/deleteEvent", async (req: Request, res: Response) => {
+	console.log("Richiesta ricevuta per eliminare evento");
+
 	const { event_id } = req.body;
 	try {
-		const eventoEliminato = await EventSchema.find({ _id: event_id });
-		await EventSchema.deleteOne({ _id: event_id });
+		console.log("id Evento da eliminare:", event_id);
+		const eventoEliminato = await EventSchema.find({ _id: new mongoose.Types.ObjectId(event_id) });
+		console.log("evento eliminato:", eventoEliminato);
+		await EventSchema.deleteOne({ _id: new mongoose.Types.ObjectId(event_id) });
 
 		const resBody = {
 			message: "Evento eliminato con successo",
 			status: "success",
 			value: eventoEliminato,
 		};
+		console.log("Evento eliminato:", eventoEliminato);
 
 		return res.json(resBody);
 
@@ -391,7 +396,6 @@ router.post("/deleteEvent", async (req: Request, res: Response) => {
 		return res.json(resBody);
 	}
 });
-*/
 
 
 //INEFFICIENTE MA FUNZIONANTE, DA OTTIMIZZARE!
