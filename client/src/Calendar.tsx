@@ -488,14 +488,15 @@ export default function Calendar(): React.JSX.Element {
 		}
 
 
-		const data: ResponseBody = (await res.json()) as ResponseBody;
-		console.log("Questo è l'evento creato:", data.value);
+		//const data: ResponseBody = (await res.json()) as ResponseBody;
+		//console.log("Questo è l'evento creato:", data.value);
 		//console.log("Event list prima dell'aggiornamento:", eventList);
 
 		// Aggiorna la lista degli eventi
 		await loadEvents();
+		handleDateClick(startTime.getDate());
 
-		setMessage(data.message || "Undefined error");
+		//setMessage(data.message || "Undefined error");
 		setCreateEvent(!createEvent);
 
 		//window.location.reload()
@@ -841,51 +842,54 @@ export default function Calendar(): React.JSX.Element {
 							{eventPositions.map((event, index) => (
 								// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
 								!event.type ? (
-									<Link
-										to={`/pomodoro?duration=${
-											// Funzione per calcolare la durata dell'evento e scriverlo come query param
-											((startTime, endTime): number => {
-												const start = new Date(startTime); // Crea un oggetto Date per l'inizio
-												const end = new Date(endTime); // Crea un oggetto Date per la fine
-												const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-												return totMin;
-											})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-											}`}
+
+									<div
 										key={index} // Assicurati di fornire una chiave unica per ogni elemento
-										style={{ textDecoration: 'none' }} // Rimuove l'eventuale sottolineatura del link
+										className="evento"
+										style={{
+											top: `${event.top}px`, // Imposta la posizione verticale
+											height: `${event.height}px`, // Imposta l'altezza dell'evento
+											width: `calc(95%/${event.width})`,
+											position: "absolute", // Assicurati che sia posizionato correttamente
+											color: "red", // Colore rosso se event.type è false
+											borderColor: "red",
+											backgroundColor: "rgba(249, 67, 67, 0.5)",
+											marginLeft: `${event.marginLeft}%`,
+											cursor: "default", // Imposta il cursore di default per l'intero evento
+										}}
 									>
-										<div
-											key={index} // Assicurati di fornire una chiave unica per ogni elemento
-											className="evento"
-											style={{
-												top: `${event.top}px`, // Imposta la posizione verticale
-												height: `${event.height}px`, // Imposta l'altezza dell'evento
-												width: `calc(95%/${event.width})`,
-												position: "absolute", // Assicurati che sia posizionato correttamente
-												color: "red", // Colore rosso se event.type è false
-												borderColor: "red",
-												backgroundColor: "rgba(249, 67, 67, 0.5)",
-												marginLeft: `${event.marginLeft}%`,
-												cursor: "pointer",
-											}}
-										>
-											{event.name}
-											<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
-												{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-												<i className="bi bi-trash position-absolute"
-													style={{
-														bottom: "2px", // Posiziona l'icona a 10px dal fondo
-														right: "50%",  // Posiziona l'icona a 10px dal lato destro
-														fontSize: "1.5rem",
-
-														color: "red",
-														cursor: "pointer"
-													}}
-												></i>
-											</div>
-
+										<div style={{ color: "red" }}>
+											<Link
+												to={`/pomodoro?duration=${
+													// Funzione per calcolare la durata dell'evento e scriverlo come query param
+													((startTime, endTime): number => {
+														const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+														const end = new Date(endTime); // Crea un oggetto Date per la fine
+														const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+														return totMin;
+													})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+													}`}
+												style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+											>
+												{event.name}
+											</Link>
 										</div>
-									</Link>
+										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+											<i className="bi bi-trash position-absolute"
+												style={{
+													bottom: "2px", // Posiziona l'icona a 10px dal fondo
+													right: "50%",  // Posiziona l'icona a 10px dal lato destro
+													fontSize: "1.5rem",
+													margin: 0,
+													padding: 0,
+													color: "red",
+													cursor: "pointer"
+												}}
+											></i>
+										</div>
+									</div>
+
 								) : (
 									<div
 										className="evento"
