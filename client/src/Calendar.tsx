@@ -108,6 +108,14 @@ export default function Calendar(): React.JSX.Element {
 		loadEvents();
 	}, []);
 
+	React.useEffect(() => {
+		handleDateClick(day);
+	}, [meseCorrente]);
+
+	React.useEffect(() => {
+		handleDateClick(day);
+	}, [year]);
+
 	function dayMode(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
 		setActiveButton(0);
@@ -165,6 +173,8 @@ export default function Calendar(): React.JSX.Element {
 	}
 
 	function mesePrecedente(): void {
+		const nuovoMese = (meseCorrente - 1) % 12;
+		const nuovoAnno = year + (nuovoMese === 0 ? 1 : 0);
 		setEventPositions([]);
 		if (meseCorrente === 0) {
 			setMeseCorrente((meseCorrente - 1 + 12) % 12);
@@ -172,18 +182,46 @@ export default function Calendar(): React.JSX.Element {
 		} else {
 			setMeseCorrente((meseCorrente - 1 + 12) % 12);
 		}
-		//handleDateClick(day);
+
+		if ((nuovoMese === 3 || nuovoMese === 5 || nuovoMese === 8 || nuovoMese === 10) && day === 31) {
+			setDay(30);
+		}
+
+		if (nuovoMese === 1 && (day === 29 || day === 30 || day === 31)) {
+			// Controlla se l'anno è bisestile
+			if (nuovoAnno % 4 === 0 && (nuovoAnno % 100 !== 0 || nuovoAnno % 400 === 0)) {
+				// Anno bisestile
+				setDay(29);
+			} else {
+				// Anno normale
+				setDay(28);
+			}
+		}
 	}
 
 	function meseSuccessivo(): void {
 		setEventPositions([]);
+		const nuovoMese = (meseCorrente + 1) % 12;
+		const nuovoAnno = year + (nuovoMese === 0 ? 1 : 0);
 		if (meseCorrente === 11) {
 			setMeseCorrente((meseCorrente + 1) % 12);
 			setYear(year + 1);
 		} else {
 			setMeseCorrente((meseCorrente + 1) % 12);
 		}
-		//handleDateClick(5);
+		if ((nuovoMese === 3 || nuovoMese === 5 || nuovoMese === 8 || nuovoMese === 10) && day === 31) {
+			setDay(30);
+		}
+		if (nuovoMese === 1 && (day === 29 || day === 30 || day === 31)) {
+			// Controlla se l'anno è bisestile
+			if (nuovoAnno % 4 === 0 && (nuovoAnno % 100 !== 0 || nuovoAnno % 400 === 0)) {
+				// Anno bisestile
+				setDay(29);
+			} else {
+				// Anno normale
+				setDay(28);
+			}
+		}
 	}
 
 	// On page load, get the events for the user
@@ -261,6 +299,7 @@ export default function Calendar(): React.JSX.Element {
 
 			const date = new Date();
 			date.setDate(dayValue);
+			console.log("Questo è il mese corrente:", meseCorrente);
 			date.setMonth(meseCorrente);
 			date.setFullYear(year);
 			console.log(date);
