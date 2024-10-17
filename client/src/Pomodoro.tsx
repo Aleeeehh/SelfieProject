@@ -83,7 +83,9 @@ const initialPomEvent: PomodoroEvent = {
 
 
 
-		//TODO: aggiungere la gestione in caso di assenza di un pomodoro successivo, ritoccare i pomodori recenti nella Home, aggiornare in tempo reale i pomodori recenti
+		//TODO: ritoccare i pomodori recenti nella Home, aggiornare in tempo reale i pomodori recenti, GUARDARE i nuovi eventi pomodoro 
+		// creati dal tempo rimanente di un pomodoro non completato hanno una durata non strettamente corretta
+
 
 
 
@@ -104,13 +106,21 @@ export default function Pomodoros(): React.JSX.Element {
 	//setup per ricevere la durata dell'evento pomodoro cliccando dall'evento sul calendario
 	const location = useLocation();
 
-	const getQueryParams = (): number => {
+	const getDurationParam = (): number => {
 		const params = new URLSearchParams(location.search); // Ottieni i parametri della query
 		const duration = params.get('duration'); // Leggi il parametro "duration"
 		return duration ? parseInt(duration) : 0; // Restituisci la durata come numero, oppure 0 se non è definita
-	  };
+	};
+
+	const getIdParam = (): string => {
+		const params = new URLSearchParams(location.search); // Ottieni i parametri della query
+		const id = params.get('id'); // Leggi il parametro "duration"
+		return id ? id : ""; // Restituisci la durata come numero, oppure 0 se non è definita
+	};
 	
-	const duration = getQueryParams(); // Ottieni la durata dal query param
+	const duration = getDurationParam(); // Ottieni la durata dal query param
+
+	const id = getIdParam(); // Ottieni l'id dell'evento dal query param
 	
 
 	React.useEffect(() => {
@@ -123,7 +133,7 @@ export default function Pomodoros(): React.JSX.Element {
 				// TODO: set session value as response
 				const data = (await res.json()) as ResponseBody;
 
-				console.log(data);
+				//console.log(data);
 
 				if (data.status === ResponseStatus.GOOD) {
 					setTomatoList(data.value as Pomodoro[]);
@@ -211,7 +221,6 @@ export default function Pomodoros(): React.JSX.Element {
 			const resBody = await res.json();
 	
 			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Configurazione Pomodoro salvata correttamente!");
 				startProcess();
 				//await updateTomatoList();
 			} else {
@@ -262,55 +271,101 @@ export default function Pomodoros(): React.JSX.Element {
 	function handleLeftTime(): void {
 		(async (): Promise<void> => {
 			try {
-				const currentUser = await getCurrentUser();
-				console.log("Valore ottenuto:", currentUser);
+				// Dalla durata totale elimino i cicli completati
+				const timeToAdd = duration - ((data.studyTime + data.pauseTime) * (initialCycles - data.cycles));
+				console.log("timeToAdd:", timeToAdd);
 
-				const owner = currentUser.value.username;;
-				console.log("Questo è l'ownerr:", owner);
-				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
-				const date = await res.json();
-				console.log("Eventi trovati:", data);
+				if (timeToAdd >= 30) {
+					const currentUser = await getCurrentUser();
+					const owner = currentUser.value.username;;
+					const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+					const date = await res.json();
+					console.log("Eventi trovati:", data);
 
-				if (date.status === ResponseStatus.GOOD) {
-					setEventList(date.value);
-					console.log(eventList);
-					console.log("stampo data.valuess:", date.value);
-
-					const pomodoroEvent = date.value.find(
-						(event: any) => event.title === "Pomodoro Session"
-					);
-					if (pomodoroEvent) {
-					console.log("Trovato un evento 'Pomodoro Session':", pomodoroEvent);
-					
-					//Dalla durata totale elimino i cicli completati
-					const timeToAdd = duration - ((data.studyTime + data.pauseTime) * (initialCycles - data.cycles));
-
-					//Aggiungere il tempo rimanente all'evento trovato
-					const updatedEndTime = new Date(pomodoroEvent.endTime);
-					updatedEndTime.setMinutes(updatedEndTime.getMinutes() + timeToAdd);
-
-					//Effettuare una richiesta PUT per aggiornare l'evento
-					const updateRes = await fetch(`${SERVER_API}/events/${pomodoroEvent._id}`, {
-						method: "PUT",
-						headers: {
-						"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
-						...pomodoroEvent,
-						endTime: updatedEndTime,
-						}),
+					// Creo una variabile per il pomodoro attuale
+					const currentPomodoro = date.value.find((event: any) => {
+						const eventId = event._id;
+						return eventId === id;
 					});
-					if (updateRes.ok) {
-						console.log("Evento aggiornato correttamente con il tempo rimanente.");
+					const CurPomStartTime = new Date(currentPomodoro.startTime);
+					const FixedCurPomStartTime = new Date(CurPomStartTime.getTime() + CurPomStartTime.getTimezoneOffset() * 60000);
+
+					if (date.status === ResponseStatus.GOOD) {
+						setEventList(date.value);
+						console.log(eventList); // Senza questa riga c'è un warning
+						console.log("stampo data.values:", date.value);
+						
+						// Filtra solo gli eventi "Pomodoro Session" successivi all'orario di inizio del pomodoro attuale
+						const eventPomodoro = date.value.find((event: any) => {
+							const eventStartTime = new Date(event.startTime); // Converto l'orario di inizio in Date per la comparazione
+							const eventId = event._id;
+							return event.title === "Pomodoro Session" && eventStartTime > FixedCurPomStartTime && eventId !== id;
+						});
+
+						if (!eventPomodoro) {
+							console.log("Nessun evento 'Pomodoro Session' trovato che soddisfi i criteri.");
+								
+							const newStartTime = new Date(currentPomodoro.startTime);  // Usa lo stesso orario di inizio dell'evento attuale
+							const newEndTime = new Date(newStartTime);
+							newEndTime.setMinutes(newEndTime.getMinutes() + timeToAdd); // Calcolo l'orario di fine evento in base al tempo rimanente
+
+							// Correggo il fuso orario degli orari
+							const correctedStartTime = new Date(newStartTime.getTime() + newStartTime.getTimezoneOffset() * 60000);
+							const correctedEndTime = new Date(newEndTime.getTime() + newEndTime.getTimezoneOffset() * 60000);
+
+							// Imposto al giorno successivo il nuovo evento
+							correctedStartTime.setDate(correctedStartTime.getDate() + 1);
+							correctedEndTime.setDate(correctedEndTime.getDate() + 1);
+
+							const res = await fetch(`${SERVER_API}/events`, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								// Nel body utilizzo lo stesso owner, startTime e location della Pomodoro Session attuale
+								body: JSON.stringify({
+									owner: currentPomodoro.owner,
+									title: "Pomodoro Session",
+									startTime: correctedStartTime.toISOString(),
+									endTime: correctedEndTime.toISOString(),
+									location: currentPomodoro.location,
+									frequency: Frequency.ONCE
+								}),
+							});
+		
+							if (res.ok) {
+								console.log("Nuovo evento 'Pomodoro Session' creato con successo.");
+							} else {
+								console.log("Errore nella creazione del nuovo evento.");
+							}
+						}
+						else if (eventPomodoro) {
+							console.log("Trovato un evento 'Pomodoro Session' successivo all'orario attuale:", eventPomodoro);	
+						
+							// Aggiungere il tempo rimanente all'evento trovato
+							const updatedEndTime = new Date(eventPomodoro.endTime);
+							updatedEndTime.setMinutes(updatedEndTime.getMinutes() + timeToAdd);
+
+							// Effettuare una richiesta PUT per aggiornare l'evento
+							const updateRes = await fetch(`${SERVER_API}/events/${eventPomodoro._id}`, {
+								method: "PUT",
+								headers: {
+								"Content-Type": "application/json",
+								},
+								body: JSON.stringify({
+								...eventPomodoro,
+								endTime: updatedEndTime,
+								}),
+							});
+							if (updateRes.ok) {
+								console.log("Evento aggiornato correttamente con il tempo rimanente.");
+							} else {
+								console.log("Errore nell'aggiornamento dell'evento.");
+							}
+						}
 					} else {
-						console.log("Errore nell'aggiornamento dell'evento.");
+						console.log("Errore nel ritrovamento degli eventi");
 					}
-				  } else {
-					console.log("Nessun evento 'Pomodoro Session' trovato.");
-				  }
-				}
-				else {
-					setMessage("Errore nel ritrovamento degli eventi");
+				} else {
+					alert("Il tempo rimanente è minore di 30 minuti, non è possibile creare un nuovo pomodoro.");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
