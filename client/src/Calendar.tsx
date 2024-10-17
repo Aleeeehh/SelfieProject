@@ -904,13 +904,13 @@ export default function Calendar(): React.JSX.Element {
 												to={`/pomodoro?duration=${
 													// Funzione per calcolare la durata dell'evento e scriverlo come query param
 													((startTime, endTime): number => {
-														const start = new Date(startTime); // Crea un oggetto Date per l'inizio
-														const end = new Date(endTime); // Crea un oggetto Date per la fine
+														const start = new Date(startTime);
+														const end = new Date(endTime);
 														const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
 														return totMin;
 													})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-													}`}
-												style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+													}&id=${event.event._id}`} // Passa l'id dell'evento
+												style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
 											>
 												{event.name}
 											</Link>
