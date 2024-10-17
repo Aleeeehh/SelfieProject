@@ -295,6 +295,8 @@ export default function Calendar(): React.JSX.Element {
 			}
 			setEndTime(initialEndTime);
 		}
+		setAddTitle(true);
+		setTitle("");
 		setCreateEvent(!createEvent);
 	}
 
