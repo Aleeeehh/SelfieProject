@@ -146,13 +146,36 @@ button.btn:focus {
 	font-weight: bold;
 	background-color: rgba(155, 223, 212, 0.5);
 	justify-content: center;
-	border: 2px solid;
+	border: 0;
 	border-color: rgb(155, 223, 212);
 	/* Bordo del quadrato */
 	z-index: 10;
 	border-radius: 10px;
 	padding: 0;
+	overflow: hidden;
 }
+
+.evento::before {
+	content: '';
+	position: absolute;
+	left: 1%;
+	top: 3%;
+	bottom: 3%;
+	width: 2%;
+	border-radius: 10px;
+	/* Larghezza della barra colorata */
+	background-color: rgb(155, 223, 212);
+	/* Colore della barra */
+}
+
+.evento.red::before {
+	background-color: rgb(249, 67, 67);
+}
+
+.evento.blue::before {
+	background-color: rgb(155, 223, 212);
+}
+
 
 .orario time {
 	position: relative;
