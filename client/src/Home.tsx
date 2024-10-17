@@ -77,13 +77,14 @@ function Home(): React.JSX.Element {
 				</div>
 				<div className="preview preview-pomodoro">
 					<div>Lista di pomodoro precedenti:</div>
-					{pomodoros.map((pomodoro) => (
-						<div>
-							<div>{pomodoro.studyTime}</div>
-							<div>{pomodoro.pauseTime}</div>
-							<div>{pomodoro.cycles}</div>
-							<div>{pomodoro.updatedAt?.toString()}</div>
-						</div>
+					{pomodoros.slice(-4).map((pomodoro) => (
+						<a href={`/pomodoro`}>
+						<button className="previous-pomodoros">
+							<div>{pomodoro.studyTime} min</div>
+							<div>{pomodoro.pauseTime} min</div>
+							<div>{pomodoro.cycles} cicli</div>
+						</button>
+						</a>
 					))}
 				</div>
 				<div className="preview preview-note">
