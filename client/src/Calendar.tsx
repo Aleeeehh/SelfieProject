@@ -33,10 +33,16 @@ const Mesi = [
 ];
 //const GiorniSettimana = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
 
+
+
 export default function Calendar(): React.JSX.Element {
 	const [title, setTitle] = React.useState("");
 	const [createEvent, setCreateEvent] = React.useState(false);
-	const [startTime, setStartTime] = React.useState(new Date());
+	const [startTime, setStartTime] = React.useState(() => {
+		const now = new Date();
+		return now;
+	});
+
 	const [renderKey, setRenderKey] = React.useState(0);
 	const [endTime, setEndTime] = React.useState(() => {
 		const now = new Date();
@@ -48,7 +54,7 @@ export default function Calendar(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [day, setDay] = React.useState(new Date().getDate());
 	const [activeButton, setActiveButton] = React.useState(0);
-	const [year, setYear] = React.useState(2024);
+	const [year, setYear] = React.useState(new Date().getFullYear())
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 	const [addTitle, setAddTitle] = React.useState(true);
 	/*
@@ -269,8 +275,26 @@ export default function Calendar(): React.JSX.Element {
 	// Toggle create event screen
 	//da implementare
 
-	function toggleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): void {
-		e.preventDefault();
+	function toggleCreateEvent(): void {
+		if (!createEvent) {
+			// Usa l'ora corrente o l'ora di startTime
+			const currentHours = startTime.getHours();
+			const currentMinutes = startTime.getMinutes();
+			const endHours = endTime.getHours();
+			const endMinutes = endTime.getMinutes();
+
+			// Imposta startTime con day, meseCorrente, year e l'ora corrente
+			var initialStartTime = new Date(year, meseCorrente, day, currentHours, currentMinutes, 0, 0);
+			setStartTime(initialStartTime);
+
+			// Imposta endTime a 30 minuti dopo startTime
+			var initialEndTime = new Date(year, meseCorrente, day, endHours, endMinutes, 0, 0);
+			if ((initialEndTime.getTime() - initialStartTime.getTime()) / (1000 * 60) < 30) {
+				initialEndTime = new Date(initialStartTime); // Crea un nuovo oggetto Date
+				initialEndTime.setMinutes(initialStartTime.getMinutes() + 30);
+			}
+			setEndTime(initialEndTime);
+		}
 		setCreateEvent(!createEvent);
 	}
 
@@ -544,6 +568,8 @@ export default function Calendar(): React.JSX.Element {
 		// TODO: handle response
 	}
 
+
+	//ottieni il giorno del mese per la visualizzazione weekly
 	function getAdjustedDay(day: number, offset: number, year: number, month: number): number {
 		let newDay = day + offset;
 		let newMonth = month;
@@ -874,17 +900,17 @@ export default function Calendar(): React.JSX.Element {
 							</form>
 						</div>
 					)}
-					<div className="orario col-5">
+					<div className="orario col-5" >
 
 
-						<div>
+						<div style={{ position: "relative", marginLeft: "10%" }}>
 							{eventPositions.map((event, index) => (
 								// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
 								!event.type ? (
 
 									<div
 										key={index} // Assicurati di fornire una chiave unica per ogni elemento
-										className="evento"
+										className="evento red"
 										style={{
 											top: `${event.top}px`, // Imposta la posizione verticale
 											height: `${event.height}px`, // Imposta l'altezza dell'evento
@@ -931,7 +957,7 @@ export default function Calendar(): React.JSX.Element {
 
 								) : (
 									<div
-										className="evento"
+										className="evento blue"
 										style={{
 											top: `${event.top}px`, // Imposta la posizione verticale
 											height: `${event.height}px`, // Imposta l'altezza dell'evento
@@ -1052,32 +1078,132 @@ export default function Calendar(): React.JSX.Element {
 										<div
 											style={{
 												color: "gray",
+												width: "100%",
 												fontWeight: 500,
 												fontSize: "0.6em",
 												letterSpacing: "0.1em",
 												fontVariant: "small-caps",
 											}}>
 											Dom{" "}
-											{getDay(new Date(year, meseCorrente, day)) === 5 &&
-												getAdjustedDay(day, -5, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 4 &&
-												getAdjustedDay(day, -4, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 3 &&
-												getAdjustedDay(day, -3, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 2 &&
-												getAdjustedDay(day, -2, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 1 &&
-												getAdjustedDay(day, -1, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 0 &&
-												getAdjustedDay(day, 0, year, meseCorrente)}
+											{((): JSX.Element | null => {
+												const currentDayOfWeek = getDay(new Date(year, meseCorrente, day));
+
+												//handleDateClick(2);
+												//COME FACCIO??
+
+
+
+												return (
+													<>
+														{currentDayOfWeek === 5 && getAdjustedDay(day, -5, year, meseCorrente)}
+														{currentDayOfWeek === 4 && getAdjustedDay(day, -4, year, meseCorrente)}
+														{currentDayOfWeek === 3 && getAdjustedDay(day, -3, year, meseCorrente)}
+														{currentDayOfWeek === 2 && getAdjustedDay(day, -2, year, meseCorrente)}
+														{currentDayOfWeek === 1 && getAdjustedDay(day, -1, year, meseCorrente)}
+														{currentDayOfWeek === 0 && getAdjustedDay(day, 0, year, meseCorrente)}
+													</>
+												);
+											})()}
+
 										</div>
 										<div
 											className="orario"
 											style={{
 												fontSize: "0.8vw",
-												width: "calc(100% - 10px)",
+												width: "95%",
 												flex: "1",
+												position: "relative",
 											}}>
+
+											<div style={{ position: "relative", marginLeft: "17%" }}>
+												{eventPositions.map((event, index) => (
+													// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+													!event.type ? (
+
+														<div
+															key={index} // Assicurati di fornire una chiave unica per ogni elemento
+															className="evento red"
+															style={{
+																top: `${event.top}px`, // Imposta la posizione verticale
+																height: `${event.height}px`, // Imposta l'altezza dell'evento
+																width: `calc(95%/${event.width})`,
+																position: "absolute", // Assicurati che sia posizionato correttamente
+																color: "red", // Colore rosso se event.type è false
+																borderColor: "red",
+																backgroundColor: "rgba(249, 67, 67, 0.5)",
+																marginLeft: `${event.marginLeft}%`,
+																cursor: "default", // Imposta il cursore di default per l'intero evento
+															}}
+														>
+															<div style={{ color: "red" }}>
+																<Link
+																	to={`/pomodoro?duration=${
+																		// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																		((startTime, endTime): number => {
+																			const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																			const end = new Date(endTime); // Crea un oggetto Date per la fine
+																			const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																			return totMin;
+																		})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																		}`}
+																	style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																>
+																	{event.name}
+																</Link>
+															</div>
+															<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+																<i className="bi bi-trash position-absolute"
+																	style={{
+																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																		fontSize: "1.5rem",
+																		margin: 0,
+																		padding: 0,
+																		color: "red",
+																		cursor: "pointer"
+																	}}
+																></i>
+															</div>
+														</div>
+
+													) : (
+														<div
+															className="evento blue"
+															style={{
+																top: `${event.top}px`, // Imposta la posizione verticale
+																height: `${event.height}px`, // Imposta l'altezza dell'evento
+																width: `calc(95%/${event.width})`,
+																position: "absolute", // Assicurati che sia posizionato correttamente
+																color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																borderColor: "rgb(155, 223, 212)",
+																backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																marginLeft: `${event.marginLeft}%`,
+																cursor: "default",
+															}}
+														>
+															{event.name}
+															<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+																<i className="bi bi-trash position-absolute"
+																	style={{
+																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																		fontSize: "1.5rem",
+																		margin: 0,
+																		padding: 0,
+																		color: "rgb(155, 223, 212)",
+																		cursor: "pointer"
+																	}}
+																></i>
+															</div>
+
+														</div>
+
+													)
+												))}
+											</div>
+
 											<time>00:00</time>
 											<time>01:00</time>
 											<time>02:00</time>
@@ -1105,6 +1231,8 @@ export default function Calendar(): React.JSX.Element {
 											<time>00:00</time>
 										</div>
 									</div>
+
+
 									<div className="nome-data-week">
 										<div
 											style={{
@@ -1115,20 +1243,27 @@ export default function Calendar(): React.JSX.Element {
 												fontVariant: "small-caps",
 											}}>
 											Lun{" "}
-											{getDay(new Date(year, meseCorrente, day)) === 6 &&
-												getAdjustedDay(day, -5, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 5 &&
-												getAdjustedDay(day, -4, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 4 &&
-												getAdjustedDay(day, -3, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 3 &&
-												getAdjustedDay(day, -2, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 2 &&
-												getAdjustedDay(day, -1, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 1 &&
-												getAdjustedDay(day, 0, year, meseCorrente)}
-											{getDay(new Date(year, meseCorrente, day)) === 0 &&
-												getAdjustedDay(day, 1, year, meseCorrente)}
+											{((): JSX.Element | null => {
+												const currentDayOfWeek = getDay(new Date(year, meseCorrente, day));
+
+
+
+												//handleDateClick(2);
+												//COME FACCIO??
+
+
+
+												return (
+													<>
+														{currentDayOfWeek === 5 && getAdjustedDay(day, -5, year, meseCorrente)}
+														{currentDayOfWeek === 4 && getAdjustedDay(day, -4, year, meseCorrente)}
+														{currentDayOfWeek === 3 && getAdjustedDay(day, -3, year, meseCorrente)}
+														{currentDayOfWeek === 2 && getAdjustedDay(day, -2, year, meseCorrente)}
+														{currentDayOfWeek === 1 && getAdjustedDay(day, -1, year, meseCorrente)}
+														{currentDayOfWeek === 0 && getAdjustedDay(day, 0, year, meseCorrente)}
+													</>
+												);
+											})()}
 										</div>
 										<div
 											className="orario"
@@ -1137,6 +1272,96 @@ export default function Calendar(): React.JSX.Element {
 												width: "calc(100% - 10px)",
 												flex: "1",
 											}}>
+
+											<div style={{ position: "relative", marginLeft: "17%" }}>
+												{eventPositions.map((event, index) => (
+													// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+													!event.type ? (
+
+														<div
+															key={index} // Assicurati di fornire una chiave unica per ogni elemento
+															className="evento red"
+															style={{
+																top: `${event.top}px`, // Imposta la posizione verticale
+																height: `${event.height}px`, // Imposta l'altezza dell'evento
+																width: `calc(95%/${event.width})`,
+																position: "absolute", // Assicurati che sia posizionato correttamente
+																color: "red", // Colore rosso se event.type è false
+																borderColor: "red",
+																backgroundColor: "rgba(249, 67, 67, 0.5)",
+																marginLeft: `${event.marginLeft}%`,
+																cursor: "default", // Imposta il cursore di default per l'intero evento
+															}}
+														>
+															<div style={{ color: "red" }}>
+																<Link
+																	to={`/pomodoro?duration=${
+																		// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																		((startTime, endTime): number => {
+																			const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																			const end = new Date(endTime); // Crea un oggetto Date per la fine
+																			const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																			return totMin;
+																		})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																		}`}
+																	style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																>
+																	{event.name}
+																</Link>
+															</div>
+															<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+																<i className="bi bi-trash position-absolute"
+																	style={{
+																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																		fontSize: "1.5rem",
+																		margin: 0,
+																		padding: 0,
+																		color: "red",
+																		cursor: "pointer"
+																	}}
+																></i>
+															</div>
+														</div>
+
+													) : (
+														<div
+															className="evento blue"
+															style={{
+																top: `${event.top}px`, // Imposta la posizione verticale
+																height: `${event.height}px`, // Imposta l'altezza dell'evento
+																width: `calc(95%/${event.width})`,
+																position: "absolute", // Assicurati che sia posizionato correttamente
+																color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																borderColor: "rgb(155, 223, 212)",
+																backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																marginLeft: `${event.marginLeft}%`,
+																cursor: "default",
+															}}
+														>
+															{event.name}
+															<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+																<i className="bi bi-trash position-absolute"
+																	style={{
+																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																		fontSize: "1.5rem",
+																		margin: 0,
+																		padding: 0,
+																		color: "rgb(155, 223, 212)",
+																		cursor: "pointer"
+																	}}
+																></i>
+															</div>
+
+														</div>
+
+													)
+												))}
+											</div>
+
 											<time>00:00</time>
 											<time>01:00</time>
 											<time>02:00</time>
@@ -1462,7 +1687,7 @@ export default function Calendar(): React.JSX.Element {
 								</div>
 							</div>
 						</div>
-					</div>
+					</div >
 				)
 			}
 			{
