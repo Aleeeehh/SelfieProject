@@ -49,6 +49,8 @@ export default function Calendar(): React.JSX.Element {
 		now.setMinutes(now.getMinutes() + 30);
 		return now;
 	});
+	//const [loadWeek, setLoadWeek] = React.useState(false);
+	const [weekEvents, setWeekEvents] = React.useState<{ day: number; positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[]>([]);
 	const [location, setLocation] = React.useState("");
 	const [meseCorrente, setMeseCorrente] = React.useState(new Date().getMonth()); //inizializzazione mese corrente
 	const [message, setMessage] = React.useState("");
@@ -64,6 +66,8 @@ export default function Calendar(): React.JSX.Element {
 	*/
 	const [eventPositions, setEventPositions] = React.useState<{ top: number; height: number; name: string; type: boolean, width: number, marginLeft: number, event: Event }[]>([]);
 	const nav = useNavigate();
+
+
 
 	React.useEffect(() => {
 		(async (): Promise<void> => {
@@ -125,23 +129,29 @@ export default function Calendar(): React.JSX.Element {
 	function dayMode(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
 		setActiveButton(0);
+		//setLoadWeek(false);
 		console.log(activeButton);
 	}
 
 	function weekMode(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
+		console.log("Questi sono i valori di year, meseCorrente, day:", year, meseCorrente, day);
+		const startDay = getStartDayOfWeek(year, meseCorrente, day);
+		loadWeekEvents(startDay, year, meseCorrente);
 		setActiveButton(1);
-		console.log(activeButton);
+		console.log("Questi sono gli eventi della settimana intera e le loro posizioni:", weekEvents);
 	}
 
 	function monthMode(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
 		setActiveButton(2);
+		//setLoadWeek(false);
 		console.log(activeButton);
 	}
 
 	function nextWeek(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
+
 		let newDay = day + 7;
 		let newMonth = meseCorrente;
 		let newYear = year;
@@ -157,6 +167,8 @@ export default function Calendar(): React.JSX.Element {
 		setDay(newDay);
 		setMeseCorrente(newMonth);
 		setYear(newYear);
+		const startDay = getStartDayOfWeek(newYear, newMonth, newDay);
+		loadWeekEvents(startDay, newYear, newMonth);
 	}
 
 	function prevWeek(e: React.MouseEvent<HTMLButtonElement>): void {
@@ -176,6 +188,8 @@ export default function Calendar(): React.JSX.Element {
 		setDay(newDay);
 		setMeseCorrente(newMonth);
 		setYear(newYear);
+		const startDay = getStartDayOfWeek(newYear, newMonth, newDay);
+		loadWeekEvents(startDay, newYear, newMonth);
 	}
 
 	function mesePrecedente(): void {
@@ -269,9 +283,6 @@ export default function Calendar(): React.JSX.Element {
 				eventDate.getFullYear() === year;
 		});
 	}
-
-
-
 	// Toggle create event screen
 	//da implementare
 
@@ -299,8 +310,6 @@ export default function Calendar(): React.JSX.Element {
 		setTitle("");
 		setCreateEvent(!createEvent);
 	}
-
-
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
 		//console.log("SITUAZIONE EVENT LIST PRIMA DEL CLICK:", eventList);
@@ -341,6 +350,11 @@ export default function Calendar(): React.JSX.Element {
 			//console.log("Questi sono gli eventi del giorno:", data)
 
 			const eventi = data.value; //ottieni la lista di eventi
+
+			//INIZIO PARTE DI CODICE CHE CALCOLA LE POSIZIONI DEGLI EVENTI PER VISUALIZZAZIONE HTML
+
+
+
 			if (eventi && eventi.length > 0) {
 				const positions = eventi.map((evento: Event) => {
 					if (evento && evento.startTime) {
@@ -434,6 +448,10 @@ export default function Calendar(): React.JSX.Element {
 				});
 
 
+
+				//FINE PARTE DI CODICE CHE CALCOLA LE POSIZIONI DEGLI EVENTI PER VISUALIZZAZIONE HTML
+
+
 				setEventPositions(finalPositions);
 			}
 			else {
@@ -448,6 +466,133 @@ export default function Calendar(): React.JSX.Element {
 		catch (e) {
 			console.error("Si è verificato un errore durante il recupero degli eventi del giorno:", e);
 		}
+	}
+	function getStartDayOfWeek(year: number, month: number, day: number): number {
+		const date = new Date(year, month, day);
+		const dayOfWeek = date.getDay(); // Ottiene il giorno della settimana (0 = Domenica, 1 = Lunedì, ..., 6 = Sabato)
+
+		// Calcola il primo giorno della settimana (Domenica)
+		const startDay = day - dayOfWeek;
+
+		return startDay;
+	}
+
+	async function loadWeekEvents(startDay: number, year: number, meseCorrente: number): Promise<void> {
+		const eventiSettimana = [];
+
+		for (let i = 0; i < 7; i++) {
+			let day = startDay + i;
+			let currentMonth = meseCorrente;
+			let currentYear = year;
+
+			// Gestisci il passaggio al mese successivo
+			while (day > getDaysInMonth(new Date(currentYear, currentMonth))) {
+				day -= getDaysInMonth(new Date(currentYear, currentMonth));
+				currentMonth = (currentMonth + 1) % 12;
+				if (currentMonth === 0) {
+					currentYear += 1;
+				}
+			}
+
+			// Gestisci il passaggio al mese precedente
+			while (day < 1) {
+				currentMonth = (currentMonth - 1 + 12) % 12;
+				if (currentMonth === 11) {
+					currentYear -= 1;
+				}
+				day += getDaysInMonth(new Date(currentYear, currentMonth));
+			}
+
+			const date = new Date(currentYear, currentMonth, day);
+
+			try {
+				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ date: date.toISOString() }),
+				});
+
+				if (!res.ok) {
+					throw new Error("Errore nella risposta del server");
+				}
+
+				const data = await res.json();
+				const eventi = data.value;
+
+				if (eventi && eventi.length > 0) {
+					const positions = eventi.map((evento: Event) => {
+						if (evento && evento.startTime) {
+							const oraInizioEvento = new Date(evento.startTime).getHours() - 2;
+							const minutiInizioEvento = new Date(evento.startTime).getMinutes();
+							const minutiFineEvento = new Date(evento.endTime).getMinutes();
+							const oraFineEvento = new Date(evento.endTime).getHours() - 2;
+
+							const topPosition = (47 * oraInizioEvento) + (47 * (minutiInizioEvento / 60));
+							const eventHeight = 47 * (oraFineEvento - oraInizioEvento) + 47 * (minutiFineEvento / 60) - 47 * (minutiInizioEvento / 60);
+
+							const nomeEvento = evento.title;
+							const tipoEvento = evento.title !== "Pomodoro Session";
+
+							return { top: topPosition, height: eventHeight, name: nomeEvento, type: tipoEvento, width: 1, marginLeft: 0, event: evento };
+						}
+						return null;
+					}).filter(Boolean);
+
+					// Calcola le sovrapposizioni e aggiorna le posizioni
+					const overlapCount: { [key: string]: number } = {};
+					eventi.forEach((evento: Event, index: number) => {
+						const startTime = new Date(evento.startTime).getTime();
+						const endTime = new Date(evento.endTime).getTime();
+
+						for (let j = 0; j < eventi.length; j++) {
+							if (j !== index) {
+								const otherEvent = eventi[j];
+								const otherStartTime = new Date(otherEvent.startTime).getTime();
+								const otherEndTime = new Date(otherEvent.endTime).getTime();
+
+								if (startTime < otherEndTime && endTime > otherStartTime) {
+									overlapCount[index] = (overlapCount[index] || 0) + 1;
+									overlapCount[j] = (overlapCount[j] || 0);
+								}
+							}
+						}
+					});
+
+					const finalPositions = positions.map((event: Event, index: number) => {
+						const count = (overlapCount[index] || 0) + 1;
+						return {
+							...event,
+							width: count,
+						};
+					});
+
+					finalPositions.sort((a: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }, b: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }) => a.top - b.top);
+
+					finalPositions.forEach((position: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }, index: number) => {
+						if (index > 0) {
+							const previousPosition = finalPositions[index - 1];
+							if (position.width === previousPosition.width && position.event.startTime <= previousPosition.event.endTime) {
+								position.marginLeft = previousPosition.marginLeft + 95 / position.width;
+							} else {
+								position.marginLeft = 0;
+							}
+						} else {
+							position.marginLeft = 0;
+						}
+					});
+
+					eventiSettimana.push({ day, positions: finalPositions });
+				} else {
+					eventiSettimana.push({ day, positions: [] });
+				}
+			} catch (e) {
+				console.error(`Errore durante il recupero degli eventi per il giorno ${day}:`, e);
+				eventiSettimana.push({ day, positions: [] });
+			}
+		}
+
+		// Aggiorna lo stato con gli eventi della settimana
+		setWeekEvents(eventiSettimana);
 	}
 
 	async function handleDeleteEvent(id: string): Promise<void> {
@@ -1090,9 +1235,6 @@ export default function Calendar(): React.JSX.Element {
 											{((): JSX.Element | null => {
 												const currentDayOfWeek = getDay(new Date(year, meseCorrente, day));
 
-												//handleDateClick(2);
-												//COME FACCIO??
-
 
 
 												return (
@@ -1116,95 +1258,93 @@ export default function Calendar(): React.JSX.Element {
 												flex: "1",
 												position: "relative",
 											}}>
-
 											<div style={{ position: "relative", marginLeft: "17%" }}>
-												{eventPositions.map((event, index) => (
-													// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
-													!event.type ? (
-
-														<div
-															key={index} // Assicurati di fornire una chiave unica per ogni elemento
-															className="evento red"
-															style={{
-																top: `${event.top}px`, // Imposta la posizione verticale
-																height: `${event.height}px`, // Imposta l'altezza dell'evento
-																width: `calc(95%/${event.width})`,
-																position: "absolute", // Assicurati che sia posizionato correttamente
-																color: "red", // Colore rosso se event.type è false
-																borderColor: "red",
-																backgroundColor: "rgba(249, 67, 67, 0.5)",
-																marginLeft: `${event.marginLeft}%`,
-																cursor: "default", // Imposta il cursore di default per l'intero evento
-															}}
-														>
-															<div style={{ color: "red" }}>
-																<Link
-																	to={`/pomodoro?duration=${
-																		// Funzione per calcolare la durata dell'evento e scriverlo come query param
-																		((startTime, endTime): number => {
-																			const start = new Date(startTime); // Crea un oggetto Date per l'inizio
-																			const end = new Date(endTime); // Crea un oggetto Date per la fine
-																			const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-																			return totMin;
-																		})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-																		}`}
-																	style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
-																>
-																	{event.name}
-																</Link>
+												{weekEvents[0] && weekEvents[0].positions ? (
+													weekEvents[0].positions.map((event, index) => (
+														// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+														!event.type ? (
+															<div
+																key={index} // Assicurati di fornire una chiave unica per ogni elemento
+																className="evento red"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "red", // Colore rosso se event.type è false
+																	borderColor: "red",
+																	backgroundColor: "rgba(249, 67, 67, 0.5)",
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default", // Imposta il cursore di default per l'intero evento
+																}}
+															>
+																<div style={{ color: "red" }}>
+																	<Link
+																		to={`/pomodoro?duration=${
+																			// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																			((startTime, endTime): number => {
+																				const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																				const end = new Date(endTime); // Crea un oggetto Date per la fine
+																				const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																				return totMin;
+																			})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																			}`}
+																		style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																	>
+																		{event.name}
+																	</Link>
+																</div>
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "red",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
 															</div>
-															<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
-																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																<i className="bi bi-trash position-absolute"
-																	style={{
-																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																		fontSize: "1.5rem",
-																		margin: 0,
-																		padding: 0,
-																		color: "red",
-																		cursor: "pointer"
-																	}}
-																></i>
+														) : (
+															<div
+																className="evento blue"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																	borderColor: "rgb(155, 223, 212)",
+																	backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default",
+																}}
+															>
+																{event.name}
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "rgb(155, 223, 212)",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
 															</div>
-														</div>
-
-													) : (
-														<div
-															className="evento blue"
-															style={{
-																top: `${event.top}px`, // Imposta la posizione verticale
-																height: `${event.height}px`, // Imposta l'altezza dell'evento
-																width: `calc(95%/${event.width})`,
-																position: "absolute", // Assicurati che sia posizionato correttamente
-																color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
-																borderColor: "rgb(155, 223, 212)",
-																backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
-																marginLeft: `${event.marginLeft}%`,
-																cursor: "default",
-															}}
-														>
-															{event.name}
-															<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
-																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																<i className="bi bi-trash position-absolute"
-																	style={{
-																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																		fontSize: "1.5rem",
-																		margin: 0,
-																		padding: 0,
-																		color: "rgb(155, 223, 212)",
-																		cursor: "pointer"
-																	}}
-																></i>
-															</div>
-
-														</div>
-
-													)
-												))}
+														)
+													))
+												) : (
+													<div> </div>
+												)}
 											</div>
+
 
 											<time>00:00</time>
 											<time>01:00</time>
@@ -1233,8 +1373,6 @@ export default function Calendar(): React.JSX.Element {
 											<time>00:00</time>
 										</div>
 									</div>
-
-
 									<div className="nome-data-week">
 										<div
 											style={{
@@ -1276,93 +1414,92 @@ export default function Calendar(): React.JSX.Element {
 											}}>
 
 											<div style={{ position: "relative", marginLeft: "17%" }}>
-												{eventPositions.map((event, index) => (
-													// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
-													!event.type ? (
-
-														<div
-															key={index} // Assicurati di fornire una chiave unica per ogni elemento
-															className="evento red"
-															style={{
-																top: `${event.top}px`, // Imposta la posizione verticale
-																height: `${event.height}px`, // Imposta l'altezza dell'evento
-																width: `calc(95%/${event.width})`,
-																position: "absolute", // Assicurati che sia posizionato correttamente
-																color: "red", // Colore rosso se event.type è false
-																borderColor: "red",
-																backgroundColor: "rgba(249, 67, 67, 0.5)",
-																marginLeft: `${event.marginLeft}%`,
-																cursor: "default", // Imposta il cursore di default per l'intero evento
-															}}
-														>
-															<div style={{ color: "red" }}>
-																<Link
-																	to={`/pomodoro?duration=${
-																		// Funzione per calcolare la durata dell'evento e scriverlo come query param
-																		((startTime, endTime): number => {
-																			const start = new Date(startTime); // Crea un oggetto Date per l'inizio
-																			const end = new Date(endTime); // Crea un oggetto Date per la fine
-																			const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-																			return totMin;
-																		})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-																		}`}
-																	style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
-																>
-																	{event.name}
-																</Link>
+												{weekEvents[1] && weekEvents[1].positions ? (
+													weekEvents[1].positions.map((event, index) => (
+														// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+														!event.type ? (
+															<div
+																key={index} // Assicurati di fornire una chiave unica per ogni elemento
+																className="evento red"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "red", // Colore rosso se event.type è false
+																	borderColor: "red",
+																	backgroundColor: "rgba(249, 67, 67, 0.5)",
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default", // Imposta il cursore di default per l'intero evento
+																}}
+															>
+																<div style={{ color: "red" }}>
+																	<Link
+																		to={`/pomodoro?duration=${
+																			// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																			((startTime, endTime): number => {
+																				const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																				const end = new Date(endTime); // Crea un oggetto Date per la fine
+																				const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																				return totMin;
+																			})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																			}`}
+																		style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																	>
+																		{event.name}
+																	</Link>
+																</div>
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "red",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
 															</div>
-															<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
-																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																<i className="bi bi-trash position-absolute"
-																	style={{
-																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																		fontSize: "1.5rem",
-																		margin: 0,
-																		padding: 0,
-																		color: "red",
-																		cursor: "pointer"
-																	}}
-																></i>
+														) : (
+															<div
+																className="evento blue"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																	borderColor: "rgb(155, 223, 212)",
+																	backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default",
+																}}
+															>
+																{event.name}
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "rgb(155, 223, 212)",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
 															</div>
-														</div>
-
-													) : (
-														<div
-															className="evento blue"
-															style={{
-																top: `${event.top}px`, // Imposta la posizione verticale
-																height: `${event.height}px`, // Imposta l'altezza dell'evento
-																width: `calc(95%/${event.width})`,
-																position: "absolute", // Assicurati che sia posizionato correttamente
-																color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
-																borderColor: "rgb(155, 223, 212)",
-																backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
-																marginLeft: `${event.marginLeft}%`,
-																cursor: "default",
-															}}
-														>
-															{event.name}
-															<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
-																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																<i className="bi bi-trash position-absolute"
-																	style={{
-																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																		fontSize: "1.5rem",
-																		margin: 0,
-																		padding: 0,
-																		color: "rgb(155, 223, 212)",
-																		cursor: "pointer"
-																	}}
-																></i>
-															</div>
-
-														</div>
-
-													)
-												))}
+														)
+													))
+												) : (
+													<div> </div>
+												)}
 											</div>
+
 
 											<time>00:00</time>
 											<time>01:00</time>
@@ -1423,6 +1560,93 @@ export default function Calendar(): React.JSX.Element {
 												width: "calc(100% - 10px)",
 												flex: "1",
 											}}>
+
+											<div style={{ position: "relative", marginLeft: "17%" }}>
+												{weekEvents[2] && weekEvents[2].positions ? (
+													weekEvents[2].positions.map((event, index) => (
+														// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+														!event.type ? (
+															<div
+																key={index} // Assicurati di fornire una chiave unica per ogni elemento
+																className="evento red"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "red", // Colore rosso se event.type è false
+																	borderColor: "red",
+																	backgroundColor: "rgba(249, 67, 67, 0.5)",
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default", // Imposta il cursore di default per l'intero evento
+																}}
+															>
+																<div style={{ color: "red" }}>
+																	<Link
+																		to={`/pomodoro?duration=${
+																			// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																			((startTime, endTime): number => {
+																				const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																				const end = new Date(endTime); // Crea un oggetto Date per la fine
+																				const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																				return totMin;
+																			})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																			}`}
+																		style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																	>
+																		{event.name}
+																	</Link>
+																</div>
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "red",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														) : (
+															<div
+																className="evento blue"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																	borderColor: "rgb(155, 223, 212)",
+																	backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default",
+																}}
+															>
+																{event.name}
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "rgb(155, 223, 212)",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														)
+													))
+												) : (
+													<div> </div>
+												)}
+											</div>
 											<time>00:00</time>
 											<time>01:00</time>
 											<time>02:00</time>
@@ -1482,6 +1706,92 @@ export default function Calendar(): React.JSX.Element {
 												width: "calc(100% - 10px)",
 												flex: "1",
 											}}>
+											<div style={{ position: "relative", marginLeft: "17%" }}>
+												{weekEvents[3] && weekEvents[3].positions ? (
+													weekEvents[3].positions.map((event, index) => (
+														// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+														!event.type ? (
+															<div
+																key={index} // Assicurati di fornire una chiave unica per ogni elemento
+																className="evento red"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "red", // Colore rosso se event.type è false
+																	borderColor: "red",
+																	backgroundColor: "rgba(249, 67, 67, 0.5)",
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default", // Imposta il cursore di default per l'intero evento
+																}}
+															>
+																<div style={{ color: "red" }}>
+																	<Link
+																		to={`/pomodoro?duration=${
+																			// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																			((startTime, endTime): number => {
+																				const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																				const end = new Date(endTime); // Crea un oggetto Date per la fine
+																				const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																				return totMin;
+																			})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																			}`}
+																		style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																	>
+																		{event.name}
+																	</Link>
+																</div>
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "red",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														) : (
+															<div
+																className="evento blue"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																	borderColor: "rgb(155, 223, 212)",
+																	backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default",
+																}}
+															>
+																{event.name}
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "rgb(155, 223, 212)",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														)
+													))
+												) : (
+													<div> </div>
+												)}
+											</div>
 											<time>00:00</time>
 											<time>01:00</time>
 											<time>02:00</time>
@@ -1541,6 +1851,93 @@ export default function Calendar(): React.JSX.Element {
 												width: "calc(100% - 10px)",
 												flex: "1",
 											}}>
+
+											<div style={{ position: "relative", marginLeft: "17%" }}>
+												{weekEvents[4] && weekEvents[4].positions ? (
+													weekEvents[4].positions.map((event, index) => (
+														// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+														!event.type ? (
+															<div
+																key={index} // Assicurati di fornire una chiave unica per ogni elemento
+																className="evento red"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "red", // Colore rosso se event.type è false
+																	borderColor: "red",
+																	backgroundColor: "rgba(249, 67, 67, 0.5)",
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default", // Imposta il cursore di default per l'intero evento
+																}}
+															>
+																<div style={{ color: "red" }}>
+																	<Link
+																		to={`/pomodoro?duration=${
+																			// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																			((startTime, endTime): number => {
+																				const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																				const end = new Date(endTime); // Crea un oggetto Date per la fine
+																				const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																				return totMin;
+																			})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																			}`}
+																		style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																	>
+																		{event.name}
+																	</Link>
+																</div>
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "red",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														) : (
+															<div
+																className="evento blue"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																	borderColor: "rgb(155, 223, 212)",
+																	backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default",
+																}}
+															>
+																{event.name}
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "rgb(155, 223, 212)",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														)
+													))
+												) : (
+													<div> </div>
+												)}
+											</div>
 											<time>00:00</time>
 											<time>01:00</time>
 											<time>02:00</time>
@@ -1600,6 +1997,92 @@ export default function Calendar(): React.JSX.Element {
 												width: "calc(100% - 10px)",
 												flex: "1",
 											}}>
+											<div style={{ position: "relative", marginLeft: "17%" }}>
+												{weekEvents[5] && weekEvents[5].positions ? (
+													weekEvents[5].positions.map((event, index) => (
+														// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+														!event.type ? (
+															<div
+																key={index} // Assicurati di fornire una chiave unica per ogni elemento
+																className="evento red"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "red", // Colore rosso se event.type è false
+																	borderColor: "red",
+																	backgroundColor: "rgba(249, 67, 67, 0.5)",
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default", // Imposta il cursore di default per l'intero evento
+																}}
+															>
+																<div style={{ color: "red" }}>
+																	<Link
+																		to={`/pomodoro?duration=${
+																			// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																			((startTime, endTime): number => {
+																				const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																				const end = new Date(endTime); // Crea un oggetto Date per la fine
+																				const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																				return totMin;
+																			})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																			}`}
+																		style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																	>
+																		{event.name}
+																	</Link>
+																</div>
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "red",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														) : (
+															<div
+																className="evento blue"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																	borderColor: "rgb(155, 223, 212)",
+																	backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default",
+																}}
+															>
+																{event.name}
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "rgb(155, 223, 212)",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														)
+													))
+												) : (
+													<div> </div>
+												)}
+											</div>
 											<time>00:00</time>
 											<time>01:00</time>
 											<time>02:00</time>
@@ -1659,6 +2142,92 @@ export default function Calendar(): React.JSX.Element {
 												width: "calc(100% - 10px)",
 												flex: "1",
 											}}>
+											<div style={{ position: "relative", marginLeft: "17%" }}>
+												{weekEvents[6] && weekEvents[6].positions ? (
+													weekEvents[6].positions.map((event, index) => (
+														// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+														!event.type ? (
+															<div
+																key={index} // Assicurati di fornire una chiave unica per ogni elemento
+																className="evento red"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "red", // Colore rosso se event.type è false
+																	borderColor: "red",
+																	backgroundColor: "rgba(249, 67, 67, 0.5)",
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default", // Imposta il cursore di default per l'intero evento
+																}}
+															>
+																<div style={{ color: "red" }}>
+																	<Link
+																		to={`/pomodoro?duration=${
+																			// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																			((startTime, endTime): number => {
+																				const start = new Date(startTime); // Crea un oggetto Date per l'inizio
+																				const end = new Date(endTime); // Crea un oggetto Date per la fine
+																				const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																				return totMin;
+																			})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																			}`}
+																		style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }} // Imposta il cursore a pointer solo sul link
+																	>
+																		{event.name}
+																	</Link>
+																</div>
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "red",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														) : (
+															<div
+																className="evento blue"
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
+																	borderColor: "rgb(155, 223, 212)",
+																	backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default",
+																}}
+															>
+																{event.name}
+																<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+																	<i className="bi bi-trash position-absolute"
+																		style={{
+																			bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																			right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																			fontSize: "1.5rem",
+																			margin: 0,
+																			padding: 0,
+																			color: "rgb(155, 223, 212)",
+																			cursor: "pointer"
+																		}}
+																	></i>
+																</div>
+															</div>
+														)
+													))
+												) : (
+													<div> </div>
+												)}
+											</div>
 											<time>00:00</time>
 											<time>01:00</time>
 											<time>02:00</time>
