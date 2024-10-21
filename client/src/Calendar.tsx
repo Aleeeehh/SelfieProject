@@ -51,6 +51,7 @@ export default function Calendar(): React.JSX.Element {
 	});
 	//const [loadWeek, setLoadWeek] = React.useState(false);
 	const [weekEvents, setWeekEvents] = React.useState<{ day: number; positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[]>([]);
+	const [monthEvents, setMonthEvents] = React.useState<{ day: number; positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[]>([]);
 	const [location, setLocation] = React.useState("");
 	const [meseCorrente, setMeseCorrente] = React.useState(new Date().getMonth()); //inizializzazione mese corrente
 	const [message, setMessage] = React.useState("");
@@ -115,18 +116,22 @@ export default function Calendar(): React.JSX.Element {
 						}}
 					>
 						<div style={{ color: !event.type ? "red" : "rgb(155, 223, 212)" }}>
-							<Link
-								to={`/pomodoro?duration=${((startTime, endTime): number => {
-									const start = new Date(startTime);
-									const end = new Date(endTime);
-									const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-									return totMin;
-								})(event.event.startTime, event.event.endTime)
-									}&id=${event.event._id}`}
-								style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-							>
-								{event.name}
-							</Link>
+							{!event.type ? (
+								<Link
+									to={`/pomodoro?duration=${((startTime, endTime): number => {
+										const start = new Date(startTime);
+										const end = new Date(endTime);
+										const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+										return totMin;
+									})(event.event.startTime, event.event.endTime)
+										}&id=${event.event._id}`}
+									style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+								>
+									{event.name}
+								</Link>
+							) : (
+								<span>{event.name}</span>
+							)}
 						</div>
 						<div className="position-relative" onClick={async (e): Promise<void> => {
 							await handleDeleteEvent(event.event._id);
@@ -150,6 +155,161 @@ export default function Calendar(): React.JSX.Element {
 		);
 
 	}
+
+
+	function renderMonthEvents(monthEvents: { positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[], index: number): JSX.Element {
+		if (!monthEvents[index] || !monthEvents[index].positions) {
+			return <div> </div>;
+		}
+		console.log(`Superato if, e renderizzati eventi del giorno: ${index}`);
+		return (
+			<div style={{ position: "relative" }}>
+				{monthEvents[index].positions.map((event, idx) => {
+					if (idx < 5) {
+						// Renderizza i primi 5 eventi normalmente
+						return (
+							<div
+								key={idx}
+								className={`evento ${!event.type ? 'red' : 'blue'}`}
+								style={{
+									top: `0px`,
+									height: `15px`,
+									width: `130px`,
+									position: "relative",
+									color: !event.type ? "red" : "rgb(155, 223, 212)",
+									borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
+									backgroundColor: !event.type ? "rgba(249, 67, 67, 0.5)" : "rgba(155, 223, 212, 0.5)",
+									marginLeft: `0px`,
+									cursor: "default",
+									marginBottom: "1px",
+									fontSize: "12px"
+								}}
+							>
+								<div style={{ color: !event.type ? "red" : "rgb(155, 223, 212)" }}>
+									{!event.type ? (
+										<Link
+											to={`/pomodoro?duration=${((startTime, endTime): number => {
+												const start = new Date(startTime);
+												const end = new Date(endTime);
+												const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+												return totMin;
+											})(event.event.startTime, event.event.endTime)
+												}&id=${event.event._id}`}
+											style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+										>
+											{event.name.length > 12 ? `${event.name.substring(0, 12)}...` : event.name}
+											{"  "}
+											{((): any => {
+												const startTime = new Date(event.event.startTime);
+												startTime.setHours(startTime.getHours() - 2);
+												return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+											})()}
+										</Link>
+									) : (
+										<span>
+											{event.name.length > 12 ? `${event.name.substring(0, 12)}...` : event.name}
+											{"  "}
+											{((): any => {
+												const startTime = new Date(event.event.startTime);
+												startTime.setHours(startTime.getHours() - 2);
+												return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+											})()}
+										</span>
+									)}
+								</div>
+							</div>
+						);
+						//renderizza il sesto evento
+					} else if (idx === 5) {
+						// Se ci sono esattamente 6 eventi, renderizza il sesto evento normalmente
+						if (monthEvents[index].positions.length === 6) {
+							return (
+								<div
+									key={idx}
+									className={`evento ${!event.type ? 'red' : 'blue'}`}
+									style={{
+										top: `0px`,
+										height: `15px`,
+										width: `130px`,
+										position: "relative",
+										color: !event.type ? "red" : "rgb(155, 223, 212)",
+										borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
+										backgroundColor: !event.type ? "rgba(249, 67, 67, 0.5)" : "rgba(155, 223, 212, 0.5)",
+										marginLeft: `0px`,
+										cursor: "default",
+										marginBottom: "1px",
+										fontSize: "12px"
+									}}
+								>
+									<div style={{ color: !event.type ? "red" : "rgb(155, 223, 212)" }}>
+										{!event.type ? (
+											<Link
+												to={`/pomodoro?duration=${((startTime, endTime): number => {
+													const start = new Date(startTime);
+													const end = new Date(endTime);
+													const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+													return totMin;
+												})(event.event.startTime, event.event.endTime)
+													}&id=${event.event._id}`}
+												style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+											>
+												{event.name.length > 12 ? `${event.name.substring(0, 12)}...` : event.name}
+												{"  "}
+												{((): any => {
+													const startTime = new Date(event.event.startTime);
+													startTime.setHours(startTime.getHours() - 2);
+													return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+												})()}
+											</Link>
+										) : (
+											<span>
+												{event.name.length > 12 ? `${event.name.substring(0, 12)}...` : event.name}
+												{"  "}
+												{((): any => {
+													const startTime = new Date(event.event.startTime);
+													startTime.setHours(startTime.getHours() - 2);
+													return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+												})()}
+											</span>
+										)}
+									</div>
+								</div>
+							);
+						} else {
+							// Se ci sono più di 6 eventi, renderizza il sesto evento come "..."
+							return (
+								<div
+									key={idx}
+									className="evento blue"
+									style={{
+										top: `0px`,
+										height: `15px`,
+										width: `130px`,
+										position: "relative",
+										color: "rgb(155, 223, 212)",
+										backgroundColor: "rgba(155, 223, 212, 0.5)",
+										marginLeft: `0px`,
+										cursor: "default",
+										marginBottom: "1px",
+										fontSize: "12px",
+										textAlign: "center"
+									}}
+								>
+									<span>...</span>
+								</div>
+							);
+						}
+
+					}
+					// Non renderizzare eventi oltre il sesto
+
+					return null;
+				})}
+			</div>
+		);
+
+	}
+
 
 	async function loadEvents(): Promise<void> {
 		try {
@@ -185,30 +345,35 @@ export default function Calendar(): React.JSX.Element {
 		handleDateClick(day);
 	}, [year]);
 
-	function dayMode(e: React.MouseEvent<HTMLButtonElement>): void {
+	function dayMode(e: React.MouseEvent<HTMLElement>): void {
 		e.preventDefault();
 		setActiveButton(0);
 		//setLoadWeek(false);
 		console.log(activeButton);
 	}
 
-	function weekMode(e: React.MouseEvent<HTMLElement>): void {
+	async function weekMode(e: React.MouseEvent<HTMLElement>): Promise<void> {
 		e.preventDefault();
+		setWeekEvents([]);
 		console.log("Questi sono i valori di year, meseCorrente, day:", year, meseCorrente, day);
 		const startDay = getStartDayOfWeek(year, meseCorrente, day);
-		loadWeekEvents(startDay, year, meseCorrente);
+		await loadWeekEvents(startDay, year, meseCorrente);
 		setActiveButton(1);
 		console.log("Questi sono gli eventi della settimana intera e le loro posizioni:", weekEvents);
 	}
 
-	function monthMode(e: React.MouseEvent<HTMLButtonElement>): void {
+	async function monthMode(e: React.MouseEvent<HTMLElement>): Promise<void> {
 		e.preventDefault();
+		setMonthEvents([]);
+		await loadMonthEvents(year, meseCorrente);
+		console.log("questi sono gli eventi del mese:", monthEvents);
 		setActiveButton(2);
 		//setLoadWeek(false);
 		console.log(activeButton);
 	}
 
-	function nextWeek(e: React.MouseEvent<HTMLButtonElement>): void {
+	async function nextWeek(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		setWeekEvents([]);
 		e.preventDefault();
 
 		let newDay = day + 7;
@@ -227,10 +392,11 @@ export default function Calendar(): React.JSX.Element {
 		setMeseCorrente(newMonth);
 		setYear(newYear);
 		const startDay = getStartDayOfWeek(newYear, newMonth, newDay);
-		loadWeekEvents(startDay, newYear, newMonth);
+		await loadWeekEvents(startDay, newYear, newMonth);
 	}
 
-	function prevWeek(e: React.MouseEvent<HTMLButtonElement>): void {
+	async function prevWeek(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		setWeekEvents([]);
 		e.preventDefault();
 		let newDay = day - 7;
 		let newMonth = meseCorrente;
@@ -248,10 +414,11 @@ export default function Calendar(): React.JSX.Element {
 		setMeseCorrente(newMonth);
 		setYear(newYear);
 		const startDay = getStartDayOfWeek(newYear, newMonth, newDay);
-		loadWeekEvents(startDay, newYear, newMonth);
+		await loadWeekEvents(startDay, newYear, newMonth);
 	}
 
-	function mesePrecedente(): void {
+	async function mesePrecedente(): Promise<void> {
+		setMonthEvents([]);
 		const nuovoMese = (meseCorrente - 1) % 12;
 		const nuovoAnno = year + (nuovoMese === 0 ? 1 : 0);
 		setEventPositions([]);
@@ -276,9 +443,11 @@ export default function Calendar(): React.JSX.Element {
 				setDay(28);
 			}
 		}
+		await loadMonthEvents(nuovoAnno, nuovoMese);
 	}
 
-	function meseSuccessivo(): void {
+	async function meseSuccessivo(): Promise<void> {
+		setMonthEvents([]);
 		setEventPositions([]);
 		const nuovoMese = (meseCorrente + 1) % 12;
 		const nuovoAnno = year + (nuovoMese === 0 ? 1 : 0);
@@ -301,6 +470,7 @@ export default function Calendar(): React.JSX.Element {
 				setDay(28);
 			}
 		}
+		await loadMonthEvents(nuovoAnno, nuovoMese);
 	}
 
 	// On page load, get the events for the user
@@ -526,6 +696,7 @@ export default function Calendar(): React.JSX.Element {
 			console.error("Si è verificato un errore durante il recupero degli eventi del giorno:", e);
 		}
 	}
+
 	function getStartDayOfWeek(year: number, month: number, day: number): number {
 		const date = new Date(year, month, day);
 		const dayOfWeek = date.getDay(); // Ottiene il giorno della settimana (0 = Domenica, 1 = Lunedì, ..., 6 = Sabato)
@@ -652,6 +823,104 @@ export default function Calendar(): React.JSX.Element {
 
 		// Aggiorna lo stato con gli eventi della settimana
 		setWeekEvents(eventiSettimana);
+	}
+
+	async function loadMonthEvents(year: number, meseCorrente: number): Promise<void> {
+		const eventiMese = [];
+		const daysInMonth = getDaysInMonth(new Date(year, meseCorrente));
+
+		for (let day = 1; day <= daysInMonth; day++) {
+			const date = new Date(year, meseCorrente, day);
+
+			try {
+				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ date: date.toISOString() }),
+				});
+
+				if (!res.ok) {
+					throw new Error("Errore nella risposta del server");
+				}
+
+				const data = await res.json();
+				const eventi = data.value;
+
+				if (eventi && eventi.length > 0) {
+					const positions = eventi.map((evento: Event) => {
+						if (evento && evento.startTime) {
+							const oraInizioEvento = new Date(evento.startTime).getHours() - 2;
+							const minutiInizioEvento = new Date(evento.startTime).getMinutes();
+							const minutiFineEvento = new Date(evento.endTime).getMinutes();
+							const oraFineEvento = new Date(evento.endTime).getHours() - 2;
+
+							const topPosition = (5 * oraInizioEvento) + (5 * (minutiInizioEvento / 60));
+							const eventHeight = 5 * (oraFineEvento - oraInizioEvento) + 5 * (minutiFineEvento / 60) - 5 * (minutiInizioEvento / 60);
+
+							const nomeEvento = evento.title;
+							const tipoEvento = evento.title !== "Pomodoro Session";
+
+							return { top: topPosition, height: eventHeight, name: nomeEvento, type: tipoEvento, width: 1, marginLeft: 0, event: evento };
+						}
+						return null;
+					}).filter(Boolean);
+
+					// Calcola le sovrapposizioni e aggiorna le posizioni
+					const overlapCount: { [key: string]: number } = {};
+					eventi.forEach((evento: Event, index: number) => {
+						const startTime = new Date(evento.startTime).getTime();
+						const endTime = new Date(evento.endTime).getTime();
+
+						for (let j = 0; j < eventi.length; j++) {
+							if (j !== index) {
+								const otherEvent = eventi[j];
+								const otherStartTime = new Date(otherEvent.startTime).getTime();
+								const otherEndTime = new Date(otherEvent.endTime).getTime();
+
+								if (startTime < otherEndTime && endTime > otherStartTime) {
+									overlapCount[index] = (overlapCount[index] || 0) + 1;
+									overlapCount[j] = (overlapCount[j] || 0);
+								}
+							}
+						}
+					});
+
+					const finalPositions = positions.map((event: Event, index: number) => {
+						const count = (overlapCount[index] || 0) + 1;
+						return {
+							...event,
+							width: count,
+						};
+					});
+
+					finalPositions.sort((a: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }, b: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }) => a.top - b.top);
+
+					finalPositions.forEach((position: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }, index: number) => {
+						if (index > 0) {
+							const previousPosition = finalPositions[index - 1];
+							if (position.width === previousPosition.width && position.event.startTime <= previousPosition.event.endTime) {
+								position.marginLeft = previousPosition.marginLeft + 95 / position.width;
+							} else {
+								position.marginLeft = 0;
+							}
+						} else {
+							position.marginLeft = 0;
+						}
+					});
+
+					eventiMese.push({ day, positions: finalPositions });
+				} else {
+					eventiMese.push({ day, positions: [] });
+				}
+			} catch (e) {
+				console.error(`Errore durante il recupero degli eventi per il giorno ${day}:`, e);
+				eventiMese.push({ day, positions: [] });
+			}
+		}
+
+
+		// Aggiorna lo stato con gli eventi del mese
+		setMonthEvents(eventiMese);
 	}
 
 	async function handleDeleteEvent(id: string): Promise<void> {
@@ -1318,8 +1587,10 @@ export default function Calendar(): React.JSX.Element {
 												position: "relative",
 											}}>
 
-
 											{renderWeekEvents(weekEvents, 0)}
+
+											{/*{renderMonthEvents(monthEvents, 12)}
+											RENDERIZZA GLI EVENTI DEL GIORNO 12+1 = 13*/}
 
 
 
@@ -1360,28 +1631,24 @@ export default function Calendar(): React.JSX.Element {
 												fontVariant: "small-caps",
 											}}>
 											Lun{" "}
-											{((): JSX.Element | null => {
-												const currentDayOfWeek = getDay(new Date(year, meseCorrente, day));
 
 
-
-												//handleDateClick(2);
-												//COME FACCIO??
-
-
-
-												return (
-													<>
-														{currentDayOfWeek === 5 && getAdjustedDay(day, -5, year, meseCorrente)}
-														{currentDayOfWeek === 4 && getAdjustedDay(day, -4, year, meseCorrente)}
-														{currentDayOfWeek === 3 && getAdjustedDay(day, -3, year, meseCorrente)}
-														{currentDayOfWeek === 2 && getAdjustedDay(day, -2, year, meseCorrente)}
-														{currentDayOfWeek === 1 && getAdjustedDay(day, -1, year, meseCorrente)}
-														{currentDayOfWeek === 0 && getAdjustedDay(day, 0, year, meseCorrente)}
-													</>
-												);
-											})()}
+											{getDay(new Date(year, meseCorrente, day)) === 6 &&
+												getAdjustedDay(day, -5, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 5 &&
+												getAdjustedDay(day, -4, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 4 &&
+												getAdjustedDay(day, -3, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 3 &&
+												getAdjustedDay(day, -2, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 2 &&
+												getAdjustedDay(day, -1, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 1 &&
+												getAdjustedDay(day, 0, year, meseCorrente)}
+											{getDay(new Date(year, meseCorrente, day)) === 0 &&
+												getAdjustedDay(day, 1, year, meseCorrente)}
 										</div>
+
 										<div
 											className="orario"
 											style={{
@@ -1789,8 +2056,17 @@ export default function Calendar(): React.JSX.Element {
 								{Array.from({
 									length: getDaysInMonth(new Date(year, meseCorrente)),
 								}).map((_, day) => (
-									<div key={day + 1} className="date-cell">
-										<button onClick={handleDateClick}>{day + 1}</button>
+									<div key={day + 1} className="date-cell" style={{ position: "relative", minHeight: "100px" }}>
+										<div>
+											{renderMonthEvents(monthEvents, day)}
+										</div>
+										<button onClick={(e): void => {
+											handleDateClick(day + 1);
+											dayMode(e as React.MouseEvent<HTMLElement>);
+										}}>
+											{day + 1}
+										</button>
+
 									</div>
 								))}
 							</div>
