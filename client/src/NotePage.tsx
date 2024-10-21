@@ -4,6 +4,7 @@ import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Note from "./types/Note";
 import { useNavigate, useParams } from "react-router-dom";
+import { marked } from "marked";
 
 const baseNote: Note = {
 	id: "",
@@ -20,6 +21,8 @@ export default function NotePage(): React.JSX.Element {
 	const [note, setNote] = React.useState(baseNote as Note);
 	const [tag, setTag] = React.useState("");
 	const [message, setMessage] = React.useState("");
+	const [isEditing, setIsEditing] = React.useState(id === NEW);
+	const [isPreview, setIsPreview] = React.useState(false);
 	const nav = useNavigate();
 
 	// On page load, get the note for the user
@@ -158,18 +161,54 @@ export default function NotePage(): React.JSX.Element {
 		setNote({ ...note, tags });
 	}
 
+	function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
+		if (isEditing) {
+			handleUpdate(e);
+		}
+
+		setIsEditing(!isEditing);
+		setIsPreview(false);
+	}
+
+	function togglePreview(): void {
+		setIsPreview(!isPreview);
+	}
+
 	return (
 		<>
 			<div className="page-title">{id === NEW ? "Crea una nuova nota" : "Modifica nota"}</div>
 			<div className="note-container">
 				<label htmlFor="title">
 					Titolo
-					<input name="title" value={note.title} onChange={handleChange} />
+					<input
+						name="title"
+						value={note.title}
+						onChange={handleChange}
+						disabled={!isEditing}
+					/>
 				</label>
-				<label htmlFor="title">
-					Testo
-					<textarea name="text" value={note.text} onChange={handleChange} />
-				</label>
+				{isEditing ? (
+					<>
+						<label htmlFor="text">
+							Testo (supporta Markdown)
+							<textarea name="text" value={note.text} onChange={handleChange} />
+						</label>
+						<button onClick={togglePreview}>
+							{isPreview ? "Modifica" : "Anteprima"}
+						</button>
+						{isPreview && (
+							<div
+								className="markdown-preview"
+								dangerouslySetInnerHTML={{ __html: marked(note.text) as string }}
+							/>
+						)}
+					</>
+				) : (
+					<div
+						className="markdown-content"
+						dangerouslySetInnerHTML={{ __html: marked(note.text) as string }}
+					/>
+				)}
 				<label>
 					Tags
 					<label htmlFor="title">
@@ -201,12 +240,19 @@ export default function NotePage(): React.JSX.Element {
 							))}
 					</div>
 				</label>
-				<button
-					style={{ backgroundColor: "#ffff00" }}
-					onClick={id === NEW ? handleCreate : handleUpdate}>
-					{id === NEW ? "Crea Nota" : "Aggiorna Nota"}
-				</button>
 				{id !== NEW && (
+					<button onClick={toggleEdit}>
+						{isEditing ? "Salva modifiche" : "Modifica nota"}
+					</button>
+				)}
+				{isEditing && (
+					<button
+						style={{ backgroundColor: "#ffff00" }}
+						onClick={id === NEW ? handleCreate : handleUpdate}>
+						{id === NEW ? "Crea Nota" : "Aggiorna Nota"}
+					</button>
+				)}
+				{id !== NEW && !isEditing && (
 					<button style={{ backgroundColor: "#ff0000" }} onClick={handleDelete}>
 						Cancella Nota
 					</button>
