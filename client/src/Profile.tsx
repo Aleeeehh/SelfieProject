@@ -4,6 +4,7 @@ import { ResponseBody } from "./types/ResponseBody";
 import { useNavigate } from "react-router-dom";
 import User from "./types/User";
 import { ResponseStatus } from "./types/ResponseStatus";
+import { useAuth } from "./AuthContext";
 
 const emptyUser: User = {
 	id: "",
@@ -13,51 +14,41 @@ const emptyUser: User = {
 	lastName: "",
 	birthday: new Date(),
 };
+
 export default function Profile(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [user, setUser] = React.useState(emptyUser);
 
 	const nav = useNavigate();
+	const { logout, isLoggedIn } = useAuth();
 
 	React.useEffect(() => {
-		(async (): Promise<void> => {
-			try {
-				const res = await fetch(`${SERVER_API}/users`);
-				if (res.status !== 200) {
-					nav("/login");
-				}
+		fetchUserData();
+	}, [isLoggedIn, nav]);
 
+	async function fetchUserData(): Promise<void> {
+		try {
+			const res = await fetch(`${SERVER_API}/users`);
+			if (res.status === 200) {
 				const data = (await res.json()) as ResponseBody;
-				console.log(data);
-
 				setUser(data.value);
-			} catch (e) {
-				console.log(e);
-				setMessage("Impossibile raggiungere il server");
+			} else {
+				setMessage("Errore nel caricamento dei dati utente");
+				nav("/login");
 			}
-		})();
-	}, []);
+		} catch (e) {
+			console.log(e);
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
 
 	async function handleLogout(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
-
-		// TODO: validate inputs (not empty, max length)
 		try {
-			const res = await fetch(`${SERVER_API}/users/logout`, {
-				method: "POST",
-			});
-
-			const resBody = (await res.json()) as ResponseBody;
-
-			console.log(resBody);
-			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Logout effettuato correttamente!");
-				nav("/login");
-			} else {
-				setMessage("Errore durante il tentativo di logout");
-			}
+			await logout();
+			nav("/login");
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			setMessage("Errore durante il tentativo di logout");
 		}
 	}
 

@@ -1,6 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-
+import { Routes, Route } from "react-router-dom";
 import Home from "./Home";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -16,25 +15,25 @@ import Profile from "./Profile";
 function App(): React.JSX.Element {
 	return (
 		<div id="body-container">
+			{/* <BrowserRouter> */}
 			<WithLayout>
-				<BrowserRouter>
-					<Routes>
-						<Route path="/">
-							<Route index element={<Home />} />
-							<Route path="login" element={<Login />} />
-							<Route path="calendar" element={<Calendar />} />
-							<Route path="pomodoro" element={<Pomodoro />} />
-							<Route path="projects" element={<Projects />} />
-							<Route path="profile" element={<Profile />} />
-							<Route path="notes" element={<Notes />} />
-							{/* Route notes/new creates the new page for note*/}
-							<Route path="notes/:id" element={<NotePage />} />
-							{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
-						</Route>
-						<Route path="*" element={<NotFound />} />
-					</Routes>
-				</BrowserRouter>
+				<Routes>
+					<Route path="/">
+						<Route index element={<Home />} />
+						<Route path="login" element={<Login />} />
+						<Route path="calendar" element={<Calendar />} />
+						<Route path="pomodoro" element={<Pomodoro />} />
+						<Route path="projects" element={<Projects />} />
+						<Route path="profile" element={<Profile />} />
+						<Route path="notes" element={<Notes />} />
+						{/* Route notes/new creates the new page for note*/}
+						<Route path="notes/:id" element={<NotePage />} />
+						{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
+					</Route>
+					<Route path="*" element={<NotFound />} />
+				</Routes>
 			</WithLayout>
+			{/* </BrowserRouter> */}
 		</div>
 	);
 }

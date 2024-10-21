@@ -1,8 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ResponseStatus } from "./types/ResponseStatus";
-import { ResponseBody } from "./types/ResponseBody";
-import { SERVER_API } from "./params/params";
+import { useAuth } from "./AuthContext";
 
 export default function Login(): React.JSX.Element {
 	const [username, setUsername] = React.useState("");
@@ -11,42 +9,26 @@ export default function Login(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 
 	const nav = useNavigate();
+	const { login, isLoggedIn } = useAuth();
 
 	React.useEffect(() => {
-		(async (): Promise<void> => {
-			try {
-				const res = await fetch(`${SERVER_API}/users/`);
-				if (res.status === 200) {
-					const resBody = await res.json();
-					if (resBody.value) nav("/");
-				}
-			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
-			}
-		})();
-	}, []);
+		if (isLoggedIn) {
+			nav("/");
+		}
+	}, [isLoggedIn, nav]);
 
 	async function handleLogin(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		try {
-			const res = await fetch(`${SERVER_API}/users/login`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ username, password }),
-			});
-
-			const resBody: ResponseBody = await res.json();
-			if (resBody.status === ResponseStatus.GOOD) {
+			const success = await login(username, password);
+			if (success) {
 				setMessage("Utente authenticato");
 				nav("/");
 			} else {
-				const msg = resBody.message || "Unable lo login";
-				setMessage(msg);
+				setMessage("Credenziali errate");
 			}
 		} catch (e) {
-			setMessage("Credenziali errate");
+			setMessage("Impossibile raggiungere il server");
 		}
 	}
 
