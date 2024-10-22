@@ -3,6 +3,7 @@ import { default as eventsRouter } from "./events.js";
 import { default as pomodoroRouter } from "./pomodoro.js";
 import { default as notesRouter } from "./notes.js";
 import { default as projectsRouter } from "./projects.js";
+import { default as notificationRouter } from "./notifications.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import { Request, Response, Router, NextFunction } from "express";
 
@@ -29,6 +30,8 @@ router.use("/events", eventsRouter);
 router.use("/notes", notesRouter);
 router.use("/projects", projectsRouter);
 router.use("/pomodoro", pomodoroRouter);
+
+router.use("/notifications", notificationRouter);
 
 router.get("/", (_: Request, res: Response) => {
 	res.json({ message: "Hello from the server" });

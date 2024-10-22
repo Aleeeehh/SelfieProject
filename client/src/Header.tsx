@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { SERVER_API } from "./params/params";
 
 const buttonStyle = {
 	backgroundColor: "white",
@@ -10,9 +11,32 @@ const buttonStyle = {
 	alignSelf: "center",
 };
 
+const NOTIFICATION_COUNT = 5;
+
+type Notification = {
+	userId: string;
+	message: string;
+	type: string;
+	sentAt: Date;
+	status: string;
+};
+
 export default function Header(): React.JSX.Element {
-	// const [showMenu, setShowMenu] = useState(false);
+	const [showNotifications, setShowNotifications] = useState(false);
+	const [notifications, setNotifications] = useState([] as Notification[]);
 	const { isLoggedIn } = useAuth();
+
+	useEffect(() => {
+		fetch(`${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`)
+			.then((res) => res.json())
+			.then((data) => {
+				console.log(data.value);
+				setNotifications(data.value);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	}, []);
 
 	// const toggleMenu = (): void => {
 	// 	setShowMenu(!showMenu);
@@ -45,30 +69,67 @@ export default function Header(): React.JSX.Element {
 				</a>
 
 				{isLoggedIn ? (
-					<div
-						style={{
-							...buttonStyle,
-							display: "flex",
-							width: undefined,
-							justifyContent: "flex-end",
-							alignItems: "center",
-						}}>
-						<a
-							href="/profile"
+					<>
+						<button
+							className="btn secondary"
+							style={buttonStyle}
+							onClick={(): void => setShowNotifications(!showNotifications)}>
+							<i className="fas fa-bell" />
+						</button>
+
+						{showNotifications && (
+							<div
+								style={{
+									position: "absolute",
+									top: "55px",
+									right: "75px",
+									backgroundColor: "white",
+									border: "1px solid gray",
+									padding: "10px",
+									zIndex: "1",
+								}}>
+								{notifications.length > 0 ? (
+									notifications.map((notification, index) => (
+										<div key={index}>
+											<p>{notification.message}</p>
+											<p>
+												{notification.type} -{" "}
+												{notification.sentAt.toString()}
+											</p>
+										</div>
+									))
+								) : (
+									<div>
+										<p>No notifications</p>
+									</div>
+								)}
+							</div>
+						)}
+						<div
 							style={{
-								width: "40px",
-								height: "40px",
-								borderRadius: "50%",
-								backgroundColor: "#007bff",
-								border: "none",
-								cursor: "pointer",
-								alignItems: "center",
+								...buttonStyle,
 								display: "flex",
-								justifyContent: "center",
+								width: undefined,
+								justifyContent: "flex-end",
+								alignItems: "center",
 							}}>
-							<span style={{ color: "white" }}>U</span>
-						</a>
-					</div>
+							<a
+								href="/profile"
+								style={{
+									width: "40px",
+									height: "40px",
+									borderRadius: "50%",
+									backgroundColor: "#007bff",
+									border: "none",
+									cursor: "pointer",
+									alignItems: "center",
+									display: "flex",
+									justifyContent: "center",
+								}}>
+								<span style={{ color: "white" }}>U</span>
+							</a>
+						</div>
+					</>
 				) : (
 					<a
 						href="/login"
