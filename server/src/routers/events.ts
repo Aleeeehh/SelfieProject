@@ -182,24 +182,22 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 	return eventList;
 }
 
-function minutesApprossimation(minutes: number): number {
-	console.log("Minuti dell'orario", minutes);
-	if (minutes % 10 === 0) {
-		return minutes;
-	}
-	else {
-		if (minutes % 10 < 5) {
-			console.log("L'unità è < 5, allora stampo:", (minutes - (minutes % 10)))
-			return (minutes - (minutes % 10))
+function minutesApprossimation(hours: number, minutes: number): number {
+	if (hours > 21) {
+		minutes = Math.floor(minutes / 10) * 10; // Approssima per difetto
+	} else {
+		if (minutes % 10 === 0) {
+			return minutes;
+		} else {
+			if (minutes % 10 < 5) {
+				console.log("L'unità è < 5, allora stampo:", (minutes - (minutes % 10)));
+				minutes = minutes - (minutes % 10);
+			} else {
+				minutes = minutes + (10 - (minutes % 10));
+			}
 		}
-
-		else {
-			return (minutes + (10 - (minutes % 10)))
-
-		}
-
-
 	}
+	return minutes;
 }
 
 router.get("/", async (req: Request, res: Response) => {
@@ -319,20 +317,20 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 		}
 
 		const startTimeDate = new Date(startTime);
-		startTimeDate.setHours(startTimeDate.getHours() + 2); // Aggiungi 2 ore
-		startTimeDate.setMinutes(minutesApprossimation(startTimeDate.getMinutes())); //approssima i minuti alla decina
+		startTimeDate.setHours(startTimeDate.getHours());
+		startTimeDate.setMinutes(minutesApprossimation(startTimeDate.getHours(), startTimeDate.getMinutes())); //approssima i minuti alla decina
 		startTimeDate.setSeconds(0); // trascura i secondi
 		startTimeDate.setMilliseconds(0); // trascura i millisecondi
 
 
 		const endTimeDate = new Date(endTime);
-		endTimeDate.setHours(endTimeDate.getHours() + 2); // Aggiungi 2 ore
-		endTimeDate.setMinutes(minutesApprossimation(endTimeDate.getMinutes())); //approssima i minuti alla decina
+		endTimeDate.setHours(endTimeDate.getHours()); // Aggiungi 2 ore
+		endTimeDate.setMinutes(minutesApprossimation(endTimeDate.getHours(), endTimeDate.getMinutes())); //approssima i minuti alla decina
 		endTimeDate.setSeconds(0); //trascura i secondi
 		endTimeDate.setMilliseconds(0); //trascura i millisecondi
 
 		const now = new Date();
-		now.setHours(now.getHours() + 2);
+		now.setHours(now.getHours());
 
 		const event: Event = {
 			id: "1",
@@ -400,8 +398,9 @@ router.post("/deleteEvent", async (req: Request, res: Response) => {
 
 
 //INEFFICIENTE MA FUNZIONANTE, DA OTTIMIZZARE!
+//TROVA GLI EVENTI DEL GIORNO SOLO PER L'OWNER PASSATO COME QUERY (utente loggato)
 router.post("/eventsOfDay", async (req: Request, res: Response) => {
-	const { date } = req.body;
+	const { date, owner } = req.body;
 
 	const giornoSelezionato = new Date(date);
 	const selectedDay = giornoSelezionato.getDate(); // Ottieni il giorno del mese
@@ -412,16 +411,22 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
 
 
 		// Trova tutti gli eventi
-		const allEvents = await EventSchema.find().lean(); // .lean() per ottenere oggetti JavaScript semplici
+		const allEvents = await EventSchema.find({ owner: owner }).lean(); // .lean() per ottenere oggetti JavaScript semplici
 
 		// Filtra gli eventi per il giorno selezionato
 		const filteredEvents = allEvents.filter(event => {
-			const eventDate = new Date(event.startTime);
-			return (
-				eventDate.getDate() === selectedDay &&
-				eventDate.getMonth() === selectedMonth &&
-				eventDate.getFullYear() === selectedYear
-			);
+			const eventStartDate = new Date(event.startTime);
+			const eventEndDate = new Date(event.endTime);
+			const currentDate = new Date(selectedYear, selectedMonth, selectedDay);
+
+			// Normalizza le date per confrontare solo giorno, mese e anno
+			const normalizeDate: (date: Date) => Date = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+			const normalizedEventStartDate = normalizeDate(eventStartDate);
+			const normalizedEventEndDate = normalizeDate(eventEndDate);
+			const normalizedCurrentDate = normalizeDate(currentDate);
+
+			return normalizedCurrentDate >= normalizedEventStartDate && normalizedCurrentDate <= normalizedEventEndDate;
 		});
 
 		const resBody = {

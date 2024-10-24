@@ -197,22 +197,44 @@ export default function Calendar(): React.JSX.Element { // prova push
 												}&id=${event.event._id}`}
 											style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
 										>
-											{event.name.length > 12 ? `${event.name.substring(0, 12)}...` : event.name}
-											{"  "}
 											{((): any => {
-												const startTime = new Date(event.event.startTime);
-												startTime.setHours(startTime.getHours() - 2);
-												return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+												const endTime = new Date(new Date(event.event.endTime).getFullYear(), new Date(event.event.endTime).getMonth(), new Date(event.event.endTime).getDate());
+												const startTimeOrario = new Date(event.event.startTime);
+												const startTime = new Date(new Date(event.event.startTime).getFullYear(), new Date(event.event.startTime).getMonth(), new Date(event.event.startTime).getDate());
+												const isSameDay = endTime.getTime() === startTime.getTime(); //se l'evento inizia e termina lo stesso giorno, mostra l'orario
+
+												const nameToDisplay = event.name.length > (isSameDay ? 10 : 15) ? `${event.name.substring(0, isSameDay ? 10 : 15)}...` : event.name;
+
+												const timeToDisplay = isSameDay ? startTimeOrario.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+
+												return (
+													<>
+														{nameToDisplay}
+														{"  "}
+														{timeToDisplay}
+													</>
+												);
 											})()}
 										</Link>
 									) : (
 										<span>
-											{event.name.length > 12 ? `${event.name.substring(0, 12)}...` : event.name}
-											{"  "}
 											{((): any => {
-												const startTime = new Date(event.event.startTime);
-												startTime.setHours(startTime.getHours() - 2);
-												return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+												const endTime = new Date(new Date(event.event.endTime).getFullYear(), new Date(event.event.endTime).getMonth(), new Date(event.event.endTime).getDate());
+												const startTimeOrario = new Date(event.event.startTime);
+												const startTime = new Date(new Date(event.event.startTime).getFullYear(), new Date(event.event.startTime).getMonth(), new Date(event.event.startTime).getDate());
+												const isSameDay = endTime.getTime() === startTime.getTime(); //se l'evento inizia e termina lo stesso giorno, mostra l'orario
+
+												const nameToDisplay = event.name.length > (isSameDay ? 10 : 15) ? `${event.name.substring(0, isSameDay ? 10 : 15)}...` : event.name;
+
+												const timeToDisplay = isSameDay ? startTimeOrario.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+
+												return (
+													<>
+														{nameToDisplay}
+														{"  "}
+														{timeToDisplay}
+													</>
+												);
 											})()}
 										</span>
 									)}
@@ -257,7 +279,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 												{"  "}
 												{((): any => {
 													const startTime = new Date(event.event.startTime);
-													startTime.setHours(startTime.getHours() - 2);
+													startTime.setHours(startTime.getHours());
 													return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 												})()}
 											</Link>
@@ -267,7 +289,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 												{"  "}
 												{((): any => {
 													const startTime = new Date(event.event.startTime);
-													startTime.setHours(startTime.getHours() - 2);
+													startTime.setHours(startTime.getHours());
 													return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 												})()}
 											</span>
@@ -506,10 +528,18 @@ export default function Calendar(): React.JSX.Element { // prova push
 	//funzione per aggiungere pallino al giorno che contiene eventi
 	function hasEventsForDay(day: number): boolean {
 		return eventList.some(event => {
-			const eventDate = new Date(event.startTime);
-			return eventDate.getDate() === day &&
-				eventDate.getMonth() === meseCorrente &&
-				eventDate.getFullYear() === year;
+			const eventStartDate = new Date(event.startTime);
+			const eventEndDate = new Date(event.endTime);
+			const currentDate = new Date(year, meseCorrente, day);
+
+			// Normalizza le date per confrontare solo giorno, mese e anno
+			const normalizeDate: (date: Date) => Date = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+			const normalizedEventStartDate = normalizeDate(eventStartDate);
+			const normalizedEventEndDate = normalizeDate(eventEndDate);
+			const normalizedCurrentDate = normalizeDate(currentDate);
+
+			return normalizedCurrentDate >= normalizedEventStartDate && normalizedCurrentDate <= normalizedEventEndDate;
 		});
 	}
 	// Toggle create event screen
@@ -545,34 +575,40 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//e.preventDefault();
 		setEventPositions([]);
 		setRenderKey(prevKey => prevKey + 1);
-		console.log("renderKey:", renderKey);
-		console.log("Questo è ciò che viene passato in input alla handleDateClick:", e);
+		//console.log("renderKey:", renderKey);
+		//console.log("Questo è ciò che viene passato in input alla handleDateClick:", e);
 		let dayValue: number;
 		//console.log(day, Mesi[meseCorrente], year);
 		//console.log(day, meseCorrente, year);
+
 		if (typeof e === "number") {
 			dayValue = e;
 		}
 		else {
 			dayValue = Number(e.currentTarget.textContent);
 		}
-		console.log("Clicked day:", dayValue); // Log per il debug
+		//console.log("Clicked day:", dayValue); // Log per il debug
 		setDay(dayValue);
 
 		try {
 
-			const date = new Date();
+			const date = new Date(); //ottengo data corrente
 			date.setDate(dayValue);
-			console.log("Questo è il mese corrente:", meseCorrente);
+			//console.log("Questo è il mese corrente:", meseCorrente);
 			date.setMonth(meseCorrente);
 			date.setFullYear(year);
 			console.log(date);
+
+			const currentUser = await getCurrentUser();
+
+
 
 			const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					date: date.toISOString(),
+					owner: currentUser.value.username,
 				}),
 			});
 			const data = await res.json();
@@ -587,14 +623,50 @@ export default function Calendar(): React.JSX.Element { // prova push
 			if (eventi && eventi.length > 0) {
 				const positions = eventi.map((evento: Event) => {
 					if (evento && evento.startTime) {
-						const oraInizioEvento = new Date(evento.startTime).getHours() - 2;
+						const oraInizioEvento = new Date(evento.startTime).getHours();
 						const minutiInizioEvento = new Date(evento.startTime).getMinutes();
 						const minutiFineEvento = new Date(evento.endTime).getMinutes();
-						const oraFineEvento = new Date(evento.endTime).getHours() - 2;
+						const oraFineEvento = new Date(evento.endTime).getHours();
+
+						//normalizzo data corrente, data di inizio evento e data di fine evento
+						const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+						const eventEndDate = new Date(new Date(evento.endTime).getFullYear(), new Date(evento.endTime).getMonth(), new Date(evento.endTime).getDate()).getTime();
+						const eventStartDate = new Date(new Date(evento.startTime).getFullYear(), new Date(evento.startTime).getMonth(), new Date(evento.startTime).getDate()).getTime();
+
+
 
 						// Calcola la posizione e l'altezza per ogni evento
-						const topPosition = (54 * oraInizioEvento) + (54 * (minutiInizioEvento / 60)); // Posizione verticale
-						const eventHeight = 54 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
+						var topPosition = (54 * oraInizioEvento) + (54 * (minutiInizioEvento / 60)); // Posizione inizio evento
+						var eventHeight = 54 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
+
+
+						//console.log("Questa è la data corrente:", currentDate);
+						//console.log("Questa è la data di inizio evento:", eventStartDate);
+						//console.log("Questa è la data di fine evento:", eventEndDate);
+
+						//se la data attuale è inferiore alla data di fine evento, allora estendi l'evento a fino a fine giornata
+						if (currentDate < eventEndDate) {
+							console.log("L'evento non termina nella data corrente, quindi estendo l'evento fino a fine giornata");
+							topPosition = (54 * oraInizioEvento) + (54 * (minutiInizioEvento / 60));
+							eventHeight = 54 * (23 - oraInizioEvento) + 54 * ((60 - minutiInizioEvento) / 60);
+						}
+
+						//se la data attuale è superiore alla data di inizio evento, e la data corrente è uguale alla data di fine evento
+						//allora l'evento inzia in un giorno precedente ad oggi e finisce oggi
+						// allora mostro l'evento a partire dall'inizio del giorno e lo faccio finire all'orario di fine evento
+						if (currentDate > eventStartDate && currentDate === eventEndDate) {
+							console.log("L'evento non inizia nella data corrente ma finisce oggi");
+							topPosition = 0; //altezza 0
+							eventHeight = (54 * oraFineEvento) + (54 * (minutiFineEvento / 60)); // Altezza dell'evento
+						}
+
+						// se l'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi
+						if (currentDate > eventStartDate && currentDate < eventEndDate) {
+							console.log("L'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi");
+							topPosition = 0; //altezza 0
+							eventHeight = (54 * 24)
+						}
+
 
 						const nomeEvento = evento.title;
 						var tipoEvento = true; //se l'evento è un evento (non un pomodoro), metto type a true
@@ -736,10 +808,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const date = new Date(currentYear, currentMonth, day);
 
 			try {
+				const currentUser = await getCurrentUser();
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString() }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
 				});
 
 				if (!res.ok) {
@@ -752,13 +825,50 @@ export default function Calendar(): React.JSX.Element { // prova push
 				if (eventi && eventi.length > 0) {
 					const positions = eventi.map((evento: Event) => {
 						if (evento && evento.startTime) {
-							const oraInizioEvento = new Date(evento.startTime).getHours() - 2;
+							const oraInizioEvento = new Date(evento.startTime).getHours();
 							const minutiInizioEvento = new Date(evento.startTime).getMinutes();
 							const minutiFineEvento = new Date(evento.endTime).getMinutes();
-							const oraFineEvento = new Date(evento.endTime).getHours() - 2;
+							const oraFineEvento = new Date(evento.endTime).getHours();
 
-							const topPosition = (47 * oraInizioEvento) + (47 * (minutiInizioEvento / 60));
-							const eventHeight = 47 * (oraFineEvento - oraInizioEvento) + 47 * (minutiFineEvento / 60) - 47 * (minutiInizioEvento / 60);
+							//normalizzo data corrente, data di inizio evento e data di fine evento
+							const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+							const eventEndDate = new Date(new Date(evento.endTime).getFullYear(), new Date(evento.endTime).getMonth(), new Date(evento.endTime).getDate()).getTime();
+							const eventStartDate = new Date(new Date(evento.startTime).getFullYear(), new Date(evento.startTime).getMonth(), new Date(evento.startTime).getDate()).getTime();
+
+
+
+							// Calcola la posizione e l'altezza per ogni evento
+							var topPosition = (47.3 * oraInizioEvento) + (47.3 * (minutiInizioEvento / 60));  // Posizione inizio evento
+							var eventHeight = 47.3 * (oraFineEvento - oraInizioEvento) + 47.3 * (minutiFineEvento / 60) - 47.3 * (minutiInizioEvento / 60); // Altezza dell'evento
+
+
+							//console.log("Questa è la data corrente:", currentDate);
+							//console.log("Questa è la data di inizio evento:", eventStartDate);
+							//console.log("Questa è la data di fine evento:", eventEndDate);
+
+
+
+							//se la data attuale è inferiore alla data di fine evento, allora estendi l'evento a fino a fine giornata
+							if (currentDate < eventEndDate) {
+
+								topPosition = (47.3 * oraInizioEvento) + (47.3 * (minutiInizioEvento / 60));
+								eventHeight = 47.3 * (23 - oraInizioEvento) + 47.3 * ((60 - minutiInizioEvento) / 60);
+							}
+
+							//se la data attuale è superiore alla data di inizio evento, e la data corrente è uguale alla data di fine evento
+							//allora l'evento inzia in un giorno precedente ad oggi e finisce oggi
+							// allora mostro l'evento a partire dall'inizio del giorno e lo faccio finire all'orario di fine evento
+							if (currentDate > eventStartDate && currentDate === eventEndDate) {
+								topPosition = 0; //altezza 0
+								eventHeight = (47.3 * oraFineEvento) + (47.3 * (minutiFineEvento / 60)); // Altezza dell'evento
+							}
+
+							// se l'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi
+							if (currentDate > eventStartDate && currentDate < eventEndDate) {
+								topPosition = 0; //altezza 0
+								eventHeight = (47.3 * 24)
+							}
+
 
 							const nomeEvento = evento.title;
 							const tipoEvento = evento.title !== "Pomodoro Session";
@@ -833,10 +943,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const date = new Date(year, meseCorrente, day);
 
 			try {
+				const currentUser = await getCurrentUser();
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString() }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
 				});
 
 				if (!res.ok) {
@@ -849,10 +960,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 				if (eventi && eventi.length > 0) {
 					const positions = eventi.map((evento: Event) => {
 						if (evento && evento.startTime) {
-							const oraInizioEvento = new Date(evento.startTime).getHours() - 2;
+							const oraInizioEvento = new Date(evento.startTime).getHours();
 							const minutiInizioEvento = new Date(evento.startTime).getMinutes();
 							const minutiFineEvento = new Date(evento.endTime).getMinutes();
-							const oraFineEvento = new Date(evento.endTime).getHours() - 2;
+							const oraFineEvento = new Date(evento.endTime).getHours();
 
 							const topPosition = (5 * oraInizioEvento) + (5 * (minutiInizioEvento / 60));
 							const eventHeight = 5 * (oraFineEvento - oraInizioEvento) + 5 * (minutiFineEvento / 60) - 5 * (minutiInizioEvento / 60);
@@ -1492,7 +1603,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						<time>21:00</time>
 						<time>22:00</time>
 						<time>23:00</time>
-						<time>00:00</time>
+
 					</div>
 				</div >
 			)
@@ -1618,7 +1729,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											<time>21:00</time>
 											<time>22:00</time>
 											<time>23:00</time>
-											<time>00:00</time>
+
 										</div>
 									</div>
 									<div className="nome-data-week">
@@ -1684,7 +1795,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											<time>21:00</time>
 											<time>22:00</time>
 											<time>23:00</time>
-											<time>00:00</time>
+
 										</div>
 									</div>
 									<div className="nome-data-week">
@@ -1746,7 +1857,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											<time>21:00</time>
 											<time>22:00</time>
 											<time>23:00</time>
-											<time>00:00</time>
+
 										</div>
 									</div>
 									<div className="nome-data-week">
@@ -1807,7 +1918,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											<time>21:00</time>
 											<time>22:00</time>
 											<time>23:00</time>
-											<time>00:00</time>
+
 										</div>
 									</div>
 									<div className="nome-data-week">
@@ -1868,7 +1979,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											<time>21:00</time>
 											<time>22:00</time>
 											<time>23:00</time>
-											<time>00:00</time>
+
 										</div>
 									</div>
 									<div className="nome-data-week">
@@ -1929,7 +2040,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											<time>21:00</time>
 											<time>22:00</time>
 											<time>23:00</time>
-											<time>00:00</time>
+
 										</div>
 									</div>
 									<div className="nome-data-week">
@@ -1990,7 +2101,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											<time>21:00</time>
 											<time>22:00</time>
 											<time>23:00</time>
-											<time>00:00</time>
+
 										</div>
 									</div>
 								</div>
