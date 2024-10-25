@@ -15,6 +15,8 @@ enum Frequency {
 	ONCE = "once",
 	DAILY = "day",
 	WEEKLY = "week",
+	MONTHLY = "month",
+	YEARLY = "year",
 }
 
 const Mesi = [
@@ -40,6 +42,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [repetitions, setRepetitions] = React.useState(1);
 	const [selectedValue, setSelectedValue] = React.useState("");
 	const [createEvent, setCreateEvent] = React.useState(false);
+	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
 		return now;
@@ -140,6 +143,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						</div>
 						<div className="position-relative" onClick={async (e): Promise<void> => {
 							await handleDeleteEvent(event.event._id, event.event.groupId);
+
 							weekMode(e as React.MouseEvent<HTMLElement>);
 						}}>
 							<i className="bi bi-trash position-absolute"
@@ -367,7 +371,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
 			console.log("Eventi trovati:", data);
-			setRenderKey(prevKey => prevKey + 1);
 
 			if (data.status === ResponseStatus.GOOD) {
 				setEventList(data.value);
@@ -552,12 +555,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	//funzione per aggiungere pallino al giorno che contiene eventi
 	function hasEventsForDay(day: number): boolean {
-
 		// Controlla se la eventList è vuota
-		/*if (eventList.length === 0) {
+		if (eventList.length === 0) {
 			return false;
-		}*/
-
+		}
 
 		return eventList.some(event => {
 			//console.log("LA EVENTLIST HA EVENTI:", eventList);
@@ -604,7 +605,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setUntil(false);
 		setTitle("");
 		setCreateEvent(!createEvent);
-		setRepetitions(1);
+		setFrequency(Frequency.ONCE);
 	}
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
@@ -615,7 +616,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//console.log("renderKey:", renderKey);
 		//console.log("Questo è ciò che viene passato in input alla handleDateClick:", e);
 		let dayValue: number;
-
 		//console.log(day, Mesi[meseCorrente], year);
 		//console.log(day, meseCorrente, year);
 
@@ -1073,11 +1073,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 	}
 
 	async function handleDeleteEvent(id: string, groupId: string): Promise<void> {
-		console.log("Dobbiamo eliminare gli eventi con questo groupId:", groupId);
 		//console.log("day:", day);
 		try {
-			console.log("Evento da eliminare:", id);
-
+			//console.log("Evento da eliminare:", id);
 			const res = await fetch(`${SERVER_API}/events/deleteEvent`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -1088,31 +1086,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 			});
 			const data = await res.json();
 
-
-			console.log("Event list prima dell'eliminazione:", eventList);
-
+			//console.log("EVENTO ELIMINATO:", data);
+			//elimina l'evento dalla eventList
 			if (data.status === "success") {
-				console.log("Questa è la eventList prima dell'eliminazione:", eventList);
 				const eventiEliminati = data.value; // Supponendo che `value` contenga gli eventi eliminati
+
 				// Ottieni gli ID degli eventi eliminati
-				const groupIdsEliminati = eventiEliminati.map((event: { groupId: string }) => event.groupId);
+				const idsEliminati = eventiEliminati.map((event: { groupId: string }) => event.groupId);
+
 				// Aggiorna la eventList rimuovendo gli eventi eliminati
-				setEventList(prevEventList => prevEventList.filter(event => !groupIdsEliminati.includes(event.groupId))); //filtra gli eventi eliminati
-				console.log("Event list aggiornata dopo eliminazione:", eventList);
+				setEventList(prevEventList => prevEventList.filter(event => !idsEliminati.includes(event.groupId)));
+
+				console.log("Event list aggiornata:", eventList);
 				handleDateClick(day);
 			}
 			/*
-console.log("Event list prima dell'eliminazione:", eventList);
-setEventList(prevEventList => prevEventList.filter(event => event._id !== id))
-console.log("Event list aggiornata:", eventList);
-handleDateClick(day);
-*/
+			console.log("Event list prima dell'eliminazione:", eventList);
+			const eventoEliminato = data.value2;
+			setEventList(prevEventList => prevEventList.filter(event => event._id !== eventoEliminato._id))
+			console.log("Event list aggiornata:", eventList);
+			handleDateClick(day);
+			*/
 
 			return data;
 
 		}
 		catch (e) {
-			setMessage("Errore nell'eliminazione dell'evento");
+			setMessage("Errore nell'eliminazione dell'evento: " + e);
 			return;
 		}
 
@@ -1155,11 +1155,6 @@ handleDateClick(day);
 			return;
 		}
 
-		if (repetitions > 1 && startTime.getDay() != endTime.getDay()) {
-			setMessage("L'evento ricorrente deve iniziare e finire nello stesso giorno!");
-			return;
-		}
-
 		const start = new Date(startTime).getTime();
 		const end = new Date(endTime).getTime();
 
@@ -1176,6 +1171,8 @@ handleDateClick(day);
 
 		const owner = currentUser.value.username;
 
+		console.log("Questa è la frequenza prima di inviare la richiesta di creazione dell'evento:", frequency);
+
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -1184,7 +1181,7 @@ handleDateClick(day);
 				title,
 				startTime: startTime.toISOString(),
 				endTime: endTime.toISOString(),
-				frequency: Frequency.ONCE,
+				frequency: frequency,
 				location,
 				repetitions,
 			}),
@@ -1217,7 +1214,7 @@ handleDateClick(day);
 		setStartTime(startT);
 		setEndTime(endT);
 		setRepeatEvent(false);
-		setRepetitions(1);
+		setFrequency(Frequency.ONCE);
 
 		//window.location.reload()
 
@@ -1290,6 +1287,33 @@ handleDateClick(day);
 	function toggleUntil(selectedValue: string): void {
 		console.log("toggleUntil", selectedValue);
 		setUntil(true);
+
+	}
+
+	function toggleSelectFrequency(e: React.ChangeEvent<HTMLSelectElement>): void {
+		console.log("toggleSelectFrequency", e.target.value);
+		const frequenza = e.target.value;
+		if (frequenza !== "Once") {
+			toggleUntil(frequenza);
+		}
+		if (frequenza === "Once") {
+			setFrequency(Frequency.ONCE);
+			setUntil(false);
+		}
+		switch (frequenza) {
+			case "Daily":
+				setFrequency(Frequency.DAILY);
+				break;
+			case "Weekly":
+				setFrequency(Frequency.WEEKLY);
+				break;
+			case "Monthly":
+				setFrequency(Frequency.MONTHLY);
+				break;
+			case "Yearly":
+				setFrequency(Frequency.YEARLY);
+				break;
+		}
 
 	}
 
@@ -1534,19 +1558,10 @@ handleDateClick(day);
 												<select
 													className="btn border"
 													name="repetitionType"
-													onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-														const selectedValue = e.target.value;
-														if (selectedValue !== "Never") {
-															toggleUntil(selectedValue);
-														}
-														if (selectedValue === "Never") {
-															setUntil(false);
-														}
-														// Puoi gestire lo stato o altre logiche qui
-													}}
+													onChange={toggleSelectFrequency}
 													style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 												>
-													<option value="Never">Mai</option>
+													<option value="Once">Una volta</option>
 													<option value="Daily">Ogni giorno</option>
 													<option value="Weekly">Ogni settimana</option>
 													<option value="Monthly">Ogni mese </option>

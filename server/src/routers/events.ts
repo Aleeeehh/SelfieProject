@@ -9,6 +9,7 @@ import { start } from "repl";
 
 const router: Router = Router();
 
+
 function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 	const eventList: Event[] = [];
 
@@ -190,7 +191,7 @@ function minutesApprossimation(hours: number, minutes: number): number {
 			return minutes;
 		} else {
 			if (minutes % 10 < 5) {
-				console.log("L'unità è < 5, allora stampo:", (minutes - (minutes % 10)));
+				//console.log("L'unità è < 5, allora stampo:", (minutes - (minutes % 10)));
 				minutes = minutes - (minutes % 10);
 			} else {
 				minutes = minutes + (10 - (minutes % 10));
@@ -300,7 +301,7 @@ router.get("/owner", async (req: Request, res: Response) => {
 router.post("/", async (req: Request, res: Response) => { //gestore per le richieste POST a questa route /events
 	try {
 		//Validazione dell'input
-		const { owner, title, startTime, endTime, location, repetitions } = req.body as Event;
+		const { owner, title, startTime, endTime, frequency, location, repetitions, } = req.body as Event;
 		console.log("queste sono le ripetizioni:", repetitions);
 
 		if (!title || !startTime || !endTime || !location) {
@@ -334,45 +335,48 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 		now.setHours(now.getHours());
 
 		const groupId = new mongoose.Types.ObjectId().toString();
+		console.log("questo è la frequenza:", frequency);
+		if (frequency === "day") {
+			//caso in cui la frequenza dell'evento sia giornaliera
+			for (let i = 0; i < repetitions; i++) {
+				const event: Event = {
+					id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+					groupId,
+					title,
+					startTime: new Date(startTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
+					endTime: new Date(endTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
+					repetitions,
+					frequency,
+					location,
+					owner,
+					recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
+					createdAt: now,
+					updatedAt: now,
+				};
 
-		for (let i = 0; i < repetitions; i++) {
+				await EventSchema.create(event);
+				console.log("Inserted event: ", event);
+			}
+		}
+
+		if (frequency === "once") {
 			const event: Event = {
-				id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+				id: "1",
 				groupId,
 				title,
-				startTime: new Date(startTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
-				endTime: new Date(endTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
-				repetitions,
+				startTime: new Date(startTimeDate.getTime()), // Aggiungi un giorno
+				endTime: new Date(endTimeDate.getTime()), // Aggiungi un giorno
 				location,
+				frequency,
+				repetitions,
 				owner,
-				recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
+				recurring: false, //assumo evento non ricorrente
 				createdAt: now,
 				updatedAt: now,
 			};
-
 			await EventSchema.create(event);
 			console.log("Inserted event: ", event);
 		}
-		/*
-				const groupId = new mongoose.Types.ObjectId().toString(); //tutti gli eventi di questa ripetizione avranno lo stesso groupId
-				//aggiungi per ogni ripetizione un giorno all'evento (ogni volta vai avanti di uno dal giorno dell'evento 1)
-				for (let i = 0; i < repetitions; i++) {
-					const event: Event = {
-						id: "1",
-						groupId,
-						title,
-						startTime: new Date(startTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
-						endTime: new Date(endTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
-						location,
-						owner,
-						recurring: false, //assumo evento non ricorrente
-						createdAt: now,
-						updatedAt: now,
-					};
-					await EventSchema.create(event);
-					console.log("Inserted event: ", event);
-	}
-					*/
 
 
 
