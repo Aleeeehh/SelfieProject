@@ -7,259 +7,296 @@ import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
 
 const baseNote: Note = {
-	id: "",
-	title: "",
-	text: "",
-	owner: "",
-	tags: [],
+    id: "",
+    title: "",
+    text: "",
+    owner: "",
+    tags: [],
 };
 
 const NEW = "new";
 
 export default function NotePage(): React.JSX.Element {
-	const { id } = useParams();
-	const [note, setNote] = React.useState(baseNote as Note);
-	const [tag, setTag] = React.useState("");
-	const [message, setMessage] = React.useState("");
-	const [isEditing, setIsEditing] = React.useState(id === NEW);
-	const [isPreview, setIsPreview] = React.useState(false);
-	const nav = useNavigate();
+    const { id } = useParams();
+    const [note, setNote] = React.useState(baseNote as Note);
+    const [tag, setTag] = React.useState("");
+    const [message, setMessage] = React.useState("");
+    const [isEditing, setIsEditing] = React.useState(id === NEW);
+    const [isPreview, setIsPreview] = React.useState(false);
+    const nav = useNavigate();
 
-	// On page load, get the note for the user
-	React.useEffect(() => {
-		if (id !== NEW)
-			fetch(`${SERVER_API}/notes/${id}`)
-				.then((res) => res.json())
-				.then((data) => {
-					if (data.status === ResponseStatus.GOOD) {
-						setNote(data.value as Note);
-						console.log(data.value);
-					} else {
-						nav("/notes");
-					}
-				})
-				.catch(() => {
-					setMessage("Impossibile raggiungere il server");
-					nav("/notes");
-				});
-	}, [id]);
+    // On page load, get the note for the user
+    React.useEffect(() => {
+        if (id !== NEW)
+            fetch(`${SERVER_API}/notes/${id}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data.status === ResponseStatus.GOOD) {
+                        setNote(data.value as Note);
+                        console.log(data.value);
+                    } else {
+                        nav("/notes");
+                    }
+                })
+                .catch(() => {
+                    setMessage("Impossibile raggiungere il server");
+                    nav("/notes");
+                });
+    }, [id]);
 
-	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
-		setNote({ ...note, [e.target.name]: e.target.value });
-	}
+    function handleChange(
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ): void {
+        setNote({ ...note, [e.target.name]: e.target.value });
+    }
 
-	async function handleCreate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
+    async function handleCreate(
+        e: React.MouseEvent<HTMLButtonElement>
+    ): Promise<void> {
+        e.preventDefault();
 
-		try {
-			const res = await fetch(`${SERVER_API}/notes`, {
-				method: "POST",
-				body: JSON.stringify(note),
-				headers: { "Content-Type": "application/json" },
-			});
+        try {
+            const res = await fetch(`${SERVER_API}/notes`, {
+                method: "POST",
+                body: JSON.stringify(note),
+                headers: { "Content-Type": "application/json" },
+            });
 
-			const resBody = (await res.json()) as ResponseBody;
+            const resBody = (await res.json()) as ResponseBody;
 
-			if (resBody.status === ResponseStatus.GOOD) {
-				const newNoteId: string = resBody.value;
-				alert("Nota creata correttamente!");
+            if (resBody.status === ResponseStatus.GOOD) {
+                const newNoteId: string = resBody.value;
+                alert("Nota creata correttamente!");
 
-				// redirect to update page of the created note
-				nav(`/notes/${newNoteId}`);
-			} else {
-				setMessage("Errore nell'inserimento della nota");
-			}
-		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
-		}
-	}
+                // redirect to update page of the created note
+                nav(`/notes/${newNoteId}`);
+            } else {
+                setMessage("Errore nell'inserimento della nota");
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
+        }
+    }
 
-	async function handleUpdate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
+    async function handleUpdate(
+        e: React.MouseEvent<HTMLButtonElement>
+    ): Promise<void> {
+        e.preventDefault();
 
-		// TODO: validate inputs (not empty, max length)
-		try {
-			const res = await fetch(`${SERVER_API}/notes/${id}`, {
-				method: "PUT",
-				body: JSON.stringify(note),
-				headers: { "Content-Type": "application/json" },
-			});
+        // TODO: validate inputs (not empty, max length)
+        try {
+            const res = await fetch(`${SERVER_API}/notes/${id}`, {
+                method: "PUT",
+                body: JSON.stringify(note),
+                headers: { "Content-Type": "application/json" },
+            });
 
-			console.log(res);
-			const resBody = (await res.json()) as ResponseBody;
+            console.log(res);
+            const resBody = (await res.json()) as ResponseBody;
 
-			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Nota modificata correttamente!");
+            if (resBody.status === ResponseStatus.GOOD) {
+                alert("Nota modificata correttamente!");
 
-				setNote(resBody.value as Note);
-			} else {
-				setMessage("Errore nell'aggiornamento della nota");
-			}
-		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
-		}
-	}
+                setNote(resBody.value as Note);
+            } else {
+                setMessage("Errore nell'aggiornamento della nota");
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
+        }
+    }
 
-	async function handleDelete(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
+    async function handleDelete(
+        e: React.MouseEvent<HTMLButtonElement>
+    ): Promise<void> {
+        e.preventDefault();
 
-		// TODO: validate inputs (not empty, max length)
-		try {
-			const res = await fetch(`${SERVER_API}/notes/${id}`, {
-				method: "DELETE",
-			});
+        // TODO: validate inputs (not empty, max length)
+        try {
+            const res = await fetch(`${SERVER_API}/notes/${id}`, {
+                method: "DELETE",
+            });
 
-			console.log(res);
-			const resBody = (await res.json()) as ResponseBody;
+            console.log(res);
+            const resBody = (await res.json()) as ResponseBody;
 
-			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Nota cancellata correttamente!");
-				nav("/notes");
-			} else {
-				setMessage("Errore della cancellazione della nota");
-			}
-		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
-		}
-	}
+            if (resBody.status === ResponseStatus.GOOD) {
+                alert("Nota cancellata correttamente!");
+                nav("/notes");
+            } else {
+                setMessage("Errore della cancellazione della nota");
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
+        }
+    }
 
-	function addTag(e: React.MouseEvent<HTMLElement>): void {
-		e.preventDefault();
+    function addTag(e: React.MouseEvent<HTMLElement>): void {
+        e.preventDefault();
 
-		if (note.tags.includes(tag)) {
-			setMessage("Tag già presente nella lista");
-			setTag("");
-			return;
-		}
+        if (note.tags.includes(tag)) {
+            setMessage("Tag già presente nella lista");
+            setTag("");
+            return;
+        }
 
-		if (tag === "") {
-			setMessage("Tag vuota non valida");
-			return;
-		}
+        if (tag === "") {
+            setMessage("Tag vuota non valida");
+            return;
+        }
 
-		setNote((prevNote) => {
-			const newTags: string[] = [];
-			console.log(prevNote.tags);
+        setNote((prevNote) => {
+            const newTags: string[] = [];
+            console.log(prevNote.tags);
 
-			for (const t of prevNote.tags) {
-				newTags.push(t);
-			}
-			newTags.push(tag);
+            for (const t of prevNote.tags) {
+                newTags.push(t);
+            }
+            newTags.push(tag);
 
-			return { ...prevNote, tags: newTags };
-		});
+            return { ...prevNote, tags: newTags };
+        });
 
-		setTag(() => {
-			return "";
-		});
-	}
+        setTag(() => {
+            return "";
+        });
+    }
 
-	function deleteTag(e: React.MouseEvent<HTMLElement>, tag: string): void {
-		e.preventDefault();
-		const tags = note.tags.filter((t) => t !== tag);
+    function deleteTag(e: React.MouseEvent<HTMLElement>, tag: string): void {
+        e.preventDefault();
+        const tags = note.tags.filter((t) => t !== tag);
 
-		setNote({ ...note, tags });
-	}
+        setNote({ ...note, tags });
+    }
 
-	function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
-		if (isEditing) {
-			handleUpdate(e);
-		}
+    function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
+        if (isEditing) {
+            handleUpdate(e);
+        }
 
-		setIsEditing(!isEditing);
-		setIsPreview(false);
-	}
+        setIsEditing(!isEditing);
+        setIsPreview(false);
+    }
 
-	function togglePreview(): void {
-		setIsPreview(!isPreview);
-	}
+    function togglePreview(): void {
+        setIsPreview(!isPreview);
+    }
 
-	return (
-		<>
-			<div className="page-title">{id === NEW ? "Crea una nuova nota" : "Modifica nota"}</div>
-			<div className="note-container">
-				<label htmlFor="title">
-					Titolo
-					<input
-						name="title"
-						value={note.title}
-						onChange={handleChange}
-						disabled={!isEditing}
-					/>
-				</label>
-				{isEditing ? (
-					<>
-						<label htmlFor="text">
-							Testo (supporta Markdown)
-							<textarea name="text" value={note.text} onChange={handleChange} />
-						</label>
-						<button onClick={togglePreview}>
-							{isPreview ? "Modifica" : "Anteprima"}
-						</button>
-						{isPreview && (
-							<div
-								className="markdown-preview"
-								dangerouslySetInnerHTML={{ __html: marked(note.text) as string }}
-							/>
-						)}
-					</>
-				) : (
-					<div
-						className="markdown-content"
-						dangerouslySetInnerHTML={{ __html: marked(note.text) as string }}
-					/>
-				)}
-				<label>
-					Tags
-					<label htmlFor="title">
-						<input
-							name="tag"
-							value={tag}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-								setTag(e.target.value);
-							}}
-						/>
-						<button style={{ margin: "auto 0.5em" }} onClick={addTag}>
-							+
-						</button>
-					</label>
-					<div className="tags-container">
-						{note &&
-							note.tags &&
-							note.tags.map((tag) => (
-								<div className="tag-box">
-									{tag}
-									<button
-										className="tag-delete"
-										onClick={(e: React.MouseEvent<HTMLElement>): void =>
-											deleteTag(e, tag)
-										}>
-										X
-									</button>
-								</div>
-							))}
-					</div>
-				</label>
-				{id !== NEW && (
-					<button onClick={toggleEdit}>
-						{isEditing ? "Salva modifiche" : "Modifica nota"}
-					</button>
-				)}
-				{isEditing && (
-					<button
-						style={{ backgroundColor: "#ffff00" }}
-						onClick={id === NEW ? handleCreate : handleUpdate}>
-						{id === NEW ? "Crea Nota" : "Aggiorna Nota"}
-					</button>
-				)}
-				{id !== NEW && !isEditing && (
-					<button style={{ backgroundColor: "#ff0000" }} onClick={handleDelete}>
-						Cancella Nota
-					</button>
-				)}
-			</div>
+    return (
+        <>
+            <div className="page-title">
+                {id === NEW ? "Crea una nuova nota" : "Modifica nota"}
+            </div>
+            <div className="note-container">
+                {isEditing ? (
+                    <label htmlFor="title">
+                        Titolo
+                        <input
+                            name="title"
+                            value={note.title}
+                            onChange={handleChange}
+                        />
+                    </label>
+                ) : (
+                    <div className="note-title">{note.title}</div>
+                )}
 
-			{message && <div>{message}</div>}
-		</>
-	);
+                {isEditing ? (
+                    <>
+                        <button onClick={togglePreview}>
+                            {isPreview ? "Modifica" : "Anteprima"}
+                        </button>
+                        {isPreview ? (
+                            <div
+                                className="markdown-preview"
+                                dangerouslySetInnerHTML={{
+                                    __html: marked(note.text) as string,
+                                }}
+                            />
+                        ) : (
+                            <label htmlFor="text">
+                                Testo (supporta Markdown)
+                                <textarea
+                                    name="text"
+                                    value={note.text}
+                                    onChange={handleChange}
+                                />
+                            </label>
+                        )}
+                    </>
+                ) : (
+                    <div
+                        className="markdown-content"
+                        dangerouslySetInnerHTML={{
+                            __html: marked(note.text) as string,
+                        }}
+                    />
+                )}
+                <label>
+                    Tags
+                    {isEditing && (
+                        <label htmlFor="title">
+                            <input
+                                name="tag"
+                                value={tag}
+                                onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>
+                                ): void => {
+                                    setTag(e.target.value);
+                                }}
+                            />
+                            <button
+                                style={{ margin: "auto 0.5em" }}
+                                onClick={addTag}
+                            >
+                                +
+                            </button>
+                        </label>
+                    )}
+                    <div className="tags-container">
+                        {note &&
+                            note.tags &&
+                            note.tags.map((tag) => (
+                                <div className="tag-box">
+                                    {tag}
+                                    {isEditing && (
+                                        <button
+                                            className="tag-delete"
+                                            onClick={(
+                                                e: React.MouseEvent<HTMLElement>
+                                            ): void => deleteTag(e, tag)}
+                                        >
+                                            X
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                    </div>
+                </label>
+                {id !== NEW && (
+                    <button onClick={toggleEdit}>
+                        {isEditing ? "Salva modifiche" : "Modifica nota"}
+                    </button>
+                )}
+                {isEditing && (
+                    <button
+                        style={{ backgroundColor: "#ffff00" }}
+                        onClick={id === NEW ? handleCreate : handleUpdate}
+                    >
+                        {id === NEW ? "Crea Nota" : "Aggiorna Nota"}
+                    </button>
+                )}
+                {id !== NEW && !isEditing && (
+                    <button
+                        style={{ backgroundColor: "#ff0000" }}
+                        onClick={handleDelete}
+                    >
+                        Cancella Nota
+                    </button>
+                )}
+            </div>
+
+            {message && <div>{message}</div>}
+        </>
+    );
 }
