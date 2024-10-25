@@ -300,7 +300,7 @@ router.get("/owner", async (req: Request, res: Response) => {
 router.post("/", async (req: Request, res: Response) => { //gestore per le richieste POST a questa route /events
 	try {
 		//Validazione dell'input
-		const { owner, title, startTime, endTime, location } = req.body as Event;
+		const { owner, title, startTime, endTime, location, repetitions } = req.body as Event;
 
 		if (!title || !startTime || !endTime || !location) {
 			return res.status(400).json({
@@ -332,27 +332,33 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 		const now = new Date();
 		now.setHours(now.getHours());
 
-		const event: Event = {
-			id: "1",
-			title,
-			startTime: startTimeDate,
-			endTime: endTimeDate,
-			location,
-			owner,
-			recurring: false, //assumo evento non ricorrente
-			createdAt: now,
-			updatedAt: now,
-		};
+		const groupId = new mongoose.Types.ObjectId().toString(); //tutti gli eventi di questa ripetizione avranno lo stesso groupId
 
-		await EventSchema.create(event);
-		console.log("Inserted event: ", event);
+		//aggiungi per ogni ripetizione un giorno all'evento (ogni volta vai avanti di uno dal giorno dell'evento 1)
+		for (let i = 0; i < repetitions; i++) {
+			const event: Event = {
+				id: "1",
+				groupId,
+				title,
+				startTime: new Date(startTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
+				endTime: new Date(endTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
+				location,
+				owner,
+				recurring: false, //assumo evento non ricorrente
+				createdAt: now,
+				updatedAt: now,
+			};
 
+			await EventSchema.create(event);
+			console.log("Inserted event: ", event);
+
+
+		}
 		const resBody: ResponseBody = {
-			message: "Event inserted into database",
+			message: "Events inserted into database",
 			status: ResponseStatus.GOOD,
-			value: event,
+			value: `Inserted ${repetitions} events`, // Puoi personalizzare il messaggio
 		};
-
 		return res.json(resBody);
 	} catch (e) {
 		console.log(e);
@@ -375,11 +381,15 @@ router.post("/deleteEvent", async (req: Request, res: Response) => {
 		const eventoEliminato = await EventSchema.find({ _id: new mongoose.Types.ObjectId(event_id) });
 		console.log("evento eliminato:", eventoEliminato);
 		await EventSchema.deleteOne({ _id: new mongoose.Types.ObjectId(event_id) });
+		const eventiEliminati = await EventSchema.find({ groupId: eventoEliminato[0].groupId }); //trova tutti gli eventi con lo stesso groupId
+		await EventSchema.deleteMany({ groupId: eventoEliminato[0].groupId }); //elimina tutti gli eventi con lo stesso groupId
 
+		console.log("QUESTI SONO GLI EVENTI ELIMINATI:", eventiEliminati);
 		const resBody = {
 			message: "Evento eliminato con successo",
 			status: "success",
-			value: eventoEliminato,
+			value1: eventiEliminati, //ritorna al client tutti gli eventi eliminati
+			value2: eventoEliminato, //ritorna al client l'evento eliminato
 		};
 		console.log("Evento eliminato:", eventoEliminato);
 

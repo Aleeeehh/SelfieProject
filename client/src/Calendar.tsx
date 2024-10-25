@@ -37,12 +37,16 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
+	const [repetitions, setRepetitions] = React.useState(1);
+	const [selectedValue, setSelectedValue] = React.useState("");
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
 		return now;
 	});
 	const [allDayEvent, setAllDayEvent] = React.useState(false);
+	const [until, setUntil] = React.useState(false);
+	const [repeatEvent, setRepeatEvent] = React.useState(false);
 	const [renderKey, setRenderKey] = React.useState(0);
 	const [endTime, setEndTime] = React.useState(() => {
 		const now = new Date();
@@ -84,6 +88,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 				if (data.status === ResponseStatus.GOOD) {
 					setEventList(data.value);
+					console.log("QUESTA E' LA EVENTLIST::", eventList);
 				} else {
 					setMessage("Errore nel ritrovamento degli eventi");
 				}
@@ -546,7 +551,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	//funzione per aggiungere pallino al giorno che contiene eventi
 	function hasEventsForDay(day: number): boolean {
+		// Controlla se la eventList è vuota
+		if (eventList.length === 0) {
+			return false;
+		}
+
 		return eventList.some(event => {
+			//console.log("LA EVENTLIST HA EVENTI:", eventList);
 			const eventStartDate = new Date(event.startTime);
 			const eventEndDate = new Date(event.endTime);
 			const currentDate = new Date(year, meseCorrente, day);
@@ -585,6 +596,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setEndTime(initialEndTime);
 		}
 		setAddTitle(true);
+		setRepeatEvent(false);
+		setAllDayEvent(false);
+		setUntil(false);
 		setTitle("");
 		setCreateEvent(!createEvent);
 	}
@@ -1068,10 +1082,24 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 			//console.log("EVENTO ELIMINATO:", data);
 			//elimina l'evento dalla eventList
+			if (data.status === "success") {
+				const eventiEliminati = data.value1; // Supponendo che `value` contenga gli eventi eliminati
+
+				// Ottieni gli ID degli eventi eliminati
+				const idsEliminati = eventiEliminati.map((event: { _id: string }) => event._id);
+
+				// Aggiorna la eventList rimuovendo gli eventi eliminati
+				setEventList(prevEventList => prevEventList.filter(event => !idsEliminati.includes(event._id)));
+
+				console.log("Event list aggiornata:", eventList);
+				handleDateClick(day);
+			}
 			console.log("Event list prima dell'eliminazione:", eventList);
-			setEventList(prevEventList => prevEventList.filter(event => event._id !== id))
+			const eventoEliminato = data.value2;
+			setEventList(prevEventList => prevEventList.filter(event => event._id !== eventoEliminato._id))
 			console.log("Event list aggiornata:", eventList);
 			handleDateClick(day);
+
 			return data;
 
 		}
@@ -1145,6 +1173,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				endTime: endTime.toISOString(),
 				frequency: Frequency.ONCE,
 				location,
+				repetitions,
 			}),
 		});
 
@@ -1174,6 +1203,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const endT = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
 		setStartTime(startT);
 		setEndTime(endT);
+		setRepeatEvent(false);
 
 		//window.location.reload()
 
@@ -1220,8 +1250,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 	function toggleAllDayEvent(): void {
 		if (!allDayEvent) {
 			// Selezionato "Dura tutto il giorno"
-			const startOfDay = new Date(year, meseCorrente, day, 0, 1); // 00:01
-			const endOfDay = new Date(year, meseCorrente, day, 23, 59); // 23:59
+			const startOfDay = new Date(startTime);
+			startOfDay.setHours(0, 1, 0, 0); // Imposta l'orario a 00:01
+			const endOfDay = new Date(endTime);
+			endOfDay.setHours(23, 59, 0, 0); // Imposta l'orario a 23:59
 			setStartTime(startOfDay);
 			setEndTime(endOfDay);
 		} else {
@@ -1234,6 +1266,37 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		}
 		setAllDayEvent(!allDayEvent);
+	}
+
+	function toggleRepeatEvent(): void {
+		console.log("toggleRepeatEvent");
+		setRepeatEvent(!repeatEvent);
+	}
+
+	function toggleUntil(selectedValue: string): void {
+		console.log("toggleUntil", selectedValue);
+		setUntil(true);
+
+	}
+
+	function toggleSelectUntil(e: React.ChangeEvent<HTMLSelectElement>): void {
+		const valoreSelezionato = e.target.value;
+		console.log("toggleSelectUntil", valoreSelezionato);
+		switch (valoreSelezionato) {
+			case "Data":
+				console.log("selezionato data");
+				setSelectedValue("Data");
+
+				break;
+			case "Ripetizioni":
+				console.log("selezionato ripetizioni");
+				setSelectedValue("Ripetizioni");
+				break;
+			case "Infinito":
+				console.log("selezionato infinito");
+				setSelectedValue("Infinito");
+				break;
+		}
 	}
 
 
@@ -1419,24 +1482,115 @@ export default function Calendar(): React.JSX.Element { // prova push
 							</button>
 							<form>
 								<label htmlFor="useDefaultTitle">
-									Pomodoro Session?
 									<input
 										type="checkbox"
 										name="useDefaultTitle"
 										onClick={toggleEventTitle}
-										style={{ marginLeft: "5px" }}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
+									Pomodoro Session
 								</label>
 
 								<label htmlFor="allDayEvent">
-									Dura tutto il giorno?
 									<input
 										type="checkbox"
 										name="allDayEvent"
 										onClick={toggleAllDayEvent}
-										style={{ marginLeft: "5px" }}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
+									All-day
+
 								</label>
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="repeatEvent"
+										onClick={toggleRepeatEvent}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Evento ripetuto
+
+								</label>
+								{repeatEvent && (
+									<>
+										<div className="flex" style={{ marginRight: "10px" }}>
+											Ripeti l'evento
+											<label htmlFor="repeatEvent">
+												<select
+													className="btn border"
+													name="repetitionType"
+													onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+														const selectedValue = e.target.value;
+														if (selectedValue !== "Never") {
+															toggleUntil(selectedValue);
+														}
+														if (selectedValue === "Never") {
+															setUntil(false);
+														}
+														// Puoi gestire lo stato o altre logiche qui
+													}}
+													style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												>
+													<option value="Never">Mai</option>
+													<option value="Daily">Ogni giorno</option>
+													<option value="Weekly">Ogni settimana</option>
+													<option value="Monthly">Ogni mese </option>
+													<option value="Yearly">Ogni anno</option>
+												</select>
+
+											</label>
+										</div>
+
+
+
+										{until && (
+											<div>
+												<div>
+													<div className="flex" style={{ marginRight: "10px" }}>
+														Fino a
+														<select className="btn border" onChange={toggleSelectUntil}>
+															<option value="Data">Data</option>
+															<option value="Ripetizioni">Ripetizioni</option>
+															<option value="Infinito">Infinito </option>
+														</select>
+													</div>
+
+													{selectedValue === "Data" && (
+														<DatePicker
+															className="btn border"
+															name="finoAData"
+															selected={startTime}
+															onChange={(date: Date | null): void => {
+																if (date) {
+
+																	console.log(date);
+																}
+															}}
+														/>
+													)}
+
+
+
+													{selectedValue === "Ripetizioni" && (
+														<div>
+															<input className="btn border" type="number" min="1"
+																onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+																	setRepetitions(Number(e.target.value));
+																	if (repetitions < 1 || isNaN(repetitions)) {
+																		setRepetitions(1);
+																	}
+																	console.log("Numero ripetizione dell'evento: ", repetitions);
+																}}>
+															</input>
+														</div>
+													)}
+
+												</div>
+											</div>
+										)}
+									</>
+								)}
 								{addTitle && (
 									<label htmlFor="title">
 										Title
@@ -1451,26 +1605,26 @@ export default function Calendar(): React.JSX.Element { // prova push
 										/>
 									</label>
 								)}
-								{!allDayEvent && (
-									<>
-										<label htmlFor="startTime">
-											Data Inizio
-											<div>
-												<DatePicker
-													className="btn border"
-													name="startTime"
-													selected={startTime}
-													onChange={(date: Date | null): void => {
-														if (date) {
-															// Aggiorna la data mantenendo l'orario attuale
-															const newDate = new Date(startTime);
-															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-															setStartTime(newDate);
-														}
-													}}
-												/>
-											</div>
 
+								<label htmlFor="startTime">
+									Data Inizio
+									<div>
+										<DatePicker
+											className="btn border"
+											name="startTime"
+											selected={startTime}
+											onChange={(date: Date | null): void => {
+												if (date) {
+													// Aggiorna la data mantenendo l'orario attuale
+													const newDate = new Date(startTime);
+													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+													setStartTime(newDate);
+												}
+											}}
+										/>
+									</div>
+									{!allDayEvent && (
+										<>
 											<div>
 												<input
 													className="btn border"
@@ -1484,25 +1638,28 @@ export default function Calendar(): React.JSX.Element { // prova push
 													}}
 												/>
 											</div>
-										</label>
-										<label htmlFor="endTime">
-											Data Fine
-											<div>
-												<DatePicker
-													className="btn border"
-													name="endTime"
-													selected={endTime}
-													onChange={(date: Date | null): void => {
-														if (date) {
-															// Aggiorna la data mantenendo l'orario attuale
-															const newDate = new Date(endTime);
-															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-															setEndTime(newDate);
-														}
-													}}
-												/>
-											</div>
-
+										</>
+									)}
+								</label>
+								<label htmlFor="endTime">
+									Data Fine
+									<div>
+										<DatePicker
+											className="btn border"
+											name="endTime"
+											selected={endTime}
+											onChange={(date: Date | null): void => {
+												if (date) {
+													// Aggiorna la data mantenendo l'orario attuale
+													const newDate = new Date(endTime);
+													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+													setEndTime(newDate);
+												}
+											}}
+										/>
+									</div>
+									{!allDayEvent && (
+										<>
 											<div>
 												<input
 													className="btn border"
@@ -1516,9 +1673,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 													}}
 												/>
 											</div>
-										</label>
-									</>
-								)}
+										</>
+									)}
+								</label>
+
 								<label htmlFor="location">
 									Luogo
 									<div>
@@ -1545,6 +1703,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 								</button>
 							</form>
 						</div>
+
 					)}
 					<div className="orario col-5" >
 
@@ -1636,7 +1795,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 								)
 							))}
-						</div>
+						</div >
 
 
 						<time>00:00</time>
@@ -1664,7 +1823,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						<time>22:00</time>
 						<time>23:00</time>
 
-					</div>
+					</div >
 				</div >
 			)
 			}

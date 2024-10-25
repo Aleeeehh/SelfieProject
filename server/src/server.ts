@@ -6,7 +6,7 @@ import path from "path";
 import { default as apiRouter } from "./routers/api.js";
 import mongoose from "mongoose";
 import {
-	createDummyEvents,
+	//createDummyEvents,
 	createDummyNotes,
 	createDummyPomodoros,
 	createDummyUsers,
@@ -132,7 +132,7 @@ server.get("*", (_: Request, res: Response) => {
 mongoose
 	.connect(dbConnectionString + `/${DB_APP_NAME}`)
 	.then(() => createDummyUsers())
-	.then(() => createDummyEvents())
+	//.then(() => createDummyEvents())
 	.then(() => createDummyNotes())
 	.then(() => createDummyPomodoros());
 

@@ -69,6 +69,7 @@ export async function createDummyUsers() {
 }
 
 // insert fake events if they do not exist
+/*  //COMMENTO PERCHE' MI CAUSA UN BUG VISIVO NELLA GENERAZIOEN DEI "PALLINI SUL CALENDARIO"
 export async function createDummyEvents() {
 	const user = await UserSchema.findOne({ username: "fv1" });
 
@@ -97,6 +98,7 @@ export async function createDummyEvents() {
 		}
 	}
 }
+	*/
 
 // insert fake notes if they do not exist
 export async function createDummyNotes() {
