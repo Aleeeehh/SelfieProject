@@ -42,7 +42,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const now = new Date();
 		return now;
 	});
-
+	const [allDayEvent, setAllDayEvent] = React.useState(false);
 	const [renderKey, setRenderKey] = React.useState(0);
 	const [endTime, setEndTime] = React.useState(() => {
 		const now = new Date();
@@ -161,7 +161,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		if (!monthEvents[index] || !monthEvents[index].positions) {
 			return <div> </div>;
 		}
-		console.log(`Superato if, e renderizzati eventi del giorno: ${index}`);
+		//console.log(`Superato if, e renderizzati eventi del giorno: ${index}`);
 		return (
 			<div style={{ position: "relative" }}>
 				{monthEvents[index].positions.map((event, idx) => {
@@ -200,12 +200,22 @@ export default function Calendar(): React.JSX.Element { // prova push
 											{((): any => {
 												const endTime = new Date(new Date(event.event.endTime).getFullYear(), new Date(event.event.endTime).getMonth(), new Date(event.event.endTime).getDate());
 												const startTimeOrario = new Date(event.event.startTime);
+												const endTimeOrario = new Date(event.event.endTime);
 												const startTime = new Date(new Date(event.event.startTime).getFullYear(), new Date(event.event.startTime).getMonth(), new Date(event.event.startTime).getDate());
 												const isSameDay = endTime.getTime() === startTime.getTime(); //se l'evento inizia e termina lo stesso giorno, mostra l'orario
 
-												const nameToDisplay = event.name.length > (isSameDay ? 10 : 15) ? `${event.name.substring(0, isSameDay ? 10 : 15)}...` : event.name;
+												const isAllDayEvent = startTimeOrario.getHours() === 0 && startTimeOrario.getMinutes() === 0 &&
+													endTimeOrario.getHours() === 23 && endTimeOrario.getMinutes() === 50;
+												var nameToDisplay = event.name.length > (isSameDay ? 10 : 15) ? `${event.name.substring(0, isSameDay ? 10 : 15)}...` : event.name;
+												nameToDisplay = event.name.length > (isAllDayEvent ? 15 : 10) ? `${event.name.substring(0, isAllDayEvent ? 15 : 10)}...` : event.name;
 
-												const timeToDisplay = isSameDay ? startTimeOrario.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+												const timeToDisplay = (isSameDay && !isAllDayEvent) ? startTimeOrario.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+												/*console.log("Start Time Ore:", startTimeOrario.getHours());
+												console.log("Start Time minuti:", startTimeOrario.getMinutes());
+												console.log("End Time Ore:", endTimeOrario.getHours());
+												console.log("End Time Minuti:", endTimeOrario.getMinutes());
+												console.log("Is All Day Event:", isAllDayEvent);
+												*/
 
 												return (
 													<>
@@ -221,12 +231,21 @@ export default function Calendar(): React.JSX.Element { // prova push
 											{((): any => {
 												const endTime = new Date(new Date(event.event.endTime).getFullYear(), new Date(event.event.endTime).getMonth(), new Date(event.event.endTime).getDate());
 												const startTimeOrario = new Date(event.event.startTime);
+												const endTimeOrario = new Date(event.event.endTime);
 												const startTime = new Date(new Date(event.event.startTime).getFullYear(), new Date(event.event.startTime).getMonth(), new Date(event.event.startTime).getDate());
 												const isSameDay = endTime.getTime() === startTime.getTime(); //se l'evento inizia e termina lo stesso giorno, mostra l'orario
 
-												const nameToDisplay = event.name.length > (isSameDay ? 10 : 15) ? `${event.name.substring(0, isSameDay ? 10 : 15)}...` : event.name;
-
-												const timeToDisplay = isSameDay ? startTimeOrario.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+												const isAllDayEvent = startTimeOrario.getHours() === 0 && startTimeOrario.getMinutes() === 0 &&
+													endTimeOrario.getHours() === 23 && endTimeOrario.getMinutes() === 50;
+												var nameToDisplay = event.name.length > (isSameDay ? 10 : 15) ? `${event.name.substring(0, isSameDay ? 10 : 15)}...` : event.name;
+												nameToDisplay = event.name.length > (isAllDayEvent ? 15 : 10) ? `${event.name.substring(0, isAllDayEvent ? 15 : 10)}...` : event.name;
+												const timeToDisplay = (isSameDay && !isAllDayEvent) ? startTimeOrario.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+												/*console.log("Start Time Ore:", startTimeOrario.getHours());
+												console.log("Start Time minuti:", startTimeOrario.getMinutes());
+												console.log("End Time Ore:", endTimeOrario.getHours());
+												console.log("End Time Minuti:", endTimeOrario.getMinutes());
+												console.log("Is All Day Event:", isAllDayEvent);
+												*/
 
 												return (
 													<>
@@ -1147,6 +1166,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		//setMessage(data.message || "Undefined error");
 		setCreateEvent(!createEvent);
+		setAllDayEvent(false);
+
+		//ripristina l'orario dopo nel pannelo createEvent, dopo aver creato un evento
+		const now = new Date();
+		const startT = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
+		const endT = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
+		setStartTime(startT);
+		setEndTime(endT);
 
 		//window.location.reload()
 
@@ -1188,6 +1215,25 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setTitle("");
 			setAddTitle(true);
 		}
+	}
+
+	function toggleAllDayEvent(): void {
+		if (!allDayEvent) {
+			// Selezionato "Dura tutto il giorno"
+			const startOfDay = new Date(year, meseCorrente, day, 0, 1); // 00:01
+			const endOfDay = new Date(year, meseCorrente, day, 23, 59); // 23:59
+			setStartTime(startOfDay);
+			setEndTime(endOfDay);
+		} else {
+			// Deselezionato "Dura tutto il giorno"
+			const now = new Date();
+			const startTime = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
+			const endTime = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
+			setStartTime(startTime);
+			setEndTime(endTime);
+
+		}
+		setAllDayEvent(!allDayEvent);
 	}
 
 
@@ -1381,6 +1427,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 										style={{ marginLeft: "5px" }}
 									/>
 								</label>
+
+								<label htmlFor="allDayEvent">
+									Dura tutto il giorno?
+									<input
+										type="checkbox"
+										name="allDayEvent"
+										onClick={toggleAllDayEvent}
+										style={{ marginLeft: "5px" }}
+									/>
+								</label>
 								{addTitle && (
 									<label htmlFor="title">
 										Title
@@ -1395,70 +1451,74 @@ export default function Calendar(): React.JSX.Element { // prova push
 										/>
 									</label>
 								)}
-								<label htmlFor="startTime">
-									Data Inizio
-									<div>
-										<DatePicker
-											className="btn border"
-											name="startTime"
-											selected={startTime}
-											onChange={(date: Date | null): void => {
-												if (date) {
-													// Aggiorna la data mantenendo l'orario attuale
-													const newDate = new Date(startTime);
-													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-													setStartTime(newDate);
-												}
-											}}
-										/>
-									</div>
+								{!allDayEvent && (
+									<>
+										<label htmlFor="startTime">
+											Data Inizio
+											<div>
+												<DatePicker
+													className="btn border"
+													name="startTime"
+													selected={startTime}
+													onChange={(date: Date | null): void => {
+														if (date) {
+															// Aggiorna la data mantenendo l'orario attuale
+															const newDate = new Date(startTime);
+															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+															setStartTime(newDate);
+														}
+													}}
+												/>
+											</div>
 
-									<div>
-										<input
-											className="btn border"
-											type="time"
-											value={`${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-												const [hours, minutes] = e.target.value.split(':');
-												const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-												newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
-												setStartTime(newDate); // Imposta il nuovo oggetto Date
-											}}
-										/>
-									</div>
-								</label>
-								<label htmlFor="endTime">
-									Data Fine
-									<div>
-										<DatePicker
-											className="btn border"
-											name="endTime"
-											selected={endTime}
-											onChange={(date: Date | null): void => {
-												if (date) {
-													// Aggiorna la data mantenendo l'orario attuale
-													const newDate = new Date(endTime);
-													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-													setEndTime(newDate);
-												}
-											}}
-										/>
-									</div>
+											<div>
+												<input
+													className="btn border"
+													type="time"
+													value={`${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+														const [hours, minutes] = e.target.value.split(':');
+														const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
+														newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+														setStartTime(newDate); // Imposta il nuovo oggetto Date
+													}}
+												/>
+											</div>
+										</label>
+										<label htmlFor="endTime">
+											Data Fine
+											<div>
+												<DatePicker
+													className="btn border"
+													name="endTime"
+													selected={endTime}
+													onChange={(date: Date | null): void => {
+														if (date) {
+															// Aggiorna la data mantenendo l'orario attuale
+															const newDate = new Date(endTime);
+															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+															setEndTime(newDate);
+														}
+													}}
+												/>
+											</div>
 
-									<div>
-										<input
-											className="btn border"
-											type="time"
-											value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-												const [hours, minutes] = e.target.value.split(':');
-												const newDate = new Date(endTime);
-												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-												setEndTime(newDate); // Imposta il nuovo oggetto Date
-											}}
-										/>
-									</div>
-								</label>
+											<div>
+												<input
+													className="btn border"
+													type="time"
+													value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+														const [hours, minutes] = e.target.value.split(':');
+														const newDate = new Date(endTime);
+														newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+														setEndTime(newDate); // Imposta il nuovo oggetto Date
+													}}
+												/>
+											</div>
+										</label>
+									</>
+								)}
 								<label htmlFor="location">
 									Luogo
 									<div>
