@@ -301,6 +301,7 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 	try {
 		//Validazione dell'input
 		const { owner, title, startTime, endTime, location, repetitions } = req.body as Event;
+		console.log("queste sono le ripetizioni:", repetitions);
 
 		if (!title || !startTime || !endTime || !location) {
 			return res.status(400).json({
@@ -332,32 +333,53 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 		const now = new Date();
 		now.setHours(now.getHours());
 
-		const groupId = new mongoose.Types.ObjectId().toString(); //tutti gli eventi di questa ripetizione avranno lo stesso groupId
+		const groupId = new mongoose.Types.ObjectId().toString();
 
-		//aggiungi per ogni ripetizione un giorno all'evento (ogni volta vai avanti di uno dal giorno dell'evento 1)
 		for (let i = 0; i < repetitions; i++) {
 			const event: Event = {
-				id: "1",
+				id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
 				groupId,
 				title,
 				startTime: new Date(startTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
 				endTime: new Date(endTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
+				repetitions,
 				location,
 				owner,
-				recurring: false, //assumo evento non ricorrente
+				recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
 				createdAt: now,
 				updatedAt: now,
 			};
 
 			await EventSchema.create(event);
 			console.log("Inserted event: ", event);
-
-
 		}
+		/*
+				const groupId = new mongoose.Types.ObjectId().toString(); //tutti gli eventi di questa ripetizione avranno lo stesso groupId
+				//aggiungi per ogni ripetizione un giorno all'evento (ogni volta vai avanti di uno dal giorno dell'evento 1)
+				for (let i = 0; i < repetitions; i++) {
+					const event: Event = {
+						id: "1",
+						groupId,
+						title,
+						startTime: new Date(startTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
+						endTime: new Date(endTimeDate.getTime() + i * 24 * 60 * 60 * 1000), // Aggiungi un giorno
+						location,
+						owner,
+						recurring: false, //assumo evento non ricorrente
+						createdAt: now,
+						updatedAt: now,
+					};
+					await EventSchema.create(event);
+					console.log("Inserted event: ", event);
+	}
+					*/
+
+
+
 		const resBody: ResponseBody = {
 			message: "Events inserted into database",
 			status: ResponseStatus.GOOD,
-			value: `Inserted ${repetitions} events`, // Puoi personalizzare il messaggio
+			value: `Inserted ${repetitions} events`,
 		};
 		return res.json(resBody);
 	} catch (e) {
@@ -375,21 +397,24 @@ router.post("/", async (req: Request, res: Response) => { //gestore per le richi
 router.post("/deleteEvent", async (req: Request, res: Response) => {
 	console.log("Richiesta ricevuta per eliminare evento");
 
-	const { event_id } = req.body;
+	const { event_id, groupId } = req.body;
 	try {
 		console.log("id Evento da eliminare:", event_id);
 		const eventoEliminato = await EventSchema.find({ _id: new mongoose.Types.ObjectId(event_id) });
 		console.log("evento eliminato:", eventoEliminato);
-		await EventSchema.deleteOne({ _id: new mongoose.Types.ObjectId(event_id) });
-		const eventiEliminati = await EventSchema.find({ groupId: eventoEliminato[0].groupId }); //trova tutti gli eventi con lo stesso groupId
-		await EventSchema.deleteMany({ groupId: eventoEliminato[0].groupId }); //elimina tutti gli eventi con lo stesso groupId
 
-		console.log("QUESTI SONO GLI EVENTI ELIMINATI:", eventiEliminati);
+		const eventiEliminati = await EventSchema.find({ groupId: groupId }); //trova tutti gli eventi con lo stesso groupId
+		console.log("eventi da eliminare con medesimo groupId:", eventiEliminati);
+
+		await EventSchema.deleteOne({ _id: new mongoose.Types.ObjectId(event_id) });
+		await EventSchema.deleteMany({ groupId: groupId }); //elimina tutti gli eventi con lo stesso groupId
+
+
+		//	console.log("QUESTI SONO GLI EVENTI ELIMINATI:", eventiEliminati);
 		const resBody = {
 			message: "Evento eliminato con successo",
 			status: "success",
-			value1: eventiEliminati, //ritorna al client tutti gli eventi eliminati
-			value2: eventoEliminato, //ritorna al client l'evento eliminato
+			value: eventiEliminati,
 		};
 		console.log("Evento eliminato:", eventoEliminato);
 

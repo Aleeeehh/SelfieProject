@@ -139,7 +139,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 							)}
 						</div>
 						<div className="position-relative" onClick={async (e): Promise<void> => {
-							await handleDeleteEvent(event.event._id);
+							await handleDeleteEvent(event.event._id, event.event.groupId);
 							weekMode(e as React.MouseEvent<HTMLElement>);
 						}}>
 							<i className="bi bi-trash position-absolute"
@@ -367,6 +367,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
 			console.log("Eventi trovati:", data);
+			setRenderKey(prevKey => prevKey + 1);
 
 			if (data.status === ResponseStatus.GOOD) {
 				setEventList(data.value);
@@ -551,10 +552,12 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	//funzione per aggiungere pallino al giorno che contiene eventi
 	function hasEventsForDay(day: number): boolean {
+
 		// Controlla se la eventList è vuota
-		if (eventList.length === 0) {
+		/*if (eventList.length === 0) {
 			return false;
-		}
+		}*/
+
 
 		return eventList.some(event => {
 			//console.log("LA EVENTLIST HA EVENTI:", eventList);
@@ -601,6 +604,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setUntil(false);
 		setTitle("");
 		setCreateEvent(!createEvent);
+		setRepetitions(1);
 	}
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
@@ -611,6 +615,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//console.log("renderKey:", renderKey);
 		//console.log("Questo è ciò che viene passato in input alla handleDateClick:", e);
 		let dayValue: number;
+
 		//console.log(day, Mesi[meseCorrente], year);
 		//console.log(day, meseCorrente, year);
 
@@ -1067,38 +1072,41 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setMonthEvents(eventiMese);
 	}
 
-	async function handleDeleteEvent(id: string): Promise<void> {
+	async function handleDeleteEvent(id: string, groupId: string): Promise<void> {
+		console.log("Dobbiamo eliminare gli eventi con questo groupId:", groupId);
 		//console.log("day:", day);
 		try {
-			//console.log("Evento da eliminare:", id);
+			console.log("Evento da eliminare:", id);
+
 			const res = await fetch(`${SERVER_API}/events/deleteEvent`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					event_id: id,
+					groupId: groupId,
 				}),
 			});
 			const data = await res.json();
 
-			//console.log("EVENTO ELIMINATO:", data);
-			//elimina l'evento dalla eventList
+
+			console.log("Event list prima dell'eliminazione:", eventList);
+
 			if (data.status === "success") {
-				const eventiEliminati = data.value1; // Supponendo che `value` contenga gli eventi eliminati
-
+				console.log("Questa è la eventList prima dell'eliminazione:", eventList);
+				const eventiEliminati = data.value; // Supponendo che `value` contenga gli eventi eliminati
 				// Ottieni gli ID degli eventi eliminati
-				const idsEliminati = eventiEliminati.map((event: { _id: string }) => event._id);
-
+				const groupIdsEliminati = eventiEliminati.map((event: { groupId: string }) => event.groupId);
 				// Aggiorna la eventList rimuovendo gli eventi eliminati
-				setEventList(prevEventList => prevEventList.filter(event => !idsEliminati.includes(event._id)));
-
-				console.log("Event list aggiornata:", eventList);
+				setEventList(prevEventList => prevEventList.filter(event => !groupIdsEliminati.includes(event.groupId))); //filtra gli eventi eliminati
+				console.log("Event list aggiornata dopo eliminazione:", eventList);
 				handleDateClick(day);
 			}
-			console.log("Event list prima dell'eliminazione:", eventList);
-			const eventoEliminato = data.value2;
-			setEventList(prevEventList => prevEventList.filter(event => event._id !== eventoEliminato._id))
-			console.log("Event list aggiornata:", eventList);
-			handleDateClick(day);
+			/*
+console.log("Event list prima dell'eliminazione:", eventList);
+setEventList(prevEventList => prevEventList.filter(event => event._id !== id))
+console.log("Event list aggiornata:", eventList);
+handleDateClick(day);
+*/
 
 			return data;
 
@@ -1144,6 +1152,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		if (startTime > endTime) {
 			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			return;
+		}
+
+		if (repetitions > 1 && startTime.getDay() != endTime.getDay()) {
+			setMessage("L'evento ricorrente deve iniziare e finire nello stesso giorno!");
 			return;
 		}
 
@@ -1204,6 +1217,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setStartTime(startT);
 		setEndTime(endT);
 		setRepeatEvent(false);
+		setRepetitions(1);
 
 		//window.location.reload()
 
@@ -1744,7 +1758,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 												{event.name}
 											</Link>
 										</div>
-										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
 											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
 											<i className="bi bi-trash position-absolute"
 												style={{
@@ -1776,7 +1790,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 										}}
 									>
 										{event.name}
-										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id)}>
+										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
 											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
 											<i className="bi bi-trash position-absolute"
 												style={{

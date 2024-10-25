@@ -13,6 +13,8 @@ const eventSchema = new mongoose.Schema(
 		owner: { type: String, ref: "User", required: true },
 		startTime: { type: Date, required: true }, //impostarlo a tipo mixed/generico?
 		endTime: { type: Date, required: true },
+		repetitions: { type: Number, required: true },
+		groupId: { type: String, required: true },
 		title: { type: String, required: true },
 		recurring: { type: Boolean, default: false, required: true },
 		recurrence: {

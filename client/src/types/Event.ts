@@ -9,7 +9,7 @@ export type Event = {
 	endTime: Date;
 	frequency: Frequency;
 	until: Date | null;
-	repetitions: number | null;
+	repetitions: number;
 	location: string;
 	createdAt?: Date;
 	updatedAt?: Date;
