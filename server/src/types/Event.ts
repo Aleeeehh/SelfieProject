@@ -17,7 +17,7 @@ export type Event = {
 	endTime: Date;
 	recurring: boolean;
 	repetitions: number;
-	until?: Date | null;
+	untilDate?: Date | null;
 	recurrence?: Recurrence | null;
 	allDay?: boolean;
 	location?: string | null;

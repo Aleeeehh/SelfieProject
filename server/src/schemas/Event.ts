@@ -16,7 +16,7 @@ const eventSchema = new mongoose.Schema(
 		repetitions: { type: Number, required: true },
 		frequency: { type: String, enum: ["once", "day", "week", "month", "year"], required: true },
 		groupId: { type: String, required: true },
-		until: { type: Date, required: false },
+		untilDate: { type: Date, required: false },
 		title: { type: String, required: true },
 		recurring: { type: Boolean, default: false, required: true },
 		recurrence: {

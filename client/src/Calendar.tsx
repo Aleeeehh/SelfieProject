@@ -39,8 +39,10 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
+	//const [isUntilDate, setIsUntilDate] = React.useState(false);
+	const [untilDate, setUntilDate] = React.useState<Date | null>(null);
 	const [repetitions, setRepetitions] = React.useState(1);
-	const [selectedValue, setSelectedValue] = React.useState("");
+	const [selectedValue, setSelectedValue] = React.useState("Data");
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [startTime, setStartTime] = React.useState(() => {
@@ -522,6 +524,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		await loadMonthEvents(nuovoAnno, nuovoMese);
 	}
+
+	React.useEffect(() => {
+		if (!repeatEvent) {
+			setUntilDate(null);
+		}
+	}, [repeatEvent]);
+
 
 	// On page load, get the events for the user
 	React.useEffect(() => {
@@ -1181,6 +1190,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				title,
 				startTime: startTime.toISOString(),
 				endTime: endTime.toISOString(),
+				untilDate: untilDate,
 				frequency: frequency,
 				location,
 				repetitions,
@@ -1589,13 +1599,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 														<DatePicker
 															className="btn border"
 															name="finoAData"
-															selected={startTime}
+															selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
 															onChange={(date: Date | null): void => {
 																if (date) {
-
-																	console.log(date);
+																	date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
+																	setUntilDate(date); // Aggiorna lo stato con la nuova data
 																}
 															}}
+															placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
 														/>
 													)}
 
@@ -1606,6 +1617,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 															<input className="btn border" type="number" min="1"
 																onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 																	setRepetitions(Number(e.target.value));
+																	//setIsUntilDate(false);
+																	setUntilDate(null); // Aggiorna lo stato con la nuova data
+
 																	if (repetitions < 1 || isNaN(repetitions)) {
 																		setRepetitions(1);
 																	}
