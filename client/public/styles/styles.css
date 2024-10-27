@@ -3,6 +3,7 @@
 @import url("./calendar.css");
 @import url("./pomodoro.css");
 @import url("./note.css");
+@import url("./login.css");
 
 * {
 	box-sizing: border-box;
