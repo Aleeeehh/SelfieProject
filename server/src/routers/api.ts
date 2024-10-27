@@ -3,7 +3,7 @@ import { default as eventsRouter } from "./events.js";
 import { default as pomodoroRouter } from "./pomodoro.js";
 import { default as notesRouter } from "./notes.js";
 import { default as projectsRouter } from "./projects.js";
-// import { default as notificationRouter } from "./notifications.js";
+import { default as notificationRouter } from "./notifications.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import { Request, Response, Router, NextFunction } from "express";
 
@@ -20,12 +20,10 @@ export function checkAuthentication(
         return next();
     } else {
         // If user is not authenticated, redirect to login or return an error
-        return res
-            .status(401)
-            .json({
-                status: ResponseStatus.BAD,
-                message: "Unauthorized: Please log in",
-            });
+        return res.status(401).json({
+            status: ResponseStatus.BAD,
+            message: "Unauthorized: Please log in",
+        });
     }
 }
 
@@ -38,7 +36,7 @@ router.use("/notes", notesRouter);
 router.use("/projects", projectsRouter);
 router.use("/pomodoro", pomodoroRouter);
 
-// router.use("/notifications", notificationRouter);
+router.use("/notifications", notificationRouter);
 
 router.get("/", (_: Request, res: Response) => {
     res.json({ message: "Hello from the server" });
