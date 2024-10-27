@@ -2,9 +2,10 @@
 // import { Event } from "../types/Event.js";
 import Note from "../types/Note.js";
 import Pomodoro from "../types/Pomodoro.js";
+import { Privacy } from "../types/Privacy.js";
 import User from "../types/User.js";
 // import EventSchema from "./Event.js";
-import NoteSchema, { Privacy } from "./Note.js";
+import NoteSchema from "./Note.js";
 import PomodoroSchema from "./Pomodoro.js";
 import UserSchema from "./User.js";
 

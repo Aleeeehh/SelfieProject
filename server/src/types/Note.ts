@@ -1,5 +1,6 @@
-import type { Privacy } from "../schemas/Note.js";
 import type { Types } from "mongoose";
+import { Privacy } from "./Privacy.js";
+import UserResult from "./UserResult.js";
 
 type Note = {
     id?: Types.ObjectId | string;
@@ -8,7 +9,7 @@ type Note = {
     text: String;
     tags: String[];
     privacy: Privacy;
-    accessList: Types.ObjectId[] | string[];
+    accessList: UserResult[];
     createdAt?: Date;
     updatedAt?: Date;
 };

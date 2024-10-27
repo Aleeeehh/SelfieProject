@@ -228,15 +228,15 @@ router.delete("/", checkAuthentication, async (req, res) => {
     }
 });
 
-const MAX_SEARCH_RESULTS = 4;
+const MAX_SEARCH_RESULTS = 10;
 
-router.get("/usernames", async (req: Request, res: Response) => {
+router.post("/usernames", async (req: Request, res: Response) => {
     try {
-        const input = req.body.input as string | undefined;
+        const input = req.body.username as string | undefined;
 
         if (!input) {
             const resBody: ResponseBody = {
-                message: "Invalid body: 'input' required",
+                message: "Invalid body: 'username' required",
                 status: ResponseStatus.BAD,
             };
             return res.status(400).json(resBody);
@@ -251,7 +251,7 @@ router.get("/usernames", async (req: Request, res: Response) => {
 
         for (
             let i = 0;
-            i < Math.max(foundUsers.length, MAX_SEARCH_RESULTS);
+            i < Math.min(foundUsers.length, MAX_SEARCH_RESULTS);
             i++
         ) {
             if (foundUsers[i].username.match(regex)) {
@@ -261,6 +261,12 @@ router.get("/usernames", async (req: Request, res: Response) => {
                 });
             }
         }
+
+        users.sort(function (a, b) {
+            if (a.username < b.username) return -1;
+            if (a.username > b.username) return 1;
+            return 0;
+        });
 
         const resBody: ResponseBody = {
             message: "Users found",

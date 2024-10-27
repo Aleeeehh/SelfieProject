@@ -5,6 +5,9 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import Note from "./types/Note";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
+import UserResult from "./types/UserResult";
+import { Privacy } from "./types/Privacy";
+import SearchForm from "./SearchForm";
 
 const baseNote: Note = {
     id: "",
@@ -12,6 +15,8 @@ const baseNote: Note = {
     text: "",
     owner: "",
     tags: [],
+    privacy: Privacy.PRIVATE,
+    accessList: [],
 };
 
 const NEW = "new";
@@ -48,6 +53,11 @@ export default function NotePage(): React.JSX.Element {
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ): void {
         setNote({ ...note, [e.target.name]: e.target.value });
+    }
+    function handlePrivacyChange(
+        e: React.ChangeEvent<HTMLSelectElement>
+    ): void {
+        setNote({ ...note, privacy: e.target.value as Privacy });
     }
 
     async function handleCreate(
@@ -182,6 +192,36 @@ export default function NotePage(): React.JSX.Element {
         setIsPreview(!isPreview);
     }
 
+    function addUser(
+        e: React.MouseEvent<HTMLButtonElement>,
+        user: UserResult
+    ): void {
+        e.preventDefault();
+
+        if (!note.accessList.find((u) => u.id === user.id))
+            // TODO: optimize
+            setNote((prevNote) => {
+                return {
+                    ...prevNote,
+                    accessList: [...prevNote.accessList, user],
+                };
+            });
+    }
+
+    function deleteUser(
+        e: React.MouseEvent<HTMLElement>,
+        userId: string
+    ): void {
+        e.preventDefault();
+
+        setNote((prevNote) => {
+            return {
+                ...prevNote,
+                accessList: prevNote.accessList.filter((u) => u.id !== userId),
+            };
+        });
+    }
+
     return (
         <>
             <div className="page-title">
@@ -265,6 +305,50 @@ export default function NotePage(): React.JSX.Element {
                                             onClick={(
                                                 e: React.MouseEvent<HTMLElement>
                                             ): void => deleteTag(e, tag)}
+                                        >
+                                            X
+                                        </button>
+                                    )}
+                                </div>
+                            ))}
+                    </div>
+                </label>
+                <label>
+                    Privacy: {note.privacy}
+                    {isEditing && (
+                        <>
+                            <select
+                                name="privacy"
+                                value={note.privacy}
+                                onChange={handlePrivacyChange}
+                            >
+                                <option value={Privacy.PUBLIC}>Pubblica</option>
+                                <option value={Privacy.PROTECTED}>
+                                    Accesso riservato
+                                </option>
+                                <option value={Privacy.PRIVATE}>Privata</option>
+                            </select>
+
+                            {note.privacy === Privacy.PROTECTED && (
+                                <SearchForm
+                                    onItemClick={addUser}
+                                    list={note.accessList}
+                                />
+                            )}
+                        </>
+                    )}
+                    <div className="privacy-container">
+                        {note &&
+                            note.accessList &&
+                            note.accessList.map((userId) => (
+                                <div className="tag-box">
+                                    {userId.username}
+                                    {isEditing && (
+                                        <button
+                                            className="user-delete"
+                                            onClick={(
+                                                e: React.MouseEvent<HTMLElement>
+                                            ): void => deleteUser(e, userId.id)}
                                         >
                                             X
                                         </button>

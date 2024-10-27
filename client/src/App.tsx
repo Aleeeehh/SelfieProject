@@ -13,47 +13,47 @@ import NotePage from "./NotePage";
 import Profile from "./Profile";
 
 function App(): React.JSX.Element {
-	return (
-		<div id="body-container">
-			{/* <BrowserRouter> */}
-			<WithLayout>
-				<Routes>
-					<Route path="/">
-						<Route index element={<Home />} />
-						<Route path="login" element={<Login />} />
-						<Route path="calendar" element={<Calendar />} />
-						<Route path="pomodoro" element={<Pomodoro />} />
-						<Route path="projects" element={<Projects />} />
-						<Route path="profile" element={<Profile />} />
-						<Route path="notes" element={<Notes />} />
-						{/* Route notes/new creates the new page for note*/}
-						<Route path="notes/:id" element={<NotePage />} />
-						{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
-					</Route>
-					<Route path="*" element={<NotFound />} />
-				</Routes>
-			</WithLayout>
-			{/* </BrowserRouter> */}
-		</div>
-	);
+    return (
+        <div id="body-container">
+            {/* <BrowserRouter> */}
+            <WithLayout>
+                <Routes>
+                    <Route path="/">
+                        <Route index element={<Home />} />
+                        <Route path="login" element={<Login />} />
+                        <Route path="calendar" element={<Calendar />} />
+                        <Route path="pomodoro" element={<Pomodoro />} />
+                        <Route path="projects" element={<Projects />} />
+                        <Route path="profile" element={<Profile />} />
+                        <Route path="notes" element={<Notes />} />
+                        {/* Route notes/new creates the new page for note*/}
+                        <Route path="notes/:id" element={<NotePage />} />
+                        {/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
+                    </Route>
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            </WithLayout>
+            {/* </BrowserRouter> */}
+        </div>
+    );
 }
 
 interface WithLayoutProps<T extends React.ReactNode> {
-	children: T;
+    children: T;
 }
 
 function WithLayout<T extends React.ReactNode>({
-	children,
+    children,
 }: WithLayoutProps<T>): React.JSX.Element {
-	return (
-		<>
-			<Header />
-			<hr />
-			<div className="global-div">{children}</div>
-			<hr />
-			<Footer />
-		</>
-	);
+    return (
+        <>
+            <Header />
+            <hr />
+            <div className="global-div">{children}</div>
+            <hr />
+            <Footer />
+        </>
+    );
 }
 
 export default App;
