@@ -2,7 +2,7 @@ import React from "react";
 import { useState, ChangeEvent, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./params/params";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Pomodoro from "./types/Pomodoro";
@@ -84,7 +84,20 @@ const initialPomEvent: PomodoroEvent = {
 // creati dal tempo rimanente di un pomodoro non completato hanno una durata non strettamente corretta
 
 export default function Pomodoros(): React.JSX.Element {
-    const [data, setData] = useState(initialState);
+    // get the value of the query parameters to initialize the pomodoro
+    const [searchParams] = useSearchParams();
+    const cycles = Number(searchParams.get("cycles")) || initialState.cycles;
+    const studyTime =
+        Number(searchParams.get("studyTime")) || initialState.studyTime;
+    const pauseTime =
+        Number(searchParams.get("pauseTime")) || initialState.pauseTime;
+
+    const [data, setData] = useState({
+        ...initialState,
+        cycles,
+        studyTime,
+        pauseTime,
+    });
     const [pomEvent, setPomEvent] = useState(initialPomEvent);
     const [message, setMessage] = useState("");
     const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]); //per pomodori recenti
