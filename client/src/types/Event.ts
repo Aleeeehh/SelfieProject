@@ -8,6 +8,7 @@ export type Event = {
 	startTime: Date;
 	endTime: Date;
 	frequency: Frequency;
+	isInfinite: boolean;
 	untilDate?: Date | null;
 	repetitions: number;
 	location: string;

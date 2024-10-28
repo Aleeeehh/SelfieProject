@@ -17,6 +17,7 @@ const eventSchema = new mongoose.Schema(
 		frequency: { type: String, enum: ["once", "day", "week", "month", "year"], required: true },
 		groupId: { type: String, required: true },
 		untilDate: { type: Date, required: false },
+		isInfinite: { type: Boolean, default: false, required: true },
 		title: { type: String, required: true },
 		recurring: { type: Boolean, default: false, required: true },
 		recurrence: {

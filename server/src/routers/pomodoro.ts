@@ -220,7 +220,8 @@ router.post("/notifications", async (req: Request, res: Response) => {
 
         if (!receiver || !cycles || !studyTime || !pauseTime) {
             const resBody: ResponseBody = {
-                message: "Error handling request",
+                message:
+                    "Body non valido: servono i parametri 'receiver', 'cycles', 'studyTime' e 'pauseTime'",
                 status: ResponseStatus.BAD,
             };
             return res.status(400).json(resBody);
@@ -228,7 +229,8 @@ router.post("/notifications", async (req: Request, res: Response) => {
 
         if (!ObjectId.isValid(receiver)) {
             const resBody: ResponseBody = {
-                message: "Error handling request",
+                message:
+                    "'receiver' non valido: deve essre una stringa di 24 caratteri (ObjectId)",
                 status: ResponseStatus.BAD,
             };
             return res.status(400).json(resBody);
@@ -247,6 +249,14 @@ router.post("/notifications", async (req: Request, res: Response) => {
         if (!req.user || !req.user.id) {
             const resBody: ResponseBody = {
                 message: "User not logged in!",
+                status: ResponseStatus.BAD,
+            };
+            return res.status(400).json(resBody);
+        }
+
+        if (receiver === req.user.id) {
+            const resBody: ResponseBody = {
+                message: "Cannot send notification to yourself",
                 status: ResponseStatus.BAD,
             };
             return res.status(400).json(resBody);

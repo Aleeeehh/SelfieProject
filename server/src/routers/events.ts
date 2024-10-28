@@ -31,7 +31,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfWeek.includes(currentDayOfWeek)
                     ) {
                         // create a event with start and end times updated
@@ -39,8 +39,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -53,7 +53,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfMonth.includes(currentDayOfMonth)
                     ) {
                         // create a event with start and end times updated
@@ -61,8 +61,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -77,8 +77,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -120,7 +120,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfWeek.includes(currentDayOfWeek)
                     ) {
                         // create a event with start and end times updated
@@ -128,8 +128,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -141,7 +141,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfMonth.includes(currentDayOfMonth)
                     ) {
                         // create a event with start and end times updated
@@ -149,8 +149,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -167,8 +167,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -320,9 +320,11 @@ router.post("/", async (req: Request, res: Response) => {
             frequency,
             location,
             repetitions,
+            isInfinite,
         } = req.body as Event;
         console.log("queste sono le ripetizioni:", repetitions);
         console.log("questo è l'untilDate dell'evento:", untilDate);
+        console.log("questo è l'isInfinite dell'evento:", isInfinite);
 
         if (!title || !startTime || !endTime || !location) {
             return res.status(400).json({
@@ -336,6 +338,21 @@ router.post("/", async (req: Request, res: Response) => {
                 status: ResponseStatus.BAD,
                 message:
                     "La data di inizio non può essere collocata dopo la data di fine!",
+            });
+        }
+
+        const normalizedStartTime = new Date(startTime);
+        normalizedStartTime.setHours(0, 0, 0, 0); // Imposta ore, minuti, secondi e millisecondi a zero
+
+        const normalizedEndTime = new Date(endTime);
+        normalizedEndTime.setHours(0, 0, 0, 0); // Imposta ore, minuti, secondi e millisecondi a zero
+        console.log("normalizedStartTime: ", normalizedStartTime);
+        console.log("normalizedEndTime: ", normalizedEndTime);
+
+        if (normalizedStartTime.getTime() != normalizedEndTime.getTime() && (repetitions > 1 || frequency !== "once")) {
+            return res.status(400).json({
+                status: ResponseStatus.BAD,
+                message: "L'evento deve avere data di inizio e di fine nello stesso giorno, se si vuole ripeterlo!",
             });
         }
 
@@ -366,208 +383,513 @@ router.post("/", async (req: Request, res: Response) => {
 
         const groupId = new mongoose.Types.ObjectId().toString();
         console.log("questo è la frequenza:", frequency);
-        if (frequency === "day") {
-            var startTimePrecedente = new Date(startTime);
-            var endTimePrecedente = new Date(endTime);
 
-            //caso in cui la frequenza dell'evento sia giornaliera
-            for (let i = 0; i < repetitions; i++) {
-                const startTime = new Date(
-                    startTimeDate.getTime() + i * 24 * 60 * 60 * 1000
-                );
-                const endTime = new Date(
-                    endTimeDate.getTime() + i * 24 * 60 * 60 * 1000
-                );
-
-                if (startTime.getHours() !== startTimePrecedente.getHours()) {
-                    startTime.setHours(startTimePrecedente.getHours());
-                }
-
-                if (endTime.getHours() !== endTimePrecedente.getHours()) {
-                    endTime.setHours(endTimePrecedente.getHours());
-                }
-
-                const event: Event = {
-                    id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
-                    groupId,
-                    title,
-                    startTime, // Aggiungi un giorno
-                    endTime, // Aggiungi un giorno
-                    repetitions,
-                    frequency,
-                    location,
-                    owner,
-                    recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
-                    createdAt: now,
-                    updatedAt: now,
-                };
-
-                await EventSchema.create(event);
-                console.log("Inserted event: ", event);
-
-                var startTimePrecedente = new Date(startTime);
-                var endTimePrecedente = new Date(endTime);
-            }
-        }
-        if (frequency === "month") {
-            var startTimePrecedente = new Date(startTime);
-            var endTimePrecedente = new Date(endTime);
-            for (let i = 0; i < repetitions; i++) {
-                const startTime = new Date(startTimeDate);
-                const endTime = new Date(endTimeDate);
-
-                // Aggiungi mesi usando i metodi UTC
-                startTime.setUTCMonth(startTime.getUTCMonth() + i);
-                endTime.setUTCMonth(endTime.getUTCMonth() + i);
-
-                if (startTime.getHours() !== startTimePrecedente.getHours()) {
-                    startTime.setHours(startTimePrecedente.getHours());
-                }
-
-                if (endTime.getHours() !== endTimePrecedente.getHours()) {
-                    endTime.setHours(endTimePrecedente.getHours());
-                }
-
-                // Controlla se il giorno è stato modificato a causa del rollover del mese
-                if (startTime.getUTCDate() !== startTimeDate.getUTCDate()) {
-                    // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
-                    startTime.setUTCDate(0);
-                }
-                if (endTime.getUTCDate() !== endTimeDate.getUTCDate()) {
-                    // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
-                    endTime.setUTCDate(0);
-                }
-
-                const event: Event = {
-                    id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
-                    groupId,
-                    title,
-                    startTime,
-                    endTime,
-                    repetitions,
-                    frequency,
-                    location,
-                    owner,
-                    recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
-                    createdAt: now,
-                    updatedAt: now,
-                };
-
-                await EventSchema.create(event);
-                console.log("Inserted event: ", event);
-                var startTimePrecedente = new Date(startTime);
-                var endTimePrecedente = new Date(endTime);
-            }
-        }
-
-        if (frequency === "week") {
-            var startTimePrecedente = new Date(startTime);
-            var endTimePrecedente = new Date(endTime);
-            for (let i = 0; i < repetitions; i++) {
-                const startTime = new Date(startTimeDate);
-                const endTime = new Date(endTimeDate);
-
-                if (startTime.getHours() !== startTimePrecedente.getHours()) {
-                    startTime.setHours(startTimePrecedente.getHours());
-                }
-
-                if (endTime.getHours() !== endTimePrecedente.getHours()) {
-                    endTime.setHours(endTimePrecedente.getHours());
-                }
-
-                // Aggiungi settimane usando i metodi UTC
-                startTime.setUTCDate(startTime.getUTCDate() + i * 7);
-                endTime.setUTCDate(endTime.getUTCDate() + i * 7);
-                const event: Event = {
-                    id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
-                    groupId,
-                    title,
-                    startTime,
-                    endTime,
-                    repetitions,
-                    frequency,
-                    location,
-                    owner,
-                    recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
-                    createdAt: now,
-                    updatedAt: now,
-                };
-
-                await EventSchema.create(event);
-                console.log("Inserted event: ", event);
-                var startTimePrecedente = new Date(startTime);
-                var endTimePrecedente = new Date(endTime);
-            }
-        }
-
-        if (frequency === "year") {
-            var startTimePrecedente = new Date(startTimeDate);
-            var endTimePrecedente = new Date(endTimeDate);
-            for (let i = 0; i < repetitions; i++) {
-                const startTime = new Date(startTimeDate);
-                const endTime = new Date(endTimeDate);
-
-                if (startTime.getHours() !== startTimePrecedente.getHours()) {
-                    startTime.setHours(startTimePrecedente.getHours());
-                }
-
-                if (endTime.getHours() !== endTimePrecedente.getHours()) {
-                    endTime.setHours(endTimePrecedente.getHours());
-                }
-
-                // Aggiungi anni usando i metodi UTC
-                startTime.setUTCFullYear(startTime.getUTCFullYear() + i);
-                endTime.setUTCFullYear(endTime.getUTCFullYear() + i);
-
-                // Controlla se il giorno è stato modificato a causa del rollover dell'anno
-                if (startTime.getUTCDate() !== startTimeDate.getUTCDate()) {
-                    // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
-                    startTime.setUTCDate(0);
-                }
-                if (endTime.getUTCDate() !== endTimeDate.getUTCDate()) {
-                    // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
-                    endTime.setUTCDate(0);
-                }
-
-                const event: Event = {
-                    id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
-                    groupId,
-                    title,
-                    startTime,
-                    endTime,
-                    repetitions,
-                    frequency,
-                    location,
-                    owner,
-                    recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
-                    createdAt: now,
-                    updatedAt: now,
-                };
-
-                await EventSchema.create(event);
-                console.log("Inserted event: ", event);
-                var startTimePrecedente = new Date(startTime);
-                var endTimePrecedente = new Date(endTime);
-            }
-        }
-
-        if (frequency === "once") {
+        if (isInfinite) {
             const event: Event = {
                 id: "1",
                 groupId,
                 title,
-                startTime: new Date(startTimeDate.getTime()), // Aggiungi un giorno
-                endTime: new Date(endTimeDate.getTime()), // Aggiungi un giorno
+                startTime: new Date(startTimeDate.getTime()),
+                endTime: new Date(endTimeDate.getTime()),
                 location,
                 frequency,
+                isInfinite,
                 repetitions,
                 owner,
-                recurring: false, //assumo evento non ricorrente
+                recurring: true,
                 createdAt: now,
                 updatedAt: now,
             };
             await EventSchema.create(event);
             console.log("Inserted event: ", event);
+
+
+        }
+
+        if (untilDate == null && !isInfinite) {
+            if (frequency === "day") {
+                var startTimePrecedente = new Date(startTime);
+                var endTimePrecedente = new Date(endTime);
+
+                //caso in cui la frequenza dell'evento sia giornaliera
+                for (let i = 0; i < repetitions; i++) {
+                    const startTime = new Date(
+                        startTimeDate.getTime() + i * 24 * 60 * 60 * 1000
+                    );
+                    const endTime = new Date(
+                        endTimeDate.getTime() + i * 24 * 60 * 60 * 1000
+                    );
+
+                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                        startTime.setHours(startTimePrecedente.getHours());
+                    }
+
+                    if (endTime.getHours() !== endTimePrecedente.getHours()) {
+                        endTime.setHours(endTimePrecedente.getHours());
+                    }
+
+                    const event: Event = {
+                        id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+                        groupId,
+                        title,
+                        startTime, // Aggiungi un giorno
+                        endTime, // Aggiungi un giorno
+                        repetitions,
+                        frequency,
+                        location,
+                        isInfinite,
+                        owner,
+                        recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+
+                    await EventSchema.create(event);
+                    console.log("Inserted event: ", event);
+
+                    var startTimePrecedente = new Date(startTime);
+                    var endTimePrecedente = new Date(endTime);
+                }
+            }
+            if (frequency === "month") {
+                var startTimePrecedente = new Date(startTime);
+                var endTimePrecedente = new Date(endTime);
+                for (let i = 0; i < repetitions; i++) {
+                    const startTime = new Date(startTimeDate);
+                    const endTime = new Date(endTimeDate);
+
+                    // Aggiungi mesi usando i metodi UTC
+                    startTime.setUTCMonth(startTime.getUTCMonth() + i);
+                    endTime.setUTCMonth(endTime.getUTCMonth() + i);
+
+                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                        startTime.setHours(startTimePrecedente.getHours());
+                    }
+
+                    if (endTime.getHours() !== endTimePrecedente.getHours()) {
+                        endTime.setHours(endTimePrecedente.getHours());
+                    }
+
+                    // Controlla se il giorno è stato modificato a causa del rollover del mese
+                    if (startTime.getUTCDate() !== startTimeDate.getUTCDate()) {
+                        // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
+                        startTime.setUTCDate(0);
+                    }
+                    if (endTime.getUTCDate() !== endTimeDate.getUTCDate()) {
+                        // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
+                        endTime.setUTCDate(0);
+                    }
+
+                    const event: Event = {
+                        id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+                        groupId,
+                        title,
+                        startTime,
+                        endTime,
+                        repetitions,
+                        isInfinite,
+                        frequency,
+                        location,
+                        owner,
+                        recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+
+                    await EventSchema.create(event);
+                    console.log("Inserted event: ", event);
+                    var startTimePrecedente = new Date(startTime);
+                    var endTimePrecedente = new Date(endTime);
+                }
+            }
+
+            if (frequency === "week") {
+                var startTimePrecedente = new Date(startTime);
+                var endTimePrecedente = new Date(endTime);
+                for (let i = 0; i < repetitions; i++) {
+                    const startTime = new Date(startTimeDate);
+                    const endTime = new Date(endTimeDate);
+
+                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                        startTime.setHours(startTimePrecedente.getHours());
+                    }
+
+                    if (endTime.getHours() !== endTimePrecedente.getHours()) {
+                        endTime.setHours(endTimePrecedente.getHours());
+                    }
+
+                    // Aggiungi settimane usando i metodi UTC
+                    startTime.setUTCDate(startTime.getUTCDate() + i * 7);
+                    endTime.setUTCDate(endTime.getUTCDate() + i * 7);
+                    const event: Event = {
+                        id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+                        groupId,
+                        title,
+                        startTime,
+                        endTime,
+                        repetitions,
+                        frequency,
+                        isInfinite,
+                        location,
+                        owner,
+                        recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+
+                    await EventSchema.create(event);
+                    console.log("Inserted event: ", event);
+                    var startTimePrecedente = new Date(startTime);
+                    var endTimePrecedente = new Date(endTime);
+                }
+            }
+
+            if (frequency === "year") {
+                var startTimePrecedente = new Date(startTimeDate);
+                var endTimePrecedente = new Date(endTimeDate);
+                for (let i = 0; i < repetitions; i++) {
+                    const startTime = new Date(startTimeDate);
+                    const endTime = new Date(endTimeDate);
+
+                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                        startTime.setHours(startTimePrecedente.getHours());
+                    }
+
+                    if (endTime.getHours() !== endTimePrecedente.getHours()) {
+                        endTime.setHours(endTimePrecedente.getHours());
+                    }
+
+                    // Aggiungi anni usando i metodi UTC
+                    startTime.setUTCFullYear(startTime.getUTCFullYear() + i);
+                    endTime.setUTCFullYear(endTime.getUTCFullYear() + i);
+
+                    // Controlla se il giorno è stato modificato a causa del rollover dell'anno
+                    if (startTime.getUTCDate() !== startTimeDate.getUTCDate()) {
+                        // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
+                        startTime.setUTCDate(0);
+                    }
+                    if (endTime.getUTCDate() !== endTimeDate.getUTCDate()) {
+                        // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
+                        endTime.setUTCDate(0);
+                    }
+
+                    const event: Event = {
+                        id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+                        groupId,
+                        title,
+                        startTime,
+                        endTime,
+                        repetitions,
+                        frequency,
+                        isInfinite,
+                        location,
+                        owner,
+                        recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+
+                    await EventSchema.create(event);
+                    console.log("Inserted event: ", event);
+                    var startTimePrecedente = new Date(startTime);
+                    var endTimePrecedente = new Date(endTime);
+                }
+            }
+
+            if (frequency === "once") {
+                const event: Event = {
+                    id: "1",
+                    groupId,
+                    title,
+                    startTime: new Date(startTimeDate.getTime()), // Aggiungi un giorno
+                    endTime: new Date(endTimeDate.getTime()), // Aggiungi un giorno
+                    location,
+                    frequency,
+                    isInfinite,
+                    repetitions,
+                    owner,
+                    recurring: false, //assumo evento non ricorrente
+                    createdAt: now,
+                    updatedAt: now,
+                };
+                await EventSchema.create(event);
+                console.log("Inserted event: ", event);
+            }
+        }
+
+        if (untilDate != null && !isInfinite) {
+            console.log("entrato in ramo untilDate diverso da null")
+
+            if (frequency === "day") {
+                console.log("entrato in ramo day")
+                var startTimePrecedente = new Date(startTime);
+                var untilDateDate = new Date(untilDate);
+                untilDateDate.setHours(0, 0, 0, 0);
+                var endTimePrecedente = new Date(endTime);
+                var normalizedEndTimePrecedente = new Date(endTimePrecedente);
+                normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
+
+                if (untilDateDate < normalizedEndTimePrecedente) {
+                    console.log(untilDateDate, " è minore di ", endTimePrecedente);
+                }
+                if (untilDateDate > endTimePrecedente) {
+                    console.log(untilDateDate, " è maggiore di ", endTimePrecedente);
+                }
+
+                //caso in cui la frequenza dell'evento sia giornaliera
+                let i = 0;
+                console.log("questa è la untilDate: ", untilDate)
+                console.log("questa è la endTimePrecedente: ", endTimePrecedente)
+                while (untilDateDate > normalizedEndTimePrecedente) {
+
+                    const startTime = new Date(
+                        startTimeDate.getTime() + i * 24 * 60 * 60 * 1000
+                    );
+                    const endTime = new Date(
+                        endTimeDate.getTime() + i * 24 * 60 * 60 * 1000
+                    );
+                    console.log("endTime ad iterazione" + i + endTime);
+
+                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                        startTime.setHours(startTimePrecedente.getHours());
+                    }
+
+                    if (endTime.getHours() !== endTimePrecedente.getHours()) {
+                        endTime.setHours(endTimePrecedente.getHours());
+                    }
+
+                    const event: Event = {
+                        id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+                        groupId,
+                        title,
+                        startTime, // Aggiungi un giorno
+                        endTime, // Aggiungi un giorno
+                        repetitions,
+                        frequency,
+                        untilDate,
+                        location,
+                        owner,
+                        recurring: true,
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+
+                    await EventSchema.create(event);
+                    console.log("Inserted event: ", event);
+
+                    startTimePrecedente = new Date(startTime);
+                    endTimePrecedente = new Date(endTime);
+                    normalizedEndTimePrecedente = new Date(endTime);
+                    normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
+
+                    i++; // Incrementa l'indice per il prossimo ciclo
+                }
+            }
+            if (frequency === "month") {
+                var startTimePrecedente = new Date(startTime);
+                var endTimePrecedente = new Date(endTime);
+                var untilDateDate = new Date(untilDate);
+                untilDateDate.setHours(0, 0, 0, 0);
+                var normalizedEndTimePrecedente = new Date(endTimePrecedente);
+                normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
+
+                let i = 0;
+                while (untilDateDate > normalizedEndTimePrecedente) {
+                    const startTime = new Date(startTimeDate);
+                    const endTime = new Date(endTimeDate);
+
+                    // Aggiungi mesi usando i metodi UTC
+                    startTime.setUTCMonth(startTime.getUTCMonth() + i);
+                    endTime.setUTCMonth(endTime.getUTCMonth() + i);
+
+                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                        startTime.setHours(startTimePrecedente.getHours());
+                    }
+
+                    if (endTime.getHours() !== endTimePrecedente.getHours()) {
+                        endTime.setHours(endTimePrecedente.getHours());
+                    }
+
+                    // Controlla se il giorno è stato modificato a causa del rollover del mese
+                    if (startTime.getUTCDate() !== startTimeDate.getUTCDate()) {
+                        // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
+                        startTime.setUTCDate(0);
+                    }
+                    if (endTime.getUTCDate() !== endTimeDate.getUTCDate()) {
+                        // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
+                        endTime.setUTCDate(0);
+                    }
+
+                    const event: Event = {
+                        id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+                        groupId,
+                        title,
+                        startTime,
+                        endTime,
+                        repetitions,
+                        untilDate,
+                        frequency,
+                        isInfinite,
+                        location,
+                        owner,
+                        recurring: true, // Imposta ricorrente se repetitions > 1
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+
+                    await EventSchema.create(event);
+                    console.log("Inserted event: ", event);
+                    var startTimePrecedente = new Date(startTime);
+                    var endTimePrecedente = new Date(endTime);
+                    normalizedEndTimePrecedente = new Date(endTime);
+                    normalizedEndTimePrecedente.setMonth(normalizedEndTimePrecedente.getMonth() + 1);
+                    normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
+
+                    i++;
+                }
+            }
+
+            if (frequency === "week") {
+                var startTimePrecedente = new Date(startTime);
+                var endTimePrecedente = new Date(endTime);
+                var untilDateDate = new Date(untilDate);
+                untilDateDate.setHours(0, 0, 0, 0);
+                var normalizedEndTimePrecedente = new Date(endTimePrecedente);
+                //normalizedEndTimePrecedente.setDate(normalizedEndTimePrecedente.getDate() + 7);
+                normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
+                console.log("untilDateDate: ", untilDateDate);
+                console.log("normalizedEndTimePrecedente: ", normalizedEndTimePrecedente);
+                let i = 0;
+                while (untilDateDate > normalizedEndTimePrecedente) {
+                    const startTime = new Date(startTimeDate);
+                    const endTime = new Date(endTimeDate);
+
+                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                        startTime.setHours(startTimePrecedente.getHours());
+                    }
+
+                    if (endTime.getHours() !== endTimePrecedente.getHours()) {
+                        endTime.setHours(endTimePrecedente.getHours());
+                    }
+
+                    // Aggiungi settimane usando i metodi UTC
+                    startTime.setUTCDate(startTime.getUTCDate() + i * 7);
+                    endTime.setUTCDate(endTime.getUTCDate() + i * 7);
+                    const event: Event = {
+                        id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+                        groupId,
+                        title,
+                        startTime,
+                        endTime,
+                        repetitions,
+                        frequency,
+                        isInfinite,
+                        untilDate,
+                        location,
+                        owner,
+                        recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+
+                    await EventSchema.create(event);
+                    console.log("Inserted event: ", event);
+                    var startTimePrecedente = new Date(startTime);
+                    var endTimePrecedente = new Date(endTime);
+                    normalizedEndTimePrecedente = new Date(endTime);
+                    normalizedEndTimePrecedente.setDate(normalizedEndTimePrecedente.getDate() + 7);
+                    console.log("untilDateDate: ", untilDateDate);
+                    console.log("normalizedEndTimePrecedente: ", normalizedEndTimePrecedente);
+                    normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
+
+                    i++;
+                }
+            }
+
+            if (frequency === "year") {
+                var startTimePrecedente = new Date(startTimeDate);
+                var endTimePrecedente = new Date(endTimeDate);
+                var untilDateDate = new Date(untilDate);
+                untilDateDate.setHours(0, 0, 0, 0);
+                var normalizedEndTimePrecedente = new Date(endTimePrecedente);
+                normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
+                let i = 0;
+                while (untilDateDate > normalizedEndTimePrecedente) {
+                    const startTime = new Date(startTimeDate);
+                    const endTime = new Date(endTimeDate);
+
+                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                        startTime.setHours(startTimePrecedente.getHours());
+                    }
+
+                    if (endTime.getHours() !== endTimePrecedente.getHours()) {
+                        endTime.setHours(endTimePrecedente.getHours());
+                    }
+
+                    // Aggiungi anni usando i metodi UTC
+                    startTime.setUTCFullYear(startTime.getUTCFullYear() + i);
+                    endTime.setUTCFullYear(endTime.getUTCFullYear() + i);
+
+                    // Controlla se il giorno è stato modificato a causa del rollover dell'anno
+                    if (startTime.getUTCDate() !== startTimeDate.getUTCDate()) {
+                        // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
+                        startTime.setUTCDate(0);
+                    }
+                    if (endTime.getUTCDate() !== endTimeDate.getUTCDate()) {
+                        // Se il giorno è cambiato, imposta il giorno all'ultimo giorno del mese precedente
+                        endTime.setUTCDate(0);
+                    }
+
+                    const event: Event = {
+                        id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
+                        groupId,
+                        title,
+                        startTime,
+                        endTime,
+                        repetitions,
+                        frequency,
+                        isInfinite,
+                        untilDate,
+                        location,
+                        owner,
+                        recurring: true, // Imposta ricorrente se repetitions > 1
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+
+                    await EventSchema.create(event);
+                    console.log("Inserted event: ", event);
+                    var startTimePrecedente = new Date(startTime);
+                    var endTimePrecedente = new Date(endTime);
+                    normalizedEndTimePrecedente = new Date(endTime);
+                    normalizedEndTimePrecedente.setFullYear(normalizedEndTimePrecedente.getFullYear() + 1);
+                    normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
+
+                    i++;
+                }
+            }
+
+            if (frequency === "once") {
+                const event: Event = {
+                    id: "1",
+                    groupId,
+                    title,
+                    startTime: new Date(startTimeDate.getTime()), // Aggiungi un giorno
+                    endTime: new Date(endTimeDate.getTime()), // Aggiungi un giorno
+                    untilDate,
+                    location,
+                    frequency,
+                    isInfinite,
+                    repetitions,
+                    owner,
+                    recurring: false, //assumo evento non ricorrente
+                    createdAt: now,
+                    updatedAt: now,
+                };
+                await EventSchema.create(event);
+                console.log("Inserted event: ", event);
+            }
+
         }
 
         const resBody: ResponseBody = {
@@ -645,11 +967,7 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
         const filteredEvents = allEvents.filter((event) => {
             const eventStartDate = new Date(event.startTime);
             const eventEndDate = new Date(event.endTime);
-            const currentDate = new Date(
-                selectedYear,
-                selectedMonth,
-                selectedDay
-            );
+            const currentDate = new Date(selectedYear, selectedMonth, selectedDay);
 
             // Normalizza le date per confrontare solo giorno, mese e anno
             const normalizeDate: (date: Date) => Date = (date: Date) =>
@@ -659,10 +977,43 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
             const normalizedEventEndDate = normalizeDate(eventEndDate);
             const normalizedCurrentDate = normalizeDate(currentDate);
 
-            return (
+            // Controlla se l'evento è nel giorno selezionato
+            const isSameDayEvent = (
                 normalizedCurrentDate >= normalizedEventStartDate &&
                 normalizedCurrentDate <= normalizedEventEndDate
             );
+
+            // Controlla se l'evento è giornaliero e infinito
+            const isDailyInfiniteEvent = (
+                event.frequency === "day" &&
+                event.isInfinite === true &&
+                normalizedEventStartDate <= normalizedCurrentDate
+            );
+
+            const isMonthlyInfiniteEvent = (
+                event.frequency === "month" &&
+                event.isInfinite === true &&
+                normalizedEventStartDate <= normalizedCurrentDate &&
+                eventStartDate.getDate() === currentDate.getDate()  //controlla se è lo stesso giorno del mese
+            );
+
+            const isWeeklyInfiniteEvent = (
+                event.frequency === "week" &&
+                event.isInfinite === true &&
+                normalizedEventStartDate <= normalizedCurrentDate &&
+                eventStartDate.getDay() === currentDate.getDay()  //controlla se è lo stesso giorno della settimana
+            );
+
+            const isYearlyInfiniteEvent = (
+                event.frequency === "year" &&
+                event.isInfinite === true &&
+                normalizedEventStartDate <= normalizedCurrentDate &&
+                eventStartDate.getDate() === currentDate.getDate() && //controlla se è lo stesso giorno del mese
+                eventStartDate.getMonth() === currentDate.getMonth()  //controlla se è lo stesso mese
+            );
+
+            // Includi l'evento se è nello stesso giorno o se è giornaliero e infinito
+            return isSameDayEvent || isDailyInfiniteEvent || isMonthlyInfiniteEvent || isWeeklyInfiniteEvent || isYearlyInfiniteEvent;
         });
 
         const resBody = {

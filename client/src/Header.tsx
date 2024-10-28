@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { SERVER_API } from "./params/params";
+import { ResponseStatus } from "./types/ResponseStatus";
+import Notification from "./types/Notification";
 
 const buttonStyle = {
     backgroundColor: "white",
@@ -13,14 +15,6 @@ const buttonStyle = {
 
 const NOTIFICATION_COUNT = 5;
 
-type Notification = {
-    userId: string;
-    message: string;
-    type: string;
-    sentAt: Date;
-    status: string;
-};
-
 export default function Header(): React.JSX.Element {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
@@ -30,8 +24,12 @@ export default function Header(): React.JSX.Element {
         fetch(`${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`)
             .then((res) => res.json())
             .then((data) => {
-                console.log(data.value);
-                setNotifications(data.value);
+                console.log("Notifications:", data);
+                if (data.status === ResponseStatus.GOOD) {
+                    setNotifications(data.value);
+                } else {
+                    console.error("Error:", data.message);
+                }
             })
             .catch((error) => {
                 console.error(error);
@@ -116,15 +114,51 @@ export default function Header(): React.JSX.Element {
                                 }}
                             >
                                 {notifications && notifications.length > 0 ? (
-                                    notifications.map((notification, index) => (
-                                        <div key={index}>
-                                            <p>{notification.message}</p>
-                                            <p>
-                                                {notification.type} -{" "}
-                                                {notification.sentAt.toString()}
-                                            </p>
-                                        </div>
-                                    ))
+                                    notifications.map((notification, index) => {
+                                        // TODO: Differentiate by type
+                                        if (notification.type === "pomodoro") {
+                                            const nCycles =
+                                                notification.data.cycles || 5;
+
+                                            const nStudyTime =
+                                                notification.data.studyTime ||
+                                                25;
+
+                                            const nPauseTime =
+                                                notification.data.pauseTime ||
+                                                5;
+                                            return (
+                                                <a
+                                                    href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
+                                                >
+                                                    <div key={index}>
+                                                        <p>
+                                                            Hai ricevuto un
+                                                            invito da{" "}
+                                                            {
+                                                                notification.sender
+                                                            }{" "}
+                                                            per un pomodoro!
+                                                        </p>
+                                                        <p>
+                                                            {notification.type}{" "}
+                                                            -{" "}
+                                                            {notification.sentAt.toString()}
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            );
+                                        } else {
+                                            return (
+                                                <div key={index}>
+                                                    <p>
+                                                        {notification.type} -{" "}
+                                                        {notification.sentAt.toString()}
+                                                    </p>
+                                                </div>
+                                            );
+                                        }
+                                    })
                                 ) : (
                                     <div>
                                         <p>No notifications</p>
