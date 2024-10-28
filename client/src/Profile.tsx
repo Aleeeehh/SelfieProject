@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import User from "./types/User";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { useAuth } from "./AuthContext";
+import "bootstrap/dist/css/bootstrap.min.css";
+
 
 const emptyUser: User = {
 	id: "",
@@ -76,18 +78,44 @@ export default function Profile(): React.JSX.Element {
 	}
 
 	return (
-		<>
+		<div className="profile-body">
 			{message && <div>{message}</div>}
 			<div className="profile-container">
-				<div>{user.username}</div>
-				<div>{user.password}</div>
-				<button style={{ backgroundColor: "#ffff00" }} onClick={handleLogout}>
-					Logout
-				</button>
-				<button style={{ backgroundColor: "#ffff00" }} onClick={handleDelete}>
-					Cancella Account
-				</button>
+				<div className="avatar">
+					<img src="/images/avatar.png" alt="Avatar" />
+				</div>
+				<div className="profile-header">
+					<h1>{`${user.firstName} ${user.lastName}`}</h1>
+					<p className="profile-username">@{user.username}</p>
+				</div>
+				
+				<div className="profile-details">
+					<div>
+					<label>Data di nascita:</label>
+					<p>{new Date(user.birthday).toLocaleDateString()}</p>
+					</div>
+					<div>
+					<label>Indirizzo:</label>
+					<p>{user.address}</p>
+					</div>
+				</div>
+
+				<div className="buttons">
+					<button
+						type="button"
+						className="btn btn-warning custom-btn"
+						onClick={handleLogout}>
+						LOGOUT
+					</button>
+					
+					<button
+						type="button"
+						className="btn btn-danger custom-btn"
+						onClick={handleDelete}>
+						DELETE ACCOUNT
+					</button>
+				</div>
 			</div>
-		</>
+		</div>
 	);
 }

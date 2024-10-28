@@ -11,7 +11,7 @@ import Notes from "./Notes";
 import NotFound from "./NotFound";
 import NotePage from "./NotePage";
 import Profile from "./Profile";
-
+import Register from "./Register";
 function App(): React.JSX.Element {
     return (
         <div id="body-container">
@@ -26,6 +26,7 @@ function App(): React.JSX.Element {
                         <Route path="projects" element={<Projects />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="notes" element={<Notes />} />
+                        <Route path="register" element={<Register />} />
                         {/* Route notes/new creates the new page for note*/}
                         <Route path="notes/:id" element={<NotePage />} />
                         {/* {<Route path="*" element={<Navigate to="/" replace />} />} */}

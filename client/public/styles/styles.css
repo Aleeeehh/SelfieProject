@@ -4,6 +4,8 @@
 @import url("./pomodoro.css");
 @import url("./note.css");
 @import url("./login.css");
+@import url("./register.css");
+@import url("./profile.css");
 
 * {
 	box-sizing: border-box;
