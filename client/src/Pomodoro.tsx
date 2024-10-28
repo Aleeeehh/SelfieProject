@@ -240,17 +240,17 @@ export default function Pomodoros(): React.JSX.Element {
     //Funzione per aggiornare la lista dei pomodori in tempo reale (non funziona al momento)
 
     /*const updateTomatoList = async (): Promise<void> => {
-		try {
-			const response = await fetch(`${SERVER_API}/pomodoro`);
-			if (!response.ok) {
-				throw new Error('Failed to fetch pomodori');
-			}
-			const fetchedTomatoes = await response.json();
-			setTomatoList(fetchedTomatoes);
-		} catch (error) {
-			console.error(error);
-		}
-	};*/
+        try {
+            const response = await fetch(`${SERVER_API}/pomodoro`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch pomodori');
+            }
+            const fetchedTomatoes = await response.json();
+            setTomatoList(fetchedTomatoes);
+        } catch (error) {
+            console.error(error);
+        }
+    };*/
 
     function stopProcess(): void {
         playRing();
@@ -280,7 +280,7 @@ export default function Pomodoros(): React.JSX.Element {
                 const timeToAdd =
                     duration -
                     (data.studyTime + data.pauseTime) *
-                        (initialCycles - data.cycles);
+                    (initialCycles - data.cycles);
                 console.log("timeToAdd:", timeToAdd);
 
                 if (timeToAdd >= 30) {
@@ -300,7 +300,7 @@ export default function Pomodoros(): React.JSX.Element {
                     const CurPomStartTime = new Date(currentPomodoro.startTime);
                     const FixedCurPomStartTime = new Date(
                         CurPomStartTime.getTime() +
-                            CurPomStartTime.getTimezoneOffset() * 60000
+                        CurPomStartTime.getTimezoneOffset() * 60000
                     );
 
                     if (date.status === ResponseStatus.GOOD) {
@@ -335,11 +335,11 @@ export default function Pomodoros(): React.JSX.Element {
                             // Correggo il fuso orario degli orari
                             const correctedStartTime = new Date(
                                 newStartTime.getTime() +
-                                    newStartTime.getTimezoneOffset() * 60000
+                                newStartTime.getTimezoneOffset() * 60000
                             );
                             const correctedEndTime = new Date(
                                 newEndTime.getTime() +
-                                    newEndTime.getTimezoneOffset() * 60000
+                                newEndTime.getTimezoneOffset() * 60000
                             );
 
                             // Imposto al giorno successivo il nuovo evento
@@ -501,14 +501,12 @@ export default function Pomodoros(): React.JSX.Element {
             pomodoroRef.current.classList.remove("animate-pomodoro");
             pomodoroRef.current.classList.remove("reverse-animate-pomodoro");
             if (isStudying) {
-                pomodoroRef.current.style.animationDuration = `${
-                    data.studyTime * 60
-                }s`;
+                pomodoroRef.current.style.animationDuration = `${data.studyTime * 60
+                    }s`;
                 pomodoroRef.current.classList.add("animate-pomodoro");
             } else {
-                pomodoroRef.current.style.animationDuration = `${
-                    data.pauseTime * 60
-                }s`;
+                pomodoroRef.current.style.animationDuration = `${data.pauseTime * 60
+                    }s`;
                 pomodoroRef.current.classList.add("reverse-animate-pomodoro");
             }
         }
@@ -1154,9 +1152,9 @@ export default function Pomodoros(): React.JSX.Element {
                                         .getHours()
                                         .toString()
                                         .padStart(2, "0")}:${pomEvent.startTime
-                                        .getMinutes()
-                                        .toString()
-                                        .padStart(2, "0")}`}
+                                            .getMinutes()
+                                            .toString()
+                                            .padStart(2, "0")}`}
                                     onChange={(
                                         e: React.ChangeEvent<HTMLInputElement>
                                     ): void => {
@@ -1214,9 +1212,9 @@ export default function Pomodoros(): React.JSX.Element {
                                         .getHours()
                                         .toString()
                                         .padStart(2, "0")}:${pomEvent.endTime
-                                        .getMinutes()
-                                        .toString()
-                                        .padStart(2, "0")}`}
+                                            .getMinutes()
+                                            .toString()
+                                            .padStart(2, "0")}`}
                                     onChange={(
                                         e: React.ChangeEvent<HTMLInputElement>
                                     ): void => {

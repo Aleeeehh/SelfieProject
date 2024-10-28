@@ -45,6 +45,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [selectedValue, setSelectedValue] = React.useState("Data");
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
+	const [isInfinite, setIsInfinite] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
 		return now;
@@ -530,8 +531,18 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setUntilDate(null);
 			setFrequency(Frequency.ONCE);
 			setRepetitions(1);
+			setIsInfinite(false);
 		}
 	}, [repeatEvent]);
+
+	React.useEffect(() => {
+		if (frequency === Frequency.ONCE) {
+			setUntilDate(null);
+			setFrequency(Frequency.ONCE);
+			setRepetitions(1);
+			setIsInfinite(false);
+		}
+	}, [frequency]);
 
 
 	// On page load, get the events for the user
@@ -572,7 +583,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 
 		return eventList.some(event => {
-			//console.log("LA EVENTLIST HA EVENTI:", eventList);
 			const eventStartDate = new Date(event.startTime);
 			const eventEndDate = new Date(event.endTime);
 			const currentDate = new Date(year, meseCorrente, day);
@@ -584,7 +594,44 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const normalizedEventEndDate = normalizeDate(eventEndDate);
 			const normalizedCurrentDate = normalizeDate(currentDate);
 
-			return normalizedCurrentDate >= normalizedEventStartDate && normalizedCurrentDate <= normalizedEventEndDate;
+			// Controlla se l'evento è nel giorno selezionato
+			const isSameDayEvent = (
+				normalizedCurrentDate >= normalizedEventStartDate &&
+				normalizedCurrentDate <= normalizedEventEndDate
+			);
+
+			// Controlla se l'evento è giornaliero, infinito e iniziato prima o nello stesso giorno del currentDate
+			const isDailyInfiniteEvent = (
+				event.frequency === "day" &&
+				event.isInfinite === true &&
+				normalizedEventStartDate <= normalizedCurrentDate
+			);
+
+			const isMonthlyInfiniteEvent = (
+				event.frequency === "month" &&
+				event.isInfinite === true &&
+				eventStartDate.getDate() === currentDate.getDate() && //controlla se è lo stesso giorno del mese
+				normalizedEventStartDate <= normalizedCurrentDate
+			);
+
+
+			const isWeeklyInfiniteEvent = (
+				event.frequency === "week" &&
+				event.isInfinite === true &&
+				normalizedEventStartDate <= normalizedCurrentDate &&
+				eventStartDate.getDay() === currentDate.getDay()  //controlla se è lo stesso giorno della settimana
+			);
+
+			const isYearlyInfiniteEvent = (
+				event.frequency === "year" &&
+				event.isInfinite === true &&
+				normalizedEventStartDate <= normalizedCurrentDate &&
+				eventStartDate.getDate() === currentDate.getDate() && //controlla se è lo stesso giorno del mese
+				eventStartDate.getMonth() === currentDate.getMonth()  //controlla se è lo stesso mese
+			);
+
+			// Ritorna true se l'evento è nello stesso giorno o se è giornaliero e infinito
+			return isSameDayEvent || isDailyInfiniteEvent || isMonthlyInfiniteEvent || isWeeklyInfiniteEvent || isYearlyInfiniteEvent;
 		});
 	}
 	// Toggle create event screen
@@ -1193,6 +1240,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				startTime: startTime.toISOString(),
 				endTime: endTime.toISOString(),
 				untilDate: untilDate,
+				isInfinite,
 				frequency: frequency,
 				location,
 				repetitions,
@@ -1335,16 +1383,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 		switch (valoreSelezionato) {
 			case "Data":
 				console.log("selezionato data");
+				setIsInfinite(false);
 				setSelectedValue("Data");
 
 				break;
 			case "Ripetizioni":
 				console.log("selezionato ripetizioni");
+				setIsInfinite(false);
 				setSelectedValue("Ripetizioni");
 				break;
 			case "Infinito":
 				console.log("selezionato infinito");
 				setSelectedValue("Infinito");
+				setIsInfinite(true);
 				break;
 		}
 	}
@@ -1590,7 +1641,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<div>
 													<div className="flex" style={{ marginRight: "10px" }}>
 														Fino a
-														<select className="btn border" onChange={toggleSelectUntil}>
+														<select className="btn border" onChange={toggleSelectUntil} defaultValue="Data">
 															<option value="Data">Data</option>
 															<option value="Ripetizioni">Ripetizioni</option>
 															<option value="Infinito">Infinito </option>
@@ -1630,6 +1681,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 															</input>
 														</div>
 													)}
+
 
 												</div>
 											</div>

@@ -320,9 +320,11 @@ router.post("/", async (req: Request, res: Response) => {
             frequency,
             location,
             repetitions,
+            isInfinite,
         } = req.body as Event;
         console.log("queste sono le ripetizioni:", repetitions);
         console.log("questo è l'untilDate dell'evento:", untilDate);
+        console.log("questo è l'isInfinite dell'evento:", isInfinite);
 
         if (!title || !startTime || !endTime || !location) {
             return res.status(400).json({
@@ -382,7 +384,29 @@ router.post("/", async (req: Request, res: Response) => {
         const groupId = new mongoose.Types.ObjectId().toString();
         console.log("questo è la frequenza:", frequency);
 
-        if (untilDate == null) {
+        if (isInfinite) {
+            const event: Event = {
+                id: "1",
+                groupId,
+                title,
+                startTime: new Date(startTimeDate.getTime()),
+                endTime: new Date(endTimeDate.getTime()),
+                location,
+                frequency,
+                isInfinite,
+                repetitions,
+                owner,
+                recurring: true,
+                createdAt: now,
+                updatedAt: now,
+            };
+            await EventSchema.create(event);
+            console.log("Inserted event: ", event);
+
+
+        }
+
+        if (untilDate == null && !isInfinite) {
             if (frequency === "day") {
                 var startTimePrecedente = new Date(startTime);
                 var endTimePrecedente = new Date(endTime);
@@ -413,6 +437,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repetitions,
                         frequency,
                         location,
+                        isInfinite,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
@@ -462,6 +487,7 @@ router.post("/", async (req: Request, res: Response) => {
                         startTime,
                         endTime,
                         repetitions,
+                        isInfinite,
                         frequency,
                         location,
                         owner,
@@ -503,6 +529,7 @@ router.post("/", async (req: Request, res: Response) => {
                         endTime,
                         repetitions,
                         frequency,
+                        isInfinite,
                         location,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
@@ -554,6 +581,7 @@ router.post("/", async (req: Request, res: Response) => {
                         endTime,
                         repetitions,
                         frequency,
+                        isInfinite,
                         location,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
@@ -577,6 +605,7 @@ router.post("/", async (req: Request, res: Response) => {
                     endTime: new Date(endTimeDate.getTime()), // Aggiungi un giorno
                     location,
                     frequency,
+                    isInfinite,
                     repetitions,
                     owner,
                     recurring: false, //assumo evento non ricorrente
@@ -588,7 +617,7 @@ router.post("/", async (req: Request, res: Response) => {
             }
         }
 
-        if (untilDate != null) {
+        if (untilDate != null && !isInfinite) {
             console.log("entrato in ramo untilDate diverso da null")
 
             if (frequency === "day") {
@@ -700,6 +729,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repetitions,
                         untilDate,
                         frequency,
+                        isInfinite,
                         location,
                         owner,
                         recurring: true, // Imposta ricorrente se repetitions > 1
@@ -753,6 +783,7 @@ router.post("/", async (req: Request, res: Response) => {
                         endTime,
                         repetitions,
                         frequency,
+                        isInfinite,
                         untilDate,
                         location,
                         owner,
@@ -817,6 +848,7 @@ router.post("/", async (req: Request, res: Response) => {
                         endTime,
                         repetitions,
                         frequency,
+                        isInfinite,
                         untilDate,
                         location,
                         owner,
@@ -847,6 +879,7 @@ router.post("/", async (req: Request, res: Response) => {
                     untilDate,
                     location,
                     frequency,
+                    isInfinite,
                     repetitions,
                     owner,
                     recurring: false, //assumo evento non ricorrente
@@ -934,11 +967,7 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
         const filteredEvents = allEvents.filter((event) => {
             const eventStartDate = new Date(event.startTime);
             const eventEndDate = new Date(event.endTime);
-            const currentDate = new Date(
-                selectedYear,
-                selectedMonth,
-                selectedDay
-            );
+            const currentDate = new Date(selectedYear, selectedMonth, selectedDay);
 
             // Normalizza le date per confrontare solo giorno, mese e anno
             const normalizeDate: (date: Date) => Date = (date: Date) =>
@@ -948,10 +977,43 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
             const normalizedEventEndDate = normalizeDate(eventEndDate);
             const normalizedCurrentDate = normalizeDate(currentDate);
 
-            return (
+            // Controlla se l'evento è nel giorno selezionato
+            const isSameDayEvent = (
                 normalizedCurrentDate >= normalizedEventStartDate &&
                 normalizedCurrentDate <= normalizedEventEndDate
             );
+
+            // Controlla se l'evento è giornaliero e infinito
+            const isDailyInfiniteEvent = (
+                event.frequency === "day" &&
+                event.isInfinite === true &&
+                normalizedEventStartDate <= normalizedCurrentDate
+            );
+
+            const isMonthlyInfiniteEvent = (
+                event.frequency === "month" &&
+                event.isInfinite === true &&
+                normalizedEventStartDate <= normalizedCurrentDate &&
+                eventStartDate.getDate() === currentDate.getDate()  //controlla se è lo stesso giorno del mese
+            );
+
+            const isWeeklyInfiniteEvent = (
+                event.frequency === "week" &&
+                event.isInfinite === true &&
+                normalizedEventStartDate <= normalizedCurrentDate &&
+                eventStartDate.getDay() === currentDate.getDay()  //controlla se è lo stesso giorno della settimana
+            );
+
+            const isYearlyInfiniteEvent = (
+                event.frequency === "year" &&
+                event.isInfinite === true &&
+                normalizedEventStartDate <= normalizedCurrentDate &&
+                eventStartDate.getDate() === currentDate.getDate() && //controlla se è lo stesso giorno del mese
+                eventStartDate.getMonth() === currentDate.getMonth()  //controlla se è lo stesso mese
+            );
+
+            // Includi l'evento se è nello stesso giorno o se è giornaliero e infinito
+            return isSameDayEvent || isDailyInfiniteEvent || isMonthlyInfiniteEvent || isWeeklyInfiniteEvent || isYearlyInfiniteEvent;
         });
 
         const resBody = {
