@@ -36,9 +36,9 @@ export default function Login(): React.JSX.Element {
 	}
 
 	return (
-		<div className="body">
+		<div className="login-body">
 			{message && <div>{message}</div>}
-			<div className="background">
+			<div className="login-background">
 				<div className="login-container">
 					<div className="avatar">
 						<img src="/images/avatar.png" alt="Avatar" />
