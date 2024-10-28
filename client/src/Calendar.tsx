@@ -95,7 +95,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 					setEventList(data.value);
 					console.log("QUESTA E' LA EVENTLIST::", eventList);
 				} else {
-					setMessage("Errore nel ritrovamento degli eventi");
+					setMessage("Errore nel ritrovamento degli eventi: nessun evento trovato nel database!");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -528,6 +528,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 	React.useEffect(() => {
 		if (!repeatEvent) {
 			setUntilDate(null);
+			setFrequency(Frequency.ONCE);
+			setRepetitions(1);
 		}
 	}, [repeatEvent]);
 
