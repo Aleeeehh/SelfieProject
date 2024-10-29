@@ -12,15 +12,10 @@ const router: Router = Router();
 
 // get if the current user
 router.get("/", async (req: Request, res: Response) => {
-    if (req.user) {
-        const foundUser = await UserSchema.findById(req.user.id).lean();
-        return res
-            .status(200)
-            .json({ status: ResponseStatus.GOOD, value: foundUser });
-    } else
-        return res
-            .status(402)
-            .json({ status: ResponseStatus.BAD, value: false });
+	if (req.user) {
+		const foundUser = await UserSchema.findById(req.user.id).lean();
+		return res.status(200).json({ status: ResponseStatus.GOOD, value: foundUser });
+	} else return res.status(402).json({ status: ResponseStatus.BAD, value: false });
 });
 
 //get current user informations
@@ -51,239 +46,246 @@ router.get("/current", checkAuthentication, (req: Request, res: Response) => {
 */
 
 router.post("/register", async (req: Request, res: Response) => {
-    try {
-        // TODO: validate body parameters
-        // TODO: password hashing in database
+	try {
+		// TODO: validate body parameters
+		// TODO: password hashing in database
 
-        const username = req.body.username;
-        const password = req.body.password;
-        const firstName = req.body.firstName;
-        const lastName = req.body.lastName;
-        const birthdayStr = req.body.birthday;
-        if (!validDateString(birthdayStr))
-            return res.status(400).json({
-                status: ResponseStatus.BAD,
-                message: "Invalid date format, should be: YYYY-MM-DD",
-            });
+		const username = req.body.username as string | undefined;
+		const password = req.body.password as string | undefined;
+		const confirmPassword = req.body.confirmPassword as string | undefined;
+		const firstName = req.body.firstName as string | undefined;
+		const lastName = req.body.lastName as string | undefined;
+		const address = req.body.address as string | undefined;
+		const birthdayStr = req.body.birthday as string | undefined;
 
-        const birthday = new Date(birthdayStr);
+		if (
+			!(
+				username &&
+				password &&
+				confirmPassword &&
+				firstName &&
+				lastName &&
+				birthdayStr &&
+				address
+			)
+		)
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message:
+					"Invalid body: 'username', 'password', 'confirmPassword', 'firstName', 'lastName', 'birthday', 'address' required",
+			});
 
-        if (!(username || password || firstName || lastName))
-            return res.status(400).json({
-                status: ResponseStatus.BAD,
-                message:
-                    "Invalid body: 'username', 'password', 'firstName' and 'lastName' required",
-            });
+		if (password !== confirmPassword)
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Passwords do not match",
+			});
 
-        const newUser: User = {
-            id: "",
-            username,
-            password,
-            firstName,
-            lastName,
-            birthday,
-        };
+		const birthday = new Date(birthdayStr);
 
-        // Verify username not already used
-        const foundUser = await UserSchema.findOne({ username: username });
+		if (!validDateString(birthdayStr))
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Invalid date format, should be: YYYY-MM-DD",
+			});
 
-        if (foundUser) {
-            return res.status(400).json({
-                status: ResponseStatus.BAD,
-                message: "User with that username already exists",
-            });
-        }
+		const newUser: User = {
+			id: "",
+			username,
+			password,
+			firstName,
+			lastName,
+			birthday,
+		};
 
-        // Insert into database new event
-        console.log("Inserting user: ", newUser);
-        await UserSchema.create(newUser);
+		// Verify username not already used
+		const foundUser = await UserSchema.findOne({ username: username });
 
-        const resBody: ResponseBody = {
-            message: "New user inserted into database",
-            status: ResponseStatus.GOOD,
-        };
+		if (foundUser) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "User with that username already exists",
+			});
+		}
 
-        return res.json(resBody);
-    } catch (e) {
-        console.log(e);
-        const resBody: ResponseBody = {
-            message: "Error handling request",
-            status: ResponseStatus.BAD,
-        };
+		// Insert into database new event
+		console.log("Inserting user: ", newUser);
+		await UserSchema.create({ username, password, firstName, lastName, birthday });
 
-        return res.status(500).json(resBody);
-    }
+		const resBody: ResponseBody = {
+			message: "New user inserted into database",
+			status: ResponseStatus.GOOD,
+		};
+
+		return res.json(resBody);
+	} catch (e) {
+		console.log(e);
+		const resBody: ResponseBody = {
+			message: "Error handling request",
+			status: ResponseStatus.BAD,
+		};
+
+		return res.status(500).json(resBody);
+	}
 });
 
-router.post(
-    "/login",
-    passport.authenticate("local"),
-    async (req: Request, res: Response) => {
-        try {
-            // TODO: validate body parameters
-            // TODO: password hashing in database
-            // TODO: make error messages less specific for security
+router.post("/login", passport.authenticate("local"), async (req: Request, res: Response) => {
+	try {
+		// TODO: validate body parameters
+		// TODO: password hashing in database
+		// TODO: make error messages less specific for security
 
-            const username = req.body.username;
-            const password = req.body.password;
+		const username = req.body.username;
+		const password = req.body.password;
 
-            const foundUser = await UserSchema.findOne({ username: username });
+		const foundUser = await UserSchema.findOne({ username: username });
 
-            if (!foundUser) {
-                return res.status(400).json({
-                    status: ResponseStatus.BAD,
-                    message: "User does not exist",
-                });
-            }
+		if (!foundUser) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "User does not exist",
+			});
+		}
 
-            if (foundUser.password !== password) {
-                return res.status(402).json({
-                    status: ResponseStatus.BAD,
-                    message: "Wrong password",
-                });
-            }
+		if (foundUser.password !== password) {
+			return res.status(402).json({
+				status: ResponseStatus.BAD,
+				message: "Wrong password",
+			});
+		}
 
-            // TODO: initialize session for the user
+		// TODO: initialize session for the user
 
-            const resBody: ResponseBody = {
-                message: "Successful login",
-                status: ResponseStatus.GOOD,
-            };
+		const resBody: ResponseBody = {
+			message: "Successful login",
+			status: ResponseStatus.GOOD,
+		};
 
-            return res.json(resBody);
-        } catch (e) {
-            console.log(e);
-            const resBody: ResponseBody = {
-                message: "Error handling request",
-                status: ResponseStatus.BAD,
-            };
+		return res.json(resBody);
+	} catch (e) {
+		console.log(e);
+		const resBody: ResponseBody = {
+			message: "Error handling request",
+			status: ResponseStatus.BAD,
+		};
 
-            return res.status(500).json(resBody);
-        }
-    }
-);
+		return res.status(500).json(resBody);
+	}
+});
 
 router.post("/logout", checkAuthentication, async (req, res) => {
-    try {
-        // delete session cookie
-        res.clearCookie("connect.sid");
+	try {
+		// delete session cookie
+		res.clearCookie("connect.sid");
 
-        return req.logout(function (err) {
-            if (err) {
-                return res.status(400).json({
-                    status: ResponseStatus.BAD,
-                    message: "Error logging out",
-                });
-            }
-            // logout of passport
-            return req.session.destroy(function (err) {
-                if (err) {
-                    return res.status(400).json({
-                        status: ResponseStatus.BAD,
-                        message: "Error logging out",
-                    });
-                }
-                // destroy the session
-                return res.status(200).json({
-                    status: ResponseStatus.GOOD,
-                    message: "Successfully logged out",
-                }); // send to the client
-            });
-        });
-    } catch (err) {
-        console.error("Error logging out:", err);
-        return res
-            .status(500)
-            .json({ status: ResponseStatus.BAD, message: "Error logging out" });
-    }
+		return req.logout(function (err) {
+			if (err) {
+				return res.status(400).json({
+					status: ResponseStatus.BAD,
+					message: "Error logging out",
+				});
+			}
+			// logout of passport
+			return req.session.destroy(function (err) {
+				if (err) {
+					return res.status(400).json({
+						status: ResponseStatus.BAD,
+						message: "Error logging out",
+					});
+				}
+				// destroy the session
+				return res.status(200).json({
+					status: ResponseStatus.GOOD,
+					message: "Successfully logged out",
+				}); // send to the client
+			});
+		});
+	} catch (err) {
+		console.error("Error logging out:", err);
+		return res.status(500).json({ status: ResponseStatus.BAD, message: "Error logging out" });
+	}
 });
 
 // Delete a user by ID
 router.delete("/", checkAuthentication, async (req, res) => {
-    try {
-        // get the requesting user
-        const user = await UserSchema.findByIdAndDelete(req.user?.id);
+	try {
+		// get the requesting user
+		const user = await UserSchema.findByIdAndDelete(req.user?.id);
 
-        if (!user) {
-            return res.status(404).json({
-                status: ResponseStatus.BAD,
-                message: "User not found",
-            });
-        }
+		if (!user) {
+			return res.status(404).json({
+				status: ResponseStatus.BAD,
+				message: "User not found",
+			});
+		}
 
-        // send email token to confirm account deletion
-        console.log("Requested account deletion for user: ", user.username);
+		// send email token to confirm account deletion
+		console.log("Requested account deletion for user: ", user.username);
 
-        return res.status(200).json({
-            status: ResponseStatus.GOOD,
-            message:
-                "Request completed: we sent an email to confirm that you want to delete the account.",
-        });
-    } catch (error) {
-        console.log(error);
+		return res.status(200).json({
+			status: ResponseStatus.GOOD,
+			message:
+				"Request completed: we sent an email to confirm that you want to delete the account.",
+		});
+	} catch (error) {
+		console.log(error);
 
-        return res
-            .status(500)
-            .json({ status: ResponseStatus.BAD, message: "Error" });
-    }
+		return res.status(500).json({ status: ResponseStatus.BAD, message: "Error" });
+	}
 });
 
 const MAX_SEARCH_RESULTS = 10;
 
 router.post("/usernames", async (req: Request, res: Response) => {
-    try {
-        const input = req.body.username as string | undefined;
+	try {
+		const input = req.body.username as string | undefined;
 
-        if (!input) {
-            const resBody: ResponseBody = {
-                message: "Invalid body: 'username' required",
-                status: ResponseStatus.BAD,
-            };
-            return res.status(400).json(resBody);
-        }
+		if (!input) {
+			const resBody: ResponseBody = {
+				message: "Invalid body: 'username' required",
+				status: ResponseStatus.BAD,
+			};
+			return res.status(400).json(resBody);
+		}
 
-        const regex = new RegExp(input, "i");
+		const regex = new RegExp(input, "i");
 
-        // find users that have username contain the pattern substring
-        const foundUsers = await UserSchema.find().lean();
+		// find users that have username contain the pattern substring
+		const foundUsers = await UserSchema.find().lean();
 
-        const users = [];
+		const users = [];
 
-        for (
-            let i = 0;
-            i < Math.min(foundUsers.length, MAX_SEARCH_RESULTS);
-            i++
-        ) {
-            if (foundUsers[i].username.match(regex)) {
-                users.push({
-                    id: foundUsers[i]._id.toString(),
-                    username: foundUsers[i].username,
-                });
-            }
-        }
+		for (let i = 0; i < Math.min(foundUsers.length, MAX_SEARCH_RESULTS); i++) {
+			if (foundUsers[i].username.match(regex)) {
+				users.push({
+					id: foundUsers[i]._id.toString(),
+					username: foundUsers[i].username,
+				});
+			}
+		}
 
-        users.sort(function (a, b) {
-            if (a.username < b.username) return -1;
-            if (a.username > b.username) return 1;
-            return 0;
-        });
+		users.sort(function (a, b) {
+			if (a.username < b.username) return -1;
+			if (a.username > b.username) return 1;
+			return 0;
+		});
 
-        const resBody: ResponseBody = {
-            message: "Users found",
-            status: ResponseStatus.GOOD,
-            value: users,
-        };
+		const resBody: ResponseBody = {
+			message: "Users found",
+			status: ResponseStatus.GOOD,
+			value: users,
+		};
 
-        return res.json(resBody);
-    } catch (e) {
-        console.log(e);
-        const resBody: ResponseBody = {
-            message: "Error handling request",
-            status: ResponseStatus.BAD,
-        };
+		return res.json(resBody);
+	} catch (e) {
+		console.log(e);
+		const resBody: ResponseBody = {
+			message: "Error handling request",
+			status: ResponseStatus.BAD,
+		};
 
-        return res.status(500).json(resBody);
-    }
+		return res.status(500).json(resBody);
+	}
 });
 
 export default router;
