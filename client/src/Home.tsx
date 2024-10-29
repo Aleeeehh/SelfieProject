@@ -5,16 +5,24 @@ import Pomodoro from "./types/Pomodoro";
 import Note from "./types/Note";
 import { Event } from "./types/Event";
 import { useNavigate } from "react-router-dom";
+import { ResponseStatus } from "./types/ResponseStatus";
+import User from "./types/User";
 
-const HOME_MAX_NUM_NOTES = 4;
-const HOME_MAX_NOTE_TITLE_CHARS = 20;
-const HOME_MAX_NOTE_TEXT_CHARS = 0;
+
+
+//const HOME_MAX_NUM_NOTES = 4;
+const HOME_MAX_TITLE_CHARS = 20;
+const HOME_MAX_TEXT_CHARS = 0;
 
 function Home(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [pomodoros, setPomodoros] = React.useState([] as Pomodoro[]);
 	const [notes, setNotes] = React.useState([] as Note[]);
 	const [events, setEvents] = React.useState([] as Event[]);
+	const [numEvents, setNumEvents] = React.useState(4);
+	const [numPomodoros, setNumPomodoros] = React.useState(4);
+	const [numNotes, setNumNotes] = React.useState(4);
+	const [eventList, setEventList] = React.useState<Event[]>([]);
 
 	const nav = useNavigate();
 
@@ -51,6 +59,7 @@ function Home(): React.JSX.Element {
 				if (res.status === 200) {
 					const resBody = (await res.json()) as ResponseBody;
 					setEvents(resBody.value as Event[]);
+					console.log("stampo events:", events);
 				} else {
 					nav("/login");
 				}
@@ -60,52 +69,196 @@ function Home(): React.JSX.Element {
 		})();
 	}, []);
 
+	async function getCurrentUser(): Promise<Promise<any> | null> {
+		try {
+			const res = await fetch(`${SERVER_API}/users`);
+			if (!res.ok) { // Controlla se la risposta non è ok
+				setMessage("Utente non autenticato");
+				return null; // Restituisci null se non autenticato
+			}
+			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			const data: User = await res.json();
+			//console.log("Questo è il json della risposta", data);
+			return data;
+		} catch (e) {
+			setMessage("Impossibile recuperare l'utente corrente");
+			return null;
+		}
+	}
+
+	async function loadEvents(): Promise<void> {
+		try {
+			const currentUser = await getCurrentUser();
+			console.log("Valore ottenuto:", currentUser);
+
+			const owner = currentUser.value.username;
+			console.log("Questo è l'owner:", owner);
+			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+			const data = await res.json();
+			console.log("Eventi trovati:", data);
+
+			if (data.status === ResponseStatus.GOOD) {
+				setEventList(data.value);
+				console.log("stampo data.values:", data.value);
+			} else {
+				setMessage("Errore nel ritrovamento degli eventi");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
+
+	/*async function loadPomodoros(): Promise<void> {
+		try {
+			const currentUser = await getCurrentUser();
+			console.log("Valore ottenuto:", currentUser);
+
+			const owner = currentUser.value.username;
+			console.log("Questo è l'owner:", owner);
+			const res = await fetch(`${SERVER_API}/pomodoro/owner?owner=${owner}`);
+			const data = await res.json();
+			console.log("Pomodoros trovati:", data);
+
+			if (data.status === ResponseStatus.GOOD) {
+				setPomodoros(data.value);
+				console.log("stampo data.values:", data.value);
+			} else {
+				setMessage("Errore nel ritrovamento dei pomodoro");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}*/
+
+	React.useEffect(() => {
+		loadEvents();
+		//loadPomodoros();
+	}, []);
+
 	return (
 		<>
 			{message && <div>{message}</div>}
 			<div className="home-container">
+
 				<div className="preview preview-calendar">
-					<div>Prossimi eventi:</div>
-					{events.map((event) => (
-						<div>
+					<h4>Prossimi eventi:</h4>
+					<label>
+						Mostra x eventi:
+						<select
+						value={numEvents}
+						onChange={(e): void => setNumEvents(Number(e.target.value))}
+						>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+						</select>
+					</label>
+					<div className="preview-calendar-cards-container">
+						{/*eventList.slice(0, numEvents).map((event, index) => (
+							<div key={index} className="event">
 							<div>{event.title}</div>
 							<div>{event.startTime.toString()}</div>
 							<div>{event.endTime.toString()}</div>
 							<div>{event.location}</div>
-						</div>
-					))}
+							</div>
+						))*/}
+						{eventList
+							.filter((_, i) => i < numEvents)
+							.map((event) => (
+								<a className="preview-calendar-card" href={`/events`}>
+									<div>
+										<div className="preview-calendar-card-title">
+											{event.title.length > HOME_MAX_TITLE_CHARS
+												? event.title.substring(
+														0,
+														HOME_MAX_TITLE_CHARS
+												  ) + "..."
+												: event.title}
+										</div>
+										{/*<div className="preview-event-card-text">
+											{note.text.length > HOME_MAX_NOTE_TEXT_CHARS
+												? note.text.substring(0, HOME_MAX_NOTE_TEXT_CHARS) +
+												  "..."
+												: note.text}
+										</div>*/}
+										<div>{new Date(event.startTime).toLocaleString("it-IT", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+										<div>{new Date(event.endTime).toLocaleString("it-IT", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+										<div>{event.location}</div>
+									</div>
+									{/* <div className="preview-note-card-date">
+										Last update: {note.updatedAt?.toString()}
+									</div> */}
+								</a>
+							))}
+					</div>
 				</div>
+
 				<div className="preview preview-pomodoro">
-					<div>Lista di pomodoro precedenti:</div>
-					{pomodoros.slice(-4).map((pomodoro) => (
-						<a href={`/pomodoro`}>
-						<button className="previous-pomodoros">
-							<div>{pomodoro.studyTime} min</div>
-							<div>{pomodoro.pauseTime} min</div>
-							<div>{pomodoro.cycles} cicli</div>
-						</button>
-						</a>
-					))}
+					<h4>Pomodoro recenti:</h4>
+					<label>
+							Mostra x pomodoro:
+							<select
+							value={numPomodoros}
+							onChange={(e): void => setNumPomodoros(Number(e.target.value))}
+							>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+						</select>
+					</label>
+					<div className="preview-pomodoro-cards-container">
+						{pomodoros
+							.slice(-(numPomodoros)) // perchè non devo filtrare come nelle note
+							.map((pomodoro) => (
+								<a className="preview-pomodoro-card" href={`/pomodoro`}>
+									<div>
+										<div>{pomodoro.studyTime} min</div>
+										<div>{pomodoro.pauseTime} min</div>
+										<div>{pomodoro.cycles} cicli</div>
+									</div>
+								</a>
+							))}
+					</div>
+
 				</div>
+
 				<div className="preview preview-note">
-					<div>Le tue note recenti:</div>
+					<h4>Le tue note recenti:</h4>
+					<label>
+							Mostra x note:
+							<select
+							value={numNotes}
+							onChange={(e): void => setNumNotes(Number(e.target.value))}
+							>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+						</select>
+					</label>
 					<div className="preview-note-cards-container">
 						{notes
-							.filter((_, i) => i < HOME_MAX_NUM_NOTES)
+							.filter((_, i) => i < numNotes)
 							.map((note) => (
 								<a className="preview-note-card" href={`/notes/${note.id}`}>
 									<div>
 										<div className="preview-note-card-title">
-											{note.title.length > HOME_MAX_NOTE_TITLE_CHARS
+											{note.title.length > HOME_MAX_TITLE_CHARS
 												? note.title.substring(
 														0,
-														HOME_MAX_NOTE_TITLE_CHARS
+														HOME_MAX_TITLE_CHARS
 												  ) + "..."
 												: note.title}
 										</div>
 										<div className="preview-note-card-text">
-											{note.text.length > HOME_MAX_NOTE_TEXT_CHARS
-												? note.text.substring(0, HOME_MAX_NOTE_TEXT_CHARS) +
+											{note.text.length > HOME_MAX_TEXT_CHARS
+												? note.text.substring(0, HOME_MAX_TEXT_CHARS) +
 												  "..."
 												: note.text}
 										</div>
@@ -117,7 +270,22 @@ function Home(): React.JSX.Element {
 							))}
 					</div>
 				</div>
-				<div className="preview preview-projects">Qui ci va la preview dei progetti</div>
+
+				<div className="preview preview-projects">
+					<h4>I tuoi progetti:</h4>
+					<label>
+							Mostra x progetti:
+							<select
+							value={numNotes}
+							onChange={(e): void => setNumNotes(Number(e.target.value))}
+							>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+						</select>
+					</label>
+				</div>
 			</div>
 		</>
 	);
