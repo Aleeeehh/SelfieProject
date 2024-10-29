@@ -40,6 +40,11 @@ export default function Register(): React.JSX.Element {
 		}
 	}, [isLoggedIn, nav]);
 
+	async function handleChange(
+		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+	): Promise<void> {
+		setData({ ...data, [e.target.name]: e.target.value });
+	}
 	// Funzione di registrazione
 	async function handleRegister(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
@@ -77,6 +82,8 @@ export default function Register(): React.JSX.Element {
 					"Registrazione completata con successo. Sarai reindirizzato tra 5 secondi alla pagina di login."
 				);
 
+				setData(initialState);
+				// Reindirizza alla pagina di login
 				setTimeout(() => {
 					nav("/login");
 				}, 5000);
@@ -106,9 +113,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="text"
 								value={data.firstName}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, firstName: e.target.value })
-								}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -118,9 +123,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="text"
 								value={data.lastName}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, lastName: e.target.value })
-								}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -130,9 +133,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="text"
 								value={data.address}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, address: e.target.value })
-								}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -142,9 +143,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="date"
 								value={data.birthday.toISOString().split("T")[0]}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, birthday: new Date(e.target.value) })
-								}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -154,9 +153,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="text"
 								value={data.username}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, username: e.target.value })
-								}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -166,9 +163,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="password"
 								value={data.password}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, password: e.target.value })
-								}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -178,9 +173,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="password"
 								value={data.confirmPassword}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, confirmPassword: e.target.value })
-								}
+								onChange={handleChange}
 								required
 							/>
 						</div>
