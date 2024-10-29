@@ -2,7 +2,7 @@ import React from "react";
 import { SERVER_API } from "./params/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
-import Note, { NoteType, type ListItem } from "./types/Note";
+import Note, { type ListItem } from "./types/Note";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
 import UserResult from "./types/UserResult";
@@ -17,8 +17,7 @@ const baseNote: Note = {
 	tags: [] as string[],
 	privacy: Privacy.PRIVATE,
 	accessList: [] as UserResult[],
-	type: NoteType.NOTE,
-	list: [] as ListItem[],
+	toDoList: [] as ListItem[],
 };
 
 const NEW = "new";
@@ -210,11 +209,11 @@ export default function NotePage(): React.JSX.Element {
 
 	function handleAddItem(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
-		const newItem: ListItem = { name: "", completed: false };
+		const newItem: ListItem = { text: "", completed: false };
 		setNote((prevNote) => {
 			return {
 				...prevNote,
-				list: [...prevNote.list, newItem],
+				list: [...prevNote.text, newItem],
 			};
 		});
 	}
@@ -225,7 +224,7 @@ export default function NotePage(): React.JSX.Element {
 		setNote((prevNote) => {
 			return {
 				...prevNote,
-				list: prevNote.list.filter((i) => i.id !== item.id),
+				list: prevNote.toDoList.filter((i) => i.id !== item.id),
 			};
 		});
 	}
@@ -234,6 +233,7 @@ export default function NotePage(): React.JSX.Element {
 		<>
 			<div className="page-title">{id === NEW ? "Crea una nuova nota" : "Modifica nota"}</div>
 			<div className="note-container">
+				{/* render title */}
 				{isEditing ? (
 					<label htmlFor="title">
 						Titolo
@@ -242,65 +242,25 @@ export default function NotePage(): React.JSX.Element {
 				) : (
 					<div className="note-title">{note.title}</div>
 				)}
-
+				{/* render text */}
 				{isEditing ? (
 					<>
 						<button onClick={togglePreview}>
 							{isPreview ? "Modifica" : "Anteprima"}
 						</button>
-						{note.type === NoteType.NOTE ? (
-							isPreview ? (
-								<div
-									className="markdown-preview"
-									dangerouslySetInnerHTML={{
-										__html: marked(note.text) as string,
-									}}
-								/>
-							) : (
-								<label htmlFor="text">
-									Testo della nota
-									<textarea
-										name="text"
-										value={note.text}
-										onChange={handleChange}
-									/>
-								</label>
-							)
+						( isPreview ? (
+						<div
+							className="markdown-preview"
+							dangerouslySetInnerHTML={{
+								__html: marked(note.text) as string,
+							}}
+						/>
 						) : (
-							<div>
-								{/* The note is a todo-list */}
-								{note.list.map((l) => (
-									<div>
-										<input
-											type="checkbox"
-											checked={l.completed}
-											disabled={isPreview}
-										/>
-										<div>{l.name}</div>
-										{l.endDate && (
-											<input
-												type="date"
-												value={l.endDate.toISOString().split("T")[0]}
-											/>
-										)}
-										<button
-											onClick={(
-												e: React.MouseEvent<HTMLButtonElement>
-											): void => handleRemoveItem(e, l)}
-											disabled={isPreview}>
-											Elimina
-										</button>
-										{isPreview && (
-											<div>
-												<button onClick={handleAddItem}>
-													Aggiungi Item
-												</button>
-											</div>
-										)}
-									</div>
-								))}
-							</div>
-						)}
+						<label htmlFor="text">
+							Testo della nota
+							<textarea name="text" value={note.text} onChange={handleChange} />
+						</label>
+						))
 					</>
 				) : (
 					<div
@@ -310,6 +270,29 @@ export default function NotePage(): React.JSX.Element {
 						}}
 					/>
 				)}
+				{/* render to do list */}
+				{note.toDoList.map((l) => (
+					<div>
+						<input type="checkbox" checked={l.completed} disabled={isEditing} />
+						<div>{l.text}</div>
+						{l.endDate && (
+							<input type="date" value={l.endDate.toISOString().split("T")[0]} />
+						)}
+						<button
+							onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
+								handleRemoveItem(e, l)
+							}
+							disabled={isEditing}>
+							Elimina
+						</button>
+						{isEditing && (
+							<div>
+								<button onClick={handleAddItem}>Aggiungi Item</button>
+							</div>
+						)}
+					</div>
+				))}
+				{/* render tags */}
 				<label>
 					Tags
 					{isEditing && (
@@ -345,6 +328,7 @@ export default function NotePage(): React.JSX.Element {
 							))}
 					</div>
 				</label>
+				{/* render privacy */}
 				<label>
 					Privacy: {note.privacy}
 					{isEditing && (
@@ -382,6 +366,7 @@ export default function NotePage(): React.JSX.Element {
 							))}
 					</div>
 				</label>
+
 				{id !== NEW && (
 					<button onClick={toggleEdit}>
 						{isEditing ? "Salva modifiche" : "Modifica nota"}

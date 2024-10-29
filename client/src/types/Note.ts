@@ -1,16 +1,11 @@
 import { Privacy } from "./Privacy";
 import UserResult from "./UserResult";
 
-export enum NoteType {
-	NOTE = "note",
-	LIST = "list",
-}
-
 export type ListItem = {
-    id?: string;
+	id?: string;
 	endDate?: Date;
 	completed: boolean;
-	name: string;
+	text: string;
 };
 
 type Note = {
@@ -23,8 +18,7 @@ type Note = {
 	accessList: UserResult[];
 	createdAt?: Date;
 	updatedAt?: Date;
-	type: NoteType;
-	list: ListItem[];
+	toDoList: ListItem[];
 };
 
 export default Note;
