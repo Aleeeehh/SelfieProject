@@ -190,6 +190,11 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 }
 
 function minutesApprossimation(hours: number, minutes: number): number {
+    /*
+    if (hours === 0 && minutes < 5) {
+        return 5; // Approssima i minuti a 5
+    }
+    */
     if (hours > 21) {
         minutes = Math.floor(minutes / 10) * 10; // Approssima per difetto
     } else {
@@ -326,12 +331,14 @@ router.post("/", async (req: Request, res: Response) => {
         console.log("questo è l'untilDate dell'evento:", untilDate);
         console.log("questo è l'isInfinite dell'evento:", isInfinite);
 
+        /*
         if (!title || !startTime || !endTime || !location) {
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message: "Tutti i campi dell'evento devono essere riempiti!",
             });
         }
+        */
 
         if (new Date(startTime) > new Date(endTime)) {
             return res.status(400).json({
@@ -413,12 +420,14 @@ router.post("/", async (req: Request, res: Response) => {
 
                 //caso in cui la frequenza dell'evento sia giornaliera
                 for (let i = 0; i < repetitions; i++) {
+
                     const startTime = new Date(
                         startTimeDate.getTime() + i * 24 * 60 * 60 * 1000
                     );
                     const endTime = new Date(
                         endTimeDate.getTime() + i * 24 * 60 * 60 * 1000
                     );
+                    //console.log("endTime ad iterazione" + i + endTime);
 
                     if (startTime.getHours() !== startTimePrecedente.getHours()) {
                         startTime.setHours(startTimePrecedente.getHours());
@@ -427,6 +436,7 @@ router.post("/", async (req: Request, res: Response) => {
                     if (endTime.getHours() !== endTimePrecedente.getHours()) {
                         endTime.setHours(endTimePrecedente.getHours());
                     }
+
 
                     const event: Event = {
                         id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
@@ -648,7 +658,7 @@ router.post("/", async (req: Request, res: Response) => {
                     const endTime = new Date(
                         endTimeDate.getTime() + i * 24 * 60 * 60 * 1000
                     );
-                    console.log("endTime ad iterazione" + i + endTime);
+                    //console.log("endTime ad iterazione" + i + endTime);
 
                     if (startTime.getHours() !== startTimePrecedente.getHours()) {
                         startTime.setHours(startTimePrecedente.getHours());
@@ -666,6 +676,7 @@ router.post("/", async (req: Request, res: Response) => {
                         endTime, // Aggiungi un giorno
                         repetitions,
                         frequency,
+                        isInfinite,
                         untilDate,
                         location,
                         owner,
