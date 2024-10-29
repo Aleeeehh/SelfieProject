@@ -39,6 +39,8 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
+	const [create, setCreate] = React.useState(false);
+	const [createActivity, setCreateActivity] = React.useState(false);
 	//const [isUntilDate, setIsUntilDate] = React.useState(false);
 	const [untilDate, setUntilDate] = React.useState<Date | null>(null);
 	const [repetitions, setRepetitions] = React.useState(1);
@@ -638,6 +640,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 	//da implementare
 
 	function toggleCreateEvent(): void {
+		if (createActivity) {
+			setCreateActivity(false);
+		}
 		if (!createEvent) {
 			// Usa l'ora corrente o l'ora di startTime
 			const currentHours = startTime.getHours();
@@ -664,6 +669,37 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setTitle("");
 		setCreateEvent(!createEvent);
 		setFrequency(Frequency.ONCE);
+	}
+
+	function toggleCreate(): void {
+		setCreate(!create);
+	}
+
+	function toggleCreateActivity(): void {
+		if (createEvent) {
+			setCreateEvent(false);
+		}
+		if (!createActivity) {
+			// Usa l'ora corrente o l'ora di startTime
+			const currentHours = startTime.getHours();
+			const currentMinutes = startTime.getMinutes();
+			const endHours = endTime.getHours();
+			const endMinutes = endTime.getMinutes();
+
+			// Imposta startTime con day, meseCorrente, year e l'ora corrente
+			var initialStartTime = new Date(year, meseCorrente, day, currentHours, currentMinutes, 0, 0);
+			setStartTime(initialStartTime);
+
+			// Imposta endTime a 30 minuti dopo startTime
+			var initialEndTime = new Date(year, meseCorrente, day, endHours, endMinutes, 0, 0);
+			if ((initialEndTime.getTime() - initialStartTime.getTime()) / (1000 * 60) < 30) {
+				initialEndTime = new Date(initialStartTime); // Crea un nuovo oggetto Date
+				initialEndTime.setMinutes(initialStartTime.getMinutes() + 30);
+			}
+			setEndTime(initialEndTime);
+		}
+		setAddTitle(true);
+		setCreateActivity(!createActivity);
 	}
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
@@ -1221,11 +1257,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setMessage("L'evento deve durare almeno 30 minuti");
 			return;
 		}
-
-
-
 		const currentUser = await getCurrentUser();
-		//("Valore ottenuto:", currentUser);
 
 		const owner = currentUser.value.username;
 
@@ -1254,11 +1286,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return;
 		}
 
-
-		//const data: ResponseBody = (await res.json()) as ResponseBody;
-		//console.log("Questo è l'evento creato:", data.value);
-		//console.log("Event list prima dell'aggiornamento:", eventList);
-
 		// Aggiorna la lista degli eventi
 		await loadEvents();
 		handleDateClick(startTime.getDate());
@@ -1275,11 +1302,63 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
+	}
 
-		//window.location.reload()
+	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();	//Validazione dell'input
 
-		// TODO: send post request to server
-		// TODO: handle response
+		if (!title) {
+			setMessage("Il titolo dell'attività deve essere riempito!");
+			return;
+		}
+
+		const dataInizio = new Date(year, meseCorrente, day);
+		if (dataInizio > endTime) {
+			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			return;
+		}
+
+		const currentUser = await getCurrentUser();
+
+		const owner = currentUser.value.username;
+
+		const startTime = new Date(endTime);
+		startTime.setHours(endTime.getHours() - 1);
+
+
+		const res = await fetch(`${SERVER_API}/events`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				owner,
+				title: "Scadenza " + title,
+				startTime: startTime.toISOString(),
+				endTime: endTime.toISOString(),
+				untilDate: null,
+				isInfinite: false,
+				frequency: "once",
+				location,
+				repetitions: 1,
+			}),
+		});
+
+		if (!res.ok) {
+			const errorData = await res.json();
+			console.error("Error response:", errorData);
+			setMessage("Errore durante la creazione dell'attività: " + errorData.message);
+			return;
+		};
+
+		// Aggiorna la lista degli eventi
+		await loadEvents();
+		handleDateClick(startTime.getDate());
+		//ripristina l'orario dopo nel pannelo createEvent, dopo aver creato un evento
+		const now = new Date();
+		const startT = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
+		const endT = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
+		setStartTime(startT);
+		setEndTime(endT);
+		setCreateActivity(!createActivity);
 	}
 
 
@@ -1478,14 +1557,36 @@ export default function Calendar(): React.JSX.Element { // prova push
 								className="btn addEvent"
 								style={{
 									backgroundColor: "bisque",
-									color: "white",
+									color: "black",
 									border: "0",
 									minWidth: "100px",
-									fontSize: "1rem",
+									fontSize: "3rem",
+									borderRadius: "30%", // Rende il bottone tondo
+									padding: "10px", // Aggiungi padding per aumentare la dimensione del bottone
+									width: "50px", // Imposta una larghezza fissa
+									height: "70px", // Imposta un'altezza fissa
+									display: "flex", // Usa flexbox per centrare il contenuto
+									alignItems: "center", // Centra verticalmente
+									justifyContent: "center", // Centra orizzontalmente
 								}}
-								onClick={toggleCreateEvent}>
-								Add Event
+								onClick={toggleCreate}>
+
+								+
 							</button>
+
+							{create && (<div>
+								<button className="btn"
+									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+									onClick={toggleCreateEvent}>
+									Evento
+								</button>
+								<button className="btn"
+									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+									onClick={toggleCreateActivity}>
+									Attività
+								</button>
+							</div>)}
+
 						</div>
 						<div
 							className="month-indicator"
@@ -1797,6 +1898,76 @@ export default function Calendar(): React.JSX.Element { // prova push
 									}}
 									onClick={handleCreateEvent}>
 									Create Event
+								</button>
+							</form>
+						</div>
+
+					)}
+					{createActivity && (
+						<div className="create-event-container col-2">
+							<button
+								className="btn btn-primary"
+								style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+								onClick={toggleCreateActivity}>
+								Close
+							</button>
+							<form>
+								{addTitle && (
+									<label htmlFor="title">
+										Title
+										<input
+											className="btn border"
+											type="text"
+											name="title"
+											value={title}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+												setTitle(e.target.value)
+											}
+										/>
+									</label>
+								)}
+								<label htmlFor="endTime">
+									Scadenza
+									<div>
+										<DatePicker
+											className="btn border"
+											name="endTime"
+											selected={endTime}
+											onChange={(date: Date | null): void => {
+												if (date) {
+													// Aggiorna la data mantenendo l'orario attuale
+													const newDate = new Date(endTime);
+													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+													setEndTime(newDate);
+												}
+											}}
+										/>
+									</div>
+
+									<div>
+										<input
+											className="btn border"
+											type="time"
+											value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+												const [hours, minutes] = e.target.value.split(':');
+												const newDate = new Date(endTime);
+												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+												setEndTime(newDate); // Imposta il nuovo oggetto Date
+											}}
+										/>
+									</div>
+
+								</label>
+								<button
+									className="btn btn-primary"
+									style={{
+										backgroundColor: "bisque",
+										color: "white",
+										border: "0",
+									}}
+									onClick={handleCreateActivity}>
+									Create Activity
 								</button>
 							</form>
 						</div>
