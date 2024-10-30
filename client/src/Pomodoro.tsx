@@ -32,6 +32,8 @@ enum Frequency {
     ONCE = "once",
     DAILY = "day",
     WEEKLY = "week",
+    MONTHLY = "month",
+    YEARLY = "year",
 }
 
 type PomodoroData = {
@@ -50,10 +52,13 @@ type PomodoroData = {
 };
 
 type PomodoroEvent = {
-    addTitle: boolean;
     title: string;
     startTime: Date;
     endTime: Date;
+    untilDate: Date | null;
+    isInfinite: boolean;
+    frequency: Frequency;
+    repetitions: number;
     location: string;
 };
 
@@ -73,15 +78,17 @@ const initialState: PomodoroData = {
 };
 
 const initialPomEvent: PomodoroEvent = {
-    addTitle: true,
     title: "Pomodoro Session",
     startTime: new Date(),
     endTime: new Date(),
+    untilDate: null,
+    isInfinite: false,
+    frequency: Frequency.ONCE,
+    repetitions: 1,
     location: "",
 };
 
-//TODO: ritoccare i pomodori recenti nella Home, aggiornare in tempo reale i pomodori recenti, GUARDARE i nuovi eventi pomodoro
-// creati dal tempo rimanente di un pomodoro non completato hanno una durata non strettamente corretta
+//TODO: aggiornare in tempo reale i pomodori recenti
 
 export default function Pomodoros(): React.JSX.Element {
     // get the value of the query parameters to initialize the pomodoro
@@ -104,7 +111,15 @@ export default function Pomodoros(): React.JSX.Element {
     const [eventList, setEventList] = React.useState<Event[]>([]); //per eventi dello user attuale
     const [initialCycles, setInitialCycles] = React.useState(0);
     const [users, setUsers] = React.useState([] as UserResult[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
+    const [addEvent, setAddEvent] = React.useState(false);
+    const [repeatEvent, setRepeatEvent] = React.useState(false);
+    const [until, setUntil] = React.useState(false);
+    const [selectedValue, setSelectedValue] = React.useState("Data");
 
+
+
+
+    
     const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
     const nav = useNavigate();
@@ -786,6 +801,15 @@ export default function Pomodoros(): React.JSX.Element {
             return;
         }
 
+        const start = new Date(pomEvent.startTime).getTime();
+		const end = new Date(pomEvent.endTime).getTime();
+
+        //l'evento che creo dura almeno 30 minuti?
+		if ((end - start) / (1000 * 60) < 30) {
+			setMessage("L'evento deve durare almeno 30 minuti");
+			return;
+		}
+
         const currentUser = await getCurrentUser();
         const res = await fetch(`${SERVER_API}/events`, {
             method: "POST",
@@ -795,7 +819,10 @@ export default function Pomodoros(): React.JSX.Element {
                 title: pomEvent.title,
                 startTime: pomEvent.startTime.toISOString(),
                 endTime: pomEvent.endTime.toISOString(),
-                frequency: Frequency.ONCE,
+                untilDate: pomEvent.untilDate,
+                isInfinite: pomEvent.isInfinite,
+                frequency: pomEvent.frequency,
+                repetitions: pomEvent.repetitions,
                 location: pomEvent.location,
             }),
         });
@@ -885,13 +912,355 @@ export default function Pomodoros(): React.JSX.Element {
         }
     }
 
+    function toggleAddEvent(): void {
+        setAddEvent(!addEvent);
+        setRepeatEvent(false);
+    }
+
+    function toggleSelectFrequency(e: React.ChangeEvent<HTMLSelectElement>): void {
+        setPomEvent((prevPomEvent) => {
+            let {
+                frequency,
+                untilDate,
+            } = prevPomEvent;
+            console.log("toggleSelectFrequency", e.target.value);
+            const frequenza = e.target.value;
+            if (frequenza !== "Once") {
+                toggleUntil(frequenza);
+            }
+            if (frequenza === "Once") {
+                frequency = Frequency.ONCE;
+                setUntil(false);
+            }
+            switch (frequenza) {
+                case "Daily":
+                    frequency = Frequency.DAILY;
+                    break;
+                case "Weekly":
+                    frequency = Frequency.WEEKLY;
+                    break;
+                case "Monthly":
+                    frequency = Frequency.MONTHLY;
+                    break;
+                case "Yearly":
+                    frequency = Frequency.YEARLY;
+                    break;
+            }
+            return {
+                ...prevPomEvent,
+                frequency,
+                untilDate,
+            } as PomodoroEvent;
+        });
+    }
+
+    function toggleUntil(selectedValue: string): void {
+		console.log("toggleUntil", selectedValue);
+		setUntil(true);
+
+	}
+
+    function toggleSelectUntil(e: React.ChangeEvent<HTMLSelectElement>): void {
+        setPomEvent((prevPomEvent) => {
+            let {
+                isInfinite,
+            } = prevPomEvent;
+            const valoreSelezionato = e.target.value;
+            console.log("toggleSelectUntil", valoreSelezionato);
+            switch (valoreSelezionato) {
+                case "Data":
+                    console.log("selezionato data");
+                    isInfinite = false;
+                    setSelectedValue("Data");
+
+                    break;
+                case "Ripetizioni":
+                    console.log("selezionato ripetizioni");
+                    isInfinite = false;
+                    setSelectedValue("Ripetizioni");
+                    break;
+                case "Infinito":
+                    console.log("selezionato infinito");
+                    setSelectedValue("Infinito");
+                    isInfinite = true;
+                    break;
+            }
+                return {
+                    ...prevPomEvent,
+                    isInfinite,
+                } as PomodoroEvent;
+        });
+	}
+
     return (
         <>
             {message && <div>{message}</div>}
 
             <audio id="ring" src="/images/ring.mp3"></audio>
 
-            <div className="pomodoro-container">
+            {addEvent && (
+                    <div className="overlay">   
+                        <div className="create-event-container col-2">
+                            <form className="create-event-form-overlay">
+                                <h4>Organize your next Pomodoro Session</h4>
+                                <button
+                                    className="btn btn-primary"
+                                    style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+                                    onClick={toggleAddEvent}>
+                                    Close
+                                </button>
+
+                                <label htmlFor="allDayEvent">
+                                        <input
+                                            type="checkbox"
+                                            name="repeatEvent"
+                                            onClick={(): void => setRepeatEvent(!repeatEvent)}
+                                            style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+                                        />
+                                        Evento ripetuto
+                                </label>
+                                    {repeatEvent && (
+                                        <>
+                                            <div className="flex" style={{ marginRight: "10px" }}>
+                                                Ripeti l'evento
+                                                <label htmlFor="repeatEvent">
+                                                    <select
+                                                        className="btn border"
+                                                        name="repetitionType"
+                                                        onChange={toggleSelectFrequency}
+                                                        style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+                                                    >
+                                                        <option value="Once">Una volta</option>
+                                                        <option value="Daily">Ogni giorno</option>
+                                                        <option value="Weekly">Ogni settimana</option>
+                                                        <option value="Monthly">Ogni mese </option>
+                                                        <option value="Yearly">Ogni anno</option>
+                                                    </select>
+
+                                                </label>
+                                            </div>
+
+
+
+                                            {until && (
+                                                <div>
+                                                    <div>
+                                                        <div className="flex" style={{ marginRight: "10px" }}>
+                                                            Fino a
+                                                            <select className="btn border" onChange={toggleSelectUntil} defaultValue="Data">
+                                                                <option value="Data">Data</option>
+                                                                <option value="Ripetizioni">Ripetizioni</option>
+                                                                <option value="Infinito">Infinito </option>
+                                                            </select>
+                                                        </div>
+
+                                                        {selectedValue === "Data" && (
+                                                            <DatePicker
+                                                                className="btn border"
+                                                                name="finoAData"
+                                                                selected={pomEvent.untilDate} // Il DatePicker sarà vuoto se untilDate è null
+                                                                onChange={(date: Date | null): void => {
+                                                                    if (date) {
+                                                                        date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
+                                                                        setPomEvent({
+                                                                            ...pomEvent,
+                                                                            untilDate: date,
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                placeholderText="Seleziona una data"
+                                                            />
+                                                        )}
+
+
+
+                                                        {selectedValue === "Ripetizioni" && (
+                                                            <div>
+                                                                <input className="btn border" type="number" min="1"
+                                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+                                                                        setPomEvent({
+                                                                            ...pomEvent,
+                                                                            repetitions: Number(e.target.value),
+                                                                        });
+                                                                        setPomEvent({
+                                                                            ...pomEvent,
+                                                                            untilDate: null,
+                                                                        });
+
+                                                                        if (pomEvent.repetitions < 1 || isNaN(pomEvent.repetitions)) {
+                                                                            setPomEvent({
+                                                                            ...pomEvent,
+                                                                            repetitions: 1,
+                                                                        });
+                                                                        }
+                                                                        console.log("Numero ripetizione dell'evento: ", pomEvent.repetitions);
+                                                                    }}>
+                                                                </input>
+                                                            </div>
+                                                        )}
+
+
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+
+                                <label htmlFor="startTime">
+                                    Data Inizio
+                                    <div>
+                                        <DatePicker
+                                            className="btn border createEventinput"
+                                            name="startTime"
+                                            selected={pomEvent.startTime}
+                                            onChange={(date: Date | null): void => {
+                                                if (date) {
+                                                    // Aggiorna la data mantenendo l'orario attuale
+                                                    const newDate = new Date(
+                                                        pomEvent.startTime
+                                                    );
+                                                    newDate.setFullYear(
+                                                        date.getFullYear(),
+                                                        date.getMonth(),
+                                                        date.getDate()
+                                                    );
+                                                    setPomEvent({
+                                                        ...pomEvent,
+                                                        startTime: newDate,
+                                                    });
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <input
+                                            className="btn border createEventinput"
+                                            type="time"
+                                            value={`${pomEvent.startTime
+                                                .getHours()
+                                                .toString()
+                                                .padStart(2, "0")}:${pomEvent.startTime
+                                                    .getMinutes()
+                                                    .toString()
+                                                    .padStart(2, "0")}`}
+                                            onChange={(
+                                                e: React.ChangeEvent<HTMLInputElement>
+                                            ): void => {
+                                                const [hours, minutes] =
+                                                    e.target.value.split(":");
+                                                const newDate = new Date(
+                                                    pomEvent.startTime
+                                                ); // Crea un nuovo oggetto Date basato su startTime
+                                                newDate.setHours(
+                                                    Number(hours),
+                                                    Number(minutes),
+                                                    0,
+                                                    0
+                                                ); // Imposta l'orario
+                                                setPomEvent({
+                                                    ...pomEvent,
+                                                    startTime: newDate,
+                                                }); // Imposta il nuovo oggetto Date
+                                            }}
+                                        />
+                                    </div>
+                                </label>
+
+                                <label htmlFor="endTime">
+                                    Data Fine
+                                    <div>
+                                        <DatePicker
+                                            className="btn border createEventinput"
+                                            name="endTime"
+                                            selected={pomEvent.endTime}
+                                            onChange={(date: Date | null): void => {
+                                                if (date) {
+                                                    // Aggiorna la data mantenendo l'orario attuale
+                                                    const newDate = new Date(
+                                                        pomEvent.endTime
+                                                    );
+                                                    newDate.setFullYear(
+                                                        date.getFullYear(),
+                                                        date.getMonth(),
+                                                        date.getDate()
+                                                    );
+                                                    setPomEvent({
+                                                        ...pomEvent,
+                                                        endTime: newDate,
+                                                    });
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <input
+                                            className="btn border createEventinput"
+                                            type="time"
+                                            value={`${pomEvent.endTime
+                                                .getHours()
+                                                .toString()
+                                                .padStart(2, "0")}:${pomEvent.endTime
+                                                    .getMinutes()
+                                                    .toString()
+                                                    .padStart(2, "0")}`}
+                                            onChange={(
+                                                e: React.ChangeEvent<HTMLInputElement>
+                                            ): void => {
+                                                const [hours, minutes] =
+                                                    e.target.value.split(":");
+                                                const newDate = new Date(
+                                                    pomEvent.endTime
+                                                );
+                                                newDate.setHours(
+                                                    Number(hours),
+                                                    Number(minutes)
+                                                ); // Aggiorna l'orario
+                                                setPomEvent({
+                                                    ...pomEvent,
+                                                    endTime: newDate,
+                                                }); // Imposta il nuovo oggetto Date
+                                            }}
+                                        />
+                                    </div>
+                                </label>
+
+                                <label htmlFor="location">
+                                    Luogo
+                                    <div>
+                                        <input
+                                            className="btn border createEventinput"
+                                            type="text"
+                                            name="location"
+                                            value={pomEvent.location}
+                                            onChange={(
+                                                e: ChangeEvent<HTMLInputElement>
+                                            ): void =>
+                                                setPomEvent({
+                                                    ...pomEvent,
+                                                    location: e.target.value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                </label>
+
+                                <button
+                                    className="btn btn-primary"
+                                    style={{
+                                        backgroundColor: "bisque",
+                                        color: "black",
+                                        border: "0",
+                                    }}
+                                    onClick={handleCreateEvent}
+                                >
+                                    Create Event
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+            <div className={addEvent ? "hidden" : "pomodoro-container"}>
                 <header>
                     <h1
                         id="title"
@@ -900,6 +1269,14 @@ export default function Pomodoros(): React.JSX.Element {
                         POMODORO TIMER
                     </h1>
                 </header>
+
+                <button
+                    className="add-event-button"
+                    onClick={toggleAddEvent}
+                    disabled={data.activeTimer}
+                >
+                    Crea evento Pomodoro
+                </button>
 
                 <div className="preview">
                     <div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
@@ -946,7 +1323,6 @@ export default function Pomodoros(): React.JSX.Element {
 
                     <div style={{ display: "flex", justifyContent: "center" }}>
                         <button
-                            id="start-button" //probabilmente non serve l'id
                             type="button"
                             className="btn btn-success border"
                             onClick={handleSavePomodoroConfig}
@@ -956,7 +1332,6 @@ export default function Pomodoros(): React.JSX.Element {
                         </button>
 
                         <button
-                            id="stop-button" //probabilmente non serve l'id
                             type="button"
                             className="btn btn-danger border"
                             onClick={stopProcess}
@@ -970,7 +1345,6 @@ export default function Pomodoros(): React.JSX.Element {
 
                     <div>
                         <button
-                            id="next-button" //probabilmente non serve l'id
                             type="button"
                             className="btn btn-warning border"
                             onClick={nextPhase}
@@ -980,7 +1354,6 @@ export default function Pomodoros(): React.JSX.Element {
                         </button>
 
                         <button
-                            id="next-button" //probabilmente non serve l'id
                             type="button"
                             className="btn btn-warning border"
                             onClick={nextCycle}
@@ -990,7 +1363,6 @@ export default function Pomodoros(): React.JSX.Element {
                         </button>
 
                         <button
-                            id="next-button" //probabilmente non serve l'id
                             type="button"
                             className="btn btn-warning border"
                             onClick={repeatCycle}
@@ -1115,159 +1487,7 @@ export default function Pomodoros(): React.JSX.Element {
                     </button>
                 </div>
 
-                <div className="create-event-container col-2">
-                    <h4>Organize your next Pomodoro Session</h4>
-                    <form>
-                        <label htmlFor="startTime">
-                            Data Inizio
-                            <div>
-                                <DatePicker
-                                    className="btn border createEventinput"
-                                    name="startTime"
-                                    selected={pomEvent.startTime}
-                                    onChange={(date: Date | null): void => {
-                                        if (date) {
-                                            // Aggiorna la data mantenendo l'orario attuale
-                                            const newDate = new Date(
-                                                pomEvent.startTime
-                                            );
-                                            newDate.setFullYear(
-                                                date.getFullYear(),
-                                                date.getMonth(),
-                                                date.getDate()
-                                            );
-                                            setPomEvent({
-                                                ...pomEvent,
-                                                startTime: newDate,
-                                            });
-                                        }
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <input
-                                    className="btn border createEventinput"
-                                    type="time"
-                                    value={`${pomEvent.startTime
-                                        .getHours()
-                                        .toString()
-                                        .padStart(2, "0")}:${pomEvent.startTime
-                                            .getMinutes()
-                                            .toString()
-                                            .padStart(2, "0")}`}
-                                    onChange={(
-                                        e: React.ChangeEvent<HTMLInputElement>
-                                    ): void => {
-                                        const [hours, minutes] =
-                                            e.target.value.split(":");
-                                        const newDate = new Date(
-                                            pomEvent.startTime
-                                        ); // Crea un nuovo oggetto Date basato su startTime
-                                        newDate.setHours(
-                                            Number(hours),
-                                            Number(minutes),
-                                            0,
-                                            0
-                                        ); // Imposta l'orario
-                                        setPomEvent({
-                                            ...pomEvent,
-                                            startTime: newDate,
-                                        }); // Imposta il nuovo oggetto Date
-                                    }}
-                                />
-                            </div>
-                        </label>
-
-                        <label htmlFor="endTime">
-                            Data Fine
-                            <div>
-                                <DatePicker
-                                    className="btn border createEventinput"
-                                    name="endTime"
-                                    selected={pomEvent.endTime}
-                                    onChange={(date: Date | null): void => {
-                                        if (date) {
-                                            // Aggiorna la data mantenendo l'orario attuale
-                                            const newDate = new Date(
-                                                pomEvent.endTime
-                                            );
-                                            newDate.setFullYear(
-                                                date.getFullYear(),
-                                                date.getMonth(),
-                                                date.getDate()
-                                            );
-                                            setPomEvent({
-                                                ...pomEvent,
-                                                endTime: newDate,
-                                            });
-                                        }
-                                    }}
-                                />
-                            </div>
-                            <div>
-                                <input
-                                    className="btn border createEventinput"
-                                    type="time"
-                                    value={`${pomEvent.endTime
-                                        .getHours()
-                                        .toString()
-                                        .padStart(2, "0")}:${pomEvent.endTime
-                                            .getMinutes()
-                                            .toString()
-                                            .padStart(2, "0")}`}
-                                    onChange={(
-                                        e: React.ChangeEvent<HTMLInputElement>
-                                    ): void => {
-                                        const [hours, minutes] =
-                                            e.target.value.split(":");
-                                        const newDate = new Date(
-                                            pomEvent.endTime
-                                        );
-                                        newDate.setHours(
-                                            Number(hours),
-                                            Number(minutes)
-                                        ); // Aggiorna l'orario
-                                        setPomEvent({
-                                            ...pomEvent,
-                                            endTime: newDate,
-                                        }); // Imposta il nuovo oggetto Date
-                                    }}
-                                />
-                            </div>
-                        </label>
-                        <label htmlFor="location">
-                            Luogo
-                            <div>
-                                <input
-                                    className="btn border createEventinput"
-                                    type="text"
-                                    name="location"
-                                    value={pomEvent.location}
-                                    onChange={(
-                                        e: ChangeEvent<HTMLInputElement>
-                                    ): void =>
-                                        setPomEvent({
-                                            ...pomEvent,
-                                            location: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                        </label>
-
-                        <button
-                            className="btn btn-primary"
-                            style={{
-                                backgroundColor: "bisque",
-                                color: "black",
-                                border: "0",
-                            }}
-                            onClick={handleCreateEvent}
-                        >
-                            Create Event
-                        </button>
-                    </form>
-                </div>
+                
 
                 <div className="send-invite-container">
                     <div>Scegli l'utente al quale inviare la notifica</div>

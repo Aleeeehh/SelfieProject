@@ -155,14 +155,6 @@ function Home(): React.JSX.Element {
 						</select>
 					</label>
 					<div className="preview-calendar-cards-container">
-						{/*eventList.slice(0, numEvents).map((event, index) => (
-							<div key={index} className="event">
-							<div>{event.title}</div>
-							<div>{event.startTime.toString()}</div>
-							<div>{event.endTime.toString()}</div>
-							<div>{event.location}</div>
-							</div>
-						))*/}
 						{eventList
 							.filter((_, i) => i < numEvents)
 							.map((event) => (
@@ -176,19 +168,10 @@ function Home(): React.JSX.Element {
 												  ) + "..."
 												: event.title}
 										</div>
-										{/*<div className="preview-event-card-text">
-											{note.text.length > HOME_MAX_NOTE_TEXT_CHARS
-												? note.text.substring(0, HOME_MAX_NOTE_TEXT_CHARS) +
-												  "..."
-												: note.text}
-										</div>*/}
 										<div>{new Date(event.startTime).toLocaleString("it-IT", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
 										<div>{new Date(event.endTime).toLocaleString("it-IT", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
 										<div>{event.location}</div>
 									</div>
-									{/* <div className="preview-note-card-date">
-										Last update: {note.updatedAt?.toString()}
-									</div> */}
 								</a>
 							))}
 					</div>
@@ -263,9 +246,6 @@ function Home(): React.JSX.Element {
 												: note.text}
 										</div>
 									</div>
-									{/* <div className="preview-note-card-date">
-										Last update: {note.updatedAt?.toString()}
-									</div> */}
 								</a>
 							))}
 					</div>
