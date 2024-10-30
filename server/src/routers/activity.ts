@@ -3,6 +3,7 @@ import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import UserSchema from "../schemas/User.js";
 import { Types } from "mongoose";
+import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import { ActivitySchema } from "../schemas/Activity.js";
 import type Activity from "../types/Activity.js";
@@ -49,7 +50,7 @@ router.get("/", async (req: Request, res: Response) => {
 				owner: activity.owner,
 				title: activity.title,
 				description: activity.description || "",
-				tags: activity.tags || [],
+				//tags: activity.tags || [],
 				createdAt: activity.createdAt,
 				updatedAt: activity.updatedAt,
 				deadline: activity.deadline,
@@ -76,6 +77,119 @@ router.get("/", async (req: Request, res: Response) => {
 		};
 
 		return res.status(500).json(resBody);
+	}
+});
+
+//ottieni le attività dell'owner
+router.get("/owner", async (req: Request, res: Response) => {
+	const ownerId = req.query.owner as string; //ottieni l'owner
+	//  console.log("questo è l'owner passato come query:" + ownerId);
+
+	try {
+		//Controllo se l'owner è stato inserito
+		if (!ownerId) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Owner è la stringa vuota",
+			});
+		}
+
+		const foundDBActivities = await ActivitySchema.find({ owner: ownerId }).lean();
+
+		if (foundDBActivities.length === 0) {
+			const resBody: ResponseBody = {
+				message:
+					"L'attività con l'owner" + ownerId + " Non è stato trovato!",
+				status: ResponseStatus.BAD,
+			};
+
+			return res.status(400).json(resBody);
+		}
+
+		// console.log("Eventi trovati: ", foundDBEvents);
+
+		// TODO: filter the fields of the found event
+		const resBody: ResponseBody = {
+			message: "Attività ottenuta dal database",
+			status: ResponseStatus.GOOD,
+			value: foundDBActivities,
+		};
+
+		return res.json(resBody);
+	} catch (e) {
+		// console.log(e);
+		const resBody: ResponseBody = {
+			message: "Error handling request",
+			status: ResponseStatus.BAD,
+		};
+
+		return res.status(500).json(resBody);
+	}
+});
+
+
+//elimina attività
+router.post("/deleteActivity", async (req: Request, res: Response) => {
+	// console.log("Richiesta ricevuta per eliminare evento");
+
+	const { activity_id } = req.body;
+	try {
+		console.log("id Attività da eliminare:", activity_id);
+		const attivitaEliminata = await ActivitySchema.find({
+			_id: new mongoose.Types.ObjectId(activity_id),
+		});
+		console.log("attività eliminata:", attivitaEliminata);
+
+		await ActivitySchema.deleteOne({
+			_id: new mongoose.Types.ObjectId(activity_id),
+		});
+
+		const resBody = {
+			message: "Attività eliminata con successo",
+			status: "success",
+			value: attivitaEliminata,
+		};
+		console.log("Attività eliminata:", attivitaEliminata);
+
+		return res.json(resBody);
+	} catch (e) {
+		const resBody = {
+			message: "Errore nell'eliminazione dell'attività",
+			status: ResponseStatus.BAD,
+		};
+		return res.json(resBody);
+	}
+});
+
+router.post("/completeActivity", async (req: Request, res: Response) => {
+	// console.log("Richiesta ricevuta per eliminare evento");
+
+	const { activity_id } = req.body;
+	try {
+		console.log("id Attività da completare:", activity_id);
+		const attivitaCompletata = await ActivitySchema.find({
+			_id: new mongoose.Types.ObjectId(activity_id),
+		});
+		console.log("attività completata:", attivitaCompletata);
+
+		await ActivitySchema.updateOne({
+			_id: new mongoose.Types.ObjectId(activity_id),
+		}, { completed: true, completedAt: new Date() });
+
+		const resBody = {
+			message: "Attività completata con successo",
+			status: "success",
+			value: attivitaCompletata,
+		};
+		console.log("Attività completata:", attivitaCompletata);
+
+		return res.json(resBody);
+	} catch (e) {
+		const resBody = {
+			message: "Errore nel completamento dell'attività",
+			status: ResponseStatus.BAD,
+		};
+		return res.json(resBody);
 	}
 });
 
@@ -158,43 +272,53 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 router.post("/", async (req: Request, res: Response) => {
+	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!")
 	try {
 		// TODO: validate note input
 		// TODO: validate body fields
+		const title = req.body.title as String;
+		const description = req.body.description as String;
+		const accessList = req.body.accessList as String[];
+		const deadline = req.body.deadline;
+		const deadlineDate = new Date(deadline);
+		const owner = req.body.owner as String;
 
-		const title = req.body.title as string | undefined;
-		const description = req.body.description as string | "";
-		const inputDeadline = req.body.deadline as string | undefined;
-		const inputCompleted = req.body.completed as string | undefined;
-		const tags = req.body.tags as string[] | [];
-		const inputAccessList = req.body.accessList as string[] | [];
 
-		if (!title || !inputDeadline)
-			return res.status(400).json({
-				status: ResponseStatus.BAD,
-				message: "Invalid body: 'title' and 'deadline' required",
-			});
 
-		if (!validDateString(inputDeadline))
-			return res.status(400).json({
-				status: ResponseStatus.BAD,
-				message: "Invalid date format ",
-			});
 
-		const deadline = new Date(inputDeadline);
-
-		if (inputCompleted && !["true", "false"].includes(inputCompleted))
-			return res.status(400).json({
-				status: ResponseStatus.BAD,
-				message: "Invalid body: 'completed' should be 'true' or 'false'",
-			});
-
-		const completed: boolean = !!inputCompleted && inputCompleted === "true";
-
+		/*
+				const inputDeadline = req.body.deadline as string | undefined;
+				const inputCompleted = req.body.completed as string | undefined;
+				const tags = req.body.tags as string[] | [];
+				
+						if (!title || !inputDeadline)
+							return res.status(400).json({
+								status: ResponseStatus.BAD,
+								message: "Invalid body: 'title' and 'deadline' required",
+							});
+							
+		
+				if (!validDateString(inputDeadline))
+					return res.status(400).json({
+						status: ResponseStatus.BAD,
+						message: "Invalid date format ",
+					});
+		
+				const deadline = new Date(inputDeadline);
+				
+		
+				if (inputCompleted && !["true", "false"].includes(inputCompleted))
+					return res.status(400).json({
+						status: ResponseStatus.BAD,
+						message: "Invalid body: 'completed' should be 'true' or 'false'",
+					});
+		
+				const completed: boolean = !!inputCompleted && inputCompleted === "true";
+		
 		var accessList: Types.ObjectId[] = [];
-		if (!inputAccessList) accessList = [];
+		if (!accessList) accessList = [];
 		else
-			for (const id of inputAccessList) {
+			for (const id of accessList) {
 				if (!Types.ObjectId.isValid(id))
 					return res.status(400).json({
 						status: ResponseStatus.BAD,
@@ -208,7 +332,7 @@ router.post("/", async (req: Request, res: Response) => {
 						message: "Invalid user id: " + id,
 					});
 
-				accessList.push(user._id);
+				accessList.push(new ObjectId(owner));
 			}
 
 		if (!req.user || !req.user.id) {
@@ -217,21 +341,21 @@ router.post("/", async (req: Request, res: Response) => {
 				message: "User not logged in",
 			});
 		}
+			*/
 
 		const newActivity: Activity = {
-			owner: new ObjectId(req.user.id),
+			owner,
 			title,
 			description,
-			deadline,
-			tags,
+			deadline: new Date(deadlineDate.getTime()),
 			accessList,
-			completed,
-			completedAt: completed ? new Date() : undefined,
+			completed: false,
+			completedAt: undefined,
 		};
 
 		const createdActivity = await ActivitySchema.create(newActivity);
 
-		console.log("Inserted activity: ", createdActivity._id.toString());
+		console.log("Inserted activity: ", createdActivity);
 
 		const resBody: ResponseBody = {
 			message: "Note inserted into database",
