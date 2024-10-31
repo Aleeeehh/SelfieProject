@@ -4,6 +4,7 @@ import { SERVER_API } from "./params/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Notification from "./types/Notification";
 
+
 const buttonStyle = {
     backgroundColor: "white",
     color: "black",
@@ -16,9 +17,15 @@ const buttonStyle = {
 const NOTIFICATION_COUNT = 5;
 
 export default function Header(): React.JSX.Element {
+    const [showTimeMachine, setShowTimeMachine] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
+    const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]); // Formato YYYY-MM-DD
     const { isLoggedIn } = useAuth();
+
+    const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        setCurrentDate(event.target.value);
+    };
 
     useEffect(() => {
         fetch(`${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`)
@@ -89,8 +96,54 @@ export default function Header(): React.JSX.Element {
                     Progetti
                 </a>
 
+
+
                 {isLoggedIn ? (
                     <>
+
+                        <button
+                            className="btn secondary"
+                            style={buttonStyle}
+                            onClick={(): void =>
+                                setShowTimeMachine(!showTimeMachine)
+                            }
+                        >
+                            <i className="bi bi-hourglass-sand" style={{ marginRight: "5px" }}></i> {/* Icona della clessidra */}
+                            Time
+
+                        </button>
+
+                        {showTimeMachine && (
+                            <>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        top: "55px",
+                                        right: "200px",
+                                        backgroundColor: "white",
+                                        border: "1px solid gray",
+                                        padding: "10px",
+                                        zIndex: "1",
+                                    }}
+                                >
+                                    <label htmlFor="dateInput">Cambia la data odierna:</label>
+                                    <input
+                                        type="date"
+                                        id="dateInput"
+                                        value={currentDate}
+                                        onChange={handleDateChange}
+                                        style={{ marginLeft: "10px" }}
+                                    />
+
+                                </div>
+
+
+                            </>
+
+
+                        )}
+
+
                         <button
                             className="btn secondary"
                             style={buttonStyle}
@@ -101,71 +154,83 @@ export default function Header(): React.JSX.Element {
                             <i className="fas fa-bell" />
                         </button>
 
+
+
                         {showNotifications && (
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    top: "55px",
-                                    right: "75px",
-                                    backgroundColor: "white",
-                                    border: "1px solid gray",
-                                    padding: "10px",
-                                    zIndex: "1",
-                                }}
-                            >
-                                {notifications && notifications.length > 0 ? (
-                                    notifications.map((notification, index) => {
-                                        // TODO: Differentiate by type
-                                        if (notification.type === "pomodoro") {
-                                            const nCycles =
-                                                notification.data.cycles || 5;
+                            <>
+                                <div
+                                    style={{
+                                        position: "absolute",
+                                        top: "55px",
+                                        right: "40px",
+                                        backgroundColor: "white",
+                                        border: "1px solid gray",
+                                        padding: "10px",
+                                        zIndex: "1",
+                                    }}
+                                >
+                                    {notifications && notifications.length > 0 ? (
+                                        notifications.map((notification, index) => {
+                                            // TODO: Differentiate by type
+                                            if (notification.type === "pomodoro") {
+                                                const nCycles =
+                                                    notification.data.cycles || 5;
 
-                                            const nStudyTime =
-                                                notification.data.studyTime ||
-                                                25;
+                                                const nStudyTime =
+                                                    notification.data.studyTime ||
+                                                    25;
 
-                                            const nPauseTime =
-                                                notification.data.pauseTime ||
-                                                5;
-                                            return (
-                                                <a
-                                                    href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
-                                                >
+                                                const nPauseTime =
+                                                    notification.data.pauseTime ||
+                                                    5;
+                                                return (
+                                                    <a
+                                                        href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
+                                                    >
+                                                        <div key={index}>
+                                                            <p>
+                                                                Hai ricevuto un
+                                                                invito da{" "}
+                                                                {
+                                                                    notification.sender
+                                                                }{" "}
+                                                                per un pomodoro!
+                                                            </p>
+                                                            <p>
+                                                                {notification.type}{" "}
+                                                                -{" "}
+                                                                {notification.sentAt.toString()}
+                                                            </p>
+                                                        </div>
+                                                    </a>
+                                                );
+                                            } else {
+                                                return (
                                                     <div key={index}>
                                                         <p>
-                                                            Hai ricevuto un
-                                                            invito da{" "}
-                                                            {
-                                                                notification.sender
-                                                            }{" "}
-                                                            per un pomodoro!
-                                                        </p>
-                                                        <p>
-                                                            {notification.type}{" "}
-                                                            -{" "}
+                                                            {notification.type} -{" "}
                                                             {notification.sentAt.toString()}
                                                         </p>
                                                     </div>
-                                                </a>
-                                            );
-                                        } else {
-                                            return (
-                                                <div key={index}>
-                                                    <p>
-                                                        {notification.type} -{" "}
-                                                        {notification.sentAt.toString()}
-                                                    </p>
-                                                </div>
-                                            );
-                                        }
-                                    })
-                                ) : (
-                                    <div>
-                                        <p>No notifications</p>
-                                    </div>
-                                )}
-                            </div>
+                                                );
+                                            }
+                                        })
+                                    ) : (
+                                        <div>
+                                            <p>No notifications</p>
+                                        </div>
+                                    )}
+                                </div>
+
+
+                            </>
+
+
                         )}
+
+
+
+
                         <div
                             style={{
                                 ...buttonStyle,
