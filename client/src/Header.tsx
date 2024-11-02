@@ -20,14 +20,65 @@ export default function Header(): React.JSX.Element {
     const [showTimeMachine, setShowTimeMachine] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
-    const [currentDate, setCurrentDate] = useState(new Date().toISOString().split('T')[0]); // Formato YYYY-MM-DD
+    const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
     const { isLoggedIn } = useAuth();
 
-    const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    /* const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         setCurrentDate(event.target.value);
+    };*/
+
+    const formatDate = (date: Date): string => {
+        return date.toLocaleDateString('it-IT', { // Formato italiano
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric'
+        });
+    };
+
+
+    async function postCurrentDate(data: Date): Promise<void> {
+        try {
+            //console.log(currentDate);
+            // setCurrentDate(data);
+            const response = await fetch(`${SERVER_API}/currentDate`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ newDate: data }), // Invia la data corrente
+            });
+
+            if (!response.ok) {
+                throw new Error("ERRORE NELLA RICHIESTA POST DI CURRENTDATE NELL'HEADER");
+            }
+
+            //  const data = await response.json();
+            //console.log( data);
+
+            const getResponse = await fetch(`${SERVER_API}/currentDate`);
+            if (!getResponse.ok) {
+                throw new Error("ERRORE NELLA RICHIESTA GET DI CURRENTDATE NELL'HEADER");
+            }/*
+            const currentDateData = await getResponse.json();
+            console.log("Data corrente ottenuta:", currentDateData);
+            console.log("currentDateData.currentDate:", currentDateData.currentDate);
+            const dateFromServer = new Date(currentDateData.currentDate);
+            console.log("dateFromServer, orario aggiustato:", dateFromServer);
+            setCurrentDate(dateFromServer);
+            //setCurrentDate(dateFromServer);
+            */
+
+        } catch (error) {
+            console.error("Errore durante l'invio della data corrente:", error);
+        }
     };
 
     useEffect(() => {
+        // Funzione per inviare la richiesta POST
+
+        postCurrentDate(new Date()); // Chiama la funzione per inviare la richiesta POST
+
+        // Fetch delle notifiche
         fetch(`${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`)
             .then((res) => res.json())
             .then((data) => {
@@ -41,16 +92,9 @@ export default function Header(): React.JSX.Element {
             .catch((error) => {
                 console.error(error);
             });
-    }, []);
+    }, []); // L'array vuoto assicura che l'effetto venga eseguito solo al montaggio
 
-    // const toggleMenu = (): void => {
-    // 	setShowMenu(!showMenu);
-    // };
 
-    // const handleLogout = async (): Promise<void> => {
-    // 	await logout();
-    // 	setShowMenu(false);
-    // };
 
     return (
         <header
@@ -61,16 +105,19 @@ export default function Header(): React.JSX.Element {
                 margin: "1vw",
             }}
         >
-            <a href="/" className="header-home">
-                <img src="/images/logo.jpeg" alt="logo.jpeg" />
-            </a>
             <div
                 style={{
                     display: "flex",
-                    justifyContent: "flex-end",
+                    justifyContent: "flex-start",
                     width: "100%",
+
                 }}
             >
+                <a href="/" className="header-home">
+                    <img src="/images/logo.jpeg" alt="logo.jpeg" />
+                </a>
+
+
                 <a
                     className="btn secondary"
                     style={buttonStyle}
@@ -95,6 +142,19 @@ export default function Header(): React.JSX.Element {
                 >
                     Progetti
                 </a>
+            </div>
+
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    width: "100%",
+                }}
+            >
+                <button className="btn secondary" style={{ fontWeight: 'bold', fontSize: '24px', fontFamily: 'Times New Roman, Times, serif', alignItems: "center" }}>
+                    {formatDate(currentDate)}
+                </button>
+
 
 
 
@@ -108,8 +168,8 @@ export default function Header(): React.JSX.Element {
                                 setShowTimeMachine(!showTimeMachine)
                             }
                         >
-                            <i className="bi bi-hourglass-sand" style={{ marginRight: "5px" }}></i> {/* Icona della clessidra */}
-                            Time
+                            <i className="fas fa-hourglass" style={{ marginRight: "5px" }}></i> {/* Icona della clessidra */}
+
 
                         </button>
 
@@ -127,13 +187,47 @@ export default function Header(): React.JSX.Element {
                                     }}
                                 >
                                     <label htmlFor="dateInput">Cambia la data odierna:</label>
-                                    <input
+                                    <input className="btn secondary"
                                         type="date"
                                         id="dateInput"
-                                        value={currentDate}
-                                        onChange={handleDateChange}
+                                        value={currentDate.toISOString().split('T')[0]}
+                                        onChange={(event): void => setCurrentDate(new Date(event.target.value))}
                                         style={{ marginLeft: "10px" }}
                                     />
+
+                                    <label htmlFor="timeInput">Cambia l'orario:</label>
+                                    <input className="btn secondary"
+                                        type="time"
+                                        id="timeInput"
+                                        onChange={(event): void => {
+                                            const timeParts = event.target.value.split(':');
+                                            const newDate = new Date(currentDate);
+                                            newDate.setHours(Number(timeParts[0]), Number(timeParts[1]));
+                                            setCurrentDate(newDate); // Aggiorna lo stato con la nuova data e orario
+                                        }}
+                                        style={{ marginLeft: "10px" }}
+                                    />
+
+                                    <button className="btn secondary"
+                                        onClick={(): void => {
+                                            postCurrentDate(currentDate); // Chiama postCurrentDate con la data e orario selezionati
+                                            setShowTimeMachine(false); // Nascondi il time machine
+                                        }} style={{ marginLeft: "10px" }}
+                                    >
+                                        Imposta Data
+                                    </button>
+
+                                    <button className="btn secondary"
+                                        onClick={async (): Promise<void> => {
+                                            const newDate = new Date(); // Ottieni la data corrente
+                                            await postCurrentDate(newDate); // Chiama postCurrentDate con la data corrente
+                                            setCurrentDate(newDate); // Aggiorna lo stato con la nuova data
+                                            setShowTimeMachine(false); // Nascondi il time machine
+                                        }}
+                                        style={{ marginLeft: "10px" }}
+                                    >
+                                        Resetta Data
+                                    </button>
 
                                 </div>
 
@@ -257,6 +351,7 @@ export default function Header(): React.JSX.Element {
                                 <span style={{ color: "white" }}>U</span>
                             </a>
                         </div>
+
                     </>
                 ) : (
                     <a
@@ -270,8 +365,10 @@ export default function Header(): React.JSX.Element {
                     >
                         Login
                     </a>
-                )}
+                )
+                }
             </div>
-        </header>
+
+        </header >
     );
 }

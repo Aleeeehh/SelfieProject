@@ -8,6 +8,7 @@ import User from "../types/User.js";
 import NoteSchema from "./Note.js";
 import PomodoroSchema from "./Pomodoro.js";
 import UserSchema from "./User.js";
+import CurrentDateSchema from "./currentDate.js";
 
 // insert fake users if they do not exist
 export async function createDummyUsers() {
@@ -78,34 +79,34 @@ export async function createDummyUsers() {
 // insert fake events if they do not exist
 /*  //COMMENTO PERCHE' MI CAUSA UN BUG VISIVO NELLA GENERAZIOEN DEI "PALLINI SUL CALENDARIO"
 export async function createDummyEvents() {
-	const user = await UserSchema.findOne({ username: "fv1" });
+    const user = await UserSchema.findOne({ username: "fv1" });
 
-	if (!user) {
-		console.log("User not found; abort creation of events");
-		return;
-	}
-	const dummyEvents: Event[] = [
-		{
-			id: "",
-			owner: user._id.toString(),
-			title: "Sun Donato",
-			startTime: new Date("2024-01-12"),
-			endTime: new Date("2025-01-13"),
-			recurring: false,
-			location: "Bologna",
-		},
-	];
-	for (const event of dummyEvents) {
-		const foundEvent = await EventSchema.findOne({ title: event.title });
-		if (!foundEvent) {
-			await EventSchema.create(event);
-			console.log("Event created!");
-		} else {
-			console.log("Event already present!");
-		}
-	}
+    if (!user) {
+        console.log("User not found; abort creation of events");
+        return;
+    }
+    const dummyEvents: Event[] = [
+        {
+            id: "",
+            owner: user._id.toString(),
+            title: "Sun Donato",
+            startTime: new Date("2024-01-12"),
+            endTime: new Date("2025-01-13"),
+            recurring: false,
+            location: "Bologna",
+        },
+    ];
+    for (const event of dummyEvents) {
+        const foundEvent = await EventSchema.findOne({ title: event.title });
+        if (!foundEvent) {
+            await EventSchema.create(event);
+            console.log("Event created!");
+        } else {
+            console.log("Event already present!");
+        }
+    }
 }
-	*/
+    */
 
 // insert fake notes if they do not exist
 export async function createDummyNotes() {
@@ -146,6 +147,21 @@ export async function createDummyNotes() {
         }
     } catch (e) {
         console.log(e);
+    }
+}
+
+export async function createCurrentDate() {
+    try {
+        const foundDate = await CurrentDateSchema.findOne(); // Trova la data corrente
+        if (!foundDate) {
+            // Esegui il comando di inserimento
+            await CurrentDateSchema.create({ date: new Date() }); // Inserisci la data corrente
+            console.log("Current date created!");
+        } else {
+            console.log("Current date already present!");
+        }
+    } catch (e) {
+        console.log("Error while creating current date:", e); // Stampa l'errore
     }
 }
 
