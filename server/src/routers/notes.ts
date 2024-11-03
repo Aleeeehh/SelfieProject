@@ -25,7 +25,7 @@ const router: Router = Router();
  * @param noteId the id of the note to check
  * @returns true if the user can access the note, false otherwise
  */
-async function canAccess(userId: string, noteId: string): Promise<boolean> {
+/*async function canAccess(userId: string, noteId: string): Promise<boolean> {
     // check if the user in the owner of the note
     const foundNote = await NoteSchema.findOne({
         owner: userId,
@@ -41,7 +41,7 @@ async function canAccess(userId: string, noteId: string): Promise<boolean> {
     if (foundAccess) return true;
 
     return false;
-}
+}*/
 
 async function getAccessList(list: ObjectId[]): Promise<UserResult[]> {
     const accessList = [];

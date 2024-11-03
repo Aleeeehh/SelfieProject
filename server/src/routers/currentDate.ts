@@ -1,13 +1,14 @@
-import { Request, Response, Router } from "express";
-import mongoose from "mongoose";
-import { ResponseBody } from "../types/ResponseBody.js";
-import { ResponseStatus } from "../types/ResponseStatus.js";
+// import { Request, Response, Router } from "express";
+// import mongoose from "mongoose";
+// import { ResponseBody } from "../types/ResponseBody.js";
+// import { ResponseStatus } from "../types/ResponseStatus.js";
+import { Router } from "express";
 import CurrentDateSchema from "../schemas/currentDate.js";
 
 const router: Router = Router();
 
 // Route per ottenere la data corrente
-router.get('/', async (req, res) => {
+router.get("/", async (_, res) => {
     try {
         const currentDate = await CurrentDateSchema.findOne(); // Trova il documento della data corrente
         res.json({ currentDate: currentDate?.date });
@@ -17,7 +18,7 @@ router.get('/', async (req, res) => {
 });
 
 // Route per aggiornare la data corrente
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
     console.log("ENTRO NELLA POST DI CURRENT DATE");
     const { newDate } = req.body;
     console.log("Nuova data ricevuta:", newDate);
@@ -31,12 +32,17 @@ router.post('/', async (req, res) => {
                 await currentDate.save(); // Salva il documento
                 console.log("CURRENT DATE AGGIORNATA!");
             } catch (saveError) {
-                console.error("Errore durante il salvataggio della data corrente:", saveError);
+                console.error(
+                    "Errore durante il salvataggio della data corrente:",
+                    saveError
+                );
             }
         } else {
             console.log("CURRENT DATE NON TROVATA, CREANDO...");
             // Se non esiste, crea un nuovo documento
-            const newCurrentDate = new CurrentDateSchema({ date: new Date(newDate) });
+            const newCurrentDate = new CurrentDateSchema({
+                date: new Date(newDate),
+            });
             await newCurrentDate.save();
             console.log("CURRENT DATE CREATA!");
         }
@@ -48,4 +54,3 @@ router.post('/', async (req, res) => {
 });
 
 export default router;
-

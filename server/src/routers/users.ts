@@ -88,25 +88,28 @@ router.post("/register", async (req: Request, res: Response) => {
 
         const birthday = new Date(birthdayStr);
 
-        if (!validDateString(birthdayStr))
+        if (!validDateString(birthdayStr)) {
+            console.log("Invalid date format, should be: YYYY-MM-DD");
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message: "Invalid date format, should be: YYYY-MM-DD",
             });
+        }
 
         const newUser: User = {
-            id: "",
             username,
             password,
             firstName,
             lastName,
             birthday,
+            address,
         };
 
         // Verify username not already used
         const foundUser = await UserSchema.findOne({ username: username });
 
         if (foundUser) {
+            console.log("User with that username already exists");
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message: "User with that username already exists",
@@ -115,17 +118,12 @@ router.post("/register", async (req: Request, res: Response) => {
 
         // Insert into database new event
         console.log("Inserting user: ", newUser);
-        await UserSchema.create({
-            username,
-            password,
-            firstName,
-            lastName,
-            birthday,
-        });
+        const createdUser = await UserSchema.create(newUser);
 
         const resBody: ResponseBody = {
             message: "New user inserted into database",
             status: ResponseStatus.GOOD,
+            value: createdUser._id.toString(),
         };
 
         return res.json(resBody);
