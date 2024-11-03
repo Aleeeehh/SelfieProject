@@ -1,8 +1,10 @@
 import React from "react";
 import { ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
-//import { useAuth } from "./AuthContext";
-
+import { useAuth } from "./AuthContext";
+import type { ResponseBody } from "./types/ResponseBody";
+import { SERVER_API } from "./params/params";
+import { ResponseStatus } from "./types/ResponseStatus";
 
 type RegisterData = {
 	username: string;
@@ -28,71 +30,68 @@ export default function Register(): React.JSX.Element {
 	const [data, setData] = React.useState(initialState);
 	const [message, setMessage] = React.useState("");
 
+	const { isLoggedIn } = useAuth();
 	const nav = useNavigate();
-	/*const { register, isLoggedIn } = useAuth();
 
 	// Redireziona alla home se già loggato
 	React.useEffect(() => {
 		if (isLoggedIn) {
 			nav("/");
 		}
-	}, [isLoggedIn, nav]);*/
+	}, [isLoggedIn, nav]);
 
+	async function handleChange(
+		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+	): Promise<void> {
+		setData({ ...data, [e.target.name]: e.target.value });
+	}
 	// Funzione di registrazione
-	/*async function handleRegister(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+	async function handleRegister(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
 		// Controlla che le password coincidano
-		if (password !== confirmPassword) {
+		if (data.password !== data.confirmPassword) {
 			setMessage("Le password non coincidono");
-			return;
-		}
-
-		// Controlla se l'username è già in uso
-		const isUsernameTaken = await checkUsername(username);
-		if (isUsernameTaken) {
-			setMessage("Username già in uso");
 			return;
 		}
 
 		try {
 			// Dati dell'utente
-			const userData = {
-				username,
-				password,
-				firstName,
-				lastName,
-				birthday,
-				address,
+			const registrationData: RegisterData = {
+				username: data.username,
+				password: data.password,
+				confirmPassword: data.confirmPassword,
+				firstName: data.firstName,
+				lastName: data.lastName,
+				birthday: data.birthday,
+				address: data.address,
 			};
 
-			const success = await register(userData); // Funzione di registrazione
-			if (success) {
-				setMessage("Registrazione completata con successo");
-				nav("/"); // Redireziona alla home
+			const res = await fetch(SERVER_API + "/register", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(registrationData),
+			});
+
+			const resBody = (await res.json()) as ResponseBody;
+
+			if (resBody.value === ResponseStatus.GOOD) {
+				setMessage(
+					"Registrazione completata con successo. Sarai reindirizzato tra 5 secondi alla pagina di login."
+				);
+
+				setData(initialState);
+				// Reindirizza alla pagina di login
+				setTimeout(() => {
+					nav("/login");
+				}, 5000);
 			} else {
-				setMessage("Registrazione fallita, riprova");
+				setMessage("Registrazione fallita: " + resBody.message);
 			}
 		} catch (e) {
 			setMessage("Errore di connessione al server");
-		}
-	}*/
-	
-
-	async function checkUsername(username: string): Promise<boolean> {
-		console.log("Dati inseriti:", data);
-		try {
-			const response = await fetch(`/api/check-username?username=${username}`);
-			if (!response.ok) {
-				throw new Error("Errore nella verifica dell'username");
-			}
-			const data = await response.json();
-			console.log("Risposta del server:", data);
-			return data.isTaken; // Assumi che la risposta contenga un campo 'isTaken'
-		} catch (error) {
-			console.error("Errore durante la verifica dell'username:", error);
-			setMessage("Errore di connessione al server"); // Da togliere
-			return false; // Ritorna false in caso di errore, o gestisci diversamente
 		}
 	}
 
@@ -103,7 +102,7 @@ export default function Register(): React.JSX.Element {
 					<div className="avatar">
 						<img src="/images/avatar.png" alt="Avatar" />
 					</div>
-					<div className="registration-header">	
+					<div className="registration-header">
 						{message && <div>{message}</div>}
 						<h2>Benvenuto in SELFIE!</h2>
 						<p>Crea un account per iniziare la tua esperienza</p>
@@ -114,8 +113,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="text"
 								value={data.firstName}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, firstName: e.target.value })}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -125,8 +123,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="text"
 								value={data.lastName}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, lastName: e.target.value })}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -136,8 +133,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="text"
 								value={data.address}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, address: e.target.value })}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -146,9 +142,8 @@ export default function Register(): React.JSX.Element {
 							<label>Data di nascita</label>
 							<input
 								type="date"
-								value={data.birthday.toISOString().split('T')[0]}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, birthday: new Date(e.target.value) })}
+								value={data.birthday.toISOString().split("T")[0]}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -158,8 +153,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="text"
 								value={data.username}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, username: e.target.value })}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -169,8 +163,7 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="password"
 								value={data.password}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, password: e.target.value })}
+								onChange={handleChange}
 								required
 							/>
 						</div>
@@ -180,23 +173,16 @@ export default function Register(): React.JSX.Element {
 							<input
 								type="password"
 								value={data.confirmPassword}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({ ...data, confirmPassword: e.target.value })}
+								onChange={handleChange}
 								required
 							/>
 						</div>
 
-						<button onClick={async (): Promise<void> => {
-							const isTaken = await checkUsername(data.username);
-							if (isTaken) {
-								setMessage("Username già in uso");
-							} else {
-								setMessage("Registrazione completata con successo");
-								nav("/login"); // Reindirizza alla pagina di login
-							}
-						}}>Registrati</button>
+						<button onClick={handleRegister}>Registrati</button>
 					</form>
-					<p className="login-message">Hai già un account? <a href="/login">Accedi qui</a></p>
+					<p className="login-message">
+						Hai già un account? <a href="/login">Accedi qui</a>
+					</p>
 				</div>
 			</div>
 		</div>

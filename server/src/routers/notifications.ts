@@ -11,6 +11,8 @@ router.post("/", async (req: Request, res: Response) => {
         const type = req.body.type as string | undefined;
         const mode = req.body.mode as string | undefined;
         const receiver = req.body.receiver as string | undefined;
+        const data = req.body.data as Object;
+
         // TODO: validate body
         if (!message || !type || !mode || !receiver) {
             const response: ResponseBody = {
@@ -27,15 +29,19 @@ router.post("/", async (req: Request, res: Response) => {
             };
             return res.status(401).json(response);
         }
+        console.log("MESSAGGIO DELL'EVENTO:", message);
         const sender = req.user.id;
         const newNotification: Notification = {
-            data: {},
+            data,
             sender,
             receiver,
+            message,
             type,
             sentAt: new Date(),
         };
+
         const notification = await NotificationSchema.create(newNotification);
+        console.log("NOTIFICA CREATA:", notification);
         const response: ResponseBody = {
             message: "Notification created",
             status: ResponseStatus.GOOD,
@@ -75,6 +81,8 @@ router.get("/", async (req: Request, res: Response) => {
             const notObj: Notification = {
                 id: notification._id.toString(),
                 sender: notification.sender,
+                message: notification.message,
+
                 receiver: notification.receiver,
                 type: notification.type,
                 sentAt: notification.sentAt,

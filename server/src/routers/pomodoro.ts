@@ -13,9 +13,19 @@ import UserSchema from "../schemas/User.js";
 
 const router: Router = Router();
 
-router.get("/", async (_: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
     try {
-        const filter = {};
+        if (!req.user || !req.user.id) {
+            const response: ResponseBody = {
+                message: "User not authenticated",
+                status: ResponseStatus.BAD,
+            };
+            return res.status(401).json(response);
+        }
+
+        const userID = req.user.id;
+
+        const filter = { owner: userID };
         // TODO: filter per logged user
         const foundSessions = await PomodoroSchema.find(filter).lean();
 

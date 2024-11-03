@@ -20,18 +20,13 @@ const messageSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-export const MessageSchema = mongoose.model("UserMessage", messageSchema);
+export const MessageSchema = mongoose.model("Message", messageSchema);
 
-const userChatschema = new mongoose.Schema(
+const chatschema = new mongoose.Schema(
     {
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
+        userList: {
+            type: [mongoose.Schema.Types.ObjectId],
             ref: "User",
-            required: true,
-        },
-        chatId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Chat",
             required: true,
         },
         name: {
@@ -41,4 +36,4 @@ const userChatschema = new mongoose.Schema(
     { timestamps: true }
 );
 
-export const UserChatSchema = mongoose.model("UserChat", userChatschema);
+export const ChatSchema = mongoose.model("Chat", chatschema);

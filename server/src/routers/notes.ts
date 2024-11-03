@@ -11,6 +11,8 @@ import { ObjectId } from "mongodb";
 import NoteAccessSchema from "../schemas/NoteAccess.js";
 import UserResult from "../types/UserResult.js";
 import { Privacy } from "../types/Privacy.js";
+import NoteItemSchema from "../schemas/NoteList.js";
+import type { ListItem } from "../types/Note.js";
 
 const router: Router = Router();
 
@@ -23,7 +25,7 @@ const router: Router = Router();
  * @param noteId the id of the note to check
  * @returns true if the user can access the note, false otherwise
  */
-async function canAccess(userId: string, noteId: string): Promise<boolean> {
+/*async function canAccess(userId: string, noteId: string): Promise<boolean> {
     // check if the user in the owner of the note
     const foundNote = await NoteSchema.findOne({
         owner: userId,
@@ -39,7 +41,7 @@ async function canAccess(userId: string, noteId: string): Promise<boolean> {
     if (foundAccess) return true;
 
     return false;
-}
+}*/
 
 async function getAccessList(list: ObjectId[]): Promise<UserResult[]> {
     const accessList = [];
@@ -87,8 +89,15 @@ router.get("/", async (req: Request, res: Response) => {
             });
         else if (dateToStr) dateTo = new Date(dateToStr);
 
-        const filter: any = {};
-        //TODO: add userId for current user, get the notes seeable for the user (but not modifiable)
+        if (!req.user || !req.user.id)
+            return res.status(401).json({
+                status: ResponseStatus.BAD,
+                message: "You need to be logged in to access this resource",
+            });
+
+        const userId = req.user.id;
+
+        const filter: any = { owner: userId };
 
         if (dateFrom) filter.startTime = { $gte: dateFrom };
         if (dateTo) filter.endTime = { $lte: dateTo };
@@ -98,6 +107,22 @@ router.get("/", async (req: Request, res: Response) => {
         const notes = [];
 
         for (const note of foundNotes) {
+            // retrieve todo list from db
+            const toDoList: ListItem[] = [];
+            const foundTodoList = await NoteItemSchema.find({
+                noteId: note._id,
+            }).lean();
+
+            for (const foundItem of foundTodoList) {
+                const item: ListItem = {
+                    id: foundItem._id.toString(),
+                    text: foundItem.text,
+                    completed: foundItem.completed,
+                };
+
+                toDoList.push(item);
+            }
+
             const newNote: Note = {
                 id: note._id.toString(),
                 owner: note.owner.toString(),
@@ -108,6 +133,7 @@ router.get("/", async (req: Request, res: Response) => {
                 updatedAt: note.updatedAt,
                 privacy: note.privacy.toString() as Privacy,
                 accessList: [],
+                toDoList,
             };
 
             notes.push(newNote);
@@ -168,6 +194,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 
             return res.status(400).json(resBody);
         }
+
         const foundNote = await NoteSchema.findById(noteId).lean();
 
         if (!foundNote) {
@@ -187,6 +214,10 @@ router.get("/:id", async (req: Request, res: Response) => {
             foundaccessList.map((x) => x.userId)
         );
 
+        const foundItemList = await NoteItemSchema.find({
+            noteId: noteId,
+        }).lean();
+
         const note: Note = {
             id: foundNote._id.toString(),
             owner: foundNote.owner.toString(),
@@ -197,6 +228,13 @@ router.get("/:id", async (req: Request, res: Response) => {
             updatedAt: foundNote.updatedAt,
             privacy: foundNote.privacy.toString() as Privacy,
             accessList,
+            toDoList: foundItemList.map((x) => {
+                return {
+                    id: x._id.toString(),
+                    text: x.text,
+                    completed: x.completed,
+                };
+            }),
         };
 
         // check if the user is can access the note
@@ -252,6 +290,7 @@ router.post("/", async (req: Request, res: Response) => {
         const inputText = req.body.text as string | undefined;
         const inputTags = req.body.tags as string[] | [];
         const privacyStr = req.query.privacy as string | undefined;
+        const inputItemList = req.body.toDoList as ListItem[] | undefined;
 
         if (!inputTitle || !inputText)
             return res.status(400).json({
@@ -308,6 +347,7 @@ router.post("/", async (req: Request, res: Response) => {
             });
 
         const newAccessList = await getAccessList(accessList);
+
         const newNote: Note = {
             owner: new ObjectId(req.user.id),
             title: inputTitle,
@@ -322,8 +362,28 @@ router.post("/", async (req: Request, res: Response) => {
             accessList.map((x) => ({ userId: x, noteId: createdNote._id }))
         );
 
+        const itemList: ListItem[] = [];
+
+        if (inputItemList) {
+            for (const item of inputItemList) {
+                itemList.push({
+                    text: item.text,
+                    completed: item.completed,
+                });
+            }
+        }
+
+        const createdItemList = await NoteItemSchema.insertMany(
+            itemList.map((x) => ({
+                text: x.text,
+                completed: x.completed,
+                note: createdNote._id,
+            }))
+        );
+
         console.log("Inserted note: ", createdNote._id.toString());
         console.log("Inserted access list: ", createdAccessList);
+        console.log("Inserted item list: ", createdItemList);
 
         const resBody: ResponseBody = {
             message: "Note inserted into database",
@@ -354,18 +414,20 @@ router.put("/:id", async (req: Request, res: Response) => {
         const inputTags = req.body.tags as string[] | undefined;
         const inputAccessList = req.body.accessList as UserResult[] | undefined;
         const inputPrivacyStr = req.body.privacy as string | undefined;
+        const inputItemList = req.body.toDoList as ListItem[] | undefined;
 
         if (
             !inputTitle &&
             !inputText &&
             !inputTags &&
             !inputAccessList &&
-            !inputPrivacyStr
+            !inputPrivacyStr &&
+            !inputItemList
         ) {
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message:
-                    "Invalid body: 'title', 'text', 'tags', 'accessList' or 'privacy' required, nothing to update",
+                    "Invalid body: 'title', 'text', 'tags', 'accessList', 'toDoList' or 'privacy' required, nothing to update",
             });
         }
 
@@ -511,6 +573,23 @@ router.put("/:id", async (req: Request, res: Response) => {
 
         const newAccessList = await getAccessList(updatedAccessList);
 
+        if (inputItemList) {
+            const deletedItems = await NoteItemSchema.deleteMany({
+                note: noteId,
+            });
+            const insertedItems = await NoteItemSchema.insertMany(
+                inputItemList.map((item) => ({
+                    note: noteId,
+                    completed: item.completed,
+                    text: item.text,
+                }))
+            );
+
+            // TODO: can be improved by removing double access to db
+            console.log("Deleted items: ", deletedItems);
+            console.log("Inserted items: ", insertedItems);
+        }
+
         const updatedNote: Note = {
             owner: foundNote.owner,
             title: inputTitle || foundNote.title,
@@ -560,6 +639,15 @@ router.delete("/:id", async (req: Request, res: Response) => {
         // TODO: validate param
         // TODO: validate body fields
 
+        if (!ObjectId.isValid(noteId)) {
+            const resBody: ResponseBody = {
+                message: "Invalid note id: " + noteId,
+                status: ResponseStatus.BAD,
+            };
+
+            return res.status(400).json(resBody);
+        }
+
         const foundNote = await NoteSchema.findByIdAndDelete(noteId);
 
         if (!foundNote) {
@@ -568,10 +656,20 @@ router.delete("/:id", async (req: Request, res: Response) => {
                 status: ResponseStatus.BAD,
             };
 
-            res.status(400).json(resBody);
+            return res.status(400).json(resBody);
         }
 
+        const deletedAccessList = await NoteAccessSchema.deleteMany({
+            note: noteId,
+        });
+
+        const deletedItems = await NoteItemSchema.deleteMany({
+            note: noteId,
+        });
+
         console.log("Deleted note: ", foundNote);
+        console.log("Deleted access list: ", deletedAccessList);
+        console.log("Deleted items: ", deletedItems);
 
         // TODO: filter the fields of the found note
         const resBody: ResponseBody = {
@@ -580,7 +678,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
             value: foundNote,
         };
 
-        res.json(resBody);
+        return res.json(resBody);
     } catch (e) {
         console.log(e);
         const resBody: ResponseBody = {
@@ -588,7 +686,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
             status: ResponseStatus.BAD,
         };
 
-        res.status(500).json(resBody);
+        return res.status(500).json(resBody);
     }
 });
 

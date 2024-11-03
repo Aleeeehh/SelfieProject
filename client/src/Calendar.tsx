@@ -10,6 +10,8 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom"
 import { Event } from "./types/Event";
+//import mongoose from "mongoose";
+
 
 enum Frequency {
 	ONCE = "once",
@@ -60,6 +62,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [todayActivitiesMode, setTodayActivitiesMode] = React.useState(true);
 	const [allActivitiesMode, setAllActivitiesMode] = React.useState(false);
 	const [activitiesMode, setActivitiesMode] = React.useState(false);
+	const [notificationTime, setNotificationTime] = React.useState(0);
 	//const [isUntilDate, setIsUntilDate] = React.useState(false);
 	const [untilDate, setUntilDate] = React.useState<Date | null>(null);
 	const [repetitions, setRepetitions] = React.useState(1);
@@ -67,6 +70,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [isInfinite, setIsInfinite] = React.useState(false);
+	const [currentDate, setCurrentDate] = React.useState(new Date());
+	const [addNotification, setAddNotification] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
 		return now;
@@ -109,24 +114,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 				if (res.status !== 200) {
 					nav("/login");
 				}
-				//ottieni la activityList dal server quando apri la pagina
-
-				/*
-				const resActivities = await fetch(`${SERVER_API}/activity`);
-				
-				const dataActivities = (await resActivities.json()) as ResponseBody;
-				console.log("LISTA ATTIVITA' OTTENUTA DAL SERVER:", dataActivities);
-				if (dataActivities.status === ResponseStatus.GOOD) {
-					setActivityList(dataActivities.value);
-				}
-				else {
-					setMessage("ERRORE RITROVAMENTO ATTIVITA'");
-				}
-				*/
-
 				const data = (await res.json()) as ResponseBody;
 
-				//console.log(data);
+				const getResponse = await fetch(`${SERVER_API}/currentDate`);
+				if (!getResponse.ok) {
+					throw new Error("ERRORE NELLA RICHIESTA GET DI CURRENTDATE IN CALENDAR");
+				}
+
+				const currentDateData = await getResponse.json();
+				setCurrentDate(new Date(currentDateData.currentDate));
+				console.log("Valore currentDate:", currentDate);
 
 				if (data.status === ResponseStatus.GOOD) {
 					setEventList(data.value);
@@ -139,6 +136,38 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}
 		})();
 	}, []);
+
+	const fetchCurrentDate = async (): Promise<void> => {
+		try {
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			if (!response.ok) {
+				throw new Error("Errore nel recupero della data corrente");
+			}
+			const data = await response.json();
+			setCurrentDate(new Date(data.currentDate)); // Assicurati che il formato sia corretto
+
+			//ricarico la lista di attività
+			const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
+			const updatedActivities = await res2.json();
+
+			// Aggiorna la activityList con l'elenco aggiornato
+			setActivityList(updatedActivities.value);
+			await loadActivities();
+			await loadEvents();
+		} catch (error) {
+			console.error("Errore durante il recupero della data corrente:", error);
+		}
+	};
+
+	//ogni volta che si vogliono visualizzare le attività, aggiorna la currentDate
+	React.useEffect(() => {
+		fetchCurrentDate();
+
+		//aggiorna la currentDate di calendar ogni secondo
+		const intervalId = setInterval(fetchCurrentDate, 1000);
+		return () => clearInterval(intervalId);
+
+	}, [activitiesMode,]); // Chiamata GET ogni volta che activitiesMode cambia
 
 	function renderWeekEvents(weekEvents: { positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[], index: number): JSX.Element {
 		if (!weekEvents[index] || !weekEvents[index].positions) {
@@ -432,7 +461,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			console.log("Questa è la lista delle attività:", activityList);
 		}
 		else {
-			setMessage("ERRORE RITROVAMENTO ATTIVITA'");
+			//setMessage("ERRORE RITROVAMENTO ATTIVITA'");
 		}
 	}
 
@@ -633,6 +662,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("ActivityList aggiornato", activityList);
 	}, [activityList]); // Esegui questo effetto ogni volta che activityList cambia
 
+	React.useEffect(() => {
+		console.log("CurrentDate aggiornato", currentDate);
+	}, [currentDate]); // Esegui questo effetto ogni volta che currentDate cambia
+
 	//funzione per aggiungere pallino al giorno che contiene eventi
 	function hasEventsForDay(day: number): boolean {
 		// Controlla se la eventList è vuota
@@ -702,11 +735,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 		);
 	});
 
+	function toggleAddNotification(): void {
+		setAddNotification(!addNotification);
+	}
+
 	function toggleTodayActivitiesMode(): void {
 		if (!todayActivitiesMode) {
 			setTodayActivitiesMode(true);
 			setAllActivitiesMode(false);
 		}
+		fetchCurrentDate();
 
 	}
 
@@ -715,6 +753,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setTodayActivitiesMode(false);
 			setAllActivitiesMode(true);
 		}
+		fetchCurrentDate();
 	}
 
 	function toggleCreateEvent(): void {
@@ -742,6 +781,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		setAddTitle(true);
 		setRepeatEvent(false);
+		setAddNotification(false);
 		setAllDayEvent(false);
 		setUntil(false);
 		setTitle("");
@@ -783,6 +823,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
 		//console.log("SITUAZIONE EVENT LIST PRIMA DEL CLICK:", eventList);
 		//e.preventDefault();
+		fetchCurrentDate();
 		setEventPositions([]);
 		setRenderKey(prevKey => prevKey + 1);
 		//console.log("renderKey:", renderKey);
@@ -1451,6 +1492,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}),
 		});
 
+		const notificationDate = new Date(startTime);
+		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+		console.log("Questa è la data di inizio evento:", startTime);
+		console.log("Questa è la data della notifica:", notificationDate);
+
+		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
+		if (addNotification) {
+			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
+			const res2 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message: "Inizio evento " + title + " tra " + notificationTime + " minuti!",
+					mode: "event",
+					receiver: currentUser.value._id,
+					type: "event",
+					data: {
+						date: notificationDate,
+					},
+				}),
+			});
+
+			const data2 = await res2.json();
+
+			console.log("NOTIFICA AGGIUNTA:", data2);
+		}
+
 		if (!res.ok) {
 			const errorData = await res.json();
 			console.error("Error response:", errorData);
@@ -1465,6 +1533,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//setMessage(data.message || "Undefined error");
 		setCreateEvent(!createEvent);
 		setAllDayEvent(false);
+		setAddNotification(false);
 
 		//ripristina l'orario dopo nel pannelo createEvent, dopo aver creato un evento
 		const now = new Date();
@@ -2163,6 +2232,32 @@ export default function Calendar(): React.JSX.Element { // prova push
 										/>
 									</div>
 								</label>
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="addNotification"
+										onClick={toggleAddNotification}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Aggiungi notifica
+
+								</label>
+
+								{addNotification && (
+									<label htmlFor="notificationTime">
+										Quanti minuti prima mandare la notifica
+										<input
+											className="btn border"
+											type="number"
+											min="0"
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+												setNotificationTime(Number(e.target.value));
+											}}
+										/>
+									</label>
+								)}
+
 								<button
 									className="btn btn-primary"
 									style={{
@@ -2273,6 +2368,12 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
 													{activity.completed ? " Si" : " No"}
 												</span>
+
+
+												{new Date(activity.deadline) < currentDate && !activity.completed && (
+													<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
+												)}
+
 											</span>
 											<br />
 											<button onClick={async (): Promise<void> => {
@@ -2315,6 +2416,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 													{activity.completed ? " Si" : " No"}
 												</span>
 											</span>
+
+											{new Date(activity.deadline) < currentDate && !activity.completed && (
+												<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
+											)}
+
 											<br />
 											<button onClick={async (): Promise<void> => {
 												await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
@@ -2359,9 +2465,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												height: `${event.height}px`, // Imposta l'altezza dell'evento
 												width: `calc(95%/${event.width})`,
 												position: "absolute", // Assicurati che sia posizionato correttamente
-												color: "red", // Colore rosso se event.type è false
-												borderColor: "red",
-												backgroundColor: "rgba(249, 67, 67, 0.5)",
+												color: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red", // Colore più chiaro se currentDate è maggiore di endTime
+												borderColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red",
+												backgroundColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)", // Colore di sfondo più chiaro
 												marginLeft: `${event.marginLeft}%`,
 												cursor: "default", // Imposta il cursore di default per l'intero evento
 											}}
@@ -2406,9 +2512,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												height: `${event.height}px`, // Imposta l'altezza dell'evento
 												width: `calc(95%/${event.width})`,
 												position: "absolute", // Assicurati che sia posizionato correttamente
-												color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
-												borderColor: "rgb(155, 223, 212)",
-												backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
+												color: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)", // Colore più chiaro se currentDate è maggiore di endTime
+												borderColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)",
+												backgroundColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)", // Colore di sfondo più chiaro
 												marginLeft: `${event.marginLeft}%`,
 												cursor: "default",
 											}}

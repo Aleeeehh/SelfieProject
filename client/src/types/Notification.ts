@@ -4,6 +4,7 @@ type Notification = {
     receiver?: string;
     type: string;
     sentAt: Date;
+    message: string;
     read?: boolean;
     data: any;
 };

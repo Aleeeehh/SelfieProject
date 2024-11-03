@@ -3,7 +3,7 @@ import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import UserSchema from "../schemas/User.js";
 import { Types } from "mongoose";
-import { MessageSchema, UserChatSchema } from "../schemas/Chat.js";
+import { MessageSchema, ChatSchema } from "../schemas/Chat.js";
 import UserResult from "../types/UserResult.js";
 
 const router: Router = Router();
@@ -32,49 +32,67 @@ router.get("/", async (req: Request, res: Response) => {
         }
 
         // TODO: filter per logged user
-        const foundChats = await UserChatSchema.find({
-            userId: req.user.id,
-        }).lean();
-        const chats = [];
-        const users = new Map<string, UserResult>();
+        // const userId = req.user.id;
 
-        // For each chat, find the messages
+        const foundChats = await ChatSchema.find().lean();
+
+        console.log(foundChats);
+
+        const chats = [];
+        const users = new Map<string, string>(); // id -> username
+
         for (const foundChat of foundChats) {
+            // For each chat populate userList
+            const userList = [] as UserResult[];
+            for (const user of foundChat.userList) {
+                const foundUser = await UserSchema.findById(user).lean();
+                if (!foundUser) {
+                    console.log("User not found: " + user);
+                    continue;
+                }
+
+                userList.push({
+                    id: user.toString(),
+                    username: foundUser.username,
+                });
+            }
+
+            // For each chat populate messageList
             const foundMessages = await MessageSchema.find({
                 chatId: foundChat._id,
             }).lean();
 
-            const messages: Message[] = [];
-            const userList = [] as UserResult[];
-
+            const messages = [] as Message[];
             for (const message of foundMessages) {
                 // User not in map: add it
                 const userId = message.userId.toString();
                 if (!users.has(userId)) {
-                    const foundUser = await UserSchema.findById(
-                        message.userId
-                    ).lean();
+                    const foundUser = await UserSchema.findById(userId).lean();
+
                     if (!foundUser) {
+                        console.log("User not found: " + userId);
                         continue;
                     }
-                    users.set(foundUser._id.toString(), {
-                        id: foundUser._id.toString(),
-                        username: foundUser.username,
-                    });
+
+                    users.set(foundUser._id.toString(), foundUser.username);
                 }
 
+                const userResult: UserResult = {
+                    id: userId,
+                    username: users.get(userId)!,
+                };
+
                 const messageObj: Message = {
-                    user: users.get(userId)!,
+                    user: userResult,
                     text: message.text,
                     timestamp: message.createdAt,
                 };
 
-                if (!userList.find((u) => u.id === users.get(userId)?.id))
-                    userList.push(users.get(userId)!);
+                if (!userList.find((u) => u.id === userId))
+                    userList.push(userResult);
 
                 messages.push(messageObj);
             }
-
             const chat: Chat = {
                 id: foundChat._id.toString(),
                 name: foundChat.name || null || undefined,
@@ -85,11 +103,17 @@ router.get("/", async (req: Request, res: Response) => {
             chats.push(chat);
         }
 
+        console.log(chats);
+
         const sortedChats = chats.sort((a, b) => {
-            return (
-                a.messageList[0].timestamp.getTime() -
-                b.messageList[0].timestamp.getTime()
-            );
+            {
+                if (!a.messageList[0]) return 1;
+                if (!b.messageList[0]) return -1;
+                return (
+                    a.messageList[0].timestamp.getTime() -
+                    b.messageList[0].timestamp.getTime()
+                );
+            }
         });
 
         return res
@@ -118,48 +142,74 @@ router.post("/", async (req: Request, res: Response) => {
             });
         }
 
-        const type = req.body.title as string | undefined;
-        const userList = req.body.description as string[] | undefined;
+        console.log(req.body);
+
+        const type = req.body.type as string | undefined;
+        const userList = req.body.userList as string[] | undefined;
         const name = req.body.name as string | undefined;
 
-        if (!type || !userList)
+        if (!userList) {
+            console.log("Invalid body: 'userList' required");
             return res.status(400).json({
                 status: ResponseStatus.BAD,
-                message: "Invalid body: 'type' and 'userList' required",
+                message: "Invalid body: 'userList' required",
             });
+        }
 
-        if (["group", "private"].indexOf(type) === -1)
+        if (type && ["group", "private"].indexOf(type) === -1) {
+            console.log("Invalid body: 'type' should be 'group' or 'private'");
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message: "Invalid body: 'type' should be 'group' or 'private'",
             });
+        }
 
-        if (type === "group" && !name)
+        if (type === "group" && !name) {
+            console.log("Invalid body: 'name' required for 'group' type");
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message: "Invalid body: 'name' required for 'group' type",
             });
+        }
 
         const users = [] as UserResult[];
         for (const id of userList) {
-            if (!Types.ObjectId.isValid(id))
+            if (!Types.ObjectId.isValid(id)) {
+                console.log("Invalid user id: " + id);
                 return res.status(400).json({
                     status: ResponseStatus.BAD,
                     message: "Invalid user id: " + id,
                 });
+            }
 
             const user = await UserSchema.findById(id);
-            if (!user)
+            if (!user) {
+                console.log("Invalid user id: " + id);
                 return res.status(400).json({
                     status: ResponseStatus.BAD,
                     message: "Invalid user id: " + id,
                 });
+            }
 
             users.push({
                 id: user._id.toString(),
                 username: user.username,
             });
         }
+
+        // Add logged user to list
+        const currentUser = await UserSchema.findById(req.user.id);
+        if (!currentUser)
+            return res.status(400).json({
+                status: ResponseStatus.BAD,
+                message: "This should not happen",
+            });
+
+        if (!users.find((u) => u.id === currentUser._id.toString()))
+            users.push({
+                id: currentUser._id.toString(),
+                username: currentUser.username,
+            });
 
         const chat: Chat = {
             id: undefined,
@@ -168,8 +218,7 @@ router.post("/", async (req: Request, res: Response) => {
             messageList: [],
         };
 
-        const createdChat = await UserChatSchema.create({
-            userId: chat.id,
+        const createdChat = await ChatSchema.create({
             name: chat.name,
             userList: users.map((u) => u.id),
         });
@@ -194,7 +243,7 @@ router.post("/", async (req: Request, res: Response) => {
     }
 });
 
-router.post("/message", async (_: Request, res: Response) => {
+router.post("/messages", async (_: Request, res: Response) => {
     try {
         // TODO
         throw new Error("Not implemented yet");

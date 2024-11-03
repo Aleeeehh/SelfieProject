@@ -12,7 +12,7 @@ const router: Router = Router();
 
 // get if the current user
 router.get("/", async (req: Request, res: Response) => {
-    if (req.user) {
+    if (req.user && req.user.id) {
         const foundUser = await UserSchema.findById(req.user.id).lean();
         return res
             .status(200)
@@ -55,39 +55,61 @@ router.post("/register", async (req: Request, res: Response) => {
         // TODO: validate body parameters
         // TODO: password hashing in database
 
-        const username = req.body.username;
-        const password = req.body.password;
-        const firstName = req.body.firstName;
-        const lastName = req.body.lastName;
-        const birthdayStr = req.body.birthday;
-        if (!validDateString(birthdayStr))
+        const username = req.body.username as string | undefined;
+        const password = req.body.password as string | undefined;
+        const confirmPassword = req.body.confirmPassword as string | undefined;
+        const firstName = req.body.firstName as string | undefined;
+        const lastName = req.body.lastName as string | undefined;
+        const address = req.body.address as string | undefined;
+        const birthdayStr = req.body.birthday as string | undefined;
+
+        if (
+            !(
+                username &&
+                password &&
+                confirmPassword &&
+                firstName &&
+                lastName &&
+                birthdayStr &&
+                address
+            )
+        )
             return res.status(400).json({
                 status: ResponseStatus.BAD,
-                message: "Invalid date format, should be: YYYY-MM-DD",
+                message:
+                    "Invalid body: 'username', 'password', 'confirmPassword', 'firstName', 'lastName', 'birthday', 'address' required",
+            });
+
+        if (password !== confirmPassword)
+            return res.status(400).json({
+                status: ResponseStatus.BAD,
+                message: "Passwords do not match",
             });
 
         const birthday = new Date(birthdayStr);
 
-        if (!(username || password || firstName || lastName))
+        if (!validDateString(birthdayStr)) {
+            console.log("Invalid date format, should be: YYYY-MM-DD");
             return res.status(400).json({
                 status: ResponseStatus.BAD,
-                message:
-                    "Invalid body: 'username', 'password', 'firstName' and 'lastName' required",
+                message: "Invalid date format, should be: YYYY-MM-DD",
             });
+        }
 
         const newUser: User = {
-            id: "",
             username,
             password,
             firstName,
             lastName,
             birthday,
+            address,
         };
 
         // Verify username not already used
         const foundUser = await UserSchema.findOne({ username: username });
 
         if (foundUser) {
+            console.log("User with that username already exists");
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message: "User with that username already exists",
@@ -96,11 +118,12 @@ router.post("/register", async (req: Request, res: Response) => {
 
         // Insert into database new event
         console.log("Inserting user: ", newUser);
-        await UserSchema.create(newUser);
+        const createdUser = await UserSchema.create(newUser);
 
         const resBody: ResponseBody = {
             message: "New user inserted into database",
             status: ResponseStatus.GOOD,
+            value: createdUser._id.toString(),
         };
 
         return res.json(resBody);
@@ -202,7 +225,14 @@ router.post("/logout", checkAuthentication, async (req, res) => {
 router.delete("/", checkAuthentication, async (req, res) => {
     try {
         // get the requesting user
-        const user = await UserSchema.findByIdAndDelete(req.user?.id);
+        if (!req.user || !req.user.id) {
+            return res.status(400).json({
+                status: ResponseStatus.BAD,
+                message: "User not found",
+            });
+        }
+
+        const user = await UserSchema.findByIdAndDelete(req.user.id);
 
         if (!user) {
             return res.status(404).json({
