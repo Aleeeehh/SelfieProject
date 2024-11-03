@@ -85,11 +85,17 @@ router.get("/", async (req: Request, res: Response) => {
             chats.push(chat);
         }
 
+        console.log(chats);
+
         const sortedChats = chats.sort((a, b) => {
-            return (
-                a.messageList[0].timestamp.getTime() -
-                b.messageList[0].timestamp.getTime()
-            );
+            {
+                if (!a.messageList[0]) return 1;
+                if (!b.messageList[0]) return -1;
+                return (
+                    a.messageList[0].timestamp.getTime() -
+                    b.messageList[0].timestamp.getTime()
+                );
+            }
         });
 
         return res
@@ -118,8 +124,10 @@ router.post("/", async (req: Request, res: Response) => {
             });
         }
 
-        const type = req.body.title as string | undefined;
-        const userList = req.body.description as string[] | undefined;
+        console.log(req.body);
+
+        const type = req.body.type as string | undefined;
+        const userList = req.body.userList as string[] | undefined;
         const name = req.body.name as string | undefined;
 
         if (!type || !userList)
@@ -161,6 +169,20 @@ router.post("/", async (req: Request, res: Response) => {
             });
         }
 
+        // Add logged user to list
+        const currentUser = await UserSchema.findById(req.user.id);
+        if (!currentUser)
+            return res.status(400).json({
+                status: ResponseStatus.BAD,
+                message: "This should not happen",
+            });
+
+        if (!users.find((u) => u.id === currentUser._id.toString()))
+            users.push({
+                id: currentUser._id.toString(),
+                username: currentUser.username,
+            });
+
         const chat: Chat = {
             id: undefined,
             name: name || undefined,
@@ -169,7 +191,6 @@ router.post("/", async (req: Request, res: Response) => {
         };
 
         const createdChat = await UserChatSchema.create({
-            userId: chat.id,
             name: chat.name,
             userList: users.map((u) => u.id),
         });

@@ -58,6 +58,8 @@ function MessageHub(): React.JSX.Element {
             if (res.status === 200) {
                 console.log(resBody);
                 setInput("");
+            } else {
+                setMessage("Impossibile creare la chat: " + resBody.message);
             }
         } catch (e) {
             setMessage("Impossibile raggiungere il server");
@@ -70,24 +72,41 @@ function MessageHub(): React.JSX.Element {
     ): Promise<void> {
         e.preventDefault();
 
-        const res = await fetch(`${SERVER_API}/chats`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                userList: [user.id],
-            }),
-        });
+        try {
+            const res = await fetch(`${SERVER_API}/chats`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userList: [user.id],
+                    type: "private",
+                    name: user.username,
+                }),
+            });
 
-        const resBody = (await res.json()) as ResponseBody;
+            const resBody = (await res.json()) as ResponseBody;
 
-        if (res.status === 200) {
-            console.log(resBody);
-            const newChat = resBody.value as Chat;
+            if (res.status === 200) {
+                console.log(resBody);
 
-            setChatList((chatList) => [...chatList, newChat]);
-            setActiveChat(newChat);
+                // Get updated chat list
+
+                const chats = await fetch(`${SERVER_API}/chats`);
+                const resBody2 = (await chats.json()) as ResponseBody;
+                if (res.status === 200) {
+                    setChatList(resBody2.value as Chat[]);
+                    setActiveChat(resBody2.value[0]);
+                } else {
+                    setMessage(
+                        "Impossibile recuperare le chat: " + resBody.message
+                    );
+                }
+            } else {
+                setMessage("Impossibile creare la chat: " + resBody.message);
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
         }
     }
 
@@ -97,8 +116,12 @@ function MessageHub(): React.JSX.Element {
             <div className="chat-list-container">
                 {chatList.map((chat) => (
                     <div>
-                        <div>{chat.userList.map((user) => user.username)}</div>
-                        <button onClick={() => setActiveChat(chat)}>
+                        <div>
+                            {chat &&
+                                chat.userList &&
+                                chat.userList.map((user) => user.username)}
+                        </div>
+                        <button onClick={(): void => setActiveChat(chat)}>
                             Chat
                         </button>
                     </div>
@@ -107,7 +130,7 @@ function MessageHub(): React.JSX.Element {
                     onItemClick={(
                         e: React.MouseEvent<HTMLButtonElement>,
                         user: UserResult
-                    ) => addNewChat(e, user)}
+                    ): Promise<void> => addNewChat(e, user)}
                     list={[]}
                 />
             </div>
@@ -115,14 +138,16 @@ function MessageHub(): React.JSX.Element {
                 <div>
                     {/*TODO: separate messages by user*/}
 
-                    {activeChat.messageList.map((message) => (
-                        <div>{message}</div>
-                    ))}
+                    {activeChat &&
+                        activeChat.messageList &&
+                        activeChat.messageList.map((message) => (
+                            <div>{message}</div>
+                        ))}
                 </div>
                 <div>
                     <input
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
+                        onChange={(e): void => setInput(e.target.value)}
                     />
                     <button onClick={handleSendMessage} disabled={!input}>
                         Invia

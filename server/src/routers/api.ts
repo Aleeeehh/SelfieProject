@@ -28,6 +28,11 @@ export function checkAuthentication(
     }
 }
 
+router.use((req: Request, _: Response, next: NextFunction) => {
+    console.log("Requested path: ", req.path);
+    next();
+});
+
 router.use("/users", usersRouter);
 
 router.use(checkAuthentication);
@@ -45,7 +50,7 @@ router.get("/", (_: Request, res: Response) => {
 
 // Catch all route
 router.use("*", (_: Request, res: Response) => {
-    res.json({ status: ResponseStatus.BAD, message: "Path not found" });
+    return res.json({ status: ResponseStatus.BAD, message: "Path not found" });
 });
 
 export default router;
