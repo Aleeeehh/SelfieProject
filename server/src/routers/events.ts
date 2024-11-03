@@ -190,6 +190,11 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 }
 
 function minutesApprossimation(hours: number, minutes: number): number {
+    /*
+    if (hours === 0 && minutes < 5) {
+        return 5; // Approssima i minuti a 5
+    }
+    */
     if (hours > 21) {
         minutes = Math.floor(minutes / 10) * 10; // Approssima per difetto
     } else {
@@ -251,7 +256,7 @@ router.get("/", async (req: Request, res: Response) => {
 
         return res.json({ status: ResponseStatus.GOOD, value: eventList });
     } catch (e) {
-        console.log(e);
+        // console.log(e);
         const resBody: ResponseBody = {
             message: "Error handling request",
             status: ResponseStatus.BAD,
@@ -263,7 +268,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.get("/owner", async (req: Request, res: Response) => {
     const ownerId = req.query.owner as string; //ottieni l'owner
-    console.log("questo è l'owner passato come query:" + ownerId);
+    //  console.log("questo è l'owner passato come query:" + ownerId);
 
     try {
         //Controllo se l'owner è stato inserito
@@ -286,7 +291,7 @@ router.get("/owner", async (req: Request, res: Response) => {
             return res.status(400).json(resBody);
         }
 
-        console.log("Eventi trovati: ", foundDBEvents);
+        // console.log("Eventi trovati: ", foundDBEvents);
 
         // TODO: filter the fields of the found event
         const resBody: ResponseBody = {
@@ -297,7 +302,7 @@ router.get("/owner", async (req: Request, res: Response) => {
 
         return res.json(resBody);
     } catch (e) {
-        console.log(e);
+        // console.log(e);
         const resBody: ResponseBody = {
             message: "Error handling request",
             status: ResponseStatus.BAD,
@@ -309,6 +314,7 @@ router.get("/owner", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
     //gestore per le richieste POST a questa route /events
+    console.log("Sono entrato nella POST degli eventi")
     try {
         //Validazione dell'input
         const {
@@ -322,16 +328,18 @@ router.post("/", async (req: Request, res: Response) => {
             repetitions,
             isInfinite,
         } = req.body as Event;
-        console.log("queste sono le ripetizioni:", repetitions);
-        console.log("questo è l'untilDate dell'evento:", untilDate);
-        console.log("questo è l'isInfinite dell'evento:", isInfinite);
+        //  console.log("queste sono le ripetizioni:", repetitions);
+        // console.log("questo è l'untilDate dell'evento:", untilDate);
+        //console.log("questo è l'isInfinite dell'evento:", isInfinite);
 
+        /*
         if (!title || !startTime || !endTime || !location) {
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message: "Tutti i campi dell'evento devono essere riempiti!",
             });
         }
+        */
 
         if (new Date(startTime) > new Date(endTime)) {
             return res.status(400).json({
@@ -346,8 +354,8 @@ router.post("/", async (req: Request, res: Response) => {
 
         const normalizedEndTime = new Date(endTime);
         normalizedEndTime.setHours(0, 0, 0, 0); // Imposta ore, minuti, secondi e millisecondi a zero
-        console.log("normalizedStartTime: ", normalizedStartTime);
-        console.log("normalizedEndTime: ", normalizedEndTime);
+        //console.log("normalizedStartTime: ", normalizedStartTime);
+        //console.log("normalizedEndTime: ", normalizedEndTime);
 
         if (normalizedStartTime.getTime() != normalizedEndTime.getTime() && (repetitions > 1 || frequency !== "once")) {
             return res.status(400).json({
@@ -382,7 +390,7 @@ router.post("/", async (req: Request, res: Response) => {
         now.setHours(now.getHours());
 
         const groupId = new mongoose.Types.ObjectId().toString();
-        console.log("questo è la frequenza:", frequency);
+        //        console.log("questo è la frequenza:", frequency);
 
         if (isInfinite) {
             const event: Event = {
@@ -401,7 +409,7 @@ router.post("/", async (req: Request, res: Response) => {
                 updatedAt: now,
             };
             await EventSchema.create(event);
-            console.log("Inserted event: ", event);
+            //   console.log("Inserted event: ", event);
 
 
         }
@@ -413,12 +421,14 @@ router.post("/", async (req: Request, res: Response) => {
 
                 //caso in cui la frequenza dell'evento sia giornaliera
                 for (let i = 0; i < repetitions; i++) {
+
                     const startTime = new Date(
                         startTimeDate.getTime() + i * 24 * 60 * 60 * 1000
                     );
                     const endTime = new Date(
                         endTimeDate.getTime() + i * 24 * 60 * 60 * 1000
                     );
+                    //console.log("endTime ad iterazione" + i + endTime);
 
                     if (startTime.getHours() !== startTimePrecedente.getHours()) {
                         startTime.setHours(startTimePrecedente.getHours());
@@ -427,6 +437,7 @@ router.post("/", async (req: Request, res: Response) => {
                     if (endTime.getHours() !== endTimePrecedente.getHours()) {
                         endTime.setHours(endTimePrecedente.getHours());
                     }
+
 
                     const event: Event = {
                         id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
@@ -445,7 +456,7 @@ router.post("/", async (req: Request, res: Response) => {
                     };
 
                     await EventSchema.create(event);
-                    console.log("Inserted event: ", event);
+                    // console.log("Inserted event: ", event);
 
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
@@ -497,7 +508,7 @@ router.post("/", async (req: Request, res: Response) => {
                     };
 
                     await EventSchema.create(event);
-                    console.log("Inserted event: ", event);
+                    // console.log("Inserted event: ", event);
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                 }
@@ -538,7 +549,7 @@ router.post("/", async (req: Request, res: Response) => {
                     };
 
                     await EventSchema.create(event);
-                    console.log("Inserted event: ", event);
+                    //   console.log("Inserted event: ", event);
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                 }
@@ -590,7 +601,7 @@ router.post("/", async (req: Request, res: Response) => {
                     };
 
                     await EventSchema.create(event);
-                    console.log("Inserted event: ", event);
+                    // console.log("Inserted event: ", event);
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                 }
@@ -613,15 +624,15 @@ router.post("/", async (req: Request, res: Response) => {
                     updatedAt: now,
                 };
                 await EventSchema.create(event);
-                console.log("Inserted event: ", event);
+                //      console.log("Inserted event: ", event);
             }
         }
 
         if (untilDate != null && !isInfinite) {
-            console.log("entrato in ramo untilDate diverso da null")
+            // console.log("entrato in ramo untilDate diverso da null")
 
             if (frequency === "day") {
-                console.log("entrato in ramo day")
+                //console.log("entrato in ramo day")
                 var startTimePrecedente = new Date(startTime);
                 var untilDateDate = new Date(untilDate);
                 untilDateDate.setHours(0, 0, 0, 0);
@@ -630,16 +641,16 @@ router.post("/", async (req: Request, res: Response) => {
                 normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
 
                 if (untilDateDate < normalizedEndTimePrecedente) {
-                    console.log(untilDateDate, " è minore di ", endTimePrecedente);
+                    //  console.log(untilDateDate, " è minore di ", endTimePrecedente);
                 }
                 if (untilDateDate > endTimePrecedente) {
-                    console.log(untilDateDate, " è maggiore di ", endTimePrecedente);
+                    // console.log(untilDateDate, " è maggiore di ", endTimePrecedente);
                 }
 
                 //caso in cui la frequenza dell'evento sia giornaliera
                 let i = 0;
-                console.log("questa è la untilDate: ", untilDate)
-                console.log("questa è la endTimePrecedente: ", endTimePrecedente)
+                // console.log("questa è la untilDate: ", untilDate)
+                // console.log("questa è la endTimePrecedente: ", endTimePrecedente)
                 while (untilDateDate > normalizedEndTimePrecedente) {
 
                     const startTime = new Date(
@@ -648,7 +659,7 @@ router.post("/", async (req: Request, res: Response) => {
                     const endTime = new Date(
                         endTimeDate.getTime() + i * 24 * 60 * 60 * 1000
                     );
-                    console.log("endTime ad iterazione" + i + endTime);
+                    //console.log("endTime ad iterazione" + i + endTime);
 
                     if (startTime.getHours() !== startTimePrecedente.getHours()) {
                         startTime.setHours(startTimePrecedente.getHours());
@@ -666,6 +677,7 @@ router.post("/", async (req: Request, res: Response) => {
                         endTime, // Aggiungi un giorno
                         repetitions,
                         frequency,
+                        isInfinite,
                         untilDate,
                         location,
                         owner,
@@ -675,7 +687,7 @@ router.post("/", async (req: Request, res: Response) => {
                     };
 
                     await EventSchema.create(event);
-                    console.log("Inserted event: ", event);
+                    //("Inserted event: ", event);
 
                     startTimePrecedente = new Date(startTime);
                     endTimePrecedente = new Date(endTime);
@@ -738,7 +750,7 @@ router.post("/", async (req: Request, res: Response) => {
                     };
 
                     await EventSchema.create(event);
-                    console.log("Inserted event: ", event);
+                    // console.log("Inserted event: ", event);
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                     normalizedEndTimePrecedente = new Date(endTime);
@@ -757,8 +769,8 @@ router.post("/", async (req: Request, res: Response) => {
                 var normalizedEndTimePrecedente = new Date(endTimePrecedente);
                 //normalizedEndTimePrecedente.setDate(normalizedEndTimePrecedente.getDate() + 7);
                 normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
-                console.log("untilDateDate: ", untilDateDate);
-                console.log("normalizedEndTimePrecedente: ", normalizedEndTimePrecedente);
+                // console.log("untilDateDate: ", untilDateDate);
+                //console.log("normalizedEndTimePrecedente: ", normalizedEndTimePrecedente);
                 let i = 0;
                 while (untilDateDate > normalizedEndTimePrecedente) {
                     const startTime = new Date(startTimeDate);
@@ -793,13 +805,13 @@ router.post("/", async (req: Request, res: Response) => {
                     };
 
                     await EventSchema.create(event);
-                    console.log("Inserted event: ", event);
+                    //    console.log("Inserted event: ", event);
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                     normalizedEndTimePrecedente = new Date(endTime);
                     normalizedEndTimePrecedente.setDate(normalizedEndTimePrecedente.getDate() + 7);
-                    console.log("untilDateDate: ", untilDateDate);
-                    console.log("normalizedEndTimePrecedente: ", normalizedEndTimePrecedente);
+                    //  console.log("untilDateDate: ", untilDateDate);
+                    // console.log("normalizedEndTimePrecedente: ", normalizedEndTimePrecedente);
                     normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
 
                     i++;
@@ -858,7 +870,7 @@ router.post("/", async (req: Request, res: Response) => {
                     };
 
                     await EventSchema.create(event);
-                    console.log("Inserted event: ", event);
+                    //    console.log("Inserted event: ", event);
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                     normalizedEndTimePrecedente = new Date(endTime);
@@ -887,7 +899,7 @@ router.post("/", async (req: Request, res: Response) => {
                     updatedAt: now,
                 };
                 await EventSchema.create(event);
-                console.log("Inserted event: ", event);
+                // console.log("Inserted event: ", event);
             }
 
         }
@@ -910,7 +922,7 @@ router.post("/", async (req: Request, res: Response) => {
 });
 
 router.post("/deleteEvent", async (req: Request, res: Response) => {
-    console.log("Richiesta ricevuta per eliminare evento");
+    // console.log("Richiesta ricevuta per eliminare evento");
 
     const { event_id, groupId } = req.body;
     try {
@@ -936,6 +948,38 @@ router.post("/deleteEvent", async (req: Request, res: Response) => {
             message: "Evento eliminato con successo",
             status: "success",
             value: eventiEliminati,
+        };
+        console.log("Evento eliminato:", eventoEliminato);
+
+        return res.json(resBody);
+    } catch (e) {
+        const resBody = {
+            message: "Errore nell'eliminazione dell'evento",
+            status: ResponseStatus.BAD,
+        };
+        return res.json(resBody);
+    }
+});
+
+router.post("/deleteEventTitle", async (req: Request, res: Response) => {
+    // console.log("Richiesta ricevuta per eliminare evento");
+
+    const { titoloDaEliminare } = req.body;
+    try {
+        console.log("titolo Evento da eliminare:", titoloDaEliminare);
+        const eventoEliminato = await EventSchema.find({
+            title: titoloDaEliminare,
+        });
+        console.log("evento eliminato:", eventoEliminato);
+
+        await EventSchema.deleteOne({
+            title: titoloDaEliminare,
+        });
+        //	console.log("QUESTI SONO GLI EVENTI ELIMINATI:", eventiEliminati);
+        const resBody = {
+            message: "Evento eliminato con successo",
+            status: "success",
+            value: eventoEliminato,
         };
         console.log("Evento eliminato:", eventoEliminato);
 

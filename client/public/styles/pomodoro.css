@@ -128,7 +128,7 @@ button {
 .preview {
     display: flex;
     justify-content: flex-start;
-    align-items: flex-start;
+    align-items: center;
 	margin: 50px 0px;
     color: black;
 }
@@ -148,7 +148,7 @@ button {
 	flex-direction: column;
 }
 
-.create-event-container>form {
+.create-event-container > form {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-around;
@@ -160,4 +160,42 @@ button {
 
 .createEventinput {
 	background-color: white;
+}
+
+.add-event-button {
+	position: absolute;
+	top: 100px;
+	left: 10px;
+	background-color: bisque;
+	border-radius: 16px;
+	width: 150px;
+}
+
+.create-event-form-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    width: 500px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.hidden {
+    display: none;
 }

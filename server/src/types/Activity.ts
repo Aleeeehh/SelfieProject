@@ -1,17 +1,17 @@
 import type { Types } from "mongoose";
 
 type Activity = {
-	id?: Types.ObjectId | string;
-	title: string;
-	description?: string;
+	id?: Types.ObjectId | String;
+	title: String;
+	description?: String;
 	deadline: Date;
 	completed: boolean;
 	completedAt?: Date;
-	owner: Types.ObjectId;
-	tags: string[];
+	owner: String;
+	//tags: String[];
 	createdAt?: Date;
 	updatedAt?: Date;
-	accessList: Types.ObjectId[];
+	accessList: String[];
 };
 
 export default Activity;

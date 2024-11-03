@@ -19,6 +19,19 @@ enum Frequency {
 	YEARLY = "year",
 }
 
+type Activity = {
+	_id: string;
+	title: String;
+	description?: String;
+	deadline: Date;
+	completed: boolean;
+	completedAt?: Date;
+	owner: String;
+	createdAt?: Date;
+	updatedAt?: Date;
+	accessList: String[];
+};
+
 const Mesi = [
 	"Gennaio",
 	"Febbraio",
@@ -39,6 +52,14 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
+	const [description, setDescription] = React.useState("");
+	const [createActivity, setCreateActivity] = React.useState(false);
+	const [selectedMode, setSelectedMode] = React.useState("Eventi");
+	const [create, setCreate] = React.useState(false);
+	const [eventsMode, setEventsMode] = React.useState(true);
+	const [todayActivitiesMode, setTodayActivitiesMode] = React.useState(true);
+	const [allActivitiesMode, setAllActivitiesMode] = React.useState(false);
+	const [activitiesMode, setActivitiesMode] = React.useState(false);
 	//const [isUntilDate, setIsUntilDate] = React.useState(false);
 	const [untilDate, setUntilDate] = React.useState<Date | null>(null);
 	const [repetitions, setRepetitions] = React.useState(1);
@@ -46,6 +67,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [isInfinite, setIsInfinite] = React.useState(false);
+	const [currentDate, setCurrentDate] = React.useState(new Date());
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
 		return now;
@@ -69,6 +91,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [activeButton, setActiveButton] = React.useState(0);
 	const [year, setYear] = React.useState(new Date().getFullYear())
 	const [eventList, setEventList] = React.useState<Event[]>([]);
+	const [activityList, setActivityList] = React.useState<Activity[]>([]);
 	const [addTitle, setAddTitle] = React.useState(true);
 	/*
 	const [eventName, setEventName] = React.useState("");
@@ -87,10 +110,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 				if (res.status !== 200) {
 					nav("/login");
 				}
-
 				const data = (await res.json()) as ResponseBody;
 
-				//console.log(data);
+				const getResponse = await fetch(`${SERVER_API}/currentDate`);
+				if (!getResponse.ok) {
+					throw new Error("ERRORE NELLA RICHIESTA GET DI CURRENTDATE IN CALENDAR");
+				}
+
+				const currentDateData = await getResponse.json();
+				setCurrentDate(new Date(currentDateData.currentDate));
+				console.log("Valore currentDate:", currentDate);
 
 				if (data.status === ResponseStatus.GOOD) {
 					setEventList(data.value);
@@ -103,6 +132,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}
 		})();
 	}, []);
+
+	const fetchCurrentDate = async (): Promise<void> => {
+		try {
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			if (!response.ok) {
+				throw new Error("Errore nel recupero della data corrente");
+			}
+			const data = await response.json();
+			setCurrentDate(new Date(data.currentDate)); // Assicurati che il formato sia corretto
+
+			//ricarico la lista di attività
+			const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
+			const updatedActivities = await res2.json();
+
+			// Aggiorna la activityList con l'elenco aggiornato
+			setActivityList(updatedActivities.value);
+			await loadActivities();
+			await loadEvents();
+		} catch (error) {
+			console.error("Errore durante il recupero della data corrente:", error);
+		}
+	};
+
+	//ogni volta che si vogliono visualizzare le attività, aggiorna la currentDate
+	React.useEffect((): void => {
+		fetchCurrentDate();
+	}, [activitiesMode,]); // Chiamata GET ogni volta che activitiesMode cambia
 
 	function renderWeekEvents(weekEvents: { positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[], index: number): JSX.Element {
 		if (!weekEvents[index] || !weekEvents[index].positions) {
@@ -149,7 +205,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 							weekMode(e as React.MouseEvent<HTMLElement>);
 						}}>
-							<i className="bi bi-trash position-absolute"
+							<i className="bi bi-trash"
 								style={{
 									bottom: "2px",
 									right: "50%",
@@ -386,8 +442,26 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 	}
 
+	async function loadActivities(): Promise<void> {
+		const currentUser = await getCurrentUser();
+		const owner = currentUser.value.username;
+		const resActivities = await fetch(`${SERVER_API}/activity/owner?owner=${owner}`);
+		const dataActivities = await resActivities.json();
+		if (dataActivities.status === ResponseStatus.GOOD) {
+			setActivityList(dataActivities.value);
+			console.log("Questa è la lista delle attività:", activityList);
+		}
+		else {
+			setMessage("ERRORE RITROVAMENTO ATTIVITA'");
+		}
+	}
+
 	React.useEffect(() => {
 		loadEvents();
+	}, []);
+
+	React.useEffect(() => {
+		loadActivities();
 	}, []);
 
 	React.useEffect(() => {
@@ -575,6 +649,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("EventList aggiornato", eventList);
 	}, [eventList]); // Esegui questo effetto ogni volta che eventList cambia
 
+	React.useEffect(() => {
+		console.log("ActivityList aggiornato", activityList);
+	}, [activityList]); // Esegui questo effetto ogni volta che activityList cambia
+
+	React.useEffect(() => {
+		console.log("CurrentDate aggiornato", currentDate);
+	}, [currentDate]); // Esegui questo effetto ogni volta che currentDate cambia
+
 	//funzione per aggiungere pallino al giorno che contiene eventi
 	function hasEventsForDay(day: number): boolean {
 		// Controlla se la eventList è vuota
@@ -634,10 +716,37 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return isSameDayEvent || isDailyInfiniteEvent || isMonthlyInfiniteEvent || isWeeklyInfiniteEvent || isYearlyInfiniteEvent;
 		});
 	}
-	// Toggle create event screen
-	//da implementare
+
+	const activitiesCheScadonoOggi = activityList.filter(activity => {
+		const deadline = new Date(activity.deadline);
+		return (
+			deadline.getFullYear() === year &&
+			deadline.getMonth() === meseCorrente &&
+			deadline.getDate() === day
+		);
+	});
+
+	function toggleTodayActivitiesMode(): void {
+		if (!todayActivitiesMode) {
+			setTodayActivitiesMode(true);
+			setAllActivitiesMode(false);
+		}
+		fetchCurrentDate();
+
+	}
+
+	function toggleAllActivitiesMode(): void {
+		if (!allActivitiesMode) {
+			setTodayActivitiesMode(false);
+			setAllActivitiesMode(true);
+		}
+		fetchCurrentDate();
+	}
 
 	function toggleCreateEvent(): void {
+		if (createActivity) {
+			setCreateActivity(false);
+		}
 		if (!createEvent) {
 			// Usa l'ora corrente o l'ora di startTime
 			const currentHours = startTime.getHours();
@@ -666,9 +775,41 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setFrequency(Frequency.ONCE);
 	}
 
+	function toggleCreate(): void {
+		setCreate(!create);
+	}
+
+	function toggleCreateActivity(): void {
+		if (createEvent) {
+			setCreateEvent(false);
+		}
+		if (!createActivity) {
+			// Usa l'ora corrente o l'ora di startTime
+			const currentHours = startTime.getHours();
+			const currentMinutes = startTime.getMinutes();
+			const endHours = endTime.getHours();
+			const endMinutes = endTime.getMinutes();
+
+			// Imposta startTime con day, meseCorrente, year e l'ora corrente
+			var initialStartTime = new Date(year, meseCorrente, day, currentHours, currentMinutes, 0, 0);
+			setStartTime(initialStartTime);
+
+			// Imposta endTime a 30 minuti dopo startTime
+			var initialEndTime = new Date(year, meseCorrente, day, endHours, endMinutes, 0, 0);
+			if ((initialEndTime.getTime() - initialStartTime.getTime()) / (1000 * 60) < 30) {
+				initialEndTime = new Date(initialStartTime); // Crea un nuovo oggetto Date
+				initialEndTime.setMinutes(initialStartTime.getMinutes() + 30);
+			}
+			setEndTime(initialEndTime);
+		}
+		setAddTitle(true);
+		setCreateActivity(!createActivity);
+	}
+
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
 		//console.log("SITUAZIONE EVENT LIST PRIMA DEL CLICK:", eventList);
 		//e.preventDefault();
+		fetchCurrentDate();
 		setEventPositions([]);
 		setRenderKey(prevKey => prevKey + 1);
 		//console.log("renderKey:", renderKey);
@@ -1031,6 +1172,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setWeekEvents(eventiSettimana);
 	}
 
+	function handleSelectMode(e: React.ChangeEvent<HTMLSelectElement>): void {
+		const value = e.target.value;
+		setSelectedMode(value);
+
+		if (value === "1") {
+			toggleEventsMode();
+		} else if (value === "2") {
+			toggleActivitiesMode();
+		}
+
+		console.log("Questo è il valore di eventMode:", eventsMode);
+		console.log("Questo è il valore di activitiesMode:", activitiesMode);
+	}
+
 	async function loadMonthEvents(year: number, meseCorrente: number): Promise<void> {
 		const eventiMese = [];
 		const daysInMonth = getDaysInMonth(new Date(year, meseCorrente));
@@ -1176,6 +1331,85 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	}
 
+	async function handleDeleteActivity(id: string): Promise<void> {
+		//console.log("day:", day);
+		try {
+			//console.log("Attività da eliminare:", id);
+			const res = await fetch(`${SERVER_API}/activity/deleteActivity`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					activity_id: id,
+				}),
+			});
+			const data = await res.json();
+
+			//console.log("EVENTO ELIMINATO:", data);
+			//elimina l'evento dalla eventList
+			const attivitaEliminata = data.value; // Supponendo che `value` contenga l'attività eliminata
+			if (data.status === "success") {
+
+				// Aggiorna la activityList rimuovendo le attività eliminati
+				setActivityList(prevActivityList => prevActivityList.filter(activity => activity._id !== attivitaEliminata._id));
+
+				console.log("Activity list aggiornata:", activityList);
+				handleDateClick(day);
+			}
+
+			console.log("Questa è l'attività eliminata:", attivitaEliminata);
+			console.log("Questo è il titolo dell'attività eliminata: ", attivitaEliminata[0].title);
+			console.log("Questa è l'attività da eliminare eliminata:", attivitaEliminata[0]);
+
+			//cerca l'evento scadenza dell'attività ed eliminalo
+			const res2 = await fetch(`${SERVER_API}/events/deleteEventTitle`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ titoloDaEliminare: "Scadenza " + attivitaEliminata[0].title }),
+			});
+
+			const data2 = await res2.json();
+
+			console.log("Evento scadenza eliminato:", data2);
+
+			setEventList(prevEventList =>
+				prevEventList.filter(event => event.title !== "Scadenza " + attivitaEliminata[0].title) // Filtra l'evento eliminato
+			);
+			await loadEvents();
+			handleDateClick(day);
+
+			//await loadActivities();
+
+			return data;
+
+		}
+		catch (e) {
+			setMessage("Errore nell'eliminazione dell'evento: " + e);
+			return;
+		}
+
+	}
+
+	async function handleCompleteActivity(id: string): Promise<void> {
+		console.log("Completo l'attività:", id);
+		const res = await fetch(`${SERVER_API}/activity/completeActivity`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				activity_id: id,
+			}),
+		});
+		const data = await res.json();
+		console.log("Attività completata:", data);
+
+		const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
+		const updatedActivities = await res2.json();
+
+		// Aggiorna la activityList con l'elenco aggiornato
+		setActivityList(updatedActivities.value);
+		await loadActivities();
+
+	}
+
 
 
 	async function getCurrentUser(): Promise<Promise<any> | null> {
@@ -1221,15 +1455,12 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setMessage("L'evento deve durare almeno 30 minuti");
 			return;
 		}
-
-
-
 		const currentUser = await getCurrentUser();
-		//("Valore ottenuto:", currentUser);
 
 		const owner = currentUser.value.username;
 
 		console.log("Questa è la frequenza prima di inviare la richiesta di creazione dell'evento:", frequency);
+
 
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
@@ -1254,11 +1485,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return;
 		}
 
-
-		//const data: ResponseBody = (await res.json()) as ResponseBody;
-		//console.log("Questo è l'evento creato:", data.value);
-		//console.log("Event list prima dell'aggiornamento:", eventList);
-
 		// Aggiorna la lista degli eventi
 		await loadEvents();
 		handleDateClick(startTime.getDate());
@@ -1275,11 +1501,103 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
+	}
 
-		//window.location.reload()
+	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();	//Validazione dell'input
 
-		// TODO: send post request to server
-		// TODO: handle response
+		if (!title) {
+			setMessage("Il titolo dell'attività deve essere riempito!");
+			return;
+		}
+
+		const dataInizio = new Date(year, meseCorrente, day);
+		if (dataInizio > endTime) {
+			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			return;
+		}
+
+		const currentUser = await getCurrentUser();
+
+		const owner = currentUser.value.username;
+
+		const startTime = new Date(endTime);
+		startTime.setHours(endTime.getHours() - 1);
+
+		//crea l'attività come evento sul calendario
+		const res = await fetch(`${SERVER_API}/events`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				owner,
+				title: "Scadenza " + title,
+				startTime: startTime.toISOString(),
+				endTime: endTime.toISOString(),
+				untilDate: null,
+				isInfinite: false,
+				frequency: "once",
+				location,
+				repetitions: 1,
+			}),
+		});
+
+		const newActivity = {
+			_id: "1",
+			title,
+			deadline: endTime,
+			description,
+			owner: owner,
+			accessList: [owner],
+			completed: false,
+		};
+		setActivityList([...activityList, newActivity]);
+
+
+		//crea l'attività nella lista delle attività
+		const res2 = await fetch(`${SERVER_API}/activity`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				title,
+				deadline: endTime.toISOString(),
+				description,
+				owner: owner,
+				accessList: [owner],
+			}),
+		});
+
+		await loadActivities();
+
+
+
+		if (!res2.ok) {
+			const errorData = await res2.json();
+			console.error("Error response:", errorData);
+			return; // Esci se c'è un errore
+		}
+		const data2 = await res2.json();
+		console.log("Questa è la risposta della creazione dell'attività:", data2);
+
+
+		if (!res.ok) {
+			const errorData = await res.json();
+			console.error("Error response:", errorData);
+			setMessage("Errore durante la creazione dell'attività: " + errorData.message);
+			return;
+		};
+
+		// Aggiorna la lista degli eventi
+		await loadEvents();
+		handleDateClick(startTime.getDate());
+		//ripristina l'orario dopo nel pannelo createEvent, dopo aver creato un evento
+		const now = new Date();
+		const startT = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
+		const endT = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
+		setStartTime(startT);
+		setEndTime(endT);
+		setCreateActivity(!createActivity);
+
+		console.log("Questa è la lista delle attività:", activityList);
 	}
 
 
@@ -1317,6 +1635,25 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setAddTitle(true);
 		}
 	}
+
+	function toggleEventsMode(): void {
+		setEventsMode(!eventsMode);
+		if (eventsMode) {
+			setActivitiesMode(true);
+		} else {
+			setActivitiesMode(false);
+		}
+	}
+
+	function toggleActivitiesMode(): void {
+		setActivitiesMode(!activitiesMode);
+		if (activitiesMode) {
+			setEventsMode(true);
+		} else {
+			setEventsMode(false);
+		}
+	}
+
 
 	function toggleAllDayEvent(): void {
 		if (!allDayEvent) {
@@ -1404,7 +1741,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	return (
 		<>
 			{message && <div>{message}</div>}
-			{day && (
+			{day && eventsMode && (
 				<div>
 					<div style={{ display: "flex", justifyContent: "center" }}>
 						<button
@@ -1464,6 +1801,31 @@ export default function Calendar(): React.JSX.Element { // prova push
 							}}>
 								+
 							</button>
+							{activitiesMode && (
+								<div>
+									<button className="btn btn-primary"
+										onClick={toggleTodayActivitiesMode}
+										style={{
+											backgroundColor: "bisque",
+											color: "white",
+											border: "0",
+											marginLeft: "15px",
+										}}>
+										Mostra attività che scadono questo giorno
+									</button>
+
+									<button className="btn btn-primary"
+										onClick={toggleAllActivitiesMode}
+										style={{
+											backgroundColor: "bisque",
+											color: "white",
+											border: "0",
+											marginLeft: "15px",
+										}}>
+										Mostra tutte le attività
+									</button>
+								</div>
+							)}
 						</div>
 					</div>
 					<div className="calendar col-4">
@@ -1478,14 +1840,37 @@ export default function Calendar(): React.JSX.Element { // prova push
 								className="btn addEvent"
 								style={{
 									backgroundColor: "bisque",
-									color: "white",
+									color: "black",
 									border: "0",
 									minWidth: "100px",
-									fontSize: "1rem",
+									fontSize: "3rem",
+									borderRadius: "30%", // Rende il bottone tondo
+									padding: "10px", // Aggiungi padding per aumentare la dimensione del bottone
+									width: "50px", // Imposta una larghezza fissa
+									height: "70px", // Imposta un'altezza fissa
+									display: "flex", // Usa flexbox per centrare il contenuto
+									alignItems: "center", // Centra verticalmente
+									justifyContent: "center", // Centra orizzontalmente
 								}}
-								onClick={toggleCreateEvent}>
-								Add Event
+								onClick={toggleCreate}>
+
+								+
 							</button>
+
+							{create && (<div>
+								<button className="btn"
+									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+									onClick={toggleCreateEvent}>
+									Evento
+								</button>
+								<button className="btn"
+									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+									onClick={toggleCreateActivity}>
+									Attività
+								</button>
+							</div>)}
+
+
 						</div>
 						<div
 							className="month-indicator"
@@ -1571,6 +1956,23 @@ export default function Calendar(): React.JSX.Element { // prova push
 									)}
 								</div>
 							))}
+						</div>
+
+						<div style={{ marginTop: "10px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+							<label htmlFor="eventType" style={{ fontWeight: "bold", marginRight: "10px" }}>Visualizza:</label>
+							<select className="btn" id="eventType" style={{
+								padding: "10px",
+								borderRadius: "5px",
+								border: "0",
+								backgroundColor: "bisque",
+								fontSize: "1rem",
+								cursor: "pointer",
+								transition: "border-color 0.3s",
+							}} onChange={handleSelectMode} value={selectedMode}
+							>
+								<option value="1">Eventi</option>
+								<option value="2">Attività</option>
+							</select>
 						</div>
 					</div>
 					{createEvent && (
@@ -1802,125 +2204,303 @@ export default function Calendar(): React.JSX.Element { // prova push
 						</div>
 
 					)}
-					<div className="orario col-5" >
-
-
-						<div style={{ position: "relative", marginLeft: "10%" }}>
-							{eventPositions.map((event, index) => (
-								// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
-								!event.type ? (
-
-									<div
-										key={index} // Assicurati di fornire una chiave unica per ogni elemento
-										className="evento red"
-										style={{
-											top: `${event.top}px`, // Imposta la posizione verticale
-											height: `${event.height}px`, // Imposta l'altezza dell'evento
-											width: `calc(95%/${event.width})`,
-											position: "absolute", // Assicurati che sia posizionato correttamente
-											color: "red", // Colore rosso se event.type è false
-											borderColor: "red",
-											backgroundColor: "rgba(249, 67, 67, 0.5)",
-											marginLeft: `${event.marginLeft}%`,
-											cursor: "default", // Imposta il cursore di default per l'intero evento
-										}}
-									>
-										<div style={{ color: "red" }}>
-											<Link
-												to={`/pomodoro?duration=${
-													// Funzione per calcolare la durata dell'evento e scriverlo come query param
-													((startTime, endTime): number => {
-														const start = new Date(startTime);
-														const end = new Date(endTime);
-														const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-														return totMin;
-													})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-													}&id=${event.event._id}`} // Passa l'id dell'evento
-												style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-											>
-												{event.name}
-											</Link>
-										</div>
-										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
-											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-											<i className="bi bi-trash position-absolute"
-												style={{
-													bottom: "2px", // Posiziona l'icona a 10px dal fondo
-													right: "50%",  // Posiziona l'icona a 10px dal lato destro
-													fontSize: "1.5rem",
-													margin: 0,
-													padding: 0,
-													color: "red",
-													cursor: "pointer"
-												}}
-											></i>
-										</div>
+					{createActivity && (
+						<div className="create-event-container col-2">
+							<button
+								className="btn btn-primary"
+								style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+								onClick={toggleCreateActivity}>
+								Close
+							</button>
+							<form>
+								{addTitle && (
+									<label htmlFor="title">
+										Title
+										<input
+											className="btn border"
+											type="text"
+											name="title"
+											value={title}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+												setTitle(e.target.value)
+											}
+										/>
+									</label>
+								)}
+								<label htmlFor="description">
+									Descrizione
+									<input
+										className="btn border"
+										type="text"
+										name="title"
+										value={description}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+											setDescription(e.target.value)
+										}
+									/>
+								</label>
+								<label htmlFor="endTime">
+									Scadenza
+									<div>
+										<DatePicker
+											className="btn border"
+											name="endTime"
+											selected={endTime}
+											onChange={(date: Date | null): void => {
+												if (date) {
+													// Aggiorna la data mantenendo l'orario attuale
+													const newDate = new Date(endTime);
+													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+													setEndTime(newDate);
+												}
+											}}
+										/>
 									</div>
 
+									<div>
+										<input
+											className="btn border"
+											type="time"
+											value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+												const [hours, minutes] = e.target.value.split(':');
+												const newDate = new Date(endTime);
+												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+												setEndTime(newDate); // Imposta il nuovo oggetto Date
+											}}
+										/>
+									</div>
+
+								</label>
+								<button
+									className="btn btn-primary"
+									style={{
+										backgroundColor: "bisque",
+										color: "white",
+										border: "0",
+									}}
+									onClick={handleCreateActivity}>
+									Create Activity
+								</button>
+							</form>
+						</div>
+
+					)}
+					{activitiesMode && todayActivitiesMode && (
+						<>
+							<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
+								{activitiesCheScadonoOggi.length > 0 ? (
+									activitiesCheScadonoOggi.map((activity, index) => (
+										<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
+											<h4>{activity.title}</h4>
+											<p>Scadenza: {new Date(activity.deadline).toLocaleString()}</p>
+											<p>Descrizione: {activity.description}</p>
+											<span style={{ color: "black", marginBottom: "10px" }}>
+												Completata:
+												<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
+													{activity.completed ? " Si" : " No"}
+												</span>
+
+
+												{new Date(activity.deadline) < currentDate && !activity.completed && (
+													<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
+												)}
+
+											</span>
+											<br />
+											<button onClick={async (): Promise<void> => {
+												await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
+												// Dopo l'eliminazione, aggiorna la lista delle attività
+												setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
+											}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+												<i style={{ color: "black" }} className="bi bi-trash"> </i>
+											</button>
+
+											<button onClick={async (): Promise<void> => {
+												await handleCompleteActivity(activity._id); //completo l'attività corrente
+											}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+												<i style={{ color: "black" }} className="bi bi-check"> </i>
+											</button>
+
+										</div>
+
+									))
 								) : (
-									<div
-										className="evento blue"
-										style={{
-											top: `${event.top}px`, // Imposta la posizione verticale
-											height: `${event.height}px`, // Imposta l'altezza dell'evento
-											width: `calc(95%/${event.width})`,
-											position: "absolute", // Assicurati che sia posizionato correttamente
-											color: "rgb(155, 223, 212)", // Imposta il colore per eventi normali
-											borderColor: "rgb(155, 223, 212)",
-											backgroundColor: "rgba(155, 223, 212, 0.5)", // Colore di sfondo
-											marginLeft: `${event.marginLeft}%`,
-											cursor: "default",
-										}}
-									>
-										{event.name}
-										<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
-											{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-											<i className="bi bi-trash position-absolute"
-												style={{
-													bottom: "2px", // Posiziona l'icona a 10px dal fondo
-													right: "50%",  // Posiziona l'icona a 10px dal lato destro
-													fontSize: "1.5rem",
-													margin: 0,
-													padding: 0,
-													color: "rgb(155, 223, 212)",
-													cursor: "pointer"
-												}}
-											></i>
+									<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold" }}>Non ci sono attività in scadenza oggi.</p>
+								)}
+							</div>
+						</>
+
+					)}
+
+					{activitiesMode && allActivitiesMode && (
+						<>
+							<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
+								{activityList.length > 0 ? (
+									activityList.map((activity, index) => (
+										<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
+											<h4>{activity.title}</h4>
+											<p>Scadenza: {new Date(activity.deadline).toLocaleString()}</p>
+											<p>Descrizione: {activity.description}</p>
+											<span style={{ color: "black", marginBottom: "10px" }}>
+												Completata:
+												<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
+													{activity.completed ? " Si" : " No"}
+												</span>
+											</span>
+
+											{new Date(activity.deadline) < currentDate && !activity.completed && (
+												<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
+											)}
+
+											<br />
+											<button onClick={async (): Promise<void> => {
+												await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
+												// Dopo l'eliminazione, aggiorna la lista delle attività
+												setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
+											}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+												<i style={{ color: "black" }} className="bi bi-trash"> </i>
+											</button>
+
+											<button onClick={async (): Promise<void> => {
+												await handleCompleteActivity(activity._id); //completo l'attività corrente
+											}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+												<i style={{ color: "black" }} className="bi bi-check"> </i>
+											</button>
+
 										</div>
 
-									</div>
+									))
+								) : (
+									<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold", }}>Non ci sono attività in scadenza.</p>
+								)}
+							</div>
+						</>
 
-								)
-							))}
+					)}
+
+
+					{eventsMode && (
+						<div className="orario col-5" >
+
+
+							<div style={{ position: "relative", marginLeft: "10%" }}>
+								{eventPositions.map((event, index) => (
+									// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+									!event.type ? (
+
+										<div
+											key={index} // Assicurati di fornire una chiave unica per ogni elemento
+											className="evento red"
+											style={{
+												top: `${event.top}px`, // Imposta la posizione verticale
+												height: `${event.height}px`, // Imposta l'altezza dell'evento
+												width: `calc(95%/${event.width})`,
+												position: "absolute", // Assicurati che sia posizionato correttamente
+												color: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red", // Colore più chiaro se currentDate è maggiore di endTime
+												borderColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red",
+												backgroundColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)", // Colore di sfondo più chiaro
+												marginLeft: `${event.marginLeft}%`,
+												cursor: "default", // Imposta il cursore di default per l'intero evento
+											}}
+										>
+											<div style={{ color: "red" }}>
+												<Link
+													to={`/pomodoro?duration=${
+														// Funzione per calcolare la durata dell'evento e scriverlo come query param
+														((startTime, endTime): number => {
+															const start = new Date(startTime);
+															const end = new Date(endTime);
+															const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+															return totMin;
+														})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+														}&id=${event.event._id}`} // Passa l'id dell'evento
+													style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+												>
+													{event.name}
+												</Link>
+											</div>
+											<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
+												{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+												<i className="bi bi-trash"
+													style={{
+														bottom: "2px", // Posiziona l'icona a 10px dal fondo
+														right: "50%",  // Posiziona l'icona a 10px dal lato destro
+														fontSize: "1.5rem",
+														margin: 0,
+														padding: 0,
+														color: "red",
+														cursor: "pointer"
+													}}
+												></i>
+											</div>
+										</div>
+
+									) : (
+										<div
+											className="evento blue"
+											style={{
+												top: `${event.top}px`, // Imposta la posizione verticale
+												height: `${event.height}px`, // Imposta l'altezza dell'evento
+												width: `calc(95%/${event.width})`,
+												position: "absolute", // Assicurati che sia posizionato correttamente
+												color: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)", // Colore più chiaro se currentDate è maggiore di endTime
+												borderColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)",
+												backgroundColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)", // Colore di sfondo più chiaro
+												marginLeft: `${event.marginLeft}%`,
+												cursor: "default",
+											}}
+										>
+											{event.name}
+											<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
+												{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+												<i className="bi bi-trash"
+													style={{
+														bottom: "2px", // Posiziona l'icona a 10px dal fondo
+														right: "50%",  // Posiziona l'icona a 10px dal lato destro
+														fontSize: "1.5rem",
+														margin: 0,
+														padding: 0,
+														color: "rgb(155, 223, 212)",
+														cursor: "pointer"
+													}}
+												></i>
+											</div>
+
+										</div>
+
+									)
+								))}
+							</div >
+
+
+							<time>00:00</time>
+							<time>01:00</time>
+							<time>02:00</time>
+							<time>03:00</time>
+							<time>04:00</time>
+							<time>05:00</time>
+							<time>06:00</time>
+							<time>07:00</time>
+							<time>08:00</time>
+							<time>09:00</time>
+							<time>10:00</time>
+							<time>11:00</time>
+							<time>12:00</time>
+							<time>13:00</time>
+							<time>14:00</time>
+							<time>15:00</time>
+							<time>16:00</time>
+							<time>17:00</time>
+							<time>18:00</time>
+							<time>19:00</time>
+							<time>20:00</time>
+							<time>21:00</time>
+							<time>22:00</time>
+							<time>23:00</time>
+
 						</div >
-
-
-						<time>00:00</time>
-						<time>01:00</time>
-						<time>02:00</time>
-						<time>03:00</time>
-						<time>04:00</time>
-						<time>05:00</time>
-						<time>06:00</time>
-						<time>07:00</time>
-						<time>08:00</time>
-						<time>09:00</time>
-						<time>10:00</time>
-						<time>11:00</time>
-						<time>12:00</time>
-						<time>13:00</time>
-						<time>14:00</time>
-						<time>15:00</time>
-						<time>16:00</time>
-						<time>17:00</time>
-						<time>18:00</time>
-						<time>19:00</time>
-						<time>20:00</time>
-						<time>21:00</time>
-						<time>22:00</time>
-						<time>23:00</time>
-
-					</div >
+					)}
 				</div >
 			)
 			}
