@@ -6,6 +6,7 @@ type Notification = {
     receiver?: string | Types.ObjectId;
     type: string;
     sentAt: Date;
+    message: string;
     read?: boolean;
     data: Object;
 };

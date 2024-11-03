@@ -19,6 +19,7 @@ const notificationSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        message: { type: String, required: true },
         sentAt: { type: Date, required: true },
         type: {
             type: String,

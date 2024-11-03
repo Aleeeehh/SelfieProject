@@ -21,6 +21,7 @@ export default function Header(): React.JSX.Element {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
     const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
+    //const [isChangingDate, setIsChangingDate] = useState(false);
     const { isLoggedIn } = useAuth();
 
     /* const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -79,29 +80,58 @@ export default function Header(): React.JSX.Element {
         }
     };
 
+    //ritorna true se ci sono notifiche di tipo event che sono già passate
+    function hasEventNotifications(): boolean {
+        return notifications.some((notification: Notification) => {
+            if (notification.type === "event") {
+                const eventDate = new Date(notification.data.date); // Assicurati che notification.data.date sia un formato valido
+                return eventDate < currentDate; // Controlla se la data dell'evento è inferiore a currentDate
+            }
+            return false; // Restituisci false se non è di tipo "event"
+        });
+    }
+    const fetchNotifications = async (): Promise<void> => {
+        try {
+            const response = await fetch(`${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`);
+            const data = await response.json();
+            console.log("Notifications:", data);
+            if (data.status === ResponseStatus.GOOD) {
+                setNotifications(data.value);
+            } else {
+                console.error("Error:", data.message);
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
+    };
+
+    //aggiorna la data corrente e le notifiche ogni volta che si carica la pagina, aggiorna la currentDate ogni secondo
     useEffect(() => {
         // Funzione per inviare la richiesta POST
         fetchCurrentDate(); // Chiama la funzione per ottenere la data corrente
-
-
+        hasEventNotifications();
         postCurrentDate(new Date()); // Chiama la funzione per inviare la richiesta POST
 
         // Fetch delle notifiche
-        fetch(`${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`)
-            .then((res) => res.json())
-            .then((data) => {
-                console.log("Notifications:", data);
-                if (data.status === ResponseStatus.GOOD) {
-                    setNotifications(data.value);
-                } else {
-                    console.error("Error:", data.message);
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-            });
+        fetchNotifications();
+
+        //aggiorna la currentDate della Home ogni secondo
+
+        const intervalId = setInterval(fetchCurrentDate, 1000);
+        return () => clearInterval(intervalId);
+
+
+
     }, []); // L'array vuoto assicura che l'effetto venga eseguito solo al montaggio
 
+
+    //aggiorna le notifiche ogni secondo
+    useEffect(() => {
+        fetchNotifications();
+
+        const intervalId2 = setInterval(fetchNotifications, 1000);
+        return () => clearInterval(intervalId2);
+    }, []);
 
 
     return (
@@ -179,7 +209,6 @@ export default function Header(): React.JSX.Element {
                             }
                         >
                             <i className="fas fa-hourglass" style={{ marginRight: "5px" }}></i> {/* Icona della clessidra */}
-
 
                         </button>
 
@@ -261,12 +290,34 @@ export default function Header(): React.JSX.Element {
 
                         <button
                             className="btn secondary"
-                            style={buttonStyle}
+                            style={{
+                                ...buttonStyle,
+                                position: "relative", // Posizionamento relativo per il pallino
+                            }}
                             onClick={(): void =>
                                 setShowNotifications(!showNotifications)
                             }
                         >
                             <i className="fas fa-bell" />
+                            {hasEventNotifications() && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
+                                <span
+                                    style={{
+                                        position: "absolute",
+                                        top: "-5px", // Posiziona il pallino sopra il pulsante
+                                        right: "-5px", // Posiziona il pallino a destra del pulsante
+                                        width: "15px",
+                                        height: "15px",
+                                        borderRadius: "50%",
+                                        backgroundColor: "#FF007F", // Colore del pallino
+                                        color: "white",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "0.7rem",
+                                        border: "1px solid white", // Aggiungi un bordo bianco per migliorare la visibilità
+                                    }}
+                                />
+                            )}
                         </button>
 
 
@@ -285,50 +336,63 @@ export default function Header(): React.JSX.Element {
                                     }}
                                 >
                                     {notifications && notifications.length > 0 ? (
+                                        console.log("NOTIFICHE:", notifications),
                                         notifications.map((notification, index) => {
+
                                             // TODO: Differentiate by type
                                             if (notification.type === "pomodoro") {
-                                                const nCycles =
-                                                    notification.data.cycles || 5;
-
-                                                const nStudyTime =
-                                                    notification.data.studyTime ||
-                                                    25;
-
-                                                const nPauseTime =
-                                                    notification.data.pauseTime ||
-                                                    5;
+                                                const nCycles = notification.data.cycles || 5;
+                                                const nStudyTime = notification.data.studyTime || 25;
+                                                const nPauseTime = notification.data.pauseTime || 5;
                                                 return (
                                                     <a
                                                         href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
+                                                        key={index} // Sposta la chiave qui
                                                     >
-                                                        <div key={index}>
+                                                        <div>
                                                             <p>
-                                                                Hai ricevuto un
-                                                                invito da{" "}
-                                                                {
-                                                                    notification.sender
-                                                                }{" "}
-                                                                per un pomodoro!
+                                                                Hai ricevuto un invito da {notification.sender} per un pomodoro!
                                                             </p>
                                                             <p>
-                                                                {notification.type}{" "}
-                                                                -{" "}
-                                                                {notification.sentAt.toString()}
+                                                                {notification.type} - {notification.sentAt.toString()}
                                                             </p>
                                                         </div>
                                                     </a>
                                                 );
-                                            } else {
-                                                return (
-                                                    <div key={index}>
-                                                        <p>
-                                                            {notification.type} -{" "}
-                                                            {notification.sentAt.toString()}
-                                                        </p>
-                                                    </div>
-                                                );
                                             }
+                                            if (notification.type === "event") {
+                                                const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+
+                                                //mostra la notifica solo se la data corrente è successiva alla data della notifica
+                                                if (eventDate < currentDate) {
+                                                    return (
+                                                        <div key={index}>
+
+                                                            <p>
+                                                                Data odierna: {currentDate.toLocaleString('it-IT', {
+                                                                    day: 'numeric',
+                                                                    month: 'numeric',
+                                                                    year: 'numeric',
+                                                                    hour: 'numeric',
+                                                                    minute: 'numeric',
+                                                                    hour12: false // Imposta su false per il formato 24 ore
+                                                                })}:
+                                                                Data notifica: {eventDate.toLocaleString('it-IT', {
+                                                                    day: 'numeric',
+                                                                    month: 'numeric',
+                                                                    year: 'numeric',
+                                                                    hour: 'numeric',
+                                                                    minute: 'numeric',
+                                                                    hour12: false // Imposta su false per il formato 24 ore
+                                                                })}
+                                                                {notification.message}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                }
+                                            }
+                                            // Restituisci un elemento vuoto se non ci sono condizioni soddisfatte
+                                            return null; // Aggiungi questa riga per gestire i casi non coperti
                                         })
                                     ) : (
                                         <div>

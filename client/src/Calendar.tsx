@@ -10,6 +10,8 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom"
 import { Event } from "./types/Event";
+//import mongoose from "mongoose";
+
 
 enum Frequency {
 	ONCE = "once",
@@ -60,6 +62,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [todayActivitiesMode, setTodayActivitiesMode] = React.useState(true);
 	const [allActivitiesMode, setAllActivitiesMode] = React.useState(false);
 	const [activitiesMode, setActivitiesMode] = React.useState(false);
+	const [notificationTime, setNotificationTime] = React.useState(0);
 	//const [isUntilDate, setIsUntilDate] = React.useState(false);
 	const [untilDate, setUntilDate] = React.useState<Date | null>(null);
 	const [repetitions, setRepetitions] = React.useState(1);
@@ -68,6 +71,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [isInfinite, setIsInfinite] = React.useState(false);
 	const [currentDate, setCurrentDate] = React.useState(new Date());
+	const [addNotification, setAddNotification] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
 		return now;
@@ -156,8 +160,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 	};
 
 	//ogni volta che si vogliono visualizzare le attività, aggiorna la currentDate
-	React.useEffect((): void => {
+	React.useEffect(() => {
 		fetchCurrentDate();
+
+		//aggiorna la currentDate di calendar ogni secondo
+		const intervalId = setInterval(fetchCurrentDate, 1000);
+		return () => clearInterval(intervalId);
+
 	}, [activitiesMode,]); // Chiamata GET ogni volta che activitiesMode cambia
 
 	function renderWeekEvents(weekEvents: { positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[], index: number): JSX.Element {
@@ -452,7 +461,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			console.log("Questa è la lista delle attività:", activityList);
 		}
 		else {
-			setMessage("ERRORE RITROVAMENTO ATTIVITA'");
+			//setMessage("ERRORE RITROVAMENTO ATTIVITA'");
 		}
 	}
 
@@ -726,6 +735,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 		);
 	});
 
+	function toggleAddNotification(): void {
+		setAddNotification(!addNotification);
+	}
+
 	function toggleTodayActivitiesMode(): void {
 		if (!todayActivitiesMode) {
 			setTodayActivitiesMode(true);
@@ -768,6 +781,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		setAddTitle(true);
 		setRepeatEvent(false);
+		setAddNotification(false);
 		setAllDayEvent(false);
 		setUntil(false);
 		setTitle("");
@@ -1478,6 +1492,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}),
 		});
 
+		const notificationDate = new Date(startTime);
+		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+		console.log("Questa è la data di inizio evento:", startTime);
+		console.log("Questa è la data della notifica:", notificationDate);
+
+		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
+		if (addNotification) {
+			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
+			const res2 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message: "Inizio evento " + title + " tra " + notificationTime + " minuti!",
+					mode: "event",
+					receiver: currentUser.value._id,
+					type: "event",
+					data: {
+						date: notificationDate,
+					},
+				}),
+			});
+
+			const data2 = await res2.json();
+
+			console.log("NOTIFICA AGGIUNTA:", data2);
+		}
+
 		if (!res.ok) {
 			const errorData = await res.json();
 			console.error("Error response:", errorData);
@@ -1492,6 +1533,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//setMessage(data.message || "Undefined error");
 		setCreateEvent(!createEvent);
 		setAllDayEvent(false);
+		setAddNotification(false);
 
 		//ripristina l'orario dopo nel pannelo createEvent, dopo aver creato un evento
 		const now = new Date();
@@ -2190,6 +2232,32 @@ export default function Calendar(): React.JSX.Element { // prova push
 										/>
 									</div>
 								</label>
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="addNotification"
+										onClick={toggleAddNotification}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Aggiungi notifica
+
+								</label>
+
+								{addNotification && (
+									<label htmlFor="notificationTime">
+										Quanti minuti prima mandare la notifica
+										<input
+											className="btn border"
+											type="number"
+											min="0"
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+												setNotificationTime(Number(e.target.value));
+											}}
+										/>
+									</label>
+								)}
+
 								<button
 									className="btn btn-primary"
 									style={{
