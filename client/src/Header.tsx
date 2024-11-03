@@ -35,6 +35,20 @@ export default function Header(): React.JSX.Element {
         });
     };
 
+    const fetchCurrentDate = async (): Promise<void> => {
+        try {
+            const response = await fetch(`${SERVER_API}/currentDate`);
+            if (!response.ok) {
+                throw new Error("Errore nel recupero della data corrente");
+            }
+            const data = await response.json();
+            setCurrentDate(new Date(data.currentDate)); // Imposta la data corrente
+            postCurrentDate(new Date(data.currentDate)); // Invia la data corrente al server
+        } catch (error) {
+            console.error("Errore durante il recupero della data corrente:", error);
+        }
+    };
+
 
     async function postCurrentDate(data: Date): Promise<void> {
         try {
@@ -58,15 +72,7 @@ export default function Header(): React.JSX.Element {
             const getResponse = await fetch(`${SERVER_API}/currentDate`);
             if (!getResponse.ok) {
                 throw new Error("ERRORE NELLA RICHIESTA GET DI CURRENTDATE NELL'HEADER");
-            }/*
-            const currentDateData = await getResponse.json();
-            console.log("Data corrente ottenuta:", currentDateData);
-            console.log("currentDateData.currentDate:", currentDateData.currentDate);
-            const dateFromServer = new Date(currentDateData.currentDate);
-            console.log("dateFromServer, orario aggiustato:", dateFromServer);
-            setCurrentDate(dateFromServer);
-            //setCurrentDate(dateFromServer);
-            */
+            }
 
         } catch (error) {
             console.error("Errore durante l'invio della data corrente:", error);
@@ -75,6 +81,8 @@ export default function Header(): React.JSX.Element {
 
     useEffect(() => {
         // Funzione per inviare la richiesta POST
+        fetchCurrentDate(); // Chiama la funzione per ottenere la data corrente
+
 
         postCurrentDate(new Date()); // Chiama la funzione per inviare la richiesta POST
 
@@ -151,9 +159,11 @@ export default function Header(): React.JSX.Element {
                     width: "100%",
                 }}
             >
-                <button className="btn secondary" style={{ fontWeight: 'bold', fontSize: '24px', fontFamily: 'Times New Roman, Times, serif', alignItems: "center" }}>
-                    {formatDate(currentDate)}
-                </button>
+                {currentDate && (
+                    <button className="btn secondary" style={{ fontWeight: 'bold', fontSize: '24px', fontFamily: 'Times New Roman, Times, serif', alignItems: "center" }}>
+                        {formatDate(currentDate)}
+                    </button>
+                )}
 
 
 
@@ -187,11 +197,22 @@ export default function Header(): React.JSX.Element {
                                     }}
                                 >
                                     <label htmlFor="dateInput">Cambia la data odierna:</label>
-                                    <input className="btn secondary"
+                                    <input
                                         type="date"
                                         id="dateInput"
-                                        value={currentDate.toISOString().split('T')[0]}
-                                        onChange={(event): void => setCurrentDate(new Date(event.target.value))}
+                                        value={currentDate ? currentDate.toISOString().split('T')[0] : ''} // Assicurati che currentDate sia valido
+                                        onChange={(event): void => {
+                                            const inputDate = event.target.value;
+                                            const parsedDate = new Date(inputDate);
+
+                                            // Controlla se la data è valida
+                                            if (isNaN(parsedDate.getTime())) {
+                                                console.error("Data non valida:", inputDate);
+                                                return; // Non procedere se la data non è valida
+                                            }
+
+                                            setCurrentDate(parsedDate); // Aggiorna lo stato solo se la data è valida
+                                        }}
                                         style={{ marginLeft: "10px" }}
                                     />
 
