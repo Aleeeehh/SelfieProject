@@ -193,13 +193,12 @@ export default function NotePage(): React.JSX.Element {
     }
 
     function addUser(
-        e: React.MouseEvent<HTMLButtonElement>,
+        e: React.ChangeEvent<HTMLSelectElement>,
         user: UserResult
     ): void {
         e.preventDefault();
-
+    
         if (!note.accessList.find((u) => u.id === user.id))
-            // TODO: optimize
             setNote((prevNote) => {
                 return {
                     ...prevNote,

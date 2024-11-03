@@ -5,7 +5,7 @@ import UserResult from "./types/UserResult";
 
 type SearchFormProps = {
     onItemClick: (
-        e: React.MouseEvent<HTMLButtonElement>,
+        e: React.ChangeEvent<HTMLSelectElement>,
         user: UserResult
     ) => void;
     list: UserResult[];
@@ -16,9 +16,11 @@ export default function SearchForm({
     list,
 }: SearchFormProps): React.JSX.Element {
     const [search, setSearch] = React.useState("");
+    const [selectedUser, setSelectedUser] = React.useState<UserResult | null>(null);
     const [searchResults, setSearchResults] = React.useState(
         [] as UserResult[]
     );
+
 
     async function handleChange(
         e: React.ChangeEvent<HTMLInputElement>
@@ -45,32 +47,47 @@ export default function SearchForm({
         console.log(resBody);
         setSearchResults(resBody.value);
     }
+
+    function handleSelectChange(
+        e: React.ChangeEvent<HTMLSelectElement>
+    ): void {
+        const selectedUserId = e.target.value;
+        const selectedUser = searchResults.find((user) => user.id === selectedUserId);
+        if (selectedUser) {
+            setSelectedUser(selectedUser);
+            console.log("Utente selezionato:", selectedUser);
+            onItemClick(e, selectedUser);
+        }
+    }
+
     return (
         <>
-            <input
-                style={{ width: "100%" }}
-                type="text"
-                placeholder="Search"
-                value={search}
-                onChange={handleChange}
-            />
-            {searchResults.length > 0 && (
-                <div style={{ width: "100%" }}>
-                    {searchResults.map(
-                        (user) =>
-                            !list.find((u) => u.id === user.id) && (
-                                <button
-                                    key={user.id}
-                                    onClick={(
-                                        e: React.MouseEvent<HTMLButtonElement>
-                                    ): void => onItemClick(e, user)}
-                                >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <input
+                    style={{ width: "100%" }}
+                    type="text"
+                    placeholder="Cerca utente"
+                    value={search}
+                    onChange={handleChange}
+                />
+                {searchResults.length > 0 && (
+                    <select
+                        style={{ width: "100%" }}
+                        onChange={handleSelectChange}
+                    >
+                        <option value="">
+                            {selectedUser ? selectedUser.username : "Seleziona un utente"}
+                        </option>
+                        {searchResults
+                            .filter((user) => !list.find((u) => u.id === user.id))
+                            .map((user) => (
+                                <option key={user.id} value={user.id}>
                                     {user.username}
-                                </button>
-                            )
-                    )}
-                </div>
-            )}
+                                </option>
+                            ))}
+                    </select>
+                )}
+            </div>
         </>
     );
 }

@@ -65,7 +65,7 @@ function MessageHub(): React.JSX.Element {
     }
 
     async function addNewChat(
-        e: React.MouseEvent<HTMLButtonElement>,
+        e: React.ChangeEvent<HTMLSelectElement>,
         user: UserResult
     ): Promise<void> {
         e.preventDefault();
@@ -105,7 +105,7 @@ function MessageHub(): React.JSX.Element {
                 ))}
                 <SearchForm
                     onItemClick={(
-                        e: React.MouseEvent<HTMLButtonElement>,
+                        e: React.ChangeEvent<HTMLSelectElement>,
                         user: UserResult
                     ) => addNewChat(e, user)}
                     list={[]}
