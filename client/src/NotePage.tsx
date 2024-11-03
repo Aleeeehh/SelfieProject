@@ -183,7 +183,7 @@ export default function NotePage(): React.JSX.Element {
 		setIsPreview(!isPreview);
 	}
 
-	function addUser(e: React.MouseEvent<HTMLButtonElement>, user: UserResult): void {
+	function addUser(e: React.ChangeEvent<HTMLSelectElement>, user: UserResult): void {
 		e.preventDefault();
 
 		if (!note.accessList.find((u) => u.id === user.id))
