@@ -35,3 +35,47 @@
 	background-color: #2b96d8;
 	color: #ffffff;
 }
+
+/* Media query per schermi piccoli */
+@media screen and (max-width: 700px) {
+	/* Nascondi i link di navigazione standard e mostra l'icona del menu */
+	.nav-link-container {
+		display: none;
+	}
+
+	.menu-icon {
+		display: block;
+		font-size: 1.5em;
+		cursor: pointer;
+		background: none;
+		border: none;
+		color: #2b96d8;
+	}
+
+	/* Stili per il menù a tendina */
+	.dropdown-menu {
+		display: flex;
+		flex-direction: column;
+		position: absolute;
+		top: 60px; /* Regola la posizione in base all'header */
+		left: 10px;
+		background-color: white;
+		border: 1px solid gray;
+		padding: 10px;
+		z-index: 1000;
+		width: 150px;
+	}
+
+	/* Stile per i link all'interno del dropdown */
+	.dropdown-menu .nav-link {
+		width: 100%;
+		margin: 0.5em 0;
+		color: #2b96d8;
+		text-align: left;
+	}
+
+	.dropdown-menu .nav-link:hover {
+		background-color: #2b96d8;
+		color: #ffffff;
+	}
+}

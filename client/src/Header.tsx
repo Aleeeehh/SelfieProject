@@ -17,6 +17,7 @@ const buttonStyle = {
 const NOTIFICATION_COUNT = 5;
 
 export default function Header(): React.JSX.Element {
+    const [showDropdown, setShowDropdown] = useState(false);
     const [showTimeMachine, setShowTimeMachine] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
@@ -137,13 +138,13 @@ export default function Header(): React.JSX.Element {
     return (
         <header
             className=""
-            style={{
+            /*style={{
                 display: "flex",
                 justifyContent: "space-between",
                 margin: "1vw",
-            }}
+            }}*/
         >
-            <div
+            {/*<div
                 style={{
                     display: "flex",
                     justifyContent: "flex-start",
@@ -180,7 +181,46 @@ export default function Header(): React.JSX.Element {
                 >
                     Progetti
                 </a>
+            </div>*/}
+
+            <div style={{
+                display: "flex",
+                justifyContent: "flex-start",
+                width: "100%",
+            }}>
+                <a href="/" className="header-home">
+                    <img src="/images/logo.jpeg" alt="logo.jpeg" />
+                </a>
+
+                {/* Icona menu per dispositivi piccoli */}
+                <button
+                className="menu-icon"
+                onClick={(): void => setShowDropdown(!showDropdown)}
+            >
+                ☰
+            </button>
+
+                {/* Link standard visibili solo su schermi più grandi di 700px */}
+                <div className="nav-link-container">
+                <a className="nav-link btn secondary" href="/calendar">Calendario</a>
+                <a className="nav-link btn secondary" href="/pomodoro">Pomodoro</a>
+                <a className="nav-link btn secondary" href="/notes">Note</a>
+                <a className="nav-link btn secondary" href="/projects">Progetti</a>
             </div>
+            </div>
+
+            {/* Dropdown menu visibile solo su schermi piccoli */}
+            {showDropdown && (
+                <div className="dropdown-menu">
+                    <a className="nav-link btn secondary" href="/calendar">Calendario</a>
+                    <a className="nav-link btn secondary" href="/pomodoro">Pomodoro</a>
+                    <a className="nav-link btn secondary" href="/notes">Note</a>
+                    <a className="nav-link btn secondary" href="/projects">Progetti</a>
+                </div>
+            )}
+
+
+
 
             <div
                 style={{
