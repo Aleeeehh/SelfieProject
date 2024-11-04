@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "./AuthContext";
+//import { useAuth } from "./AuthContext";
 import { SERVER_API } from "./params/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Notification from "./types/Notification";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 
 const buttonStyle = {
     backgroundColor: "white",
     color: "black",
     borderColor: "gray",
-    margin: "auto 0.5em",
+    margin: "3px 5px",
+    padding: "4px 8px",
     width: "100px",
     alignSelf: "center",
 };
@@ -17,13 +19,13 @@ const buttonStyle = {
 const NOTIFICATION_COUNT = 5;
 
 export default function Header(): React.JSX.Element {
-    const [showDropdown, setShowDropdown] = useState(false);
     const [showTimeMachine, setShowTimeMachine] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
     const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
     //const [isChangingDate, setIsChangingDate] = useState(false);
-    const { isLoggedIn } = useAuth();
+    //const { isLoggedIn } = useAuth();
 
     /* const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         setCurrentDate(event.target.value);
@@ -134,28 +136,19 @@ export default function Header(): React.JSX.Element {
         return () => clearInterval(intervalId2);
     }, []);
 
+    function toggleDropdown(): void {
+        setShowDropdown(prevState => !prevState);
+        console.log("showDropdown:", showDropdown);
+    }
+
 
     return (
-        <header
-            className=""
-            /*style={{
-                display: "flex",
-                justifyContent: "space-between",
-                margin: "1vw",
-            }}*/
-        >
-            {/*<div
-                style={{
-                    display: "flex",
-                    justifyContent: "flex-start",
-                    width: "100%",
-
-                }}
-            >
-                <a href="/" className="header-home">
+        <header className="header-container">
+            {/*Parte sinistra dell'header*/}
+            <div className="link-container">
+                <a href="/">
                     <img src="/images/logo.jpeg" alt="logo.jpeg" />
                 </a>
-
 
                 <a
                     className="btn secondary"
@@ -181,303 +174,262 @@ export default function Header(): React.JSX.Element {
                 >
                     Progetti
                 </a>
-            </div>*/}
+            </div>
 
-            <div style={{
-                display: "flex",
-                justifyContent: "flex-start",
-                width: "100%",
-            }}>
-                <a href="/" className="header-home">
+            <div className="dropdown-container">
+                <a href="/">
                     <img src="/images/logo.jpeg" alt="logo.jpeg" />
                 </a>
-
-                {/* Icona menu per dispositivi piccoli */}
-                <button
-                className="menu-icon"
-                onClick={(): void => setShowDropdown(!showDropdown)}
-            >
-                ☰
-            </button>
-
-                {/* Link standard visibili solo su schermi più grandi di 700px */}
-                <div className="nav-link-container">
-                <a className="nav-link btn secondary" href="/calendar">Calendario</a>
-                <a className="nav-link btn secondary" href="/pomodoro">Pomodoro</a>
-                <a className="nav-link btn secondary" href="/notes">Note</a>
-                <a className="nav-link btn secondary" href="/projects">Progetti</a>
+                <button 
+                    type="button"
+                    className="btn secondary"
+                    style={{ ...buttonStyle, width: "80px", position: "relative" }}
+                    onClick={toggleDropdown}
+                >
+                    Menù
+                    <ul className="dropdown-menu"
+                        style={{
+                            display: (showDropdown ? "block" : "none"),
+                            position: "absolute",
+                            top: "100%",
+                            left: "0",
+                            backgroundColor: "white",
+                            border: "1px solid #ccc",
+                            borderRadius: "4px",
+                            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+                            listStyle: "none",
+                            padding: "0",
+                            margin: "0",
+                            width: "120px",
+                            zIndex: "100",
+                        }}
+                    >
+                        <li><a href="/calendar">Calendario</a></li>
+                        <li><a href="/pomodoro">Pomodoro</a></li>
+                        <li><a href="/notes">Note</a></li>
+                        <li><a href="/projects">Progetti</a></li>
+                    </ul>
+                </button>
             </div>
-            </div>
-
-            {/* Dropdown menu visibile solo su schermi piccoli */}
-            {showDropdown && (
-                <div className="dropdown-menu">
-                    <a className="nav-link btn secondary" href="/calendar">Calendario</a>
-                    <a className="nav-link btn secondary" href="/pomodoro">Pomodoro</a>
-                    <a className="nav-link btn secondary" href="/notes">Note</a>
-                    <a className="nav-link btn secondary" href="/projects">Progetti</a>
-                </div>
-            )}
 
 
 
 
-            <div
+            {/*Parte destra dell'header*/}
+            <div 
                 style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    width: "100%",
+                display: "flex",
+                justifyContent: "flex-end",
+                width: "50%",
+                alignItems: "center"
                 }}
             >
                 {currentDate && (
-                    <button className="btn secondary" style={{ fontWeight: 'bold', fontSize: '24px', fontFamily: 'Times New Roman, Times, serif', alignItems: "center" }}>
+                    <span 
+                        className="btn secondary date-button">
                         {formatDate(currentDate)}
-                    </button>
+                    </span>
                 )}
 
+                <button
+                    className="btn secondary"
+                    style={{ ...buttonStyle, width: "50px" }}
+                    onClick={(): void => setShowTimeMachine(!showTimeMachine)}
+                >
+                    <i className="fas fa-hourglass" style={{ marginRight: "5px" }}></i>
+                    {/* Icona della clessidra */}
+                </button>
 
-
-
-                {isLoggedIn ? (
+                {showTimeMachine && (
                     <>
+                        <div className="time-machine-form">
 
-                        <button
-                            className="btn secondary"
-                            style={buttonStyle}
-                            onClick={(): void =>
-                                setShowTimeMachine(!showTimeMachine)
-                            }
-                        >
-                            <i className="fas fa-hourglass" style={{ marginRight: "5px" }}></i> {/* Icona della clessidra */}
+                            <label htmlFor="dateInput">Cambia la data odierna:
+                                <input
+                                    type="date"
+                                    id="dateInput"
+                                    value={currentDate ? currentDate.toISOString().split('T')[0] : ''} // Assicurati che currentDate sia valido
+                                    onChange={(event): void => {
+                                        const inputDate = event.target.value;
+                                        const parsedDate = new Date(inputDate);
 
-                        </button>
+                                        // Controlla se la data è valida
+                                        if (isNaN(parsedDate.getTime())) {
+                                            console.error("Data non valida:", inputDate);
+                                            return; // Non procedere se la data non è valida
+                                        }
 
-                        {showTimeMachine && (
-                            <>
-                                <div
-                                    style={{
-                                        position: "absolute",
-                                        top: "55px",
-                                        right: "200px",
-                                        backgroundColor: "white",
-                                        border: "1px solid gray",
-                                        padding: "10px",
-                                        zIndex: "1",
+                                        setCurrentDate(parsedDate); // Aggiorna lo stato solo se la data è valida
                                     }}
-                                >
-                                    <label htmlFor="dateInput">Cambia la data odierna:</label>
-                                    <input
-                                        type="date"
-                                        id="dateInput"
-                                        value={currentDate ? currentDate.toISOString().split('T')[0] : ''} // Assicurati che currentDate sia valido
-                                        onChange={(event): void => {
-                                            const inputDate = event.target.value;
-                                            const parsedDate = new Date(inputDate);
-
-                                            // Controlla se la data è valida
-                                            if (isNaN(parsedDate.getTime())) {
-                                                console.error("Data non valida:", inputDate);
-                                                return; // Non procedere se la data non è valida
-                                            }
-
-                                            setCurrentDate(parsedDate); // Aggiorna lo stato solo se la data è valida
-                                        }}
-                                        style={{ marginLeft: "10px" }}
-                                    />
-
-                                    <label htmlFor="timeInput">Cambia l'orario:</label>
-                                    <input className="btn secondary"
-                                        type="time"
-                                        id="timeInput"
-                                        onChange={(event): void => {
-                                            const timeParts = event.target.value.split(':');
-                                            const newDate = new Date(currentDate);
-                                            newDate.setHours(Number(timeParts[0]), Number(timeParts[1]));
-                                            setCurrentDate(newDate); // Aggiorna lo stato con la nuova data e orario
-                                        }}
-                                        style={{ marginLeft: "10px" }}
-                                    />
-
-                                    <button className="btn secondary"
-                                        onClick={(): void => {
-                                            postCurrentDate(currentDate); // Chiama postCurrentDate con la data e orario selezionati
-                                            setShowTimeMachine(false); // Nascondi il time machine
-                                        }} style={{ marginLeft: "10px" }}
-                                    >
-                                        Imposta Data
-                                    </button>
-
-                                    <button className="btn secondary"
-                                        onClick={async (): Promise<void> => {
-                                            const newDate = new Date(); // Ottieni la data corrente
-                                            await postCurrentDate(newDate); // Chiama postCurrentDate con la data corrente
-                                            setCurrentDate(newDate); // Aggiorna lo stato con la nuova data
-                                            setShowTimeMachine(false); // Nascondi il time machine
-                                        }}
-                                        style={{ marginLeft: "10px" }}
-                                    >
-                                        Resetta Data
-                                    </button>
-
-                                </div>
-
-
-                            </>
-
-
-                        )}
-
-
-                        <button
-                            className="btn secondary"
-                            style={{
-                                ...buttonStyle,
-                                position: "relative", // Posizionamento relativo per il pallino
-                            }}
-                            onClick={(): void =>
-                                setShowNotifications(!showNotifications)
-                            }
-                        >
-                            <i className="fas fa-bell" />
-                            {hasEventNotifications() && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
-                                <span
-                                    style={{
-                                        position: "absolute",
-                                        top: "-5px", // Posiziona il pallino sopra il pulsante
-                                        right: "-5px", // Posiziona il pallino a destra del pulsante
-                                        width: "15px",
-                                        height: "15px",
-                                        borderRadius: "50%",
-                                        backgroundColor: "#FF007F", // Colore del pallino
-                                        color: "white",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        fontSize: "0.7rem",
-                                        border: "1px solid white", // Aggiungi un bordo bianco per migliorare la visibilità
-                                    }}
+                                    style={{ marginLeft: "10px" }}
                                 />
-                            )}
-                        </button>
+                            </label>
 
-
-
-                        {showNotifications && (
-                            <>
-                                <div
-                                    style={{
-                                        position: "absolute",
-                                        top: "55px",
-                                        right: "40px",
-                                        backgroundColor: "white",
-                                        border: "1px solid gray",
-                                        padding: "10px",
-                                        zIndex: "1",
+                            <label htmlFor="timeInput">Cambia l'orario:
+                                <input className="btn secondary"
+                                    type="time"
+                                    id="timeInput"
+                                    onChange={(event): void => {
+                                        const timeParts = event.target.value.split(':');
+                                        const newDate = new Date(currentDate);
+                                        newDate.setHours(Number(timeParts[0]), Number(timeParts[1]));
+                                        setCurrentDate(newDate); // Aggiorna lo stato con la nuova data e orario
                                     }}
-                                >
-                                    {notifications && notifications.length > 0 ? (
-                                        console.log("NOTIFICHE:", notifications),
-                                        notifications.map((notification, index) => {
+                                    style={{ marginLeft: "10px" }}
+                                />
+                            </label>
 
-                                            // TODO: Differentiate by type
-                                            if (notification.type === "pomodoro") {
-                                                const nCycles = notification.data.cycles || 5;
-                                                const nStudyTime = notification.data.studyTime || 25;
-                                                const nPauseTime = notification.data.pauseTime || 5;
-                                                return (
-                                                    <a
-                                                        href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
-                                                        key={index} // Sposta la chiave qui
-                                                    >
-                                                        <div>
-                                                            <p>
-                                                                Hai ricevuto un invito da {notification.sender} per un pomodoro!
-                                                            </p>
-                                                            <p>
-                                                                {notification.type} - {notification.sentAt.toString()}
-                                                            </p>
-                                                        </div>
-                                                    </a>
-                                                );
-                                            }
-                                            if (notification.type === "event") {
-                                                const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+                            <button className="btn secondary"
+                                onClick={(): void => {
+                                    postCurrentDate(currentDate); // Chiama postCurrentDate con la data e orario selezionati
+                                    setShowTimeMachine(false); // Nascondi il time machine
+                                }} style={buttonStyle}
+                            >
+                                Imposta Data
+                            </button>
 
-                                                //mostra la notifica solo se la data corrente è successiva alla data della notifica
-                                                if (eventDate < currentDate) {
-                                                    return (
-                                                        <div key={index}>
+                            <button className="btn secondary"
+                                onClick={async (): Promise<void> => {
+                                    const newDate = new Date(); // Ottieni la data corrente
+                                    await postCurrentDate(newDate); // Chiama postCurrentDate con la data corrente
+                                    setCurrentDate(newDate); // Aggiorna lo stato con la nuova data
+                                    setShowTimeMachine(false); // Nascondi il time machine
+                                }}
+                                style={buttonStyle}
+                            >
+                                Resetta Data
+                            </button>
 
-                                                            <p>
-                                                                Data odierna: {currentDate.toLocaleString('it-IT', {
-                                                                    day: 'numeric',
-                                                                    month: 'numeric',
-                                                                    year: 'numeric',
-                                                                    hour: 'numeric',
-                                                                    minute: 'numeric',
-                                                                    hour12: false // Imposta su false per il formato 24 ore
-                                                                })}:
-                                                                Data notifica: {eventDate.toLocaleString('it-IT', {
-                                                                    day: 'numeric',
-                                                                    month: 'numeric',
-                                                                    year: 'numeric',
-                                                                    hour: 'numeric',
-                                                                    minute: 'numeric',
-                                                                    hour12: false // Imposta su false per il formato 24 ore
-                                                                })}
-                                                                {notification.message}
-                                                            </p>
-                                                        </div>
-                                                    );
-                                                }
-                                            }
-                                            // Restituisci un elemento vuoto se non ci sono condizioni soddisfatte
-                                            return null; // Aggiungi questa riga per gestire i casi non coperti
-                                        })
-                                    ) : (
-                                        <div>
-                                            <p>No notifications</p>
-                                        </div>
-                                    )}
-                                </div>
+                        </div>
+                    </>
+                )}
 
-
-                            </>
-
-
-                        )}
-
-
-
-
+                <button
+                    className="btn secondary"
+                    style={{
+                        ...buttonStyle,
+                        position: "relative", // Posizionamento relativo per il pallino
+                        width: "50px"
+                    }}
+                    onClick={(): void => setShowNotifications(!showNotifications)}
+                >
+                    <i className="fas fa-bell" />
+                    {hasEventNotifications() && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
+                        <span className="notification-dot"/>
+                    )}
+                </button>
+                {showNotifications && (
+                    <>
                         <div
                             style={{
-                                ...buttonStyle,
-                                display: "flex",
-                                width: undefined,
-                                justifyContent: "flex-end",
-                                alignItems: "center",
+                                position: "absolute",
+                                top: "60px",
+                                right: "40px",
+                                backgroundColor: "white",
+                                border: "1px solid gray",
+                                padding: "10px",
+                                zIndex: "1",
+                                borderRadius: "10px",
                             }}
                         >
-                            <a
-                                href="/profile"
-                                style={{
-                                    width: "40px",
-                                    height: "40px",
-                                    borderRadius: "50%",
-                                    backgroundColor: "#007bff",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    alignItems: "center",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <span style={{ color: "white" }}>U</span>
-                            </a>
-                        </div>
+                            {notifications && notifications.length > 0 ? (
+                                console.log("NOTIFICHE:", notifications),
+                                notifications.map((notification, index) => {
 
+                                    // TODO: Differentiate by type
+                                    if (notification.type === "pomodoro") {
+                                        const nCycles = notification.data.cycles || 5;
+                                        const nStudyTime = notification.data.studyTime || 25;
+                                        const nPauseTime = notification.data.pauseTime || 5;
+                                        return (
+                                            <a
+                                                href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
+                                                key={index} // Sposta la chiave qui
+                                            >
+                                                <div>
+                                                    <p>
+                                                        Hai ricevuto un invito da {notification.sender} per un pomodoro!
+                                                    </p>
+                                                    <p>
+                                                        {notification.type} - {notification.sentAt.toString()}
+                                                    </p>
+                                                </div>
+                                            </a>
+                                        );
+                                    }
+                                    if (notification.type === "event") {
+                                        const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+
+                                        //mostra la notifica solo se la data corrente è successiva alla data della notifica
+                                        if (eventDate < currentDate) {
+                                            return (
+                                                <div key={index}>
+
+                                                    <p>
+                                                        Data odierna: {currentDate.toLocaleString('it-IT', {
+                                                            day: 'numeric',
+                                                            month: 'numeric',
+                                                            year: 'numeric',
+                                                            hour: 'numeric',
+                                                            minute: 'numeric',
+                                                            hour12: false // Imposta su false per il formato 24 ore
+                                                        })}:
+                                                        Data notifica: {eventDate.toLocaleString('it-IT', {
+                                                            day: 'numeric',
+                                                            month: 'numeric',
+                                                            year: 'numeric',
+                                                            hour: 'numeric',
+                                                            minute: 'numeric',
+                                                            hour12: false // Imposta su false per il formato 24 ore
+                                                        })}
+                                                        {notification.message}
+                                                    </p>
+                                                </div>
+                                            );
+                                        }
+                                    }
+                                    // Restituisci un elemento vuoto se non ci sono condizioni soddisfatte
+                                    return null; // Aggiungi questa riga per gestire i casi non coperti
+                                })
+                            ) : (
+                                <div>
+                                    <p>No notifications</p>
+                                </div>
+                            )}
+                        </div>
                     </>
+                )}
+                <div
+                    style={{
+                        ...buttonStyle,
+                        display: "flex",
+                        width: undefined,
+                        justifyContent: "flex-end",
+                        alignItems: "center",
+                    }}
+                >
+                    <a
+                        href="/profile"
+                        style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "50%",
+                            backgroundColor: "#007bff",
+                            border: "none",
+                            cursor: "pointer",
+                            alignItems: "center",
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <span style={{ color: "white" }}>U</span>
+                    </a>
+                </div>
+            </div>
+
+
+
+            {/*
                 ) : (
                     <a
                         href="/login"
@@ -492,7 +444,7 @@ export default function Header(): React.JSX.Element {
                     </a>
                 )
                 }
-            </div>
+            </div>*/}
 
         </header >
     );

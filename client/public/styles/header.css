@@ -7,75 +7,111 @@
 	text-align: center;
 }
 
-.header-home {
+.header-container {
+	display: flex;
+	justify-content: space-between;
+	margin: 1vw;
+	width: 99%;
+}
+
+.header-container img {
 	width: 3em;
 	height: 3em;
+	border-radius: 10px;
 }
 
-.header-home img {
-	width: 100%;
-}
-
-.nav-link-container {
+.link-container {
 	display: flex;
-	flex-direction: row;
-	justify-content: flex-end;
+	justify-content: flex-start;
+	width: 50%;
 	align-items: center;
 }
 
-.nav-link {
-	width: 150px;
-	height: 2em;
-	align-content: center;
-	margin: auto 0.5em;
-	border-radius: 5px;
+.time-machine-form {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+	position: absolute;
+	top: 12%;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: white;
+	border: 1px solid gray;
+	border-radius: 10px;
+	padding: 10px;
+	z-index: 1;
 }
 
-.nav-link:hover {
-	background-color: #2b96d8;
-	color: #ffffff;
+.notification-dot {
+	position: absolute;
+	top: -5px; /* Posiziona il pallino sopra il pulsante */
+	right: -5px; /* Posiziona il pallino a destra del pulsante */
+	width: 15px;
+	height: 15px;
+	border-radius: 50%;
+	background-color: #ff007f; /* Colore del pallino */
+	color: white;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	border: 1px solid white; /* Bordo bianco per migliorare la visibilità */
 }
 
-/* Media query per schermi piccoli */
+.dropdown-menu {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 160px;
+	z-index: 100;
+}
+
+.dropdown-menu li a {
+	display: block;
+	padding: 10px 20px;
+	text-decoration: none;
+	color: #333;
+}
+
+.dropdown-menu li a:hover {
+	background-color: #f2f2f2;
+}
+
+.dropdown-container {
+	display: none;
+	justify-content: flex-start;
+	width: 50%;
+	align-items: center;
+}
+
+.date-button {
+    font-weight: bold !important;
+    font-size: 20px !important;
+    font-family: "Times New Roman", Times, serif !important;
+    padding: 4px 8px !important;
+}
+
+
 @media screen and (max-width: 700px) {
-	/* Nascondi i link di navigazione standard e mostra l'icona del menu */
-	.nav-link-container {
+	.dropdown-container {
+		display: flex;
+	}
+
+	.link-container {
 		display: none;
 	}
+}
 
-	.menu-icon {
-		display: block;
-		font-size: 1.5em;
-		cursor: pointer;
-		background: none;
-		border: none;
-		color: #2b96d8;
-	}
-
-	/* Stili per il menù a tendina */
-	.dropdown-menu {
-		display: flex;
-		flex-direction: column;
-		position: absolute;
-		top: 60px; /* Regola la posizione in base all'header */
-		left: 10px;
-		background-color: white;
-		border: 1px solid gray;
-		padding: 10px;
-		z-index: 1000;
-		width: 150px;
-	}
-
-	/* Stile per i link all'interno del dropdown */
-	.dropdown-menu .nav-link {
-		width: 100%;
-		margin: 0.5em 0;
-		color: #2b96d8;
-		text-align: left;
-	}
-
-	.dropdown-menu .nav-link:hover {
-		background-color: #2b96d8;
-		color: #ffffff;
+@media screen and (max-width: 400px) {
+	.date-button {
+		display: none !important;
 	}
 }
