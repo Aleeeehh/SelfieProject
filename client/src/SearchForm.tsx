@@ -64,7 +64,7 @@ export default function SearchForm({
         <>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <input
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", margin: "0 5px" }}
                     type="text"
                     placeholder="Cerca utente"
                     value={search}
@@ -72,7 +72,7 @@ export default function SearchForm({
                 />
                 {searchResults.length > 0 && (
                     <select
-                        style={{ width: "100%" }}
+                        style={{ width: "100%", margin: "0 5px" }}
                         onChange={handleSelectChange}
                     >
                         <option value="">
