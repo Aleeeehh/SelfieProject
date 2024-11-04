@@ -1,0 +1,52 @@
+@import url("./header.css");
+@import url("./home.css");
+@import url("./calendar.css");
+@import url("./pomodoro.css");
+@import url("./note.css");
+@import url("./login.css");
+@import url("./register.css");
+@import url("./profile.css");
+
+* {
+	box-sizing: border-box;
+	transition: all 0.3s ease-in-out;
+}
+
+/* All files */
+
+body {
+	text-align: justify;
+}
+
+a {
+	text-decoration: none !important;
+}
+
+a.header-home:link {
+	color: #000000 !important;
+}
+a.header-home:visited {
+	color: #000000 !important;
+}
+a.header-home:hover {
+	color: #000000 !important;
+}
+a.header-home:active {
+	color: #000000 !important;
+}
+
+p {
+	margin: auto;
+}
+
+/* HEADER */
+
+/* FOOTER */
+
+footer {
+	text-align: center;
+	display: flex;
+	justify-content: center;
+	margin: 1em auto;
+	padding: 1em;
+}

@@ -1,0 +1,275 @@
+.calendar-container {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+}
+
+.calendar {
+	margin: 2vw;
+}
+
+.create-event-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.create-event-container>form {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+}
+
+.month-indicator {
+	color: #ff0000;
+	/* Keeping the theme consistent */
+	text-align: center;
+	font-weight: 500;
+}
+
+.day-of-week,
+.date-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	color: gray;
+}
+
+.day-of-week {
+	margin-top: 1.25em;
+}
+
+.day-of-week>* {
+	font-size: 0.85em;
+	/* Slightly larger for readability */
+	color: gray;
+	/* Contrast color for headers */
+	font-weight: 500;
+	letter-spacing: 0.1em;
+	font-variant: small-caps;
+	text-align: center;
+}
+
+.date-grid {
+	margin-top: 0.5em;
+}
+
+
+.date-grid button {
+	position: relative;
+	border: 0;
+	width: 4.5ch;
+	height: 4.5ch;
+	border-radius: 50%;
+	background-color: transparent;
+	color: black;
+}
+
+@keyframes focusAnimation {
+	0% {
+		box-shadow: 0 0 0 3px rgb(246, 241, 234);
+	}
+
+	100% {
+		box-shadow: 0 0 0 0 transparent;
+	}
+}
+
+button.btn:focus {
+	outline: none;
+	animation: focusAnimation 1s forwards;
+}
+
+.date-grid button:hover,
+.date-grid button:focus {
+	outline: none;
+	background-color: bisque;
+	color: #FFFFFF;
+	cursor: pointer;
+}
+
+.date-grid button:active {
+	background-color: rgb(227, 224, 224);
+	color: #FFFFFF;
+}
+
+.wrapper {
+	display: flex;
+	align-items: center;
+}
+
+.addEvent {
+	width: 10%;
+	margin: 1vw;
+	display: flex;
+	justify-content: center;
+	margin-left: 6vw;
+
+}
+
+.border {
+	border: 2px solid black;
+}
+
+.nome-data-container {
+	color: black;
+	font-weight: bold;
+	font-size: 2.5vw;
+	margin-left: 58vw;
+	display: flex;
+	align-items: center;
+}
+
+.nome-data-week {
+	color: black;
+	font-weight: bold;
+	font-size: 2.5vw;
+	flex: 1;
+}
+
+
+
+.orario {
+	margin-left: auto;
+	margin-right: auto;
+	display: flex;
+	flex-direction: column;
+	max-height: 500px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	width: 100%;
+}
+
+.evento {
+	position: absolute;
+	display: flex;
+	/* Posizionamento assoluto */
+	color: rgb(155, 223, 212);
+	font-weight: bold;
+	background-color: rgba(155, 223, 212, 0.5);
+	justify-content: center;
+	border: 0;
+	border-color: rgb(155, 223, 212);
+	/* Bordo del quadrato */
+	z-index: 10;
+	border-radius: 10px;
+	padding: 0;
+	overflow: hidden;
+}
+
+.evento::before {
+	content: '';
+	position: absolute;
+	left: 1%;
+	top: 3%;
+	bottom: 3%;
+	width: 2%;
+	border-radius: 10px;
+	/* Larghezza della barra colorata */
+	background-color: rgb(155, 223, 212);
+	/* Colore della barra */
+}
+
+.evento.red::before {
+	background-color: rgb(249, 67, 67);
+}
+
+.evento.blue::before {
+	background-color: rgb(155, 223, 212);
+}
+
+
+.orario time {
+	position: relative;
+	padding-bottom: 30px;
+	font-weight: bold;
+}
+
+.vertical-separator {
+	width: 1px;
+	/* Larghezza della riga verticale */
+	height: 100%;
+	/* Altezza della riga verticale */
+	background-color: black;
+	/* Colore della riga */
+	margin: 0 10px;
+	/* Spazio intorno alla riga */
+}
+
+.orario time::after {
+	content: "";
+	display: block;
+	width: 100%;
+	height: 1px;
+	background-color: gray;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+
+.orario time:first-child::before {
+	content: "";
+	display: block;
+	width: 100%;
+	height: 1px;
+	background-color: gray;
+	/* Colore della linea separatoria */
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.year-button {
+	background-color: bisque;
+	border: 0;
+	padding: 0;
+	width: 20px;
+	margin-left: 10px;
+	/* Aggiungi un po' di spazio tra le frecce e l'anno */
+	font-size: 0.8rem;
+	/* Rendi i bottoni più piccoli */
+}
+
+.date-cell {
+	background-color: white;
+	/* Colore di sfondo delle celle */
+	border: 1px solid #ccc;
+	/* Bordo delle celle */
+	display: flex;
+	justify-content: flex-end;
+	/* Allinea il contenuto a destra */
+	align-items: flex-start;
+	/* Allinea il contenuto in alto */
+	height: 100px;
+	/* Aumenta l'altezza delle celle */
+	box-sizing: border-box;
+	/* Assicura che il bordo sia incluso nelle dimensioni */
+	padding: 5px;
+	/* Aggiungi padding per distanziare il contenuto dai bordi */
+}
+
+.empty-cell {
+	background-color: transparent;
+	/* Celle vuote trasparenti */
+	border: none;
+	/* Nessun bordo per le celle vuote */
+}
+
+.date-grid-month {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 0;
+	border-collapse: collapse;
+}
+
+.date-grid-month button {
+	width: 100%;
+	height: 100%;
+	border: none;
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.date-grid-month button:hover,
+.date-grid-month button:focus {
+	background-color: bisque;
+	color: #FFFFFF;
+}

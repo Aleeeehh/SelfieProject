@@ -110,6 +110,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
+				const res2 = await fetch(`${SERVER_API}/notifications`);
+				const notifications = await res2.json();
+				console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+				console.log("COSA VOGLIAMO STAMPARE:", notifications.value)
 				const res = await fetch(`${SERVER_API}/events`);
 				if (res.status !== 200) {
 					nav("/login");
@@ -1313,8 +1317,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			});
 			const data = await res.json();
 
-			//console.log("EVENTO ELIMINATO:", data);
-			//elimina l'evento dalla eventList
 			if (data.status === "success") {
 				const eventiEliminati = data.value; // Supponendo che `value` contenga gli eventi eliminati
 
@@ -1327,13 +1329,40 @@ export default function Calendar(): React.JSX.Element { // prova push
 				console.log("Event list aggiornata:", eventList);
 				handleDateClick(day);
 			}
-			/*
-			console.log("Event list prima dell'eliminazione:", eventList);
-			const eventoEliminato = data.value2;
-			setEventList(prevEventList => prevEventList.filter(event => event._id !== eventoEliminato._id))
-			console.log("Event list aggiornata:", eventList);
-			handleDateClick(day);
-			*/
+
+			//elimina la notifica associata all'evento
+
+			const res2 = await fetch(`${SERVER_API}/notifications`);
+			const data2 = await res2.json();
+			const eventiEliminati = data.value;
+			const notifications = data2.value;
+			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			console.log("Eventi eliminati:", eventiEliminati);
+
+			// Elimina le notifiche corrispondenti agli eventi eliminati
+			const notificationsToDelete = notifications.filter((notification: Notification) => {
+				return eventiEliminati.some((evento: Event) => evento.idEventoNotificaCondiviso === notification.data.idEventoNotificaCondiviso);
+			});
+
+			console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
+
+			//elimina tutte le notifiche sul server che sono associate all'evento ( o agli eventi) eliminati
+			for (const notification of notificationsToDelete) {
+				const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ notification_id: notification.id }), // Assicurati di usare il campo corretto
+
+				});
+				console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+
+				if (!res3.ok) {
+					const errorData = await res3.json();
+					console.error("Errore durante l'eliminazione della notifica:", errorData);
+				} else {
+					console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+				}
+			}
 
 			return data;
 
@@ -1475,11 +1504,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		console.log("Questa è la frequenza prima di inviare la richiesta di creazione dell'evento:", frequency);
 
+		//se all'evento è associata una notifica, inserisci idEventoNotificaCondiviso sia nella POST della notifica, che nell'evento
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+		console.log("ID CONDIVISO EVENTO/NOTIFCA:", idEventoNotificaCondiviso);
 
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
+				idEventoNotificaCondiviso,
 				owner,
 				title,
 				startTime: startTime.toISOString(),
@@ -1510,6 +1543,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 					type: "event",
 					data: {
 						date: notificationDate,
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 					},
 				}),
 			});

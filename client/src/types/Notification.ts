@@ -1,5 +1,5 @@
 type Notification = {
-    id?: string;
+    id: string;
     sender?: string;
     receiver?: string;
     type: string;

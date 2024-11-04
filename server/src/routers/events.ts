@@ -327,6 +327,7 @@ router.post("/", async (req: Request, res: Response) => {
             location,
             repetitions,
             isInfinite,
+            idEventoNotificaCondiviso
         } = req.body as Event;
         //  console.log("queste sono le ripetizioni:", repetitions);
         // console.log("questo è l'untilDate dell'evento:", untilDate);
@@ -395,6 +396,7 @@ router.post("/", async (req: Request, res: Response) => {
         if (isInfinite) {
             const event: Event = {
                 id: "1",
+                idEventoNotificaCondiviso,
                 groupId,
                 title,
                 startTime: new Date(startTimeDate.getTime()),
@@ -442,6 +444,7 @@ router.post("/", async (req: Request, res: Response) => {
                     const event: Event = {
                         id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
                         groupId,
+                        idEventoNotificaCondiviso,
                         title,
                         startTime, // Aggiungi un giorno
                         endTime, // Aggiungi un giorno
@@ -494,6 +497,7 @@ router.post("/", async (req: Request, res: Response) => {
                     const event: Event = {
                         id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
                         groupId,
+                        idEventoNotificaCondiviso,
                         title,
                         startTime,
                         endTime,
@@ -537,6 +541,7 @@ router.post("/", async (req: Request, res: Response) => {
                         groupId,
                         title,
                         startTime,
+                        idEventoNotificaCondiviso,
                         endTime,
                         repetitions,
                         frequency,
@@ -589,6 +594,7 @@ router.post("/", async (req: Request, res: Response) => {
                         groupId,
                         title,
                         startTime,
+                        idEventoNotificaCondiviso,
                         endTime,
                         repetitions,
                         frequency,
@@ -616,6 +622,7 @@ router.post("/", async (req: Request, res: Response) => {
                     endTime: new Date(endTimeDate.getTime()), // Aggiungi un giorno
                     location,
                     frequency,
+                    idEventoNotificaCondiviso,
                     isInfinite,
                     repetitions,
                     owner,
@@ -676,6 +683,7 @@ router.post("/", async (req: Request, res: Response) => {
                         startTime, // Aggiungi un giorno
                         endTime, // Aggiungi un giorno
                         repetitions,
+                        idEventoNotificaCondiviso,
                         frequency,
                         isInfinite,
                         untilDate,
@@ -741,6 +749,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repetitions,
                         untilDate,
                         frequency,
+                        idEventoNotificaCondiviso,
                         isInfinite,
                         location,
                         owner,
@@ -794,6 +803,7 @@ router.post("/", async (req: Request, res: Response) => {
                         startTime,
                         endTime,
                         repetitions,
+                        idEventoNotificaCondiviso,
                         frequency,
                         isInfinite,
                         untilDate,
@@ -858,6 +868,7 @@ router.post("/", async (req: Request, res: Response) => {
                         title,
                         startTime,
                         endTime,
+                        idEventoNotificaCondiviso,
                         repetitions,
                         frequency,
                         isInfinite,
@@ -890,6 +901,7 @@ router.post("/", async (req: Request, res: Response) => {
                     endTime: new Date(endTimeDate.getTime()), // Aggiungi un giorno
                     untilDate,
                     location,
+                    idEventoNotificaCondiviso,
                     frequency,
                     isInfinite,
                     repetitions,

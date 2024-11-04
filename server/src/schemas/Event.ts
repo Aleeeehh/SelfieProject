@@ -23,6 +23,7 @@ const eventSchema = new mongoose.Schema(
 		recurrence: {
 			type: RecurrenceSchema,
 		},
+		idEventoNotificaCondiviso: { type: String, required: false },
 		allDay: { type: Boolean, default: false },
 		location: { type: String, required: false },
 		// notificationMethod: { type: String, enum: ["os", "whatsapp", "email"] },

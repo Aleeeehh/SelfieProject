@@ -9,6 +9,7 @@ type Recurrence = {
 export type Frequency = "once" | "day" | "week" | "month" | "year";
 export type Event = {
 	id: string;
+	idEventoNotificaCondiviso?: string | null;
 	groupId: string;
 	owner: string;
 	title: string;
