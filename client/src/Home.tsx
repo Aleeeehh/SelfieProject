@@ -22,6 +22,7 @@ function Home(): React.JSX.Element {
 	const [numEvents, setNumEvents] = React.useState(4);
 	const [numPomodoros, setNumPomodoros] = React.useState(4);
 	const [numNotes, setNumNotes] = React.useState(4);
+	const [numProjects, setNumProjects] = React.useState(4);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 
 	const nav = useNavigate();
@@ -256,8 +257,8 @@ function Home(): React.JSX.Element {
 					<label>
 							Mostra x progetti:
 							<select
-							value={numNotes}
-							onChange={(e): void => setNumNotes(Number(e.target.value))}
+							value={numProjects}
+							onChange={(e): void => setNumProjects(Number(e.target.value))}
 							>
 								<option value="1">1</option>
 								<option value="2">2</option>
