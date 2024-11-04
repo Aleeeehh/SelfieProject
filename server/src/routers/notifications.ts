@@ -99,6 +99,20 @@ router.get("/", async (req: Request, res: Response) => {
 		return res.status(500).json(response);
 	}
 });
+
+router.post("/deleteNotification", async (req: Request, res: Response) => {
+    try {
+        const id = req.body.notification_id as string;
+        await NotificationSchema.deleteOne({ _id: id });
+    } catch (e) {
+        console.log(e);
+        const response: ResponseBody = {
+            message: "Failed to delete notification",
+            status: ResponseStatus.BAD,
+        };
+        return res.status(500).json(response);
+    }
+});
 router.put("/:notificationId", async (req: Request, res: Response) => {
 	try {
 		const notificationId = req.params.notificationId as string;
