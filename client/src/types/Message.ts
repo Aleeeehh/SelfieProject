@@ -1,11 +1,9 @@
-import { Types } from "mongoose";
-
 type Message = {
-    id?: Types.ObjectId | string;
-    userId: Types.ObjectId | string;
-    text: string;
-    chatId: Types.ObjectId | string;
-    createdAt?: Date;
+	id?: string;
+	userId: string;
+	text: string;
+	chatId: string;
+	createdAt?: Date;
 };
 
 export default Message;
