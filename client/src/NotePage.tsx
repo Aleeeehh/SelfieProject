@@ -20,6 +20,8 @@ const baseNote: Note = {
 	toDoList: [] as ListItem[],
 };
 
+//TODO: aggiungere un bottone per uscire dalla creazione di una nota
+
 const NEW = "new";
 
 export default function NotePage(): React.JSX.Element {
@@ -231,159 +233,165 @@ export default function NotePage(): React.JSX.Element {
 
 	return (
 		<>
-			<div className="page-title">{id === NEW ? "Crea una nuova nota" : "Modifica nota"}</div>
-			<div className="note-container">
-				{/* render title */}
-				{isEditing ? (
-					<label htmlFor="title">
-						Titolo
-						<input name="title" value={note.title} onChange={handleChange} />
-					</label>
-				) : (
-					<div className="note-title">{note.title}</div>
-				)}
-				{/* render text */}
-				{isEditing ? (
-					<>
-						<button onClick={togglePreview}>
-							{isPreview ? "Modifica" : "Anteprima"}
-						</button>
-						( isPreview ? (
+			<div className="note-background">
+				<div className="note-container">
+					<div className="page-title">{id === NEW ? "Crea una nuova nota" : "Modifica nota"}</div>
+					{/* render title */}
+					{isEditing ? (
+						<label htmlFor="title">
+							Titolo
+							<input name="title" value={note.title} onChange={handleChange} />
+						</label>
+					) : (
+						<div className="note-title">{note.title}</div>
+					)}
+					{/* render text */}
+					{isEditing ? (
+						<>
+							<button onClick={togglePreview}>
+								{isPreview ? "Modifica" : "Anteprima"}
+							</button>
+							{isPreview ? (
+							<div
+								className="markdown-preview"
+								dangerouslySetInnerHTML={{
+									__html: marked(note.text) as string,
+								}}
+							/>
+							) : (
+							<label htmlFor="text">
+								Testo della nota
+								<textarea name="text" value={note.text} onChange={handleChange} />
+							</label>
+							)}
+						</>
+					) : (
 						<div
-							className="markdown-preview"
+							className="markdown-content"
 							dangerouslySetInnerHTML={{
 								__html: marked(note.text) as string,
 							}}
 						/>
-						) : (
-						<label htmlFor="text">
-							Testo della nota
-							<textarea name="text" value={note.text} onChange={handleChange} />
-						</label>
-						))
-					</>
-				) : (
-					<div
-						className="markdown-content"
-						dangerouslySetInnerHTML={{
-							__html: marked(note.text) as string,
-						}}
-					/>
-				)}
-				{/* render to do list */}
-				{note.toDoList.map((l) => (
-					<div>
-						<input type="checkbox" checked={l.completed} disabled={isEditing} />
-						<div>{l.text}</div>
-						{l.endDate && (
-							<input type="date" value={l.endDate.toISOString().split("T")[0]} />
-						)}
-						<button
-							onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
-								handleRemoveItem(e, l)
-							}
-							disabled={isEditing}>
-							Elimina
-						</button>
+					)}
+					{/* render to do list */}
+					{note.toDoList.map((l) => (
+						<div>
+							<input type="checkbox" checked={l.completed} disabled={isEditing} />
+							<div>{l.text}</div>
+							{l.endDate && (
+								<input type="date" value={l.endDate.toISOString().split("T")[0]} />
+							)}
+							<button
+								onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
+									handleRemoveItem(e, l)
+								}
+								disabled={isEditing}>
+								Elimina
+							</button>
+							{isEditing && (
+								<div>
+									<button onClick={handleAddItem}>Aggiungi Item</button>
+								</div>
+							)}
+						</div>
+					))}
+					{/* render tags */}
+					<label>
+						Tags
 						{isEditing && (
-							<div>
-								<button onClick={handleAddItem}>Aggiungi Item</button>
+							<div className="tags-form">
+								<label htmlFor="title" style={{ margin: "0" }}>
+									<input
+										name="tag"
+										value={tag}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+											setTag(e.target.value);
+										}}
+									/>
+								</label>
+								<button style={{ margin: "0 0.5em" }} onClick={addTag}>
+									+
+								</button>
 							</div>
 						)}
-					</div>
-				))}
-				{/* render tags */}
-				<label>
-					Tags
-					{isEditing && (
-						<label htmlFor="title">
-							<input
-								name="tag"
-								value={tag}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-									setTag(e.target.value);
-								}}
-							/>
-							<button style={{ margin: "auto 0.5em" }} onClick={addTag}>
-								+
-							</button>
-						</label>
-					)}
-					<div className="tags-container">
-						{note &&
-							note.tags &&
-							note.tags.map((tag) => (
-								<div className="tag-box">
-									{tag}
-									{isEditing && (
-										<button
-											className="tag-delete"
-											onClick={(e: React.MouseEvent<HTMLElement>): void =>
-												deleteTag(e, tag)
-											}>
-											X
-										</button>
-									)}
-								</div>
-							))}
-					</div>
-				</label>
-				{/* render privacy */}
-				<label>
-					Privacy: {note.privacy}
-					{isEditing && (
-						<>
-							<select
-								name="privacy"
-								value={note.privacy}
-								onChange={handlePrivacyChange}>
-								<option value={Privacy.PUBLIC}>Pubblica</option>
-								<option value={Privacy.PROTECTED}>Accesso riservato</option>
-								<option value={Privacy.PRIVATE}>Privata</option>
-							</select>
+						<div className="tags-container">
+							{note &&
+								note.tags &&
+								note.tags.map((tag) => (
+									<div className="tag-box">
+										{tag}
+										{isEditing && (
+											<button
+												style={{ marginLeft: "0.5em", padding: "0" }}
+												className="tag-delete"
+												onClick={(e: React.MouseEvent<HTMLElement>): void =>
+													deleteTag(e, tag)
+												}>
+												X
+											</button>
+										)}
+									</div>
+								))}
+						</div>
+					</label>
+					{/* render privacy */}
+					<label>
+						Privacy: {note.privacy}
+						{isEditing && (
+							<>
+								<select
+									name="privacy"
+									value={note.privacy}
+									onChange={handlePrivacyChange}>
+									<option value={Privacy.PUBLIC}>Pubblica</option>
+									<option value={Privacy.PROTECTED}>Accesso riservato</option>
+									<option value={Privacy.PRIVATE}>Privata</option>
+								</select>
 
-							{note.privacy === Privacy.PROTECTED && (
-								<SearchForm onItemClick={addUser} list={note.accessList} />
-							)}
-						</>
-					)}
-					<div className="privacy-container">
-						{note &&
-							note.accessList &&
-							note.accessList.map((userId) => (
-								<div className="tag-box">
-									{userId.username}
-									{isEditing && (
-										<button
-											className="user-delete"
-											onClick={(e: React.MouseEvent<HTMLElement>): void =>
-												deleteUser(e, userId.id)
-											}>
-											X
-										</button>
-									)}
-								</div>
-							))}
-					</div>
-				</label>
+								{note.privacy === Privacy.PROTECTED && (
+									<SearchForm onItemClick={addUser} list={note.accessList} />
+								)}
+							</>
+						)}
+						<div className="privacy-container">
+							{note &&
+								note.accessList &&
+								note.accessList.map((userId) => (
+									<div className="tag-box">
+										{userId.username}
+										{isEditing && (
+											<button
+												style={{ marginLeft: "0.5em", padding: "0" }}
+												className="user-delete"
+												onClick={(e: React.MouseEvent<HTMLElement>): void =>
+													deleteUser(e, userId.id)
+												}>
+												X
+											</button>
+										)}
+									</div>
+								))}
+						</div>
+					</label>
 
-				{id !== NEW && (
-					<button onClick={toggleEdit}>
-						{isEditing ? "Salva modifiche" : "Modifica nota"}
-					</button>
-				)}
-				{isEditing && (
-					<button
-						style={{ backgroundColor: "#ffff00" }}
-						onClick={id === NEW ? handleCreate : handleUpdate}>
-						{id === NEW ? "Crea Nota" : "Aggiorna Nota"}
-					</button>
-				)}
-				{id !== NEW && !isEditing && (
-					<button style={{ backgroundColor: "#ff0000" }} onClick={handleDelete}>
-						Cancella Nota
-					</button>
-				)}
+					{id !== NEW && (
+						<button onClick={toggleEdit}>
+							{isEditing ? "Salva modifiche" : "Modifica nota"}
+						</button>
+					)}
+					{isEditing && (
+						<button
+							style={{ backgroundColor: "blue" }}
+							onClick={id === NEW ? handleCreate : handleUpdate}>
+							{id === NEW ? "Crea Nota" : "Aggiorna Nota"}
+						</button>
+					)}
+					{id !== NEW && !isEditing && (
+						<button style={{ backgroundColor: "red" }} onClick={handleDelete}>
+							Cancella Nota
+						</button>
+					)}
+				</div>
 			</div>
 
 			{message && <div>{message}</div>}
