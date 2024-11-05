@@ -11,4 +11,13 @@ type Notification = {
 	data: Object;
 };
 
+// Come sono definiti gli oggetti "data" della notifica:
+// POMODORO TYPE:
+// "cycles", "studyTime", "pauseTime"
+// PROJECT TYPE:
+// "projectId", "activityId", "action" ["create", "update", "delete"],
+// "type" ["traslazione", "contrazione"]
+// EVENT TYPE:
+// usato il field message (TODO: si può migliorare?)
+
 export default Notification;

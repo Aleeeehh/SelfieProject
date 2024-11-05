@@ -20,6 +20,10 @@ type Note = {
 	createdAt?: Date;
 	updatedAt?: Date;
 	toDoList?: ListItem[];
+
+	// project related parameters
+	projectId?: Types.ObjectId | string;
+	activityId?: Types.ObjectId | string;
 };
 
 export default Note;

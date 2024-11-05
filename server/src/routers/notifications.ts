@@ -183,6 +183,7 @@ router.post("/deleteNotification", async (req: Request, res: Response) => {
         return res.status(500).json(response);
     }
 });
+
 router.put("/:notificationId", async (req: Request, res: Response) => {
     try {
         const notificationId = req.params.notificationId as string;
