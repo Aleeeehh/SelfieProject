@@ -2,6 +2,7 @@ import type { Frequency } from "../enums.js";
 
 export type Event = {
 	_id: string;
+	idEventoNotificaCondiviso?: string;
 	groupId: string;
 	owner: string;
 	title: string;

@@ -1,0 +1,109 @@
+Gestione progetti
+POST 	/project	"name", "note"
+GET	/project/:id	(returns all data for the project)
+PUT	/project/:id	"name"
+POST 	/project/:id/activity	"start", "end", "prev", "next", "parent","project", "milestone" (prev, next sono id di attività)
+PUT 	/project/:id/activity	"start", "end", "prev", "next", "status", "parent" (prev, next sono id di attività)
+POST	/project/:id/user	"userId"
+PUT	/project/:id/note
+
+***Strutture dati e requisiti/vincoli***
+
+ProjectStatus
+- Non Attivabile
+- Attivabile
+- Attiva
+- Conclusa
+- Riattivata
+- In ritardo
+- Abbandonata
+
+(Activity.Status è un parametro derivato parzialmente: gli unici parametri "selezionabili" sono [Attiva (actor) | Completa (actor) | Riattivata (owner)], [Non Attivabile | Attivabile] dipende dallo status dell'output dell'attività precedente, [In Ritardo | Abbandonata] dipende dalla data di scadenza --> il server deve verificare e ritornare uno Status come risposta)
+
+Project
+- id
+- owner (utente che lo crea)
+- userList (lista di utenti che partecipano al progetto (non modificabile dopo la creazione))
+- status (valore % di completamento in funzione dello stato delle attività che lo compongono, valore derivato)
+- noteId
+(il progetto è una struttura dati semplice)
+
+Activity
+- id
+- owner
+- projectId
+- actors
+- start
+- end
+- status (Derivato)
+- milestone (boolean)
+- completed (boolean)
+- advancementType: ["translation" | "contraction"] -> cannot be translation but only contraction if milestone is true
+- description
+- noteId
+- status: [Attiva | Completa | Riattivata] (altrimenti, derivato da altre condizioni)
+(studiare se è possibile integrare le attività già presenti o si deve creare una nuova collection)
+
+Note
+- projectId
+- activityId
+(integrare le note esistenti con questi valori non nulli per note relative a progetti (se nulli, note normali))
+
+if (projectId !== NULL) -> nota relativa al progetto
+else if (activityId !== NULL) -> nota relativa all'attività
+else -> nota "libera" classica
+(non può essere che projectId e activityId siano entrambe non nulle, ma in caso vince il progetto)
+
+Per recuperare le note "libere" dell'utente, si può verificare se projectId o activityId sono nulli.
+
+Notification
+- type: Project
+- data: {projectId: string, type?: ["translation" | "contraction"], activity: ActivityId, action: ["created", "updated", "deleted"]}
+(ogni volta che l'owner aggiunge, modifica o elimina una attività, invia la notifica a tutti gli utenti del progetto (logica all'interno dell'endpoint PUT /project/:id))
+(ogni volta che l'owner modifica il tipo del progetto, parte una notifica a tutti gli utenti del progetto (logica all'interno dell'endpoint PUT /project/:id))
+
+***API Endpoints***
+POST /projects
+body: nome, userList
+crea un progetto nuovo con owner l'utente loggato, ritorna l'id del progetto
+
+GET /projects
+ritorna un array di progetti completi dell'utente loggato
+
+GET /projects/:id
+params: id
+ritorna il progetto completo di attività, note e altre informazioni. Sta al client fare il parsing.
+
+PUT /projects/:id
+body: nome
+modifica il progetto e ritorna il progetto modificato (GLI UTENTI NON SI POSSONO INSERIRE O RIMUOVERE (LO DICO IO PER FARLA SEMPLICE), SE UN UTENTE è ELIMINATO SI RIMUOVONO DALLA LISTA IN QUALCHE MODO (FARE TEST))
+
+DELETE /projects/:id
+- id
+Elimina il progetto e tutte le attività e sottoattività legate al progetto, elimina tutte le note relative a progetto, attività e sotto-attività. Nessuna notifica è inviata. Ritorna l'id del progetto eliminato.
+
+POST /projects/:id/activities
+body: projectId, start (Date), end (Date), actorList, completed: False (non necessario, è vero se l'attività è con status Completa), prev, next, parent (sono id a altre attività)
+
+Inserisce una nuova attività legata al progetto. (Potenzialmente, si può riciclare l'endpoint dell'attività (POST /activities) usando l'id del progetto)
+La nota viene creata vuota automaticamente dal server, poi si può modificare in qualche modo. 
+
+Status può essere ["Non attivabile" | "Attivabile"] a seconda dello stato dell'attività prev.
+
+PUT /projects/:projectId/activities/:id
+- start
+- end
+- actorList (solo l'owner può farlo)
+- status (solo tra i tre valori non calcolabili [Attiva | Completa | Riattivata] ("Riattivata" solo l'owner, "Attiva", "Completa" sono solo dagli actor))
+- prev
+- next
+
+ATTENZIONE: gestire bene la logica delle attività, quando si cambia l'ordine delle attività. Per semplificare, non si può cambiare il parent.
+
+DELETE /projects/:projectId/activities/:id
+Rimuove l'attività con id "id" del progetto "projectID". Elimina la nota relativa all'attività. Riordina le attività prev e next collegandole tra loro (come una linked list).
+Solo l'owner può farlo.
+(HA MOLTO PIù SENSO USARE l'ACTIVITY ROUTER, MA RESTA DA CAPIRE SE SI POSSONO INTEGRARE LE ATTIVITà GIà PRESENTI)
+
+
+

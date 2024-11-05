@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-//import { useAuth } from "./AuthContext";
+import { useAuth } from "./AuthContext";
 import { SERVER_API } from "./params/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Notification from "./types/Notification";
+import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 
@@ -24,18 +25,29 @@ export default function Header(): React.JSX.Element {
     const [showDropdown, setShowDropdown] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
     const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
+    const [user, setUser] = useState(null);
     //const [isChangingDate, setIsChangingDate] = useState(false);
-    //const { isLoggedIn } = useAuth();
+    const { isLoggedIn } = useAuth();
 
     /* const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         setCurrentDate(event.target.value);
     };*/
 
-    const formatDate = (date: Date): string => {
-        return date.toLocaleDateString('it-IT', { // Formato italiano
+    /*const formatDate = (date: Date): string => {
+        return date.toLocaleString('it-IT', { // Formato italiano
             day: 'numeric',
             month: 'numeric',
-            year: 'numeric'
+            year: 'numeric',
+
+            hour12: false // Imposta su false per il formato 24 ore
+        });
+    };*/
+    
+    const formatDateHours = (date: Date): string => {
+        return date.toLocaleString('it-IT', { // Formato italiano
+            hour: 'numeric',
+            minute: 'numeric',
+
         });
     };
 
@@ -46,12 +58,47 @@ export default function Header(): React.JSX.Element {
                 throw new Error("Errore nel recupero della data corrente");
             }
             const data = await response.json();
-            setCurrentDate(new Date(data.currentDate)); // Imposta la data corrente
-            postCurrentDate(new Date(data.currentDate)); // Invia la data corrente al server
+            console.log("showTimeMachine:", showTimeMachine);
+
+            // Aggiungi un secondo alla data ottenuta
+            const newDate = new Date(data.currentDate);
+            newDate.setSeconds(newDate.getSeconds() + 1); // Aggiungi un secondo
+
+            // Imposta la data corrente
+            setCurrentDate(newDate); // Imposta la data corrente
+
+            // Invia la nuova data al server
+            await postCurrentDate(newDate); // Invia la nuova data al server
+
+            fetchNotifications(); //ogni volta che modifico la data corrente, ottieni le notifiche
+            hasEventNotifications(); //aggiorna il fatto che ci siano notifiche o meno di tipo event
+            console.log("NOTIFICHE:", notifications);
         } catch (error) {
             console.error("Errore durante il recupero della data corrente:", error);
         }
     };
+
+    const handleReadNotification = async (notificationId: string): Promise<void> => {
+        try {
+            const res = await fetch(`${SERVER_API}/notifications/${notificationId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ read: "true" }), // Imposta il campo read a true
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                console.error("Errore durante l'aggiornamento della notifica:", errorData);
+            } else {
+                console.log(`Notifica con ID ${notificationId} aggiornata con successo.`);
+                // Aggiorna lo stato locale se necessario
+                // Ad esempio, puoi aggiornare l'array delle notifiche per riflettere il cambiamento
+            }
+        } catch (error) {
+            console.error("Errore nella richiesta:", error);
+        }
+    };
+
 
 
     async function postCurrentDate(data: Date): Promise<void> {
@@ -86,13 +133,30 @@ export default function Header(): React.JSX.Element {
     //ritorna true se ci sono notifiche di tipo event che sono già passate
     function hasEventNotifications(): boolean {
         return notifications.some((notification: Notification) => {
-            if (notification.type === "event") {
+            if (notification.type === "event" && notification.read === false) {
                 const eventDate = new Date(notification.data.date); // Assicurati che notification.data.date sia un formato valido
                 return eventDate < currentDate; // Controlla se la data dell'evento è inferiore a currentDate
             }
             return false; // Restituisci false se non è di tipo "event"
         });
     }
+
+
+    async function getCurrentUser(): Promise<Promise<any> | null> {
+        try {
+            const res = await fetch(`${SERVER_API}/users`);
+            if (!res.ok) { // Controlla se la risposta non è ok
+                return null; // Restituisci null se non autenticato
+            }
+            //console.log("Questa è la risposta alla GET per ottenere lo user", res);
+            const data: User = await res.json();
+            //console.log("Questo è il json della risposta", data);
+            return data;
+        } catch (e) {
+            return null;
+        }
+    }
+
     const fetchNotifications = async (): Promise<void> => {
         try {
             const response = await fetch(`${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`);
@@ -108,33 +172,32 @@ export default function Header(): React.JSX.Element {
         }
     };
 
-    //aggiorna la data corrente e le notifiche ogni volta che si carica la pagina, aggiorna la currentDate ogni secondo
     useEffect(() => {
-        // Funzione per inviare la richiesta POST
-        fetchCurrentDate(); // Chiama la funzione per ottenere la data corrente
-        hasEventNotifications();
-        postCurrentDate(new Date()); // Chiama la funzione per inviare la richiesta POST
+        const fetchData = async (): Promise<void> => {
+            await postCurrentDate(currentDate); // invia la data corrente al server
+            const currentUser = await getCurrentUser();
+            console.log("Questo è il currentUser:", currentUser);
+            setUser(currentUser.value._id);
+            console.log("ID USER ATTUALE:", user); // Usa currentUser.value.id direttamente
+            console.log("Questo è il currentUser.value:", currentUser.value);
+        };
 
-        // Fetch delle notifiche
-        fetchNotifications();
-
-        //aggiorna la currentDate della Home ogni secondo
-
-        const intervalId = setInterval(fetchCurrentDate, 1000);
-        return () => clearInterval(intervalId);
-
-
-
-    }, []); // L'array vuoto assicura che l'effetto venga eseguito solo al montaggio
-
-
-    //aggiorna le notifiche ogni secondo
-    useEffect(() => {
-        fetchNotifications();
-
-        const intervalId2 = setInterval(fetchNotifications, 1000);
-        return () => clearInterval(intervalId2);
+        fetchData(); // Chiama la funzione asincrona
     }, []);
+
+
+    useEffect(() => {
+        fetchNotifications(); // Fetch delle notifiche
+
+        // Aggiorna la currentDate della Home ogni secondo
+        const intervalId = setInterval(() => {
+            if (!showTimeMachine) {
+                fetchCurrentDate(); // Chiama la funzione per ottenere la data corrente solo se non stai usando il time machine
+            }
+        }, 1000);
+
+        return () => clearInterval(intervalId); // Pulizia dell'intervallo al momento dello smontaggio
+    }, [showTimeMachine]); // Aggiungi showTimeMachine come dipendenza
 
     function toggleDropdown(): void {
         setShowDropdown(prevState => !prevState);
@@ -214,8 +277,7 @@ export default function Header(): React.JSX.Element {
 
 
 
-
-            {/*Parte destra dell'header*/}
+            {isLoggedIn ? (
             <div 
                 style={{
                 display: "flex",
@@ -227,7 +289,7 @@ export default function Header(): React.JSX.Element {
                 {currentDate && (
                     <span 
                         className="btn secondary date-button">
-                        {formatDate(currentDate)}
+                        {formatDateHours(currentDate)}
                     </span>
                 )}
 
@@ -269,6 +331,7 @@ export default function Header(): React.JSX.Element {
                                 <input className="btn secondary"
                                     type="time"
                                     id="timeInput"
+                                    value={currentDate ? currentDate.toTimeString().split(' ')[0].slice(0, 5) : ''} // Imposta l'orario attuale come valore predefinito
                                     onChange={(event): void => {
                                         const timeParts = event.target.value.split(':');
                                         const newDate = new Date(currentDate);
@@ -357,7 +420,7 @@ export default function Header(): React.JSX.Element {
                                             </a>
                                         );
                                     }
-                                    if (notification.type === "event") {
+                                    else if (notification.type === "event" && notification.receiver === user && notification.read === false) {
                                         const eventDate = new Date(notification.data.date); // Crea un oggetto Date
 
                                         //mostra la notifica solo se la data corrente è successiva alla data della notifica
@@ -383,6 +446,18 @@ export default function Header(): React.JSX.Element {
                                                             hour12: false // Imposta su false per il formato 24 ore
                                                         })}
                                                         {notification.message}
+                                                        <button className="btn secondary"
+                                                                    style={{ background: 'none', cursor: 'pointer' }}
+                                                                    onClick={(): void => {
+                                                                        if (notification.id) { // Controlla se notification.id è definito
+                                                                            handleReadNotification(notification.id);
+                                                                        } else {
+                                                                            console.error("ID notifica non definito");
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <i className="fas fa-check" style={{ color: 'green', fontSize: '20px' }}></i> {/* Icona di tick */}
+                                                                </button>
                                                     </p>
                                                 </div>
                                             );
@@ -426,12 +501,8 @@ export default function Header(): React.JSX.Element {
                     </a>
                 </div>
             </div>
-
-
-
-            {/*
-                ) : (
-                    <a
+            ) : (
+                <a
                         href="/login"
                         className="btn secondary"
                         style={{
@@ -444,7 +515,6 @@ export default function Header(): React.JSX.Element {
                     </a>
                 )
                 }
-            </div>*/}
 
         </header >
     );
