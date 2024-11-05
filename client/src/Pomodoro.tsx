@@ -105,18 +105,19 @@ export default function Pomodoros(): React.JSX.Element {
         studyTime,
         pauseTime,
     });
+
     const [pomEvent, setPomEvent] = useState(initialPomEvent);
-    const [eventMessage, setEventMessage] = useState("");
-    const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]); //per pomodori recenti
-    const [eventList, setEventList] = React.useState<Event[]>([]); //per eventi dello user attuale
-    const [initialCycles, setInitialCycles] = React.useState(0);
+    const [eventMessage, setEventMessage] = useState(""); // Per messaggi di errore degli eventi
+    const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]); // Per pomodori recenti
+    const [eventList, setEventList] = React.useState<Event[]>([]); // Per vedere gli eventi dello user attuale
+    const [initialCycles, setInitialCycles] = React.useState(0); // Per calcolare i cicli rimanenti
     const [users, setUsers] = React.useState([] as UserResult[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
-    const [addEvent, setAddEvent] = React.useState(false);
-    const [repeatEvent, setRepeatEvent] = React.useState(false);
-    const [until, setUntil] = React.useState(false);
-    const [selectedValue, setSelectedValue] = React.useState("Data");
-
-
+    const [addEvent, setAddEvent] = React.useState(false); // Per creare un evento
+    const [repeatEvent, setRepeatEvent] = React.useState(false); // Per creare un evento ripetuto
+    const [until, setUntil] = React.useState(false); // Per creare un evento fino a una certa data
+    const [selectedValue, setSelectedValue] = React.useState("Data"); // Per selezionare la frequenza dell'evento
+    const [shareConfig, setShareConfig] = React.useState(false); // Per condividere la configurazione del pomodoro
+    const [previousPomodoros, setPreviousPomodoros] = React.useState(false); // Per vedere i pomodori recenti
 
 
     
@@ -992,6 +993,14 @@ export default function Pomodoros(): React.JSX.Element {
         });
 	}
 
+    function togglePreviousPomodoros(): void {
+        setPreviousPomodoros(!previousPomodoros);
+    }
+
+    function toggleShareConfig(): void {
+        setShareConfig(!shareConfig);
+    }
+
     return (
         <>
             <audio id="ring" src="/images/ring.mp3"></audio>
@@ -999,8 +1008,8 @@ export default function Pomodoros(): React.JSX.Element {
             {addEvent && (
                     <div className="overlay">   
                         <div className="create-event-container col-2">
-                            <form className="create-event-form-overlay">
-                                <h4>ORGANIZZA UN EVENTO POMODORO</h4>
+                            <form className="create-event-form-overlay" style={{ overflowY: "auto", maxHeight: "600px" }}>
+                                <h4 style={{ textAlign: "center" }}>ORGANIZZA UN EVENTO POMODORO</h4>
                                 <button
                                     className="btn btn-primary"
                                     style={{ backgroundColor: "bisque", color: "black", border: "1px solid black"}}
@@ -1268,15 +1277,31 @@ export default function Pomodoros(): React.JSX.Element {
                     </h1>
                 </header>
 
-                <button
-                    className="add-event-button"
-                    onClick={toggleAddEvent}
-                    disabled={data.activeTimer}
-                >
-                    Crea evento Pomodoro
-                </button>
+                <div className="buttons-container">
+                    <button
+                        className="add-event-button"
+                        onClick={toggleAddEvent}
+                        disabled={data.activeTimer}
+                    >
+                        Crea evento Pomodoro
+                    </button>
+                    <button
+                        className="previous-pomodoros-button"
+                        onClick={togglePreviousPomodoros}
+                    >
+                        Visualizza ultimi Pomodoro
+                    </button>
+                    <button
+                        className="share-config-button"
+                        onClick={toggleShareConfig}
+                    >
+                        <a href="#send-invite" style={{ textDecoration: 'none', color: 'inherit' }}>
+                            Condividi configurazione
+                        </a>
+                    </button>
+                </div>
 
-                <div className="preview">
+                <div className="preview" style={{display: previousPomodoros ? "flex" : "none"}}>
                     <div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
                     {tomatoList.slice(-3).map((pomodoro, index) => (
                         <button
@@ -1315,7 +1340,7 @@ export default function Pomodoros(): React.JSX.Element {
                     <div>
                         <button
                             type="button"
-                            className="btn btn-success border"
+                            className="btn btn-success border start-button"
                             onClick={handleSavePomodoroConfig}
                             disabled={data.activeTimer}
                         >
@@ -1324,7 +1349,7 @@ export default function Pomodoros(): React.JSX.Element {
 
                         <button
                             type="button"
-                            className="btn btn-danger border"
+                            className="btn btn-danger border stop-button"
                             onClick={stopProcess}
                             disabled={!data.activeTimer}
                         >
@@ -1334,10 +1359,10 @@ export default function Pomodoros(): React.JSX.Element {
 
                     <br />
 
-                    <div>
+                    <div className="commands-container" style={{ width: "100%" }}>
                         <button
                             type="button"
-                            className="btn btn-warning border"
+                            className="btn btn-warning border skip-phase-button"
                             onClick={nextPhase}
                             disabled={!data.activeTimer}
                         >
@@ -1346,7 +1371,7 @@ export default function Pomodoros(): React.JSX.Element {
 
                         <button
                             type="button"
-                            className="btn btn-warning border"
+                            className="btn btn-warning border skip-cycle-button"
                             onClick={nextCycle}
                             disabled={!data.activeTimer}
                         >
@@ -1355,7 +1380,7 @@ export default function Pomodoros(): React.JSX.Element {
 
                         <button
                             type="button"
-                            className="btn btn-warning border"
+                            className="btn btn-warning border repeat-cycle-button"
                             onClick={repeatCycle}
                             disabled={!data.activeTimer}
                         >
@@ -1363,7 +1388,7 @@ export default function Pomodoros(): React.JSX.Element {
                         </button>
                     </div>
 
-                    <p className="paragraph">{data.message}</p>
+                    <div className="paragraph">{data.message}</div>
                 </div>
 
                 <div className="pannello studyTime border">
@@ -1463,13 +1488,13 @@ export default function Pomodoros(): React.JSX.Element {
 
                 
 
-                <div className="send-invite-container">
+                <div id="send-invite" className="send-invite-container" style={{display: shareConfig ? "block" : "none"}}>
                     <div>Scegli l'utente al quale inviare la notifica</div>
                     {users.length > 0}
                     <SearchForm onItemClick={handleSelectUser} list={users}/>
                     <button
                         onClick={handleSendInvite}
-                        className="btn btn-primary"
+                        className="btn btn-primary send-invite-button"
                     >
                         Invia Invito
                     </button>
