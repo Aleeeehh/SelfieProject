@@ -11,8 +11,8 @@ const buttonStyle = {
     backgroundColor: "white",
     color: "black",
     borderColor: "gray",
-    margin: "3px 5px",
-    padding: "4px 8px",
+    margin: "3px 6px",
+    padding: "4px 6px",
     width: "100px",
     alignSelf: "center",
 };
@@ -33,7 +33,7 @@ export default function Header(): React.JSX.Element {
         setCurrentDate(event.target.value);
     };*/
 
-    /*const formatDate = (date: Date): string => {
+    const formatDate = (date: Date): string => {
         return date.toLocaleString('it-IT', { // Formato italiano
             day: 'numeric',
             month: 'numeric',
@@ -41,7 +41,7 @@ export default function Header(): React.JSX.Element {
 
             hour12: false // Imposta su false per il formato 24 ore
         });
-    };*/
+    };
     
     const formatDateHours = (date: Date): string => {
         return date.toLocaleString('it-IT', { // Formato italiano
@@ -286,12 +286,18 @@ export default function Header(): React.JSX.Element {
                 alignItems: "center"
                 }}
             >
-                {currentDate && (
-                    <span 
-                        className="btn secondary date-button">
-                        {formatDateHours(currentDate)}
-                    </span>
-                )}
+                {currentDate && ((
+                    <>
+                        <span 
+                            className="btn secondary date-button">
+                            {formatDate(currentDate)}
+                        </span>
+                        <span 
+                            className="btn secondary date-button">
+                            {formatDateHours(currentDate)}
+                        </span>
+                    </>
+                ))}
 
                 <button
                     className="btn secondary"
