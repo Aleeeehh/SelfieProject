@@ -190,15 +190,13 @@ export default function Header(): React.JSX.Element {
     function hasEventNotifications(): boolean {
         console.log("Notifications:", notifications);
         return notifications.some((notification: Notification) => {
-            if (notification && notification.type === "event" && notification.read === false) {
+            if (notification && (notification.type === "event" || notification.type === "activity") && notification.read === false) { // Includi anche il tipo "activity"
                 const eventDate = new Date(notification.data.date); // Assicurati che notification.data.date sia un formato valido
                 return eventDate < currentDate; // Controlla se la data dell'evento è inferiore a currentDate
             }
-            return false; // Restituisci false se non è di tipo "event"
+            return false; // Restituisci false se non è di tipo "event" o "activity"
         });
     }
-
-
 
 
     async function getCurrentUser(): Promise<Promise<any> | null> {
@@ -495,6 +493,34 @@ export default function Header(): React.JSX.Element {
                                                 );
                                             }
                                             else if (notification.type === "event" && notification.receiver === user && notification.read === false) {
+
+                                                const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+
+                                                //mostra la notifica solo se la data corrente è successiva alla data della notifica
+                                                if (eventDate < currentDate) {
+
+                                                    return (
+                                                        <div key={index}>
+
+                                                            {notification.message}
+                                                            <button className="btn secondary"
+                                                                style={{ background: 'none', cursor: 'pointer' }}
+                                                                onClick={(): void => {
+                                                                    if (notification.id) { // Controlla se notification.id è definito
+                                                                        handleReadNotification(notification.id);
+                                                                    } else {
+                                                                        console.error("ID notifica non definito");
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i className="fas fa-check" style={{ color: 'green', fontSize: '20px' }}></i> {/* Icona di tick */}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                }
+                                            }
+
+                                            else if (notification.type === "activity" && notification.receiver === user && notification.read === false) {
 
                                                 const eventDate = new Date(notification.data.date); // Crea un oggetto Date
 

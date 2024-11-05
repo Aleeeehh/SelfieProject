@@ -14,7 +14,11 @@ router.post("/", async (req: Request, res: Response) => {
         const mode = req.body.mode as string | undefined;
         const receiver = req.body.receiver as string | undefined;
         const data = req.body.data as { repeatedNotification: boolean; repeatTime: number; firstNotificationTime: number; idEventoNotificaCondiviso: string; date: Date };
+
+        const activityName = message ? message.match(/Scadenza (.+?)(?: tra| iniziata)/)?.[1] : ""; // Cattura il nome dell'attività
+
         // TODO: validate body
+
         if (!message || !type || !mode || !receiver) {
             const response: ResponseBody = {
                 message: "Invalid body: 'message', 'type', 'mode' and 'receiver' required",
@@ -91,6 +95,67 @@ router.post("/", async (req: Request, res: Response) => {
                 repeatedNotifications.push(anotherNotification);
             }
         }
+
+        const deadlineNotifications: Notification[] = [];
+
+        if (type === "activity") {
+            for (let i = 1; i <= 5; i++) { // Aggiungi 5 notifiche
+                let displayTime: string; // Cambiato var in let
+                let timeUnit: string; // Cambiato var in let
+
+                switch (i) {
+                    case 1:
+                        displayTime = "1 ora..";
+                        timeUnit = "ora";
+                        break;
+                    case 2:
+                        displayTime = "12 ore..";
+                        timeUnit = "ore";
+                        break;
+                    case 3:
+                        displayTime = "1 giorno..";
+                        timeUnit = "giorno";
+                        break;
+                    case 4:
+                        displayTime = "2 giorni..";
+                        timeUnit = "giorni";
+                        break;
+                    case 5:
+                        displayTime = "3 giorni o più..";
+                        timeUnit = "giorni";
+                        break;
+                    default:
+                        displayTime = "tempo non specificato"; // Valore di default
+                        timeUnit = "giorni"; // Valore di default
+                }
+
+                // Crea un nuovo messaggio per la notifica
+                const messageForNotification = `Attività ${activityName} in ritardo di ${displayTime}`;
+                const minutesToAdd = i === 1 ? 60 :
+                    (i === 2 ? 720 :
+                        (i === 3 ? 1440 :
+                            (i === 4 ? 2880 :
+                                (i === 5 ? 4320 : 0)))); // Aggiunto il caso per i=5
+
+
+                const anotherNotification: Notification = {
+                    data: {
+                        date: new Date(new Date(data.date).getTime() + minutesToAdd * 60000), // Calcola la data in base all'indice
+                        idEventoNotificaCondiviso: data.idEventoNotificaCondiviso,
+                        repeatedNotification: false,
+                        repeatTime: data.repeatTime,
+                        firstNotificationTime: data.firstNotificationTime,
+                    },
+                    sender,
+                    receiver,
+                    type,
+                    sentAt: new Date(),
+                    message: messageForNotification,
+                };
+                deadlineNotifications.push(anotherNotification);
+            }
+        }
+
         else {
             console.log("NOTIFICA NON RIPETUTA");
         }
@@ -98,6 +163,10 @@ router.post("/", async (req: Request, res: Response) => {
 
         if (repeatedNotifications.length > 0) {
             await NotificationSchema.insertMany(repeatedNotifications);
+        }
+
+        if (deadlineNotifications.length > 0) {
+            await NotificationSchema.insertMany(deadlineNotifications);
         }
 
         console.log("NOTIFICHE RIPETUTE:", repeatedNotifications);
@@ -183,6 +252,7 @@ router.post("/deleteNotification", async (req: Request, res: Response) => {
         return res.status(500).json(response);
     }
 });
+
 router.put("/:notificationId", async (req: Request, res: Response) => {
     try {
         const notificationId = req.params.notificationId as string;

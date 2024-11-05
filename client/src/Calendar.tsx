@@ -155,12 +155,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setCurrentDate(new Date(data.currentDate)); // Assicurati che il formato sia corretto
 
 			//ricarico la lista di attività
-			const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
-			const updatedActivities = await res2.json();
+			//const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
 
-			// Aggiorna la activityList con l'elenco aggiornato
-			setActivityList(updatedActivities.value);
-			await loadActivities();
+			//const updatedActivities = await res2.json();
+			//setActivityList(updatedActivities.value);
+			//await loadActivities();
 			await loadEvents();
 		} catch (error) {
 			console.error("Errore durante il recupero della data corrente:", error);
@@ -828,6 +827,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		setAddTitle(true);
 		setCreateActivity(!createActivity);
+		setNotificationRepeat(false);
+		setAddNotification(false);
 	}
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
@@ -1336,7 +1337,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 				handleDateClick(day);
 			}
 
-			//elimina la notifica associata all'evento
 
 			const res2 = await fetch(`${SERVER_API}/notifications`);
 			const data2 = await res2.json();
@@ -1344,19 +1344,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const notifications = data2.value; //tutte le notifiche sul database
 			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
 			console.log("Eventi eliminati:", eventiEliminati);
-
-
-
-			// Elimina le notifiche corrispondenti agli eventi eliminati
-			/*
-			const notificationsToDelete = notifications.filter((notification: Notification) => {
-				return eventiEliminati.some((evento: Event) => evento.idEventoNotificaCondiviso === notification.data.idEventoNotificaCondiviso);
-			});
-			*/
-
-			//console.log("NOTIFICHE DA ELIMINARE:", notifications);
-
-			// Elimina tutte le notifiche sul server che sono associate all'evento (o agli eventi) eliminati
 
 			for (const evento of eventiEliminati) { //per ogni evento in eventi eliminati
 				const idEventoNotificaCondiviso = evento.idEventoNotificaCondiviso; // Assicurati che questo campo esista
@@ -1438,9 +1425,74 @@ export default function Calendar(): React.JSX.Element { // prova push
 				prevEventList.filter(event => event.title !== "Scadenza " + attivitaEliminata[0].title) // Filtra l'evento eliminato
 			);
 			await loadEvents();
+
 			handleDateClick(day);
 
-			//await loadActivities();
+			await loadActivities();
+
+			const res3 = await fetch(`${SERVER_API}/notifications`);
+			const data3 = await res3.json();
+			const eventiEliminati = data.value;
+			const notifications = data3.value; //tutte le notifiche sul database
+			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			console.log("Eventi eliminati:", eventiEliminati);
+
+			const idEventoNotificaCondiviso = attivitaEliminata[0].idEventoNotificaCondiviso;
+
+			console.log("ID EVENTO NOTIFICA CONDIVISO DELL'ATTIVITA' ELIMINATA:", idEventoNotificaCondiviso);
+
+			for (const notification of notifications) {
+
+				const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ notification_id: notification.id, idEventoNotificaCondiviso: idEventoNotificaCondiviso }), // Assicurati di usare il campo corretto
+				});
+				console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+
+				if (!res3.ok) {
+					const errorData = await res3.json();
+					console.error("Errore durante l'eliminazione della notifica:", errorData);
+				} else {
+					console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+				}
+			}
+			/*
+			POSSIBILE IMPLEMENTAZIONE ELIMINAZIONE EVENTI BY IDEVENTOCONDIVISO
+						const res4 = await fetch(`${SERVER_API}/events`);
+						const data4 = await res4.json();
+						const eventi = data4.value;
+						console.log("EVENTI TOTALI IN LISTA:", eventi);
+			
+						for (const evento of eventi) {
+							if (evento.idEventoNotificaCondiviso === idEventoNotificaCondiviso) {
+								//console.log("Evento da eliminare:", id);
+								const res = await fetch(`${SERVER_API}/events/deleteEvent`, {
+									method: "POST",
+									headers: { "Content-Type": "application/json" },
+									body: JSON.stringify({
+										event_id: evento._id,
+										groupId: evento.groupId,
+									}),
+								});
+								const data = await res.json();
+			
+								if (data.status === "success") {
+									const eventiEliminati = data.value; // Supponendo che `value` contenga gli eventi eliminati
+									console.log("EVENTI ELIMINATI:", eventiEliminati);
+			
+									// Ottieni gli ID degli eventi eliminati
+									const idsEliminati = eventiEliminati.map((event: { groupId: string }) => event.groupId);
+			
+									// Aggiorna la eventList rimuovendo gli eventi eliminati
+									setEventList(prevEventList => prevEventList.filter(event => !idsEliminati.includes(event.groupId)));
+			
+									console.log("Event list aggiornata:", eventList);
+									handleDateClick(day);
+								}
+							}
+						}
+							*/
 
 			return data;
 
@@ -1462,7 +1514,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}),
 		});
 		const data = await res.json();
-		console.log("Attività completata:", data);
 
 		const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
 		const updatedActivities = await res2.json();
@@ -1470,6 +1521,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 		// Aggiorna la activityList con l'elenco aggiornato
 		setActivityList(updatedActivities.value);
 		await loadActivities();
+
+		const res3 = await fetch(`${SERVER_API}/notifications`);
+		const data3 = await res3.json();
+		const attivitaCompletata = data;
+		const notifications = data3.value; //tutte le notifiche sul database
+		console.log("NOTIFICHE RIMASTE IN LISTAAAA:", notifications);
+		console.log("Attività completataAAAA:", attivitaCompletata);
+		const idEventoNotificaCondiviso = attivitaCompletata.idEventoNotificaCondiviso;
+		console.log("ID CONDIVISO ATTIVITA COMPLETATA:", idEventoNotificaCondiviso);
+		console.log("NOTIFICHE ATTUALIIII:", notifications);
+
+		for (const notification of notifications) {
+
+			const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ notification_id: notification.id, idEventoNotificaCondiviso: idEventoNotificaCondiviso }), // Assicurati di usare il campo corretto
+			});
+			console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+
+			if (!res3.ok) {
+				const errorData = await res3.json();
+				console.error("Errore durante l'eliminazione della notifica:", errorData);
+			} else {
+				console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+			}
+		}
 
 	}
 
@@ -1639,12 +1717,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
 		//crea l'attività come evento sul calendario
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
+				idEventoNotificaCondiviso,
 				owner,
 				title: "Scadenza " + title,
 				startTime: startTime.toISOString(),
@@ -1656,8 +1736,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 				repetitions: 1,
 			}),
 		});
+		console.log("Evento scadenza creato:", res);
 
 		const newActivity = {
+			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 			_id: "1",
 			title,
 			deadline: endTime,
@@ -1674,6 +1756,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
+				idEventoNotificaCondiviso,
 				title,
 				deadline: endTime.toISOString(),
 				description,
@@ -1681,26 +1764,57 @@ export default function Calendar(): React.JSX.Element { // prova push
 				accessList: [owner],
 			}),
 		});
-
+		console.log("Attività creata:", res2);
 		await loadActivities();
 
 
-
-		if (!res2.ok) {
-			const errorData = await res2.json();
-			console.error("Error response:", errorData);
-			return; // Esci se c'è un errore
+		var notificationDate = new Date(startTime);
+		notificationDate.setHours(notificationDate.getHours() + 1); // Aggiungi un'ora
+		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+		console.log("Questa è la data di inizio evento:", startTime);
+		console.log("Questa è la data della notifica:", notificationDate);
+		var message = "";
+		if (notificationTime < 60) {
+			message = "Scadenza " + title + " tra " + notificationTime + " minuti!";
+		} else {
+			message = "Scadenza " + title + " tra " + notificationTime / 60 + " ore!";
 		}
-		const data2 = await res2.json();
-		console.log("Questa è la risposta della creazione dell'attività:", data2);
+
+		if (notificationTime == 0) {
+			message = "Scadenza " + title + " iniziata!";
+		}
+
+		var repeatTime = notificationRepeatTime;
+		var repeatedNotification = false;
+		if (repeatTime > 0) {
+			repeatedNotification = true;
+		}
 
 
-		if (!res.ok) {
-			const errorData = await res.json();
-			console.error("Error response:", errorData);
-			setMessage("Errore durante la creazione dell'attività: " + errorData.message);
-			return;
-		};
+		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
+		if (addNotification) {
+			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message: message,
+					mode: "acitvity",
+					receiver: currentUser.value._id,
+					type: "activity",
+					data: {
+						date: notificationDate, //data prima notifica
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+					},
+				}),
+
+			});
+			console.log("Notifica creata:", res3);
+		}
+
 
 		// Aggiorna la lista degli eventi
 		await loadEvents();
@@ -1715,6 +1829,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
+
 
 
 	//ottieni il giorno del mese per la visualizzazione weekly
@@ -2453,6 +2568,70 @@ export default function Calendar(): React.JSX.Element { // prova push
 									</div>
 
 								</label>
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="addNotification"
+										onClick={toggleAddNotification}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Aggiungi notifica
+
+								</label>
+
+								{addNotification && (
+									<label htmlFor="notificationTime">
+										Quanto tempo prima mandare la notifica
+										<select
+											id="notificationTimeSelect"
+											className="btn border"
+											onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+												setNotificationTime(Number(e.target.value));
+												if (Number(e.target.value) > 0) {
+													setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+												}
+												else if (Number(e.target.value) == 0) {
+													setNotificationRepeat(false);
+												}
+											}}
+											style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+										>
+											<option value="0">All'ora d'inizio</option>
+											<option value="5">5 minuti prima</option>
+											<option value="10">10 minuti prima</option>
+											<option value="15">15 minuti prima</option>
+											<option value="30">30 minuti prima</option>
+											<option value="60">1 ora prima</option>
+											<option value="120">2 ore prima</option>
+											<option value="1440">Un giorno prima</option>
+											<option value="2880">2 giorni prima</option>
+										</select>
+									</label>
+								)}
+
+								{notificationRepeat && (
+									<label htmlFor="notificationRepeatTime">
+										Quanto tempo ripetere la notifica
+										<select
+											className="btn border"
+											name="notificationRepeatTime"
+											onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+												setNotificationRepeatTime(Number(e.target.value));
+											}}
+										>
+											{getValidRepeatOptions(notificationTime).map(option => (
+												<option key={option} value={option}>
+													{option === 0
+														? "Mai"
+														: option >= 60
+															? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+															: `Ogni ${option} minuti`}
+												</option>
+											))}
+										</select>
+									</label>
+								)}
 								<button
 									className="btn btn-primary"
 									style={{
