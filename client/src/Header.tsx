@@ -52,6 +52,38 @@ export default function Header(): React.JSX.Element {
         });
     };
 
+
+    // Funzione per pulire le notifiche
+    const cleanNotifications = async (): Promise<void> => {
+        try {
+            const res1 = await fetch(`${SERVER_API}/currentDate`);
+            if (!res1.ok) {
+                throw new Error("Errore nel recupero della data corrente");
+            }
+            const data = await res1.json();
+            console.log("showTimeMachine:", showTimeMachine);
+
+            // Aggiungi un secondo alla data ottenuta
+            const currentDate = new Date(data.currentDate);
+            const response = await fetch(`${SERVER_API}/notifications/cleanNotifications`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ currentDate: currentDate }), // Invia la data attuale
+            });
+            console.log(response); // Log del messaggio di risposta
+        } catch (error) {
+            console.error("Errore durante la pulizia delle notifiche:", error);
+        }
+    };
+
+    // useEffect che si attiva quando showNotifications cambia
+    useEffect(() => {
+        if (showNotifications) {
+            cleanNotifications(); // Chiama la funzione per pulire le notifiche
+        }
+    }, [showNotifications]); // Dipendenza da showNotifications
+
+
     const fetchCurrentDate = async (): Promise<void> => {
         try {
             const response = await fetch(`${SERVER_API}/currentDate`);
@@ -103,9 +135,23 @@ export default function Header(): React.JSX.Element {
                 // Aggiorna lo stato locale se necessario
                 // Ad esempio, puoi aggiornare l'array delle notifiche per riflettere il cambiamento
             }
+            cleanNotifications();
+
         } catch (error) {
             console.error("Errore nella richiesta:", error);
         }
+        /*
+                try {
+                    const res = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ notification_id: notificationId }),
+                    });
+                    console.log("Risposta dalla deleteNotification:", res);
+                } catch (error) {
+                    console.error("Errore nella richiesta:", error);
+                }
+                    */
     };
 
 
@@ -480,7 +526,7 @@ export default function Header(): React.JSX.Element {
                                     ) : (
                                         (
                                             <div>
-                                                <p style={{ fontWeight: "bold" }}>Non ci sono notifiche adesso</p>
+                                                <p style={{ fontWeight: "bold" }}>Non ci sono notifiche</p>
                                             </div>
                                         )
                                     )}

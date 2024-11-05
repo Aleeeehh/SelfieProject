@@ -1556,6 +1556,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 			message = "Inizio evento " + title + " tra " + notificationTime / 60 + " ore!";
 		}
 
+		if (notificationTime == 0) {
+			message = "Evento " + title + " iniziato!";
+		}
+
 		var repeatTime = notificationRepeatTime;
 		var repeatedNotification = false;
 		if (repeatTime > 0) {
@@ -2324,6 +2328,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												setNotificationTime(Number(e.target.value));
 												if (Number(e.target.value) > 0) {
 													setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+												}
+												else if (Number(e.target.value) == 0) {
+													setNotificationRepeat(false);
 												}
 											}}
 											style={{ marginLeft: "10px" }} // Aggiungi margine se necessario

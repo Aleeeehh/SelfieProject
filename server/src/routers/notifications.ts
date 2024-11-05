@@ -264,4 +264,29 @@ router.put("/:notificationId", async (req: Request, res: Response) => {
     }
 });
 
+router.post("/cleanNotifications", async (req: Request, res: Response) => {
+    try {
+        const currentDate = new Date(req.body.currentDate); // Ricevi la data attuale dal corpo della richiesta
+        const limitDate = new Date(currentDate);
+        limitDate.setDate(limitDate.getDate() - 1); // Calcola la data limite (un giorno prima)
+
+        // Trova e cancella le notifiche che soddisfano i criteri
+        const result = await NotificationSchema.deleteMany({
+            date: { $lt: limitDate }, // Data della notifica è minore della data limite
+            read: true // Le notifiche devono essere lette
+        });
+
+        console.log("NOTIFICHE ELIMINATE:", result);
+
+        // Rispondi con il numero di notifiche eliminate
+        const response = {
+            message: "Notifiche eliminate",
+            deletedCount: result.deletedCount,
+        };
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ message: "Errore durante la pulizia delle notifiche" });
+    }
+});
 export default router;
