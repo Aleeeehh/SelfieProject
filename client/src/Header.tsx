@@ -23,6 +23,7 @@ export default function Header(): React.JSX.Element {
     const [showTimeMachine, setShowTimeMachine] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
+    // const [noNotifications, setNoNotifications] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
     const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
     const [user, setUser] = useState(null);
@@ -77,6 +78,14 @@ export default function Header(): React.JSX.Element {
             console.error("Errore durante il recupero della data corrente:", error);
         }
     };
+
+    /* useEffect(() => {
+         // Resetta noNotifications quando le notifiche cambiano
+         if (notifications && notifications.length > 0) {
+             setNoNotifications(false);
+         }
+     }, [notifications]);
+     */
 
     const handleReadNotification = async (notificationId: string): Promise<void> => {
         try {
@@ -142,6 +151,7 @@ export default function Header(): React.JSX.Element {
             return false; // Restituisci false se non è di tipo "event"
         });
     }
+
 
 
 
@@ -343,10 +353,18 @@ export default function Header(): React.JSX.Element {
                                             id="timeInput"
                                             value={currentDate ? currentDate.toTimeString().split(' ')[0].slice(0, 5) : ''} // Imposta l'orario attuale come valore predefinito
                                             onChange={(event): void => {
-                                                const timeParts = event.target.value.split(':');
-                                                const newDate = new Date(currentDate);
-                                                newDate.setHours(Number(timeParts[0]), Number(timeParts[1]));
-                                                setCurrentDate(newDate); // Aggiorna lo stato con la nuova data e orario
+                                                const timeValue = event.target.value;
+
+                                                // Controlla se il valore è vuoto
+                                                if (timeValue) {
+                                                    const timeParts = timeValue.split(':');
+                                                    const newDate = new Date(currentDate);
+                                                    newDate.setHours(Number(timeParts[0]), Number(timeParts[1]));
+                                                    setCurrentDate(newDate); // Aggiorna lo stato con la nuova data e orario
+                                                } else {
+                                                    // Se il valore è vuoto, non fare nulla o gestisci come preferisci
+                                                    console.warn("Orario non valido");
+                                                }
                                             }}
                                             style={{ marginLeft: "10px" }}
                                         />
@@ -431,59 +449,45 @@ export default function Header(): React.JSX.Element {
                                                 );
                                             }
                                             else if (notification.type === "event" && notification.receiver === user && notification.read === false) {
+
                                                 const eventDate = new Date(notification.data.date); // Crea un oggetto Date
 
                                                 //mostra la notifica solo se la data corrente è successiva alla data della notifica
                                                 if (eventDate < currentDate) {
+
                                                     return (
                                                         <div key={index}>
 
-                                                            <p>
-                                                                Data odierna: {currentDate.toLocaleString('it-IT', {
-                                                                    day: 'numeric',
-                                                                    month: 'numeric',
-                                                                    year: 'numeric',
-                                                                    hour: 'numeric',
-                                                                    minute: 'numeric',
-                                                                    hour12: false // Imposta su false per il formato 24 ore
-                                                                })}:
-                                                                Data notifica: {eventDate.toLocaleString('it-IT', {
-                                                                    day: 'numeric',
-                                                                    month: 'numeric',
-                                                                    year: 'numeric',
-                                                                    hour: 'numeric',
-                                                                    minute: 'numeric',
-                                                                    hour12: false // Imposta su false per il formato 24 ore
-                                                                })}
-                                                                {notification.message}
-                                                                <button className="btn secondary"
-                                                                    style={{ background: 'none', cursor: 'pointer' }}
-                                                                    onClick={(): void => {
-                                                                        if (notification.id) { // Controlla se notification.id è definito
-                                                                            handleReadNotification(notification.id);
-                                                                        } else {
-                                                                            console.error("ID notifica non definito");
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    <i className="fas fa-check" style={{ color: 'green', fontSize: '20px' }}></i> {/* Icona di tick */}
-                                                                </button>
-                                                            </p>
+                                                            {notification.message}
+                                                            <button className="btn secondary"
+                                                                style={{ background: 'none', cursor: 'pointer' }}
+                                                                onClick={(): void => {
+                                                                    if (notification.id) { // Controlla se notification.id è definito
+                                                                        handleReadNotification(notification.id);
+                                                                    } else {
+                                                                        console.error("ID notifica non definito");
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i className="fas fa-check" style={{ color: 'green', fontSize: '20px' }}></i> {/* Icona di tick */}
+                                                            </button>
                                                         </div>
                                                     );
                                                 }
                                             }
-                                            // Restituisci un elemento vuoto se non ci sono condizioni soddisfatte
-                                            return null; // Aggiungi questa riga per gestire i casi non coperti
+                                            return null
                                         })
                                     ) : (
-                                        <div>
-                                            <p>No notifications</p>
-                                        </div>
+                                        (
+                                            <div>
+                                                <p style={{ fontWeight: "bold" }}>Non ci sono notifiche adesso</p>
+                                            </div>
+                                        )
                                     )}
                                 </div>
                             </>
-                        )}
+                        )
+                        }
                         <div
                             style={{
                                 ...buttonStyle,
@@ -510,7 +514,7 @@ export default function Header(): React.JSX.Element {
                                 <span style={{ color: "white" }}>U</span>
                             </a>
                         </div>
-                    </div>
+                    </div >
                 ) : (
                     <a
                         href="/login"

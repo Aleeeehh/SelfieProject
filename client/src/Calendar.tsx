@@ -62,6 +62,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [todayActivitiesMode, setTodayActivitiesMode] = React.useState(true);
 	const [allActivitiesMode, setAllActivitiesMode] = React.useState(false);
 	const [activitiesMode, setActivitiesMode] = React.useState(false);
+	const [notificationRepeat, setNotificationRepeat] = React.useState(false);
+	const [notificationRepeatTime, setNotificationRepeatTime] = React.useState(0);
 	const [notificationTime, setNotificationTime] = React.useState(0);
 	//const [isUntilDate, setIsUntilDate] = React.useState(false);
 	const [untilDate, setUntilDate] = React.useState<Date | null>(null);
@@ -97,13 +99,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 	const [activityList, setActivityList] = React.useState<Activity[]>([]);
 	const [addTitle, setAddTitle] = React.useState(true);
-	/*
-	const [eventName, setEventName] = React.useState("");
-	const [eventHeight, setEventHeight] = React.useState(0);
-	const [eventTop, setEventTop] = React.useState(0);
-	*/
+
+
 	const [eventPositions, setEventPositions] = React.useState<{ top: number; height: number; name: string; type: boolean, width: number, marginLeft: number, event: Event }[]>([]);
 	const nav = useNavigate();
+
+	const getValidRepeatOptions = (time: number): number[] => {
+		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
+		return options.filter(option => option !== time && (time % option === 0 || option === 0)); // Filtra solo i divisori, escludendo il numero stesso
+	};
 
 
 
@@ -787,6 +791,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setRepeatEvent(false);
 		setAddNotification(false);
 		setAllDayEvent(false);
+		setNotificationRepeat(false);
+		setNotificationRepeatTime(0);
 		setUntil(false);
 		setTitle("");
 		setCreateEvent(!createEvent);
@@ -1335,32 +1341,46 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const res2 = await fetch(`${SERVER_API}/notifications`);
 			const data2 = await res2.json();
 			const eventiEliminati = data.value;
-			const notifications = data2.value;
+			const notifications = data2.value; //tutte le notifiche sul database
 			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
 			console.log("Eventi eliminati:", eventiEliminati);
 
+
+
 			// Elimina le notifiche corrispondenti agli eventi eliminati
+			/*
 			const notificationsToDelete = notifications.filter((notification: Notification) => {
 				return eventiEliminati.some((evento: Event) => evento.idEventoNotificaCondiviso === notification.data.idEventoNotificaCondiviso);
 			});
+			*/
 
-			console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
+			//console.log("NOTIFICHE DA ELIMINARE:", notifications);
 
-			//elimina tutte le notifiche sul server che sono associate all'evento ( o agli eventi) eliminati
-			for (const notification of notificationsToDelete) {
-				const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ notification_id: notification.id }), // Assicurati di usare il campo corretto
+			// Elimina tutte le notifiche sul server che sono associate all'evento (o agli eventi) eliminati
 
+			for (const evento of eventiEliminati) { //per ogni evento in eventi eliminati
+				const idEventoNotificaCondiviso = evento.idEventoNotificaCondiviso; // Assicurati che questo campo esista
+
+				// Cerca le notifiche che corrispondono all'idEventoNotificaCondiviso
+				const notificationsToDelete = notifications.filter((notification: Notification) => {
+					return notification.data.idEventoNotificaCondiviso === idEventoNotificaCondiviso;
 				});
-				console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
 
-				if (!res3.ok) {
-					const errorData = await res3.json();
-					console.error("Errore durante l'eliminazione della notifica:", errorData);
-				} else {
-					console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+				// Elimina le notifiche trovate
+				for (const notification of notificationsToDelete) {
+					const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ notification_id: notification.id, idEventoNotificaCondiviso: idEventoNotificaCondiviso }), // Assicurati di usare il campo corretto
+					});
+					console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+
+					if (!res3.ok) {
+						const errorData = await res3.json();
+						console.error("Errore durante l'eliminazione della notifica:", errorData);
+					} else {
+						console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+					}
 				}
 			}
 
@@ -1529,6 +1549,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
 		console.log("Questa è la data di inizio evento:", startTime);
 		console.log("Questa è la data della notifica:", notificationDate);
+		var message = "";
+		if (notificationTime < 60) {
+			message = "Inizio evento " + title + " tra " + notificationTime + " minuti!";
+		} else {
+			message = "Inizio evento " + title + " tra " + notificationTime / 60 + " ore!";
+		}
+
+		var repeatTime = notificationRepeatTime;
+		var repeatedNotification = false;
+		if (repeatTime > 0) {
+			repeatedNotification = true;
+		}
+
 
 		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
 		if (addNotification) {
@@ -1537,13 +1570,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					message: "Inizio evento " + title + " tra " + notificationTime + " minuti!",
+					message: message,
 					mode: "event",
 					receiver: currentUser.value._id,
 					type: "event",
 					data: {
-						date: notificationDate,
-						idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						date: notificationDate, //data prima notifica
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
 					},
 				}),
 			});
@@ -2280,15 +2316,51 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 								{addNotification && (
 									<label htmlFor="notificationTime">
-										Quanti minuti prima mandare la notifica
-										<input
+										Quanto tempo prima mandare la notifica
+										<select
+											id="notificationTimeSelect"
 											className="btn border"
-											type="number"
-											min="0"
-											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+											onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
 												setNotificationTime(Number(e.target.value));
+												if (Number(e.target.value) > 0) {
+													setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+												}
 											}}
-										/>
+											style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+										>
+											<option value="0">All'ora d'inizio</option>
+											<option value="5">5 minuti prima</option>
+											<option value="10">10 minuti prima</option>
+											<option value="15">15 minuti prima</option>
+											<option value="30">30 minuti prima</option>
+											<option value="60">1 ora prima</option>
+											<option value="120">2 ore prima</option>
+											<option value="1440">Un giorno prima</option>
+											<option value="2880">2 giorni prima</option>
+										</select>
+									</label>
+								)}
+
+								{notificationRepeat && (
+									<label htmlFor="notificationRepeatTime">
+										Quanto tempo ripetere la notifica
+										<select
+											className="btn border"
+											name="notificationRepeatTime"
+											onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+												setNotificationRepeatTime(Number(e.target.value));
+											}}
+										>
+											{getValidRepeatOptions(notificationTime).map(option => (
+												<option key={option} value={option}>
+													{option === 0
+														? "Mai"
+														: option >= 60
+															? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+															: `Ogni ${option} minuti`}
+												</option>
+											))}
+										</select>
 									</label>
 								)}
 

@@ -5,13 +5,15 @@ import { ResponseStatus } from "../types/ResponseStatus.js";
 import type Notification from "../types/Notification.js";
 const router = express.Router();
 
+// Definisci l'interfaccia per il tuo oggetto di notifica
+
 router.post("/", async (req: Request, res: Response) => {
     try {
         const message = req.body.message as string | undefined;
         const type = req.body.type as string | undefined;
         const mode = req.body.mode as string | undefined;
         const receiver = req.body.receiver as string | undefined;
-        const data = req.body.data as Object | undefined;
+        const data = req.body.data as { repeatedNotification: boolean; repeatTime: number; firstNotificationTime: number; idEventoNotificaCondiviso: string; date: Date };
         // TODO: validate body
         if (!message || !type || !mode || !receiver) {
             const response: ResponseBody = {
@@ -37,6 +39,68 @@ router.post("/", async (req: Request, res: Response) => {
             message,
         };
         const notification = await NotificationSchema.create(newNotification);
+
+        const repeatedNotifications: Notification[] = [];
+
+        const numberOfRepetitions = Math.floor(data.firstNotificationTime / data.repeatTime) - 1;
+        //aggiungi altrettanti notifiche al database, se la notifica è ripetuta
+
+        var messageRepeated = message.replace(/(\d+)(?=\s+(minuti|ore))/g, data.firstNotificationTime.toString());
+
+
+        if (data.repeatedNotification) {
+            console.log("OLTRE ALLA NOTIFICA STESSA, CREO ALTRETTANTE", numberOfRepetitions, "NOTIFICHE!");
+            for (let i = 1; i <= numberOfRepetitions; i++) {
+                // Calcola il nuovo valore di notificationTime per questa iterazione
+                const notificationTime = data.firstNotificationTime - i * data.repeatTime;
+
+                // Determina il messaggio per questa notifica
+                let displayTime = notificationTime;
+                let timeUnit = "minuti";
+
+                if (notificationTime === 60) {
+                    displayTime = 1; // 1 ora
+                    timeUnit = "ora"; // Singolare
+                } else if (notificationTime > 60 && notificationTime < 120) {
+                    const remainingMinutes = notificationTime - 60; // Calcola i minuti rimanenti
+                    displayTime = 1; // 1 ora
+                    timeUnit = `ora e ${remainingMinutes} minuti`; // Visualizza "1 ora e X minuti"
+                } else if (notificationTime >= 120) {
+                    displayTime = Math.floor(notificationTime / 60); // Calcola le ore
+                    timeUnit = "ore"; // Plurale
+                }
+
+                // Crea un nuovo messaggio per la notifica
+                const messageForNotification = message.replace(/(\d+)(?=\s+(minuti|ore))/g, displayTime.toString())
+                    .replace(/minuti|ore/, timeUnit);
+
+                const anotherNotification: Notification = {
+                    data: {
+                        date: new Date(new Date(data.date).getTime() + i * data.repeatTime * 60000),
+                        idEventoNotificaCondiviso: data.idEventoNotificaCondiviso,
+                        repeatedNotification: false,
+                        repeatTime: data.repeatTime,
+                        firstNotificationTime: data.firstNotificationTime,
+                    },
+                    sender,
+                    receiver,
+                    type,
+                    sentAt: new Date(),
+                    message: messageForNotification,
+                };
+                repeatedNotifications.push(anotherNotification);
+            }
+        }
+        else {
+            console.log("NOTIFICA NON RIPETUTA");
+        }
+
+
+        if (repeatedNotifications.length > 0) {
+            await NotificationSchema.insertMany(repeatedNotifications);
+        }
+
+        console.log("NOTIFICHE RIPETUTE:", repeatedNotifications);
         const response: ResponseBody = {
             message: "Notification created",
             status: ResponseStatus.GOOD,
@@ -104,7 +168,12 @@ router.get("/", async (req: Request, res: Response) => {
 router.post("/deleteNotification", async (req: Request, res: Response) => {
     try {
         const id = req.body.notification_id as string;
-        await NotificationSchema.deleteOne({ _id: id });
+        console.log("ID NOTIFICA DA ELIMINARE:", id);
+        const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as string;
+        console.log("ID EVENTO NOTIFICA CONDIVISO:", idEventoNotificaCondiviso);
+        await NotificationSchema.deleteMany({ data: { idEventoNotificaCondiviso } });
+        const result = await NotificationSchema.deleteMany({ "data.idEventoNotificaCondiviso": idEventoNotificaCondiviso });
+        console.log("NOTIFICHE ELIMINATE:", result);
     } catch (e) {
         console.log(e);
         const response: ResponseBody = {
