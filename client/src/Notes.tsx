@@ -63,7 +63,7 @@ export default function Notes(): React.JSX.Element {
 				alert("Nota duplicata correttamente");
 				getAllNotes();
 			} else {
-				setMessage("Errore durante la duplicazione della nota");
+				alert("Errore durante la duplicazione della nota"); //da rimettere setMessage
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
@@ -137,7 +137,7 @@ export default function Notes(): React.JSX.Element {
 				<a href={"/notes/new"}>
 					<button>Crea nota</button>
 				</a>
-				<label htmlFor="sort-select">Ordina per:
+				<label className="sort-label" htmlFor="sort-select">Ordina per:
 					<select className="sort-select" onChange={(e): void => sortBy(e.target.value as Order)}>
 						<option value={Order.NAME}>Titolo (A-Z)</option>
 						<option value={Order.NAME_DESC}>Titolo (Z-A)</option>
@@ -147,69 +147,6 @@ export default function Notes(): React.JSX.Element {
 						<option value={Order.DATE_DESC}>Più recente</option>
 					</select>
 				</label>
-				{/*<table className="note-list-container">
-					<thead>
-						<tr>
-							<th style={{ cursor: "pointer" }} onClick={(): void => sortBy(Order.NAME)}>
-								Titolo
-							</th>
-							<th
-								style={{ cursor: "pointer" }}
-								onClick={(): void => sortBy(Order.LENGTH)}>
-								Testo
-							</th>
-							<th style={{ cursor: "pointer" }} onClick={(): void => sortBy(Order.DATE)}>
-								Ultima Modifica
-							</th>
-							<th>Duplica</th> <th>Elimina</th>
-						</tr>
-					</thead>
-					<tbody>
-						{noteList.map((note) => (
-							<tr className="note-card">
-								<a className="note-card-link" href={`/notes/${note.id}`}>
-									<td className="note-card-title">{note.title}</td>
-									<td className="note-card-text">
-										{note.text.length > PREVIEW_CHARS
-											? note.text.substring(0, PREVIEW_CHARS) + "..."
-											: note.text}
-									</td>
-									<td className="note-card-date">
-										{note.updatedAt ? (
-											<>
-												{new Date(note.updatedAt).toLocaleDateString("it-IT")}{" "}
-												{new Date(note.updatedAt).toLocaleTimeString("it-IT", {
-													hour: "2-digit",
-													minute: "2-digit",
-												})}
-											</>
-										) : (
-											"N/A"
-										)}
-									</td>
-								</a>
-								<td>
-									<button 
-										style={{borderRadius: "8px"}}
-										onClick={(
-											e: React.MouseEvent<HTMLButtonElement>
-										): Promise<void> => handleDuplicate(e, note)}>
-										Duplica
-									</button>
-								</td>
-								<td>
-									<button
-										style={{borderRadius: "8px"}}
-										onClick={(
-											e: React.MouseEvent<HTMLButtonElement>
-										): Promise<void> => handleDelete(e, note)}>
-										Cancella
-									</button>
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>*/}
 				<div className="notes-list-container">
 					{noteList.map((note) => (
 						<a href={`/notes/${note.id}`}>
@@ -221,18 +158,17 @@ export default function Notes(): React.JSX.Element {
 									<p>{note.text.length > PREVIEW_CHARS ? note.text.substring(0, PREVIEW_CHARS) + "..." : note.text}</p>
 								</div>
 								<div className="card-note-date">
-									<p>Ultima modifica:{" "}{note.updatedAt ? new Date(note.updatedAt).toLocaleDateString("it-IT") : "N/A"}</p>
+									<p style={{fontWeight: "bold"}}>Ultima modifica:{" "}{note.updatedAt ? new Date(note.updatedAt).toLocaleDateString("it-IT") : "N/A"}</p>
 								</div>
 								<div className="card-note-actions">
 									<button 
-										style={{borderRadius: "8px"}}
 										onClick={(
 											e: React.MouseEvent<HTMLButtonElement>
 										): Promise<void> => handleDuplicate(e, note)}>
 										Duplica
 									</button>
 									<button
-										style={{borderRadius: "8px"}}
+										style={{backgroundColor: "#ff6b6b"}}
 										onClick={(
 											e: React.MouseEvent<HTMLButtonElement>
 										): Promise<void> => handleDelete(e, note)}>

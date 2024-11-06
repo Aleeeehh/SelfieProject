@@ -208,98 +208,17 @@
     transition: background-color 0.3s ease;
 }
 
-.note-list-container {
-    margin: 1em;
-    width: 90%;
-    max-width: 1000px;
-    border-collapse: collapse;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.note-list-container th {
-    padding: 1em;
-    background-color: bisque;
-    color: black;
-    text-align: left;
-    font-size: 1em;
-    border-top: 1px solid #d9e2ec;
-}
-
-.note-list-container td {
-    padding: 0.5em 1em; 
-    text-align: left;
-    vertical-align: middle;
-}
-
-.note-card {
-    height: 4em;
-    background-color: #ffffff;
-    padding: 0.5em 1em;
-    border-bottom: 1px solid #d9e2ec;
-    transition: transform 0.2s ease, background-color 0.3s ease;
-}
-
-.note-card-link {
-    height: 100%;
-    display: contents;
-    vertical-align: middle;
-}
-
-.note-card-title {
-    font-weight: bold;
-    font-size: 1.1em;
-    text-align: center;
-}
-
-.note-card-text {
-    font-size: 0.9em;
-    text-align: justify;
-    color: #333;
-}
-
-.note-card-date {
-    font-style: italic;
-    font-size: 0.8em;
-    text-align: right;
-    color: #777;
-}
-
-button {
-    background-color: #ff6b6b;
-    color: white;
-    border: none;
-    padding: 0.4em 0.8em;
-    font-size: 0.9em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.message {
-    margin-top: 1em;
-    padding: 1em;
-    background-color: #e6f7ff;
-    color: #007bff;
-    border-radius: 5px;
-    width: 80%;
-    text-align: center;
-    font-size: 0.95em;
-}
-
-
-
-
 .notes-list-container {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 1.5em; /* Maggiore spazio tra le card */
+    gap: 1.5em;
     width: 100%;
-    justify-content: center; /* Centra le card */
-    padding: 2em 1em; /* Spazio attorno al contenitore */
+    justify-content: center;
+    padding: 2em 1em;
 }
 
-label {
+.sort-label {
     display: flex;
     align-items: center;
     font-weight: bold;
@@ -314,8 +233,7 @@ label {
 .sort-select {
     padding: 0.5em 1em;
     border-radius: 8px;
-    background-color: gba(255, 255, 255, 0.9); /* Colore di sfondo blu simile ai pulsanti */
-    color: black; /* Testo bianco per contrasto */
+    color: black;
     font-weight: bold;
     font-size: 1em;
     border: none;
@@ -324,22 +242,22 @@ label {
 }
 
 .sort-select:focus {
-    outline: none; /* Rimuove l'outline di default */
+    outline: none;
 }
 
 .sort-select option {
-    color: black; /* Testo nero per leggibilità */
+    color: black;
     background-color: white;
     padding: 0.5em;
 }
 
 .card-note {
     flex: 1 1 30%; /* Le card occupano il 30% dello spazio (3 card per riga) */
-    width: 300px; /* Limita la larghezza massima delle card */
-    height:300px; /* Larghezza minima per evitare che diventino troppo piccole */
+    width: 300px;
+    height:300px;
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombreggiatura per profondità */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -348,7 +266,7 @@ label {
 
 .card-note-title {
     text-align: center;
-    background-color: rgba(255, 228, 196, 0.9); /* Colore bisque con trasparenza */
+    background-color: rgba(255, 228, 196, 0.9);
     color: black;
     padding: 1em;
     font-weight: bold;
@@ -360,7 +278,7 @@ label {
     color: black;
     text-align: justify;
     font-size: 0.9em;
-    flex-grow: 1; /* Riempie lo spazio tra titolo e azioni */
+    flex-grow: 1;
 }
 
 .card-note-date {
@@ -382,9 +300,20 @@ label {
     border: none;
     padding: 0.5em 1em;
     border-radius: 8px;
-    background-color: #4a90e2; /* Colore blu per i pulsanti */
+    background-color: #4a90e2;
     color: white;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
+}
+
+.message {
+    margin-top: 1em;
+    padding: 1em;
+    background-color: #e6f7ff;
+    color: #007bff;
+    border-radius: 5px;
+    width: 80%;
+    text-align: center;
+    font-size: 0.95em;
 }
