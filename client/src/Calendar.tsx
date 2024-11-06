@@ -1660,6 +1660,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
 						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
 						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+						frequencyEvent: frequency,
+						isInfiniteEvent: isInfinite,
+						repetitionsEvent: repetitions,
+						untilDateEvent: untilDate,
 					},
 				}),
 			});

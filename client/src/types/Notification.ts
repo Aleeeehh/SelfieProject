@@ -7,6 +7,8 @@ type Notification = {
 	message: string;
 	read?: boolean;
 	data: any;
+	isInfiniteEvent?: boolean;
+	frequencyEvent?: string;
 };
 
 export default Notification;

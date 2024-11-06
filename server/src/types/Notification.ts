@@ -9,6 +9,8 @@ type Notification = {
 	message: string;
 	read?: boolean;
 	data: Object;
+	isInfiniteEvent?: boolean;
+	frequencyEvent?: string;
 };
 
 // Come sono definiti gli oggetti "data" della notifica:
