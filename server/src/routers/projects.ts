@@ -1,11 +1,11 @@
-/*import { Request, Response, Router } from "express";
+import { Request, Response, Router } from "express";
 import type { ResponseBody } from "../types/ResponseBody.ts";
 import { ResponseStatus } from "../types/ResponseStatus.ts";
 import { ProjectSchema } from "../schemas/Project.ts";
 import type Project from "../types/Project.ts";
 import { ActivitySchema } from "../schemas/Activity.ts";
 import type Activity from "../types/Activity.ts";
-//import { ActivityStatus } from "../types/Activity.ts";
+import { ActivityStatus } from "../types/Activity.ts";
 import NoteSchema from "../schemas/Note.ts";
 import type Note from "../types/Note.ts";
 import type UserResult from "../types/UserResult.ts";

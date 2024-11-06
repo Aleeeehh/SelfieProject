@@ -11,7 +11,7 @@ const buttonStyle = {
     backgroundColor: "white",
     color: "black",
     borderColor: "gray",
-    margin: "3px 6px",
+    margin: "3px 4px",
     padding: "4px 6px",
     width: "100px",
     alignSelf: "center",
@@ -415,7 +415,7 @@ export default function Header(): React.JSX.Element {
 
                         <button
                             className="btn secondary"
-                            style={{ ...buttonStyle, width: "50px" }}
+                            style={{ ...buttonStyle, width: "45px" }}
                             onClick={(): void => setShowTimeMachine(!showTimeMachine)}
                         >
                             <i className="fas fa-hourglass" style={{ marginRight: "5px" }}></i>
@@ -500,7 +500,7 @@ export default function Header(): React.JSX.Element {
                             style={{
                                 ...buttonStyle,
                                 position: "relative", // Posizionamento relativo per il pallino
-                                width: "50px"
+                                width: "45px"
                             }}
                             onClick={(): void => setShowNotifications(!showNotifications)}
                         >
