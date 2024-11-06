@@ -194,7 +194,11 @@ export default function Header(): React.JSX.Element {
                 const eventDate = new Date(notification.data.date); // Assicurati che notification.data.date sia un formato valido
                 return eventDate < currentDate; // Controlla se la data dell'evento è inferiore a currentDate
             }
+            if (notification && (notification.type === "pomodoro") && notification.read === false) { // Includi anche il tipo "activity"
+                return true;
+            }
             return false; // Restituisci false se non è di tipo "event" o "activity"
+
         });
     }
 
@@ -476,6 +480,33 @@ export default function Header(): React.JSX.Element {
                                                 const nCycles = notification.data.cycles || 5;
                                                 const nStudyTime = notification.data.studyTime || 25;
                                                 const nPauseTime = notification.data.pauseTime || 5;
+
+                                                return (
+                                                    <>
+                                                        <a
+                                                            href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
+                                                            key={index} // Sposta la chiave qui
+                                                            style={{ color: 'black', textDecoration: 'none' }} // Imposta il colore del testo a nero e rimuovi la sottolineatura
+                                                        >
+                                                            Hai ricevuto un invito per un <span style={{ color: 'lightcoral' }}>pomodoro</span>!
+                                                        </a>
+                                                        <button className="btn secondary"
+                                                            style={{ background: 'none', cursor: 'pointer' }}
+                                                            onClick={(): void => {
+                                                                if (notification.id) { // Controlla se notification.id è definito
+                                                                    handleReadNotification(notification.id);
+                                                                } else {
+                                                                    console.error("ID notifica non definito");
+                                                                }
+                                                            }}
+                                                        >
+                                                            <i className="fas fa-check" style={{ color: 'green', fontSize: '20px' }}></i> {/* Icona di tick */}
+                                                        </button>
+                                                    </>
+
+                                                );
+
+                                                /*
                                                 return (
                                                     <a
                                                         href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
@@ -491,6 +522,7 @@ export default function Header(): React.JSX.Element {
                                                         </div>
                                                     </a>
                                                 );
+                                                */
                                             }
                                             else if (notification.type === "event" && notification.receiver === user && notification.read === false) {
 

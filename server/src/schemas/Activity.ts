@@ -1,11 +1,4 @@
 import mongoose from "mongoose";
-import { ActivityStatus, AdvancementType } from "../types/Activity.ts";
-
-// "status" è un parametro derivato parzialmente: gli unici parametri
-// "selezionabili" sono [Attiva (actor) | Completa (actor) | Riattivata (owner)],
-// [Non Attivabile | Attivabile] dipende dallo status dell'output dell'attività
-// precedente, [In Ritardo | Abbandonata] dipende dalla data di scadenza --> il
-// server deve verificare e ritornare uno Status come risposta
 
 const activitySchema = new mongoose.Schema(
 	{
@@ -15,23 +8,9 @@ const activitySchema = new mongoose.Schema(
 		completed: { type: Boolean, default: false, required: true },
 		completedAt: { type: Date },
 		//tags: { type: [String], required: true },
-		owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-		accessList: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
-
-		// project related fields
-		status: {
-			type: String,
-			enum: [ActivityStatus.ACTIVE, ActivityStatus.COMPLETED, ActivityStatus.REACTIVATED],
-			required: true,
-		},
-		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project", required: true },
-		start: { type: Date, required: true },
-		milestone: { type: Boolean, required: true, default: false },
-		advancementType: {
-			type: String,
-			enum: [AdvancementType.TRANSLATION, AdvancementType.CONTRACTION],
-			required: true,
-		},
+		owner: { type: String, required: true },
+		accessList: { type: [String], required: true },
+		idEventoNotificaCondiviso: { type: String },
 	},
 	{ timestamps: true }
 );

@@ -1396,7 +1396,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 			//console.log("EVENTO ELIMINATO:", data);
 			//elimina l'evento dalla eventList
+
 			const attivitaEliminata = data.value; // Supponendo che `value` contenga l'attività eliminata
+
 			if (data.status === "success") {
 
 				// Aggiorna la activityList rimuovendo le attività eliminati
@@ -1405,10 +1407,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 				console.log("Activity list aggiornata:", activityList);
 				handleDateClick(day);
 			}
-
-			console.log("Questa è l'attività eliminata:", attivitaEliminata);
-			console.log("Questo è il titolo dell'attività eliminata: ", attivitaEliminata[0].title);
-			console.log("Questa è l'attività da eliminare eliminata:", attivitaEliminata[0]);
 
 			//cerca l'evento scadenza dell'attività ed eliminalo
 			const res2 = await fetch(`${SERVER_API}/events/deleteEventTitle`, {
@@ -1432,10 +1430,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 			const res3 = await fetch(`${SERVER_API}/notifications`);
 			const data3 = await res3.json();
-			const eventiEliminati = data.value;
 			const notifications = data3.value; //tutte le notifiche sul database
 			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
-			console.log("Eventi eliminati:", eventiEliminati);
+			console.log("Attività eliminata:", attivitaEliminata);
 
 			const idEventoNotificaCondiviso = attivitaEliminata[0].idEventoNotificaCondiviso;
 
@@ -1514,6 +1511,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}),
 		});
 		const data = await res.json();
+		//console.log("ATTIVITA COMPLETATA:", data);
 
 		const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
 		const updatedActivities = await res2.json();
@@ -1524,7 +1522,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const res3 = await fetch(`${SERVER_API}/notifications`);
 		const data3 = await res3.json();
-		const attivitaCompletata = data;
+		const attivitaCompletata = data.value[0];
 		const notifications = data3.value; //tutte le notifiche sul database
 		console.log("NOTIFICHE RIMASTE IN LISTAAAA:", notifications);
 		console.log("Attività completataAAAA:", attivitaCompletata);
@@ -1686,12 +1684,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setCreateEvent(!createEvent);
 		setAllDayEvent(false);
 		setAddNotification(false);
+		setNotificationTime(0);
+		setNotificationRepeatTime(0);
 
 		//ripristina l'orario dopo nel pannelo createEvent, dopo aver creato un evento
 		const now = new Date();
 		const startT = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
 		const endT = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
 		setStartTime(startT);
+
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
@@ -1826,6 +1827,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setStartTime(startT);
 		setEndTime(endT);
 		setCreateActivity(!createActivity);
+		setAddNotification(false);
+		setNotificationTime(0);
+		setNotificationRepeatTime(0);
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}

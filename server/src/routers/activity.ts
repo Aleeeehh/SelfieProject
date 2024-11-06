@@ -240,6 +240,7 @@ router.get("/:id", async (req: Request, res: Response) => {
             accessList: foundActivity.accessList,
             deadline: foundActivity.deadline,
             completed: foundActivity.completed,
+            idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso || undefined,
             completedAt:
                 foundActivity.completedAt === null
                     ? undefined
