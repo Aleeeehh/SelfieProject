@@ -289,14 +289,17 @@ router.post("/", async (req: Request, res: Response) => {
         const inputTitle = req.body.title as string | undefined;
         const inputText = req.body.text as string | undefined;
         const inputTags = req.body.tags as string[] | [];
-        const privacyStr = req.query.privacy as string | undefined;
+        const privacyStr = req.body.privacy as string | undefined;
         const inputItemList = req.body.toDoList as ListItem[] | undefined;
 
-        if (!inputTitle || !inputText)
+        if (!inputTitle || !inputText) {
+            console.log("Invalid body: 'title' and 'text' required");
+
             return res.status(400).json({
                 status: ResponseStatus.BAD,
                 message: "Invalid body: 'title' and 'text' required",
             });
+        }
 
         if (
             !privacyStr ||
