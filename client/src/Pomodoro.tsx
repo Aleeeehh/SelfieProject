@@ -1279,20 +1279,20 @@ export default function Pomodoros(): React.JSX.Element {
 
                 <div className="buttons-container">
                     <button
-                        className="add-event-button"
+                        className="add-event-button border"
                         onClick={toggleAddEvent}
                         disabled={data.activeTimer}
                     >
                         Crea evento Pomodoro
                     </button>
                     <button
-                        className="previous-pomodoros-button"
+                        className="previous-pomodoros-button border"
                         onClick={togglePreviousPomodoros}
                     >
                         Visualizza ultimi Pomodoro
                     </button>
                     <button
-                        className="share-config-button"
+                        className="share-config-button border"
                         onClick={toggleShareConfig}
                     >
                         <a href="#send-invite" style={{ textDecoration: 'none', color: 'inherit' }}>
