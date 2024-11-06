@@ -39,6 +39,7 @@ h1 {
 
 .add-event-button, .previous-pomodoros-button, .share-config-button {
 	background-color: bisque;
+	color: darkslategray;
 	border-radius: 16px;
 	width: 140px;
 	padding: 3px;
