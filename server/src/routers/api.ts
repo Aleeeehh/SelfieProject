@@ -2,7 +2,7 @@ import { default as usersRouter } from "./users.js";
 import { default as eventsRouter } from "./events.js";
 import { default as pomodoroRouter } from "./pomodoro.js";
 import { default as notesRouter } from "./notes.js";
-import { default as projectsRouter } from "./projects.js";
+//import { default as projectsRouter } from "./projects.js";
 import { default as notificationRouter } from "./notifications.js";
 import { default as chatsRouter } from "./chats.js";
 import { default as activityRouter } from "./activity.js";
@@ -41,7 +41,7 @@ router.use(checkAuthentication);
 
 router.use("/events", eventsRouter);
 router.use("/notes", notesRouter);
-router.use("/projects", projectsRouter);
+//router.use("/projects", projectsRouter);
 router.use("/pomodoro", pomodoroRouter);
 router.use("/notifications", notificationRouter);
 router.use("/chats", chatsRouter);

@@ -50,7 +50,6 @@ router.get("/", async (req: Request, res: Response) => {
                 owner: activity.owner,
                 title: activity.title,
                 description: activity.description || "",
-                //tags: activity.tags || [],
                 createdAt: activity.createdAt,
                 updatedAt: activity.updatedAt,
                 deadline: activity.deadline,
@@ -241,6 +240,7 @@ router.get("/:id", async (req: Request, res: Response) => {
             accessList: foundActivity.accessList,
             deadline: foundActivity.deadline,
             completed: foundActivity.completed,
+            idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso || undefined,
             completedAt:
                 foundActivity.completedAt === null
                     ? undefined
@@ -294,65 +294,11 @@ router.post("/", async (req: Request, res: Response) => {
         const deadline = req.body.deadline;
         const deadlineDate = new Date(deadline);
         const owner = req.body.owner as String;
+        const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as String;
 
-        /*
-				const inputDeadline = req.body.deadline as string | undefined;
-				const inputCompleted = req.body.completed as string | undefined;
-				const tags = req.body.tags as string[] | [];
-				
-						if (!title || !inputDeadline)
-							return res.status(400).json({
-								status: ResponseStatus.BAD,
-								message: "Invalid body: 'title' and 'deadline' required",
-							});
-							
-		
-				if (!validDateString(inputDeadline))
-					return res.status(400).json({
-						status: ResponseStatus.BAD,
-						message: "Invalid date format ",
-					});
-		
-				const deadline = new Date(inputDeadline);
-				
-		
-				if (inputCompleted && !["true", "false"].includes(inputCompleted))
-					return res.status(400).json({
-						status: ResponseStatus.BAD,
-						message: "Invalid body: 'completed' should be 'true' or 'false'",
-					});
-		
-				const completed: boolean = !!inputCompleted && inputCompleted === "true";
-		
-		var accessList: Types.ObjectId[] = [];
-		if (!accessList) accessList = [];
-		else
-			for (const id of accessList) {
-				if (!Types.ObjectId.isValid(id))
-					return res.status(400).json({
-						status: ResponseStatus.BAD,
-						message: "Invalid user id",
-					});
-
-				const user = await UserSchema.findById(id);
-				if (!user)
-					return res.status(400).json({
-						status: ResponseStatus.BAD,
-						message: "Invalid user id: " + id,
-					});
-
-				accessList.push(new ObjectId(owner));
-			}
-
-		if (!req.user || !req.user.id) {
-			return res.status(400).json({
-				status: ResponseStatus.BAD,
-				message: "User not logged in",
-			});
-		}
-			*/
-
+        console.log("ID EVENTO NOTIFICA CONDIVISOOOOOOOOOOOOOOOOOO:", idEventoNotificaCondiviso);
         const newActivity: Activity = {
+            idEventoNotificaCondiviso,
             owner,
             title,
             description,
