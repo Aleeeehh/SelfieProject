@@ -14,9 +14,10 @@ const router: Router = Router();
 router.get("/", async (req: Request, res: Response) => {
     if (req.user && req.user.id) {
         const foundUser = await UserSchema.findById(req.user.id).lean();
+
         return res
             .status(200)
-            .json({ status: ResponseStatus.GOOD, value: foundUser });
+            .json({ status: ResponseStatus.GOOD, value: foundUser?.username });
     } else
         return res
             .status(402)
@@ -166,11 +167,10 @@ router.post(
                 });
             }
 
-            // TODO: initialize session for the user
-
             const resBody: ResponseBody = {
                 message: "Successful login",
                 status: ResponseStatus.GOOD,
+                value: foundUser.username,
             };
 
             return res.json(resBody);
@@ -277,7 +277,7 @@ router.post("/usernames", async (req: Request, res: Response) => {
         // find users that have username contain the pattern substring
         const foundUsers = await UserSchema.find().lean();
 
-        const users = [];
+        const users: string[] = [];
 
         for (
             let i = 0;
@@ -285,16 +285,13 @@ router.post("/usernames", async (req: Request, res: Response) => {
             i++
         ) {
             if (foundUsers[i].username.match(regex)) {
-                users.push({
-                    id: foundUsers[i]._id.toString(),
-                    username: foundUsers[i].username,
-                });
+                users.push(foundUsers[i].username);
             }
         }
 
         users.sort(function (a, b) {
-            if (a.username < b.username) return -1;
-            if (a.username > b.username) return 1;
+            if (a < b) return -1;
+            if (a > b) return 1;
             return 0;
         });
 

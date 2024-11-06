@@ -24,8 +24,13 @@ export const MessageSchema = mongoose.model("Message", messageSchema);
 
 const chatschema = new mongoose.Schema(
     {
-        userList: {
-            type: [mongoose.Schema.Types.ObjectId],
+        firstUserId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        secondUserId: {
+            type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
         },

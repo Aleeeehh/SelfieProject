@@ -5,7 +5,7 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import Note, { type ListItem } from "./types/Note";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
-import UserResult from "./types/UserResult";
+// import UserResult from "./types/UserResult";
 import { Privacy } from "./types/Privacy";
 import SearchForm from "./SearchForm";
 
@@ -16,7 +16,7 @@ const baseNote: Note = {
     owner: "",
     tags: [] as string[],
     privacy: Privacy.PRIVATE,
-    accessList: [] as UserResult[],
+    accessList: [] as string[],
     toDoList: [] as ListItem[],
 };
 
@@ -201,11 +201,11 @@ export default function NotePage(): React.JSX.Element {
 
     function addUser(
         e: React.ChangeEvent<HTMLSelectElement>,
-        user: UserResult
+        user: string
     ): void {
         e.preventDefault();
 
-        if (!note.accessList.find((u) => u.id === user.id))
+        if (!note.accessList.includes(user))
             // TODO: optimize
             setNote((prevNote) => {
                 return {
@@ -217,14 +217,14 @@ export default function NotePage(): React.JSX.Element {
 
     function deleteUser(
         e: React.MouseEvent<HTMLElement>,
-        userId: string
+        username: string
     ): void {
         e.preventDefault();
 
         setNote((prevNote) => {
             return {
                 ...prevNote,
-                accessList: prevNote.accessList.filter((u) => u.id !== userId),
+                accessList: prevNote.accessList.filter((u) => u !== username),
             };
         });
     }
@@ -423,9 +423,9 @@ export default function NotePage(): React.JSX.Element {
                         <div className="privacy-container">
                             {note &&
                                 note.accessList &&
-                                note.accessList.map((userId) => (
+                                note.accessList.map((username) => (
                                     <div className="tag-box">
-                                        {userId.username}
+                                        {username}
                                         {isEditing && (
                                             <button
                                                 style={{
@@ -436,7 +436,7 @@ export default function NotePage(): React.JSX.Element {
                                                 onClick={(
                                                     e: React.MouseEvent<HTMLElement>
                                                 ): void =>
-                                                    deleteUser(e, userId.id)
+                                                    deleteUser(e, username)
                                                 }
                                             >
                                                 X

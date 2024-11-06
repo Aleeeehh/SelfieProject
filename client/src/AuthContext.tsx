@@ -1,87 +1,116 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { SERVER_API } from "./params/params";
+import { ResponseBody } from "./types/ResponseBody";
 
 interface AuthContextType {
-	isLoggedIn: boolean;
-	login: (username: string, password: string) => Promise<boolean>;
-	logout: () => Promise<void>;
-	checkLoginStatus: () => Promise<void>;
+    isLoggedIn: boolean;
+    login: (username: string, password: string) => Promise<boolean>;
+    logout: () => Promise<void>;
+    checkLoginStatus: () => Promise<void>;
+    loggedUsername: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+    children,
+}) => {
+    const [userState, setUserState] = useState({
+        loggedIn: false,
+        loggedUsername: "",
+    });
 
-	const checkLoginStatus = async (): Promise<void> => {
-		try {
-			const res = await fetch(`${SERVER_API}/users/`);
-			if (res.status === 200) {
-				const resBody = await res.json();
-				console.log(!!resBody.value);
-				setIsLoggedIn(!!resBody.value);
-			} else {
-				setIsLoggedIn(false);
-			}
-		} catch (error) {
-			console.error("Error checking login status:", error);
-			setIsLoggedIn(false);
-		}
-	};
+    const checkLoginStatus = async (): Promise<void> => {
+        try {
+            const res = await fetch(`${SERVER_API}/users/`);
+            if (res.status === 200) {
+                const resBody = await res.json();
+                console.log("Check login status:", resBody.value);
+                setUserState({
+                    loggedUsername: resBody.value,
+                    loggedIn: !!resBody.value,
+                });
+            } else {
+                setUserState({ loggedUsername: "", loggedIn: false });
+            }
+        } catch (error) {
+            console.error("Error checking login status:", error);
+            setUserState({ loggedUsername: "", loggedIn: false });
+        }
+    };
 
-	const login = async (username: string, password: string): Promise<boolean> => {
-		try {
-			const res = await fetch(`${SERVER_API}/users/login`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ username, password }),
-			});
+    const login = async (
+        username: string,
+        password: string
+    ): Promise<boolean> => {
+        try {
+            const res = await fetch(`${SERVER_API}/users/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ username, password }),
+            });
 
-			if (res.status === 200) {
-				setIsLoggedIn(true);
-				return true;
-			} else {
-				setIsLoggedIn(false);
-				return false;
-			}
-		} catch (error) {
-			console.error("Error during login:", error);
-			setIsLoggedIn(false);
-			return false;
-		}
-	};
+            if (res.status === 200) {
+                const resBody = (await res.json()) as ResponseBody;
 
-	const logout = async (): Promise<void> => {
-		try {
-			const res = await fetch(`${SERVER_API}/users/logout`, {
-				method: "POST",
-			});
+                console.log(resBody);
 
-			if (res.status === 200) {
-				setIsLoggedIn(false);
-			}
-		} catch (error) {
-			console.error("Error during logout:", error);
-		}
-	};
+                setUserState({
+                    loggedUsername: resBody.value,
+                    loggedIn: !!resBody.value,
+                });
+                return true;
+            } else {
+                setUserState({ loggedUsername: "", loggedIn: false });
+                return false;
+            }
+        } catch (error) {
+            console.error("Error during login:", error);
+            setUserState({ loggedUsername: "", loggedIn: false });
+            return false;
+        }
+    };
 
-	useEffect(() => {
-		checkLoginStatus();
-	}, []);
+    const logout = async (): Promise<void> => {
+        try {
+            const res = await fetch(`${SERVER_API}/users/logout`, {
+                method: "POST",
+            });
 
-	return (
-		<AuthContext.Provider value={{ isLoggedIn, login, logout, checkLoginStatus }}>
-			{children}
-		</AuthContext.Provider>
-	);
+            if (res.status === 200) {
+                setUserState({ loggedUsername: "", loggedIn: false });
+            }
+        } catch (error) {
+            console.error("Error during logout:", error);
+        }
+    };
+
+    useEffect(() => {
+        checkLoginStatus();
+    }, []);
+
+    return (
+        <AuthContext.Provider
+            value={{
+                isLoggedIn: userState.loggedIn,
+                login,
+                logout,
+                checkLoginStatus,
+                loggedUsername: userState.loggedUsername,
+            }}
+        >
+            {children}
+        </AuthContext.Provider>
+    );
 };
 
 export const useAuth = (): AuthContextType => {
-	const context = useContext(AuthContext);
-	if (context === undefined) {
-		throw new Error("useAuth must be used within an AuthProvider");
-	}
-	return context;
+    const context = useContext(AuthContext);
+
+    if (context === undefined) {
+        throw new Error("useAuth must be used within an AuthProvider");
+    }
+    return context;
 };

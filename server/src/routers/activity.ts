@@ -47,14 +47,14 @@ router.get("/", async (req: Request, res: Response) => {
         for (const activity of foundActivities) {
             const newActivity: Activity = {
                 id: activity._id.toString(),
-                owner: activity.owner,
+                owner: activity.owner.toString(),
                 title: activity.title,
                 description: activity.description || "",
                 createdAt: activity.createdAt,
                 updatedAt: activity.updatedAt,
                 deadline: activity.deadline,
                 completed: activity.completed,
-                accessList: activity.accessList,
+                accessList: activity.accessList.map((id) => id.toString()),
             };
 
             activities.push(newActivity);
@@ -231,16 +231,17 @@ router.get("/:id", async (req: Request, res: Response) => {
 
         const activity: Activity = {
             id: foundActivity._id.toString(),
-            owner: foundActivity.owner,
+            owner: foundActivity.owner.toString(),
             title: foundActivity.title,
             description: foundActivity.description || "",
             // tags: foundActivity.tags,
             createdAt: foundActivity.createdAt,
             updatedAt: foundActivity.updatedAt,
-            accessList: foundActivity.accessList,
+            accessList: foundActivity.accessList.map((id) => id.toString()),
             deadline: foundActivity.deadline,
             completed: foundActivity.completed,
-            idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso || undefined,
+            idEventoNotificaCondiviso:
+                foundActivity.idEventoNotificaCondiviso || undefined,
             completedAt:
                 foundActivity.completedAt === null
                     ? undefined
@@ -288,15 +289,19 @@ router.post("/", async (req: Request, res: Response) => {
     try {
         // TODO: validate note input
         // TODO: validate body fields
-        const title = req.body.title as String;
-        const description = req.body.description as String;
-        const accessList = req.body.accessList as String[];
+        const title = req.body.title as string;
+        const description = req.body.description as string;
+        const accessList = req.body.accessList as string[];
         const deadline = req.body.deadline;
         const deadlineDate = new Date(deadline);
-        const owner = req.body.owner as String;
-        const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as String;
+        const owner = req.body.owner as string;
+        const idEventoNotificaCondiviso = req.body
+            .idEventoNotificaCondiviso as string;
 
-        console.log("ID EVENTO NOTIFICA CONDIVISOOOOOOOOOOOOOOOOOO:", idEventoNotificaCondiviso);
+        console.log(
+            "ID EVENTO NOTIFICA CONDIVISOOOOOOOOOOOOOOOOOO:",
+            idEventoNotificaCondiviso
+        );
         const newActivity: Activity = {
             idEventoNotificaCondiviso,
             owner,
@@ -401,7 +406,7 @@ router.put("/:id", async (req: Request, res: Response) => {
             : undefined;
 
         const updatedActivity: Activity = {
-            owner: foundActivity.owner,
+            owner: foundActivity.owner.toString(),
             title: inputTitle || foundActivity.title,
             description: inputDescription || foundActivity.description,
             // tags: inputTags || foundActivity.tags,

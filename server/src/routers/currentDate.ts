@@ -19,18 +19,18 @@ router.get("/", async (_, res) => {
 
 // Route per aggiornare la data corrente
 router.post("/", async (req, res) => {
-    console.log("ENTRO NELLA POST DI CURRENT DATE");
+    // console.log("ENTRO NELLA POST DI CURRENT DATE");
     const { newDate } = req.body;
-    console.log("Nuova data ricevuta:", newDate);
+    // console.log("Nuova data ricevuta:", newDate);
 
     try {
         const currentDate = await CurrentDateSchema.findOne(); // Trova il documento della data corrente
         if (currentDate) {
-            console.log("CURRENT DATE TROVATA, AGGIORNANDO...");
+            // console.log("CURRENT DATE TROVATA, AGGIORNANDO...");
             currentDate.date = new Date(newDate); // Aggiorna la data
             try {
                 await currentDate.save(); // Salva il documento
-                console.log("CURRENT DATE AGGIORNATA!");
+                // console.log("CURRENT DATE AGGIORNATA!");
             } catch (saveError) {
                 console.error(
                     "Errore durante il salvataggio della data corrente:",
@@ -38,13 +38,13 @@ router.post("/", async (req, res) => {
                 );
             }
         } else {
-            console.log("CURRENT DATE NON TROVATA, CREANDO...");
+            // console.log("CURRENT DATE NON TROVATA, CREANDO...");
             // Se non esiste, crea un nuovo documento
             const newCurrentDate = new CurrentDateSchema({
                 date: new Date(newDate),
             });
             await newCurrentDate.save();
-            console.log("CURRENT DATE CREATA!");
+            // console.log("CURRENT DATE CREATA!");
         }
         res.json({ currentDate: newDate });
     } catch (error) {

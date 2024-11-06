@@ -9,7 +9,7 @@ import UserSchema from "../schemas/User.js";
 import { Types } from "mongoose";
 import { ObjectId } from "mongodb";
 import NoteAccessSchema from "../schemas/NoteAccess.js";
-import UserResult from "../types/UserResult.js";
+// import UserResult from "../types/UserResult.js";
 import { Privacy } from "../types/Privacy.js";
 import NoteItemSchema from "../schemas/NoteList.js";
 import type { ListItem } from "../types/Note.js";
@@ -43,20 +43,32 @@ const router: Router = Router();
     return false;
 }*/
 
-async function getAccessList(list: ObjectId[]): Promise<UserResult[]> {
+async function getUsernameListFromIdList(list: ObjectId[]): Promise<string[]> {
     const accessList = [];
     for (const access of list) {
         const foundUser = await UserSchema.findById(access.toString()).lean();
         if (foundUser) {
-            accessList.push({
-                id: foundUser._id.toString(),
-                username: foundUser.username,
-            });
+            accessList.push(foundUser.username);
         }
     }
 
     return accessList;
 }
+
+/*async function getIdListFromUsernameList(
+    usernames: string[]
+): Promise<ObjectId[]> {
+    const idList = [];
+    for (const username of usernames) {
+        const foundUser = await UserSchema.findOne({
+            username: username,
+        }).lean();
+        if (foundUser) {
+            idList.push(foundUser._id);
+        }
+    }
+    return idList;
+}*/
 
 // Returns only the notes for which the current user is the owner (not the notes to which the user has access)
 router.get("/", async (req: Request, res: Response) => {
@@ -210,7 +222,8 @@ router.get("/:id", async (req: Request, res: Response) => {
         const foundaccessList = await NoteAccessSchema.find({
             note: noteId,
         }).lean();
-        const accessList = await getAccessList(
+
+        const accessList = await getUsernameListFromIdList(
             foundaccessList.map((x) => x.userId)
         );
 
@@ -291,6 +304,7 @@ router.post("/", async (req: Request, res: Response) => {
         const inputTags = req.body.tags as string[] | [];
         const privacyStr = req.body.privacy as string | undefined;
         const inputItemList = req.body.toDoList as ListItem[] | undefined;
+        const accessListStr = req.body.accessList as string[] | undefined; // list of usernames
 
         if (!inputTitle || !inputText) {
             console.log("Invalid body: 'title' and 'text' required");
@@ -311,20 +325,11 @@ router.post("/", async (req: Request, res: Response) => {
                     "Invalid privacy: should be 'public', 'protected' or 'private'",
             });
 
-        // list of user ids
-        const accessListStr = req.query.accessList as string[] | undefined;
-
         var accessList: Types.ObjectId[] = [];
         if (!accessListStr) accessList = [];
         else
-            for (const id of accessListStr) {
-                if (!Types.ObjectId.isValid(id))
-                    return res.status(400).json({
-                        status: ResponseStatus.BAD,
-                        message: "Invalid user id",
-                    });
-
-                const user = await UserSchema.findById(id);
+            for (const username of accessListStr) {
+                const user = await UserSchema.findOne({ username }).lean();
                 if (!user)
                     return res.status(400).json({
                         status: ResponseStatus.BAD,
@@ -349,7 +354,7 @@ router.post("/", async (req: Request, res: Response) => {
                 message: "Access list is private, but access list is not empty",
             });
 
-        const newAccessList = await getAccessList(accessList);
+        const newAccessList = await getUsernameListFromIdList(accessList);
 
         const newNote: Note = {
             owner: new ObjectId(req.user.id),
@@ -415,7 +420,7 @@ router.put("/:id", async (req: Request, res: Response) => {
         const inputTitle = req.body.title as string | undefined;
         const inputText = req.body.text as string | undefined;
         const inputTags = req.body.tags as string[] | undefined;
-        const inputAccessList = req.body.accessList as UserResult[] | undefined;
+        const inputAccessList = req.body.accessList as string[] | undefined; // list of usernames
         const inputPrivacyStr = req.body.privacy as string | undefined;
         const inputItemList = req.body.toDoList as ListItem[] | undefined;
 
@@ -496,13 +501,12 @@ router.put("/:id", async (req: Request, res: Response) => {
             inputPrivacy === foundNote.privacy
         ) {
             if (inputAccessList && inputAccessList.length > 0) {
-                console.log("Input access list: ", inputAccessList);
-                for (const userItem of inputAccessList) {
-                    const user = await UserSchema.findById(userItem.id);
+                for (const username of inputAccessList) {
+                    const user = await UserSchema.findOne({ username }).lean();
                     if (!user) {
                         return res.status(400).json({
                             status: ResponseStatus.BAD,
-                            message: "Invalid user id: " + userItem.id,
+                            message: "Invalid user: " + username,
                         });
                     }
                     updatedAccessList.push(user._id);
@@ -516,12 +520,12 @@ router.put("/:id", async (req: Request, res: Response) => {
             (foundNote.privacy as Privacy) === Privacy.PRIVATE
         ) {
             if (inputAccessList && inputAccessList.length > 0)
-                for (const userItem of inputAccessList) {
-                    const user = await UserSchema.findById(userItem.id);
+                for (const username of inputAccessList) {
+                    const user = await UserSchema.findOne({ username }).lean();
                     if (!user) {
                         return res.status(400).json({
                             status: ResponseStatus.BAD,
-                            message: "Invalid user id: " + userItem.id,
+                            message: "Invalid user id: " + username,
                         });
                     }
                     updatedAccessList.push(user._id);
@@ -555,12 +559,12 @@ router.put("/:id", async (req: Request, res: Response) => {
             foundNote.privacy === Privacy.PUBLIC
         ) {
             if (inputAccessList && inputAccessList.length > 0)
-                for (const userItem of inputAccessList) {
-                    const user = await UserSchema.findById(userItem.id);
+                for (const username of inputAccessList) {
+                    const user = await UserSchema.findOne({ username }).lean();
                     if (!user) {
                         return res.status(400).json({
                             status: ResponseStatus.BAD,
-                            message: "Invalid user id: " + userItem.id,
+                            message: "Invalid user id: " + username,
                         });
                     }
                     updatedAccessList.push(user._id);
@@ -573,8 +577,6 @@ router.put("/:id", async (req: Request, res: Response) => {
             foundNote.privacy === Privacy.PUBLIC
         ) {
         }
-
-        const newAccessList = await getAccessList(updatedAccessList);
 
         if (inputItemList) {
             const deletedItems = await NoteItemSchema.deleteMany({
@@ -599,7 +601,7 @@ router.put("/:id", async (req: Request, res: Response) => {
             text: inputText || foundNote.text,
             tags: inputTags || foundNote.tags,
             privacy: inputPrivacy || (foundNote.privacy as Privacy),
-            accessList: newAccessList,
+            accessList: updatedAccessList.map((x) => x.toString()),
         };
 
         console.log("Updating note: ", foundNote, " to ", updatedNote);
@@ -609,11 +611,17 @@ router.put("/:id", async (req: Request, res: Response) => {
         await NoteAccessSchema.deleteMany({
             note: noteId,
         });
-        await NoteAccessSchema.insertMany(
-            newAccessList.map((user) => ({
-                noteId: noteId,
-                userId: user.id,
-            }))
+
+        const list = updatedAccessList.map((id) => ({
+            noteId: noteId,
+            userId: id,
+        }));
+        console.log("Updated access list: ", list);
+
+        await NoteAccessSchema.insertMany(list);
+
+        updatedNote.accessList = await getUsernameListFromIdList(
+            updatedAccessList
         );
 
         // TODO: filter the fields of the found note

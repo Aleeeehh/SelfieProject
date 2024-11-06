@@ -8,34 +8,29 @@ import type Activity from "../types/Activity.ts";
 import { ActivityStatus } from "../types/Activity.ts";
 import NoteSchema from "../schemas/Note.ts";
 import type Note from "../types/Note.ts";
-import type UserResult from "../types/UserResult.ts";
+// import type UserResult from "../types/UserResult.ts";
 import UserSchema from "../schemas/User.ts";
 import { Types } from "mongoose";
 import type { Privacy } from "../types/Privacy.ts";
 
 const router: Router = Router();
 
-async function getUserResultFromIdList(
-    idList: string[]
-): Promise<UserResult[]> {
-    const userResultList: UserResult[] = [];
+async function getUserResultFromIdList(idList: string[]): Promise<string[]> {
+    const userResultList: string[] = [];
     for (const userId of idList) {
         const foundUser = await UserSchema.findById(userId).lean();
         if (!foundUser) {
             console.log("User not found: " + userId);
             continue;
         }
-        userResultList.push({
-            id: foundUser._id.toString(),
-            username: foundUser.username,
-        });
+        userResultList.push(foundUser.username);
     }
     return userResultList;
 }
 
 async function getUserResultFromObjectIdList(
     idList: Types.ObjectId[]
-): Promise<UserResult[]> {
+): Promise<string[]> {
     return await getUserResultFromIdList(idList.map((id) => id.toString()));
 }
 async function getActivityStatus(): Promise<ActivityStatus> {
@@ -348,4 +343,3 @@ router.put("/:id", async (req: Request, res: Response) => {
 });
 
 export default router;
-*/

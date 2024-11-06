@@ -1,9 +1,9 @@
 type Message = {
-	id?: string;
-	userId: string;
-	text: string;
-	chatId: string;
-	createdAt?: Date;
+    id?: string;
+    username: string;
+    text: string;
+    chatId: string;
+    createdAt?: Date;
 };
 
 export default Message;
