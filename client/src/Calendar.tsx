@@ -176,6 +176,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	}, [activitiesMode,]); // Chiamata GET ogni volta che activitiesMode cambia
 
+
+	React.useEffect(() => {
+		if (isInfinite === true) {
+			setNotificationRepeat(false);
+		}
+	}, [isInfinite]);
+
+
 	function renderWeekEvents(weekEvents: { positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[], index: number): JSX.Element {
 		if (!weekEvents[index] || !weekEvents[index].positions) {
 			return <div> </div>;
@@ -1655,19 +1663,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 
 
-		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
 
-		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
-		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
-		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
-		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
-		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
-		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
 		if (addNotification) {
-			console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
-			console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
-			console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
-			console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+
 
 
 			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
@@ -2476,22 +2474,27 @@ export default function Calendar(): React.JSX.Element { // prova push
 												setNotificationTime(Number(e.target.value));
 												if (Number(e.target.value) > 0) {
 													setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-												}
-												else if (Number(e.target.value) == 0) {
+												} else if (Number(e.target.value) === 0) {
 													setNotificationRepeat(false);
 												}
 											}}
 											style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
 										>
-											<option value="0">All'ora d'inizio</option>
-											<option value="5">5 minuti prima</option>
-											<option value="10">10 minuti prima</option>
-											<option value="15">15 minuti prima</option>
-											<option value="30">30 minuti prima</option>
-											<option value="60">1 ora prima</option>
-											<option value="120">2 ore prima</option>
-											<option value="1440">Un giorno prima</option>
-											<option value="2880">2 giorni prima</option>
+											{isInfinite ? (
+												<option value="0">All'ora d'inizio</option> // Solo questa opzione se isInfinite è true
+											) : (
+												<>
+													<option value="0">All'ora d'inizio</option>
+													<option value="5">5 minuti prima</option>
+													<option value="10">10 minuti prima</option>
+													<option value="15">15 minuti prima</option>
+													<option value="30">30 minuti prima</option>
+													<option value="60">1 ora prima</option>
+													<option value="120">2 ore prima</option>
+													<option value="1440">Un giorno prima</option>
+													<option value="2880">2 giorni prima</option>
+												</>
+											)}
 										</select>
 									</label>
 								)}
