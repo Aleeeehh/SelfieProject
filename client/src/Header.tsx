@@ -300,9 +300,23 @@ export default function Header(): React.JSX.Element {
                 `${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`
             );
             const data = await response.json();
+            console.log("Questa è la risposta alla fetch delle notifiche:", data);
+            console.log("Questa è la risposta alla fetch delle notifiche:", data);
+            console.log("Questa è la risposta alla fetch delle notifiche:", data);
+            console.log("Questa è la risposta alla fetch delle notifiche:", data);
+
             // console.log("Notifications:", data);
             if (data.status === ResponseStatus.GOOD) {
                 setNotifications(data.value);
+                /*
+                console.log("Queste sono le notifiche nell'header:", notifications);
+                console.log("Queste sono le notifiche nell'header:", notifications);
+                console.log("Queste sono le notifiche nell'header:", notifications);
+                console.log("Queste sono le notifiche nell'header:", notifications);
+                console.log("Queste sono le notifiche nell'header:", notifications);
+                */
+
+
             } else {
                 console.error("Error:", data.message);
             }
@@ -315,8 +329,23 @@ export default function Header(): React.JSX.Element {
         const fetchData = async (): Promise<void> => {
             await postCurrentDate(currentDate); // invia la data corrente al server
             const currentUser = await getCurrentUser();
-            console.log("Questo è il currentUser:", currentUser);
-            setUser(currentUser.value._id);
+
+            /*
+                        console.log("Questo è il currentUser", currentUser);
+                        console.log("Questo è il currentUser:", currentUser);
+                        console.log("Questo è il currentUser:", currentUser);
+                        console.log("Questo è il currentUser:", currentUser);
+                        console.log("Questo è il user nell'header:", currentUser.value);
+                        console.log("Questo è il user nell'header:", currentUser.value);
+                        console.log("Questo è il user nell'header:", currentUser.value);
+                        console.log("Questo è il user nell'header:", currentUser.value);
+                          */
+            setUser(currentUser.value);
+
+
+
+
+
             console.log("ID USER ATTUALE:", user); // Usa currentUser.value.id direttamente
             console.log("Questo è il currentUser.value:", currentUser.value);
         };
@@ -326,6 +355,17 @@ export default function Header(): React.JSX.Element {
 
     useEffect(() => {
         fetchNotifications(); // Fetch delle notifiche
+        /*
+        console.log("Questo è il user nell'header:", user);
+        console.log("Questo è il user nell'header:", user);
+        console.log("Questo è il user nell'header:", user);
+        console.log("Questo è il user nell'header:", user);
+
+        console.log("Queste sono le notifiche nell'header:", notifications);
+        console.log("Queste sono le notifiche nell'header:", notifications);
+        console.log("Queste sono le notifiche nell'header:", notifications);
+        console.log("Queste sono le notifiche nell'header:", notifications);
+        */
 
         // Aggiorna la currentDate della Home ogni secondo
         const intervalId = setInterval(() => {
@@ -470,8 +510,8 @@ export default function Header(): React.JSX.Element {
                                         value={
                                             currentDate
                                                 ? currentDate
-                                                      .toISOString()
-                                                      .split("T")[0]
+                                                    .toISOString()
+                                                    .split("T")[0]
                                                 : ""
                                         } // Assicurati che currentDate sia valido
                                         onChange={(event): void => {
@@ -505,9 +545,9 @@ export default function Header(): React.JSX.Element {
                                         value={
                                             currentDate
                                                 ? currentDate
-                                                      .toTimeString()
-                                                      .split(" ")[0]
-                                                      .slice(0, 5)
+                                                    .toTimeString()
+                                                    .split(" ")[0]
+                                                    .slice(0, 5)
                                                 : ""
                                         } // Imposta l'orario attuale come valore predefinito
                                         onChange={(event): void => {
@@ -596,110 +636,44 @@ export default function Header(): React.JSX.Element {
                             >
                                 {notifications && notifications.length > 0 ? (
                                     (console.log("NOTIFICHE:", notifications),
-                                    notifications.map((notification, index) => {
-                                        // TODO: Differentiate by type
-                                        if (notification.type === "pomodoro") {
-                                            const nCycles =
-                                                notification.data.cycles || 5;
-                                            const nStudyTime =
-                                                notification.data.studyTime ||
-                                                25;
-                                            const nPauseTime =
-                                                notification.data.pauseTime ||
-                                                5;
+                                        notifications.map((notification, index) => {
+                                            // TODO: Differentiate by type
+                                            if (notification.type === "pomodoro") {
+                                                const nCycles =
+                                                    notification.data.cycles || 5;
+                                                const nStudyTime =
+                                                    notification.data.studyTime ||
+                                                    25;
+                                                const nPauseTime =
+                                                    notification.data.pauseTime ||
+                                                    5;
 
-                                            return (
-                                                <>
-                                                    <a
-                                                        href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
-                                                        key={index} // Sposta la chiave qui
-                                                        style={{
-                                                            color: "black",
-                                                            textDecoration:
-                                                                "none",
-                                                        }} // Imposta il colore del testo a nero e rimuovi la sottolineatura
-                                                    >
-                                                        Hai ricevuto un invito
-                                                        per un{" "}
-                                                        <span
+                                                return (
+                                                    <>
+                                                        <a
+                                                            href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
+                                                            key={index} // Sposta la chiave qui
                                                             style={{
-                                                                color: "lightcoral",
-                                                            }}
+                                                                color: "black",
+                                                                textDecoration:
+                                                                    "none",
+                                                            }} // Imposta il colore del testo a nero e rimuovi la sottolineatura
                                                         >
-                                                            pomodoro
-                                                        </span>
-                                                        !
-                                                    </a>
-                                                    <button
-                                                        className="btn secondary"
-                                                        style={{
-                                                            background: "none",
-                                                            cursor: "pointer",
-                                                        }}
-                                                        onClick={(): void => {
-                                                            if (
-                                                                notification.id
-                                                            ) {
-                                                                // Controlla se notification.id è definito
-                                                                handleReadNotification(
-                                                                    notification.id
-                                                                );
-                                                            } else {
-                                                                console.error(
-                                                                    "ID notifica non definito"
-                                                                );
-                                                            }
-                                                        }}
-                                                    >
-                                                        <i
-                                                            className="fas fa-check"
-                                                            style={{
-                                                                color: "green",
-                                                                fontSize:
-                                                                    "20px",
-                                                            }}
-                                                        ></i>{" "}
-                                                        {/* Icona di tick */}
-                                                    </button>
-                                                </>
-                                            );
-
-                                            /*
-                                                return (
-                                                    <a
-                                                        href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
-                                                        key={index} // Sposta la chiave qui
-                                                    >
-                                                        <div>
-                                                            <p>
-                                                                Hai ricevuto un invito da {notification.sender} per un pomodoro!
-                                                            </p>
-                                                            <p>
-                                                                {notification.type} - {notification.sentAt.toString()}
-                                                            </p>
-                                                        </div>
-                                                    </a>
-                                                );
-                                                */
-                                        } else if (
-                                            notification.type === "event" &&
-                                            notification.receiver === user &&
-                                            notification.read === false
-                                        ) {
-                                            const eventDate = new Date(
-                                                notification.data.date
-                                            ); // Crea un oggetto Date
-
-                                            //mostra la notifica solo se la data corrente è successiva alla data della notifica
-                                            if (eventDate < currentDate) {
-                                                return (
-                                                    <div key={index}>
-                                                        {notification.message}
+                                                            Hai ricevuto un invito
+                                                            per un{" "}
+                                                            <span
+                                                                style={{
+                                                                    color: "lightcoral",
+                                                                }}
+                                                            >
+                                                                pomodoro
+                                                            </span>
+                                                            !
+                                                        </a>
                                                         <button
                                                             className="btn secondary"
                                                             style={{
-                                                                background:
-                                                                    "none",
+                                                                background: "none",
                                                                 cursor: "pointer",
                                                             }}
                                                             onClick={(): void => {
@@ -727,122 +701,171 @@ export default function Header(): React.JSX.Element {
                                                             ></i>{" "}
                                                             {/* Icona di tick */}
                                                         </button>
-                                                    </div>
+                                                    </>
                                                 );
-                                            }
-                                        } else if (
-                                            notification.type === "activity" &&
-                                            notification.receiver === user &&
-                                            notification.read === false
-                                        ) {
-                                            const eventDate = new Date(
-                                                notification.data.date
-                                            ); // Crea un oggetto Date
 
-                                            //mostra la notifica solo se la data corrente è successiva alla data della notifica
-                                            if (eventDate < currentDate) {
-                                                return (
-                                                    <div key={index}>
-                                                        {notification.message}
-                                                        <button
-                                                            className="btn secondary"
-                                                            style={{
-                                                                background:
-                                                                    "none",
-                                                                cursor: "pointer",
-                                                            }}
-                                                            onClick={(): void => {
-                                                                if (
-                                                                    notification.id
-                                                                ) {
-                                                                    // Controlla se notification.id è definito
-                                                                    handleReadNotification(
-                                                                        notification.id
-                                                                    );
-                                                                } else {
-                                                                    console.error(
-                                                                        "ID notifica non definito"
-                                                                    );
-                                                                }
-                                                            }}
-                                                        >
-                                                            <i
-                                                                className="fas fa-check"
-                                                                style={{
-                                                                    color: "green",
-                                                                    fontSize:
-                                                                        "20px",
-                                                                }}
-                                                            ></i>{" "}
-                                                            {/* Icona di tick */}
-                                                        </button>
-                                                    </div>
-                                                );
-                                            }
-                                        } else if (
-                                            notification.isInfiniteEvent
-                                        ) {
-                                            console.log(
-                                                "ENTRO NELL'IF DELLA NOTIFICA INFINITA:",
-                                                notification
-                                            );
-                                            const eventDate = new Date(
-                                                notification.data.date
-                                            ); // Crea un oggetto Date
-                                            const currentDate = new Date(); // Assicurati di avere l'orario attuale
-
-                                            // Confronta solo l'orario (ore e minuti) di eventDate e currentDate
-                                            const isEventTimeGreater =
-                                                eventDate.getTime() >
-                                                currentDate.getTime();
-
-                                            if (
-                                                notification.frequencyEvent ===
-                                                    "day" &&
-                                                isEventTimeGreater
+                                            } else if (
+                                                notification.type === "event" &&
+                                                notification.receiver === user &&
+                                                notification.read === false
                                             ) {
-                                                return (
-                                                    <div key={index}>
-                                                        {notification.message}
-                                                        <button
-                                                            className="btn secondary"
-                                                            style={{
-                                                                background:
-                                                                    "none",
-                                                                cursor: "pointer",
-                                                            }}
-                                                            onClick={(): void => {
-                                                                if (
-                                                                    notification.id
-                                                                ) {
-                                                                    // Controlla se notification.id è definito
-                                                                    handleReadNotification(
-                                                                        notification.id
-                                                                    );
-                                                                } else {
-                                                                    console.error(
-                                                                        "ID notifica non definito"
-                                                                    );
-                                                                }
-                                                            }}
-                                                        >
-                                                            <i
-                                                                className="fas fa-check"
-                                                                style={{
-                                                                    color: "green",
-                                                                    fontSize:
-                                                                        "20px",
-                                                                }}
-                                                            ></i>{" "}
-                                                            {/* Icona di tick */}
-                                                        </button>
-                                                    </div>
-                                                );
-                                            }
-                                        }
+                                                const eventDate = new Date(
+                                                    notification.data.date
+                                                ); // Crea un oggetto Date
 
-                                        return null;
-                                    }))
+                                                //mostra la notifica solo se la data corrente è successiva alla data della notifica
+                                                if (eventDate < currentDate) {
+                                                    return (
+                                                        <div key={index}>
+                                                            {notification.message}
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleReadNotification(
+                                                                            notification.id
+                                                                        );
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-check"
+                                                                    style={{
+                                                                        color: "green",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di tick */}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                }
+                                            } else if (
+                                                notification.type === "activity" &&
+                                                notification.receiver === user &&
+                                                notification.read === false
+                                            ) {
+                                                const eventDate = new Date(
+                                                    notification.data.date
+                                                ); // Crea un oggetto Date
+
+                                                //mostra la notifica solo se la data corrente è successiva alla data della notifica
+                                                if (eventDate < currentDate) {
+                                                    return (
+                                                        <div key={index}>
+                                                            {notification.message}
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleReadNotification(
+                                                                            notification.id
+                                                                        );
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-check"
+                                                                    style={{
+                                                                        color: "green",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di tick */}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                }
+                                            } else if (
+                                                notification.isInfiniteEvent
+                                            ) {
+                                                console.log(
+                                                    "ENTRO NELL'IF DELLA NOTIFICA INFINITA:",
+                                                    notification
+                                                );
+                                                const eventDate = new Date(
+                                                    notification.data.date
+                                                ); // Crea un oggetto Date
+                                                const currentDate = new Date(); // Assicurati di avere l'orario attuale
+
+                                                // Confronta solo l'orario (ore e minuti) di eventDate e currentDate
+                                                const isEventTimeGreater =
+                                                    eventDate.getTime() >
+                                                    currentDate.getTime();
+
+                                                if (
+                                                    notification.frequencyEvent ===
+                                                    "day" &&
+                                                    isEventTimeGreater
+                                                ) {
+                                                    return (
+                                                        <div key={index}>
+                                                            {notification.message}
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleReadNotification(
+                                                                            notification.id
+                                                                        );
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-check"
+                                                                    style={{
+                                                                        color: "green",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di tick */}
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                }
+                                            }
+
+                                            return null;
+                                        }))
                                 ) : (
                                     <div>
                                         <p style={{ fontWeight: "bold" }}>
