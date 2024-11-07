@@ -504,7 +504,9 @@ export default function Header(): React.JSX.Element {
                 >
                     Pomodoro
                 </a>
-                <a className="btn secondary" style={buttonStyle} href="/notes">
+                <a className="btn secondary"
+                    style={buttonStyle} 
+                    href="/notes">
                     Note
                 </a>
                 <a
@@ -514,6 +516,13 @@ export default function Header(): React.JSX.Element {
                 >
                     Progetti
                 </a>
+                <a
+                    className="btn secondary"
+                    style={buttonStyle}
+                    href="/chat"
+                >
+                    Chat
+                </a> {/*TODO: non funziona*/}
             </div>
 
             <div className="dropdown-container">
@@ -560,6 +569,9 @@ export default function Header(): React.JSX.Element {
                         </li>
                         <li>
                             <a href="/projects">Progetti</a>
+                        </li>
+                        <li>
+                            <a href="/chat">Chat</a> {/*TODO: non funziona*/}
                         </li>
                     </ul>
                 </button>

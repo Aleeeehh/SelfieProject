@@ -260,6 +260,7 @@ export default function NotePage(): React.JSX.Element {
                 <div className="note-container">
                     <div className="page-title">
                         {id === NEW ? "Crea una nuova nota" : "Modifica nota"}
+                        <a href="/notes" className="close-link">X</a>
                     </div>
                     {/* render title */}
                     {isEditing ? (

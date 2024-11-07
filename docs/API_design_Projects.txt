@@ -9,7 +9,7 @@ PUT	/project/:id/note
 
 ***Strutture dati e requisiti/vincoli***
 
-ProjectStatus
+ActivityStatus
 - Non Attivabile
 - Attivabile
 - Attiva
@@ -35,12 +35,11 @@ Activity
 - actors
 - start
 - end
-- status (Derivato)
 - milestone (boolean)
-- completed (boolean)
+- completed (boolean) (derivato --> completed if status == COMPLETED)
 - advancementType: ["translation" | "contraction"] -> cannot be translation but only contraction if milestone is true
 - description
-- noteId
+- noteId --> no, usato activityId nelle note
 - status: [Attiva | Completa | Riattivata] (altrimenti, derivato da altre condizioni)
 (studiare se è possibile integrare le attività già presenti o si deve creare una nuova collection)
 
