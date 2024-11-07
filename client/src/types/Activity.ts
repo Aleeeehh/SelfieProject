@@ -1,9 +1,8 @@
-import type { Types } from "mongoose";
-import type Note from "./Note.ts";
+import type Note from "./Note.js";
 // import type UserResult from "./UserResult.ts";
 
 type Activity = {
-	id?: Types.ObjectId | string;
+	id?: string;
 	title: string;
 	description: string;
 	deadline: Date; // è l'end date per i progetti
@@ -18,14 +17,14 @@ type Activity = {
 
 	// parameters added for project management
 	status?: ActivityStatus;
-	projectId?: Types.ObjectId | string;
+	projectId?: string;
 	start?: Date;
 	milestone?: boolean;
 	advancementType?: AdvancementType;
 	note?: Note; // Nota descrittiva del progetto
-	parent?: Types.ObjectId | string;
-	prev?: Types.ObjectId | string;
-	next?: Types.ObjectId | string;
+	parent?: string;
+	prev?: string;
+	next?: string;
 };
 
 export default Activity;
