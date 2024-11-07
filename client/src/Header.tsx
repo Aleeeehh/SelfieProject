@@ -151,13 +151,77 @@ export default function Header(): React.JSX.Element {
         }
     };
 
-    /* useEffect(() => {
-         // Resetta noNotifications quando le notifiche cambiano
-         if (notifications && notifications.length > 0) {
-             setNoNotifications(false);
-         }
-     }, [notifications]);
-     */
+    async function handleAddActivity(notification: Notification): Promise<void> {
+        console.log("EVENTO DELLA NOTIFICA DA AGGIUNGERE ALLA LISTA DEGLI EVENTI:", notification.data.event);
+        console.log("ATTIVITÀ DELLA NOTIFICA DA AGGIUNGERE ALLA LISTA DEGLI EVENTI:", notification.data.activity);
+
+        const idEventoNotificaCondiviso = notification.data.event.idEventoNotificaCondiviso;
+        const owner = notification.data.event.owner;
+        const title = notification.data.event.title;
+        const startTime = notification.data.event.startTime;
+        const endTime = notification.data.event.endTime;
+        const location = notification.data.event.location;
+
+        //crea l'attività come evento sul calendario
+        const res = await fetch(`${SERVER_API}/events`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                idEventoNotificaCondiviso,
+                owner,
+                title: title,
+                startTime: startTime, //TOLGO TOISOTRING
+                endTime: endTime, //TOLGO TOISOTRING
+                untilDate: null,
+                isInfinite: false,
+                frequency: "once",
+                location,
+                repetitions: 1,
+            }),
+        });
+        console.log("Evento scadenza creato:", res);
+
+
+        const idEventoNotificaCondiviso1 = notification.data.activity.idEventoNotificaCondiviso;
+        const description1 = notification.data.activity.description;
+        const title1 = notification.data.activity.title;
+        const deadline1 = notification.data.activity.deadline;
+        const owner1 = notification.data.activity.owner;
+        const accessList1 = notification.data.activity.accessList;
+
+
+        //crea l'attività come attività sul calendario
+        const res2 = await fetch(`${SERVER_API}/activity`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                idEventoNotificaCondiviso: idEventoNotificaCondiviso1,
+                title: title1,
+                deadline: deadline1, //TOLGO TOISOTRING
+                description: description1,
+                owner: owner1,
+                accessList: accessList1,
+            }),
+        });
+        console.log("Attività creata:", res2);
+
+
+        //aggiungi la notifica dell'attività come notifica sul calendario
+        if (notification.data.notification) {
+            const res3 = await fetch(`${SERVER_API}/notifications`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(notification.data.notification),
+            });
+            console.log("Notifica creata:", res3);
+        }
+
+
+        //metti la notifica come letta
+        handleReadNotification(notification.id);
+
+
+    }
 
     const handleReadNotification = async (
         notificationId: string
@@ -300,6 +364,10 @@ export default function Header(): React.JSX.Element {
                         true
                     );
                 }
+            }
+
+            if (notification && notification.type === "message" && notification.read === false) {
+                return true;
             }
 
             // Restituisci false se non è di tipo "event" o "activity"
@@ -907,6 +975,100 @@ export default function Header(): React.JSX.Element {
 
 
 
+                                            }
+
+                                            else if (
+                                                notification.type === "message" &&
+                                                notification.receiver === user &&
+                                                notification.read === false
+                                            ) {
+                                                return (
+                                                    <div key={index}>
+                                                        Hai ricevuto un invito
+                                                        per un'{" "}
+                                                        <span
+                                                            style={{
+                                                                color: "bisque",
+                                                                fontWeight: "bold",
+                                                            }}
+                                                        >
+                                                            attività
+                                                        </span>
+                                                        !
+
+                                                        <button
+                                                            className="btn secondary"
+                                                            style={{
+                                                                background:
+                                                                    "none",
+                                                                cursor: "pointer",
+                                                            }}
+                                                            onClick={(): void => {
+                                                                if (
+                                                                    notification.id
+                                                                ) {
+                                                                    // Controlla se notification.id è definito
+                                                                    handleAddActivity(
+                                                                        notification
+                                                                    );
+
+
+                                                                } else {
+                                                                    console.error(
+                                                                        "ID notifica non definito"
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            <i
+                                                                className="fas fa-check"
+                                                                style={{
+                                                                    color: "green",
+                                                                    fontSize:
+                                                                        "20px",
+                                                                }}
+                                                            ></i>{" "}
+                                                            {/* Icona di tick */}
+                                                        </button>
+
+
+                                                        <button
+                                                            className="btn secondary"
+                                                            style={{
+                                                                background:
+                                                                    "none",
+                                                                cursor: "pointer",
+                                                            }}
+                                                            onClick={(): void => {
+                                                                if (
+                                                                    notification.id
+                                                                ) {
+                                                                    // Controlla se notification.id è definito
+                                                                    handleReadNotification(
+                                                                        notification.id
+                                                                    );
+
+                                                                } else {
+                                                                    console.error(
+                                                                        "ID notifica non definito"
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            <i
+                                                                className="fas fa-times"
+                                                                style={{
+                                                                    color: "red",
+                                                                    fontSize:
+                                                                        "20px",
+                                                                }}
+                                                            ></i>{" "}
+                                                            {/* Icona di elimazione */}
+                                                        </button>
+                                                    </div>
+
+
+                                                );
                                             }
 
                                             return null;

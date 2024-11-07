@@ -10,6 +10,7 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom"
 import { Event } from "./types/Event";
+import SearchForm from "./SearchForm";
 //import mongoose from "mongoose";
 
 
@@ -55,6 +56,8 @@ const Mesi = [
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
 	const [description, setDescription] = React.useState("");
+	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
+
 	const [createActivity, setCreateActivity] = React.useState(false);
 	const [selectedMode, setSelectedMode] = React.useState("Eventi");
 	const [create, setCreate] = React.useState(false);
@@ -73,6 +76,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [isInfinite, setIsInfinite] = React.useState(false);
 	const [currentDate, setCurrentDate] = React.useState(new Date());
+	const [sendInvite, setSendInvite] = React.useState(false);
 	const [addNotification, setAddNotification] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
@@ -763,12 +767,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	}
 
-	function toggleAllActivitiesMode(): void {
+	async function toggleAllActivitiesMode(): Promise<void> {
 		if (!allActivitiesMode) {
 			setTodayActivitiesMode(false);
 			setAllActivitiesMode(true);
 		}
+
 		fetchCurrentDate();
+		await loadActivities();
 	}
 
 	function toggleCreateEvent(): void {
@@ -837,6 +843,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setCreateActivity(!createActivity);
 		setNotificationRepeat(false);
 		setAddNotification(false);
+		setSendInvite(false);
 	}
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
@@ -1317,6 +1324,146 @@ export default function Calendar(): React.JSX.Element { // prova push
 		// Aggiorna lo stato con gli eventi del mese
 		setMonthEvents(eventiMese);
 	}
+
+	function handleSelectUser(
+		e: React.ChangeEvent<HTMLSelectElement>,
+		username: string
+	): void {
+		e.preventDefault();
+		setUsers([username]);
+	}
+
+
+	async function handleSendInviteActivity(
+		e: React.MouseEvent<HTMLButtonElement>
+	): Promise<void> {
+		e.preventDefault();
+		if (!(users.length > 0)) {
+			console.log("Nessun utente selezionato");
+			return;
+		}
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("Questo è il receiver:", users[0]);
+
+		const currentUser = await getCurrentUser();
+
+		const ownerr = currentUser.value;
+
+		const startTime = new Date(endTime);
+		startTime.setHours(endTime.getHours() - 1);
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+
+		let newNotification;
+
+		if (addNotification) {
+			const notificationDate = new Date(startTime);
+			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+			console.log("Questa è la data di inizio evento:", startTime);
+			console.log("Questa è la data della notifica:", notificationDate);
+			var message = "";
+			if (notificationTime < 60) {
+				message = "Inizio evento " + title + " tra " + notificationTime + " minuti!";
+			} else {
+				message = "Inizio evento " + title + " tra " + notificationTime / 60 + " ore!";
+			}
+
+			if (notificationTime == 0) {
+				message = "Evento " + title + " iniziato!";
+			}
+
+			var repeatTime = notificationRepeatTime;
+			var repeatedNotification = false;
+			if (repeatTime > 0) {
+				repeatedNotification = true;
+			}
+
+			newNotification = {
+				message: message,
+				mode: "activity",
+				receiver: users[0],
+				type: "activity",
+				data: {
+					date: notificationDate, //data prima notifica
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+				},
+
+			}
+		}
+
+
+
+
+		const newEvent = {
+			idEventoNotificaCondiviso,
+			owner: users[0],
+			title: "Scadenza " + title,
+			startTime: startTime.toISOString(),
+			endTime: endTime.toISOString(),
+			untilDate: null,
+			isInfinite: false,
+			frequency: "once",
+			location,
+			repetitions: 1,
+		};
+
+		const newActivity = {
+			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+			_id: "1",
+			title,
+			deadline: endTime,
+			description,
+			owner: users[0],
+			accessList: [users[0], ownerr],
+			completed: false,
+		};
+
+
+		const res3 = await fetch(`${SERVER_API}/notifications`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				message: "Hai ricevuto un invito per un'attività",
+				mode: "acitvity",
+				receiver: users[0],
+				type: "message",
+				data: {
+					date: currentDate, //data prima notifica
+					activity: newActivity,
+					event: newEvent,
+					notification: newNotification,
+				},
+			}),
+
+		});
+		console.log("Notifica creata:", res3);
+
+
+
+
+		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
+
+		if (resBody.status === ResponseStatus.GOOD) {
+			alert("Invito inviato correttamente");
+			setUsers([]);
+		} else {
+			alert(resBody.message);
+		}
+	}
+
+
+
+	function toggleSendInvite(): void {
+		setSendInvite(!sendInvite);
+	}
+
+
+
 
 	async function handleDeleteEvent(id: string, groupId: string): Promise<void> {
 		//console.log("day:", day);
@@ -1827,7 +1974,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					message: message,
-					mode: "acitvity",
+					mode: "activity",
 					receiver: currentUser.value,
 					type: "activity",
 					data: {
@@ -1857,6 +2004,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setAddNotification(false);
 		setNotificationTime(0);
 		setNotificationRepeatTime(0);
+		setSendInvite(false);
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
@@ -2536,6 +2684,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						</div>
 
 					)}
+
 					{createActivity && (
 						<div className="create-event-container col-2">
 							<button
@@ -2668,6 +2817,32 @@ export default function Calendar(): React.JSX.Element { // prova push
 										</select>
 									</label>
 								)}
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="addNotification"
+										onClick={toggleSendInvite}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Condividi attività
+
+								</label>
+
+								{sendInvite && (
+									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+										<div>Scegli l'utente al quale inviare la notifica</div>
+										{users.length > 0}
+										<SearchForm onItemClick={handleSelectUser} list={users} />
+										<button
+											onClick={handleSendInviteActivity}
+											className="btn btn-primary send-invite-button"
+											style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
+										>
+											Invia Invito
+										</button>
+									</div>
+								)}
 								<button
 									className="btn btn-primary"
 									style={{
@@ -2678,10 +2853,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 									onClick={handleCreateActivity}>
 									Create Activity
 								</button>
+
+
+
+
+
 							</form>
 						</div>
 
 					)}
+
 					{activitiesMode && todayActivitiesMode && (
 						<>
 							<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>

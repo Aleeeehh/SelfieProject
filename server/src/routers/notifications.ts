@@ -19,7 +19,17 @@ router.post("/", async (req: Request, res: Response) => {
             repetitionsEvent: number; untilDateEvent: Date;
         };
 
+        console.log("Questo è il message:", message);
+        console.log("Questo è il message:", message);
+        console.log("Questo è il message:", message);
+        console.log("Questo è il message:", message);
+
+
         const activityName = message ? message.match(/Scadenza (.+?)(?: tra| iniziata)/)?.[1] : ""; // Cattura il nome dell'attività
+
+        console.log("Questo è l'activityName:", activityName);
+        console.log("Questo è l'activityName:", activityName);
+        console.log("Questo è l'activityName:", activityName);
 
         // TODO: validate body
 
@@ -38,6 +48,7 @@ router.post("/", async (req: Request, res: Response) => {
             return res.status(401).json(response);
         }
         const sender = req.user.id;
+        console.log("Questo è il sender:", sender);
 
         let notification: Notification;
 
@@ -665,10 +676,6 @@ router.post("/cleanNotifications", async (req: Request, res: Response) => {
         console.log("CLEAN NOTIFICATIONS");
         console.log("CLEAN NOTIFICATIONS");
         console.log("CLEAN NOTIFICATIONS");
-        console.log("CLEAN NOTIFICATIONS");
-        console.log("CLEAN NOTIFICATIONS");
-        console.log("CLEAN NOTIFICATIONS");
-        console.log("CLEAN NOTIFICATIONS");
 
         const currentDate = new Date(req.body.currentDate); // Ricevi la data attuale dal corpo della richiesta
         const limitDate = new Date(currentDate);
@@ -688,12 +695,12 @@ router.post("/cleanNotifications", async (req: Request, res: Response) => {
             read: true, // Le notifiche devono essere lette
         });
 
+        console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
+
         //non eliminare una notifica se essa è infinita
         notificationsToDelete.forEach(async (notification) => {
-            if (notification.data.isInfiniteEvent === false) {
-                await NotificationSchema.deleteOne({ _id: notification._id });
-                console.log("NOTIFICA ELIMINATA:", notification);
-            }
+            await NotificationSchema.deleteOne({ _id: notification._id });
+            console.log("NOTIFICA ELIMINATA:", notification);
 
         });
 
