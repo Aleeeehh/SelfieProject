@@ -441,7 +441,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const currentUser = await getCurrentUser();
 			console.log("Valore ottenuto:", currentUser);
 
-			const owner = currentUser.value.username;
+			const owner = currentUser.value;
 			console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
@@ -460,7 +460,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function loadActivities(): Promise<void> {
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value.username;
+		const owner = currentUser.value;
 		const resActivities = await fetch(`${SERVER_API}/activity/owner?owner=${owner}`);
 		const dataActivities = await resActivities.json();
 		if (dataActivities.status === ResponseStatus.GOOD) {
@@ -642,7 +642,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const currentUser = await getCurrentUser();
 				console.log("Valore ottenuto:", currentUser);
 
-				const owner = currentUser.value.username;;
+				const owner = currentUser.value;
 				console.log("Questo è l'ownerr:", owner);
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
@@ -870,7 +870,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					date: date.toISOString(),
-					owner: currentUser.value.username,
+					owner: currentUser.value,
 				}),
 			});
 			const data = await res.json();
@@ -1074,7 +1074,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value }),
 				});
 
 				if (!res.ok) {
@@ -1223,7 +1223,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value }),
 				});
 
 				if (!res.ok) {
@@ -1595,8 +1595,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return;
 		}
 		const currentUser = await getCurrentUser();
+		console.log("Questo è il currentUser:", currentUser);
+		console.log("Questo è il currentUser:", currentUser);
+		console.log("Questo è il currentUser:", currentUser);
+		console.log("Questo è il currentUser:", currentUser);
+		console.log("Questo è il currentUser:", currentUser);
 
-		const owner = currentUser.value.username;
+
+		const owner = currentUser.value;
+
+		console.log("Questo è l'owner passato come parametro:", owner);
+		console.log("Questo è l'owner passato come parametro:", owner);
+		console.log("Questo è l'owner passato come parametro:", owner);
+		console.log("Questo è l'owner passato come parametro:", owner);
+		console.log("Questo è l'owner passato come parametro:", owner);
 
 		console.log("Questa è la frequenza prima di inviare la richiesta di creazione dell'evento:", frequency);
 
@@ -1644,7 +1656,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 
 		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
+
+		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+		console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
 		if (addNotification) {
+			console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+			console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+			console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+			console.log("CREO NOTIFICA PER L'EVENTO PERCHE ADDNOTIFICATION è TRUE:", addNotification);
+
+
 			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
 			const res2 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
@@ -1652,7 +1677,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({
 					message: message,
 					mode: "event",
-					receiver: currentUser.value._id,
+					receiver: currentUser.value,
 					type: "event",
 					data: {
 						date: notificationDate, //data prima notifica
@@ -1718,7 +1743,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const currentUser = await getCurrentUser();
 
-		const owner = currentUser.value.username;
+		const owner = currentUser.value;
 
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
@@ -1805,7 +1830,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({
 					message: message,
 					mode: "acitvity",
-					receiver: currentUser.value._id,
+					receiver: currentUser.value,
 					type: "activity",
 					data: {
 						date: notificationDate, //data prima notifica

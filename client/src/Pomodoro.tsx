@@ -10,7 +10,7 @@ import User from "./types/User";
 
 import DatePicker from "react-datepicker"; //to create pomodoro events
 import SearchForm from "./SearchForm";
-import UserResult from "./types/UserResult";
+// import UserResult from "./types/UserResult";
 //import Time from "react-datepicker/dist/time";
 
 enum MESSAGE {
@@ -111,7 +111,7 @@ export default function Pomodoros(): React.JSX.Element {
     const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]); // Per pomodori recenti
     const [eventList, setEventList] = React.useState<Event[]>([]); // Per vedere gli eventi dello user attuale
     const [initialCycles, setInitialCycles] = React.useState(0); // Per calcolare i cicli rimanenti
-    const [users, setUsers] = React.useState([] as UserResult[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
+    const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
     const [addEvent, setAddEvent] = React.useState(false); // Per creare un evento
     const [repeatEvent, setRepeatEvent] = React.useState(false); // Per creare un evento ripetuto
     const [until, setUntil] = React.useState(false); // Per creare un evento fino a una certa data
@@ -877,10 +877,10 @@ export default function Pomodoros(): React.JSX.Element {
 
     function handleSelectUser(
         e: React.ChangeEvent<HTMLSelectElement>,
-        user: UserResult
+        username: string
     ): void {
         e.preventDefault();
-        setUsers([user]);
+        setUsers([username]);
     }
 
     async function handleSendInvite(
@@ -896,7 +896,7 @@ export default function Pomodoros(): React.JSX.Element {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                receiver: users[0].id,
+                receiver: users[0],
                 cycles: data.cycles,
                 studyTime: data.studyTime,
                 pauseTime: data.pauseTime,

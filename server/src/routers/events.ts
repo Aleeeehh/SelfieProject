@@ -329,18 +329,14 @@ router.post("/", async (req: Request, res: Response) => {
             isInfinite,
             idEventoNotificaCondiviso
         } = req.body as Event;
-        //  console.log("queste sono le ripetizioni:", repetitions);
-        // console.log("questo è l'untilDate dell'evento:", untilDate);
-        //console.log("questo è l'isInfinite dell'evento:", isInfinite);
 
-        /*
-        if (!title || !startTime || !endTime || !location) {
-            return res.status(400).json({
-                status: ResponseStatus.BAD,
-                message: "Tutti i campi dell'evento devono essere riempiti!",
-            });
-        }
-        */
+        console.log("Owner passato come parametro:", owner);
+        console.log("Owner passato come parametro:", owner);
+        console.log("Owner passato come parametro:", owner);
+        console.log("Owner passato come parametro:", owner);
+        console.log("Owner passato come parametro:", owner);
+        console.log("Owner passato come parametro:", owner);
+
 
         if (new Date(startTime) > new Date(endTime)) {
             return res.status(400).json({
@@ -932,6 +928,14 @@ router.post("/", async (req: Request, res: Response) => {
         return res.status(500).json(resBody);
     }
 });
+
+
+
+
+
+
+
+
 
 router.post("/deleteEvent", async (req: Request, res: Response) => {
     // console.log("Richiesta ricevuta per eliminare evento");
