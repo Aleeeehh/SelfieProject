@@ -1,0 +1,107 @@
+/* Generale */
+.chat-app {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    font-family: Arial, sans-serif;
+}
+
+/* Contenitori */
+.chat-container, .chat-list-container {
+    background: #f4f4f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    width: 50%;
+}
+
+.chat-header {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #333;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 0.5rem;
+}
+
+/* Lista dei messaggi */
+.message-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 1rem;
+}
+
+/* Singolo messaggio */
+.message {
+    margin: 0.5rem 0;
+    padding: 0.75rem;
+    border-radius: 12px;
+    display: inline-block;
+    max-width: 70%;
+    color: white;
+}
+
+.message-sent {
+    background-color: #4a90e2;
+    align-self: flex-end;
+}
+
+.message-received {
+    background-color: #ff5c5c;
+    align-self: flex-start;
+}
+
+.message-info {
+    font-size: 0.75em;
+    opacity: 0.7;
+    margin-top: 0.25rem;
+}
+
+/* Input e pulsanti */
+.input-container {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.message-input {
+    flex: 1;
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.send-button, .chat-select-button, .close-button, .create-chat-button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.send-button:disabled {
+    background-color: #bbb;
+}
+
+.send-button:hover:not(:disabled),
+.chat-select-button:hover,
+.close-button:hover,
+.create-chat-button:hover {
+    background-color: #357ab7;
+}
+
+/* Lista delle chat */
+.chat-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.chat-user {
+    font-weight: bold;
+    color: #333;
+}
