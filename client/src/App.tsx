@@ -14,6 +14,7 @@ import Profile from "./Profile";
 import Register from "./Register";
 import MessageHub from "./MessageHub";
 import ProjectPage from "./ProjectPage";
+import ProjectGantt from "./ProjectGantt";
 function App(): React.JSX.Element {
 	return (
 		<div id="body-container">
@@ -33,6 +34,7 @@ function App(): React.JSX.Element {
 						<Route path="chat" element={<MessageHub />} />
 						<Route path="notes/:id" element={<NotePage />} />
 						<Route path="projects/:id" element={<ProjectPage />} />
+						<Route path="projects/:id/gantt" element={<ProjectGantt />} />
 						{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
 					</Route>
 					<Route path="*" element={<NotFound />} />

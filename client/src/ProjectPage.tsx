@@ -43,8 +43,7 @@ export default function ProjectPage(): React.JSX.Element {
 	// const [isPreview, setIsPreview] = React.useState(false);
 	const nav = useNavigate();
 
-	// On page load, get the note for the user
-	React.useEffect(() => {
+	async function updateProject(): Promise<void> {
 		if (id !== NEW)
 			fetch(`${SERVER_API}/projects/${id}`)
 				.then((res) => res.json())
@@ -60,7 +59,11 @@ export default function ProjectPage(): React.JSX.Element {
 					setMessage("Impossibile raggiungere il server");
 					nav("/projects");
 				});
-	}, [id, nav]);
+	}
+	// On page load, get the note for the user
+	React.useEffect(() => {
+		updateProject();
+	}, []);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
 		setProject({ ...project, [e.target.name]: e.target.value });
@@ -72,10 +75,14 @@ export default function ProjectPage(): React.JSX.Element {
 	async function handleCreate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
-		/*try {
-			const res = await fetch(`${SERVER_API}/notes`, {
+		try {
+			const res = await fetch(`${SERVER_API}/projects`, {
 				method: "POST",
-				body: JSON.stringify(note),
+				body: JSON.stringify({
+					title: project.title,
+					description: project.description,
+					accessList: project.accessList,
+				}),
 				headers: { "Content-Type": "application/json" },
 			});
 
@@ -92,7 +99,7 @@ export default function ProjectPage(): React.JSX.Element {
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
-		}*/
+		}
 	}
 
 	async function handleUpdate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -121,12 +128,12 @@ export default function ProjectPage(): React.JSX.Element {
 		}*/
 	}
 
-	async function handleDelete(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+	async function handleDeleteProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
 		// TODO: validate inputs (not empty, max length)
 		try {
-			const res = await fetch(`${SERVER_API}/notes/${id}`, {
+			const res = await fetch(`${SERVER_API}/projects/${id}`, {
 				method: "DELETE",
 			});
 
@@ -134,10 +141,10 @@ export default function ProjectPage(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Nota cancellata correttamente!");
-				nav("/notes");
+				alert("Progetto cancellato correttamente!");
+				nav("/projects");
 			} else {
-				setMessage("Errore della cancellazione della nota");
+				setMessage(resBody.message || "Errore della cancellazione del progetto");
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
@@ -173,15 +180,47 @@ export default function ProjectPage(): React.JSX.Element {
 		setTag(() => {
 			return "";
 		});
+	}*/
+
+	async function handleDeleteActivity(
+		e: React.MouseEvent<HTMLButtonElement>,
+		id: string | undefined
+	): Promise<void> {
+		e.preventDefault();
+
+		if (!id) {
+			console.log("Id non trovato per l'attività, impossibile eliminare");
+			setMessage("Id non trovato per l'attività, impossibile eliminare");
+			return;
+		}
+
+		try {
+			const res = await fetch(`${SERVER_API}/activity/${id}`, {
+				method: "DELETE",
+			});
+
+			console.log(res);
+			const resBody = (await res.json()) as ResponseBody;
+
+			if (resBody.status === ResponseStatus.GOOD) {
+				alert("Attività cancellata correttamente!");
+
+				await updateProject();
+			} else {
+				setMessage(resBody.message || "Errore della cancellazione del progetto");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
 	}
 
-	function deleteTag(e: React.MouseEvent<HTMLElement>, tag: string): void {
+	/*function deleteTag(e: React.MouseEvent<HTMLElement>, tag: string): void {
 		e.preventDefault();
 		const tags = note.tags.filter((t) => t !== tag);
 
 		setNote({ ...note, tags });
-	}
-*/
+	}*/
+
 	function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
 		if (isEditing) {
 			handleUpdate(e);
@@ -208,7 +247,7 @@ export default function ProjectPage(): React.JSX.Element {
 			});
 	}
 
-	/* function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
+	function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
 		e.preventDefault();
 
 		setProject((prevProj) => {
@@ -219,7 +258,7 @@ export default function ProjectPage(): React.JSX.Element {
 		});
 	}
 
-	function handleAddItem(e: React.MouseEvent<HTMLButtonElement>): void {
+	/*function handleAddItem(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
 		const newItem: ListItem = { text: "", completed: false };
 		setNote((prevNote) => {
@@ -277,10 +316,36 @@ export default function ProjectPage(): React.JSX.Element {
 						)}
 						<div>
 							{project.accessList.map((u) => (
-								<div>{u}</div>
+								<div>
+									<div>{u}</div>
+									<button
+										onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
+											deleteUser(e, u)
+										}>
+										Elimina
+									</button>
+								</div>
 							))}
 						</div>
 					</div>
+
+					{/* render activity list */}
+					{project.activityList &&
+						project.activityList.map((a) => (
+							<div key={"activity-" + a.id}>
+								<div>{a.title}</div>
+								<a href={`/activity/${a.id}`}>
+									<button>Modifica</button>
+								</a>
+
+								<button
+									onClick={async (
+										e: React.MouseEvent<HTMLButtonElement>
+									): Promise<void> => await handleDeleteActivity(e, a.id)}>
+									Elimina
+								</button>
+							</div>
+						))}
 
 					{/* render note */}
 					{/*isEditing ? (
@@ -314,32 +379,6 @@ export default function ProjectPage(): React.JSX.Element {
 							}}
 						/>
 					)*/}
-					{/* render activity list */}
-					{/*note.toDoList &&
-						note.toDoList.map((l) => (
-							<div>
-								<input type="checkbox" checked={l.completed} disabled={isEditing} />
-								<div>{l.text}</div>
-								{l.endDate && (
-									<input
-										type="date"
-										value={l.endDate.toISOString().split("T")[0]}
-									/>
-								)}
-								<button
-									onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
-										handleRemoveItem(e, l)
-									}
-									disabled={isEditing}>
-									Elimina
-								</button>
-								{isEditing && (
-									<div>
-										<button onClick={handleAddItem}>Aggiungi Item</button>
-									</div>
-								)}
-							</div>
-						))*/}
 
 					{id !== NEW && (
 						<button onClick={toggleEdit}>
@@ -354,7 +393,7 @@ export default function ProjectPage(): React.JSX.Element {
 						</button>
 					)}
 					{id !== NEW && !isEditing && (
-						<button style={{ backgroundColor: "red" }} onClick={handleDelete}>
+						<button style={{ backgroundColor: "red" }} onClick={handleDeleteProject}>
 							Cancella Progetto
 						</button>
 					)}
