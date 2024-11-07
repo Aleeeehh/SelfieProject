@@ -38,7 +38,7 @@
     margin-bottom: 20px;
 }
 
-.avatar img {
+.profile-avatar img {
     width: 200px;
     border-radius: 50%;
     border: 2px solid #4CAF50;
@@ -68,6 +68,7 @@
     align-items: center;
     padding: 10px 0;
     border-bottom: 1px solid #ddd;
+    flex-direction: column;
 }
 
 .profile-details label {
@@ -119,4 +120,18 @@
 
 .custom-btn:hover {
     transform: scale(1.05);
+}
+
+@media screen and (max-width: 400px) {
+    .profile-avatar img {
+        width: 150px;
+    }
+
+    .profile-header h1 {
+        font-size: 1.4rem;
+    }
+    
+    .buttons {
+        flex-direction: column;
+    }
 }
