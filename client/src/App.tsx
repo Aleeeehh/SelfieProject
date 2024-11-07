@@ -51,9 +51,7 @@ function WithLayout<T extends React.ReactNode>({
     return (
         <>
             <Header />
-            <hr />
             <div className="global-div">{children}</div>
-            <hr />
             <Footer />
         </>
     );
