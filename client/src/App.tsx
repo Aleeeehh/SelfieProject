@@ -52,15 +52,13 @@ interface WithLayoutProps<T extends React.ReactNode> {
 function WithLayout<T extends React.ReactNode>({
 	children,
 }: WithLayoutProps<T>): React.JSX.Element {
-	return (
-		<>
-			<Header />
-			<hr />
-			<div className="global-div">{children}</div>
-			<hr />
-			<Footer />
-		</>
-	);
+    return (
+        <>
+            <Header />
+            <div className="global-div">{children}</div>
+            <Footer />
+        </>
+    );
 }
 
 export default App;

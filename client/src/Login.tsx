@@ -82,10 +82,10 @@ export default function Login(): React.JSX.Element {
 							></i>
 						</div>
 
+						<p className="error-message">{errorMessage}</p>
 						
 						<button onClick={handleLogin}>Login</button>
 					</form>
-					<p className="error-message">{errorMessage}</p>
 					<p className="login-message">
 						Non hai un account? <a href="/register">Clicca qui</a>
 					</p>

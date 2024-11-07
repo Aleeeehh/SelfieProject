@@ -137,8 +137,9 @@ function Home(): React.JSX.Element {
 
 	return (
 		<>
+			{message && <div>{message}</div>}
+
 			<div className="home-background">
-				{message && <div>{message}</div>}
 				<div className="home-container">
 
 					<div className="preview preview-calendar">
