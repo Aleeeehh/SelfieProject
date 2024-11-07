@@ -99,7 +99,7 @@ export default function Register(): React.JSX.Element {
 		<div className="registration-body">
 			<div className="registration-background">
 				<div className="registration-container">
-					<div className="avatar">
+					<div className="registration-avatar">
 						<img src="/images/avatar.png" alt="Avatar" />
 					</div>
 					<div className="registration-header">
@@ -180,7 +180,7 @@ export default function Register(): React.JSX.Element {
 
 						<button onClick={handleRegister}>Registrati</button>
 					</form>
-					<p className="login-message">
+					<p className="registration-message">
 						Hai già un account? <a href="/login">Accedi qui</a>
 					</p>
 				</div>

@@ -15,8 +15,7 @@ const notificationSchema = new mongoose.Schema(
 			required: true,
 		},
 		receiver: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
+			type: String,
 			required: true,
 		},
 		message: { type: String, required: true },

@@ -46,11 +46,21 @@
     box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
 }
 
+.avatar {
+    margin-bottom: 20px;
+}
+
+.registration-avatar img {
+    width: 200px;
+    border-radius: 50%;
+    border: 2px solid #4CAF50;
+}
+
 .registration-header {
     margin-bottom: 1.5rem;
 }
 
-.registration-header h1 {
+.registration-header h2 {
     font-size: 2rem;
     color: #3A3A3A;
 }
@@ -113,28 +123,18 @@
     background-color: #62B6A3;
 }
 
-.login-message {
+.registration-message {
     margin-top: 1rem;
     font-size: 0.9rem;
     color: #333;
 }
 
-.login-message a {
+.registration-message a {
     color: #7DCFB6;
     text-decoration: none;
     font-weight: bold;
 }
 
-.login-message a:hover {
+.registration-message a:hover {
     text-decoration: underline;
-}
-
-.avatar {
-    margin-bottom: 20px;
-}
-
-.avatar img {
-    width: 200px;
-    border-radius: 50%;
-    border: 2px solid #4CAF50;
 }

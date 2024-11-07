@@ -98,6 +98,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repeatedNotification: false,
                         repeatTime: data.repeatTime,
                         firstNotificationTime: data.firstNotificationTime,
+                        isInfiniteEvent: false,
                     },
                     sender,
                     receiver,
@@ -171,6 +172,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repeatedNotification: false,
                         repeatTime: data.repeatTime,
                         firstNotificationTime: data.firstNotificationTime,
+                        isInfiniteEvent: false,
                     },
                     sender,
                     receiver,
@@ -224,6 +226,7 @@ router.post("/", async (req: Request, res: Response) => {
                                 repeatedNotification: false,
                                 repeatTime: data.repeatTime,
                                 firstNotificationTime: data.firstNotificationTime,
+                                isInfiniteEvent: false,
                             },
                             sender,
                             receiver,
@@ -320,6 +323,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repeatedNotification: false,
                         repeatTime: data.repeatTime,
                         firstNotificationTime: data.firstNotificationTime,
+                        isInfiniteEvent: false,
                     },
                     sender,
                     receiver,
@@ -373,6 +377,7 @@ router.post("/", async (req: Request, res: Response) => {
                                 repeatedNotification: false,
                                 repeatTime: data.repeatTime,
                                 firstNotificationTime: data.firstNotificationTime,
+                                isInfiniteEvent: false,
                             },
                             sender,
                             receiver,
@@ -492,7 +497,15 @@ router.post("/", async (req: Request, res: Response) => {
 router.get("/", async (req: Request, res: Response) => {
     try {
         // TODO: validate param
-        const userId = req.user?.id;
+        const userId = req.user.username;
+        /*
+        console.log("Questo è il user trovato:", userId);
+        console.log("Questo è il user trovato:", userId);
+        console.log("Questo è il user trovato:", userId);
+        console.log("Questo è il user trovato:", userId);
+        console.log("Questo è il user trovato:", userId);
+        console.log("Questo è il user trovato:", userId);
+        */
         if (!userId) {
             const response: ResponseBody = {
                 message: "User not authenticated",
@@ -504,6 +517,15 @@ router.get("/", async (req: Request, res: Response) => {
         const notifications = await NotificationSchema.find({
             receiver: userId,
         }).lean();
+        /*
+                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+                */
+
         if (count && notifications.length > count) {
             // return only the first "count" number of notifications
             notifications.slice(0, count);
@@ -585,7 +607,7 @@ router.put("/:notificationId", async (req: Request, res: Response) => {
             return res.status(401).json(response);
         }
 
-        const userId = req.user.id;
+        const userId = req.user.username;
         const foundNotification = await NotificationSchema.findById(notificationId).lean();
 
         if (!foundNotification) {
@@ -665,7 +687,6 @@ router.post("/cleanNotifications", async (req: Request, res: Response) => {
             date: { $lt: limitDate }, // Data della notifica è minore della data limite
             read: true, // Le notifiche devono essere lette
         });
-
 
         //non eliminare una notifica se essa è infinita
         notificationsToDelete.forEach(async (notification) => {

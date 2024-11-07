@@ -81,7 +81,7 @@ export default function Profile(): React.JSX.Element {
 		<div className="profile-body">
 			{message && <div>{message}</div>}
 			<div className="profile-container">
-				<div className="avatar">
+				<div className="profile-avatar">
 					<img src="/images/avatar.png" alt="Avatar" />
 				</div>
 				<div className="profile-header">
@@ -105,14 +105,14 @@ export default function Profile(): React.JSX.Element {
 						type="button"
 						className="btn btn-warning custom-btn"
 						onClick={handleLogout}>
-						LOGOUT
+						EFFETTUA LOGOUT
 					</button>
 					
 					<button
 						type="button"
 						className="btn btn-danger custom-btn"
 						onClick={handleDelete}>
-						DELETE ACCOUNT
+						ELIMINA ACCOUNT
 					</button>
 				</div>
 			</div>

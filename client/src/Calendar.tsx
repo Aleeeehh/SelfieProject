@@ -176,6 +176,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	}, [activitiesMode,]); // Chiamata GET ogni volta che activitiesMode cambia
 
+
+	React.useEffect(() => {
+		if (isInfinite === true) {
+			setNotificationRepeat(false);
+		}
+	}, [isInfinite]);
+
+
 	function renderWeekEvents(weekEvents: { positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[], index: number): JSX.Element {
 		if (!weekEvents[index] || !weekEvents[index].positions) {
 			return <div> </div>;
@@ -441,7 +449,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const currentUser = await getCurrentUser();
 			console.log("Valore ottenuto:", currentUser);
 
-			const owner = currentUser.value.username;
+			const owner = currentUser.value;
 			console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
@@ -460,7 +468,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function loadActivities(): Promise<void> {
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value.username;
+		const owner = currentUser.value;
 		const resActivities = await fetch(`${SERVER_API}/activity/owner?owner=${owner}`);
 		const dataActivities = await resActivities.json();
 		if (dataActivities.status === ResponseStatus.GOOD) {
@@ -642,7 +650,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const currentUser = await getCurrentUser();
 				console.log("Valore ottenuto:", currentUser);
 
-				const owner = currentUser.value.username;;
+				const owner = currentUser.value;
 				console.log("Questo è l'ownerr:", owner);
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
@@ -870,7 +878,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					date: date.toISOString(),
-					owner: currentUser.value.username,
+					owner: currentUser.value,
 				}),
 			});
 			const data = await res.json();
@@ -1074,7 +1082,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value }),
 				});
 
 				if (!res.ok) {
@@ -1223,7 +1231,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value }),
 				});
 
 				if (!res.ok) {
@@ -1595,8 +1603,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return;
 		}
 		const currentUser = await getCurrentUser();
+		console.log("Questo è il currentUser:", currentUser);
+		console.log("Questo è il currentUser:", currentUser);
+		console.log("Questo è il currentUser:", currentUser);
+		console.log("Questo è il currentUser:", currentUser);
+		console.log("Questo è il currentUser:", currentUser);
 
-		const owner = currentUser.value.username;
+
+		const owner = currentUser.value;
+
+		console.log("Questo è l'owner passato come parametro:", owner);
+		console.log("Questo è l'owner passato come parametro:", owner);
+		console.log("Questo è l'owner passato come parametro:", owner);
+		console.log("Questo è l'owner passato come parametro:", owner);
+		console.log("Questo è l'owner passato come parametro:", owner);
 
 		console.log("Questa è la frequenza prima di inviare la richiesta di creazione dell'evento:", frequency);
 
@@ -1643,8 +1663,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 
 
-		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
+
 		if (addNotification) {
+
+
+
 			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
 			const res2 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
@@ -1652,7 +1675,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({
 					message: message,
 					mode: "event",
-					receiver: currentUser.value._id,
+					receiver: currentUser.value,
 					type: "event",
 					data: {
 						date: notificationDate, //data prima notifica
@@ -1718,7 +1741,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const currentUser = await getCurrentUser();
 
-		const owner = currentUser.value.username;
+		const owner = currentUser.value;
 
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
@@ -1805,7 +1828,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({
 					message: message,
 					mode: "acitvity",
-					receiver: currentUser.value._id,
+					receiver: currentUser.value,
 					type: "activity",
 					data: {
 						date: notificationDate, //data prima notifica
@@ -2451,22 +2474,27 @@ export default function Calendar(): React.JSX.Element { // prova push
 												setNotificationTime(Number(e.target.value));
 												if (Number(e.target.value) > 0) {
 													setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-												}
-												else if (Number(e.target.value) == 0) {
+												} else if (Number(e.target.value) === 0) {
 													setNotificationRepeat(false);
 												}
 											}}
 											style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
 										>
-											<option value="0">All'ora d'inizio</option>
-											<option value="5">5 minuti prima</option>
-											<option value="10">10 minuti prima</option>
-											<option value="15">15 minuti prima</option>
-											<option value="30">30 minuti prima</option>
-											<option value="60">1 ora prima</option>
-											<option value="120">2 ore prima</option>
-											<option value="1440">Un giorno prima</option>
-											<option value="2880">2 giorni prima</option>
+											{isInfinite ? (
+												<option value="0">All'ora d'inizio</option> // Solo questa opzione se isInfinite è true
+											) : (
+												<>
+													<option value="0">All'ora d'inizio</option>
+													<option value="5">5 minuti prima</option>
+													<option value="10">10 minuti prima</option>
+													<option value="15">15 minuti prima</option>
+													<option value="30">30 minuti prima</option>
+													<option value="60">1 ora prima</option>
+													<option value="120">2 ore prima</option>
+													<option value="1440">Un giorno prima</option>
+													<option value="2880">2 giorni prima</option>
+												</>
+											)}
 										</select>
 									</label>
 								)}

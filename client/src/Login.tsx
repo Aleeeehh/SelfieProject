@@ -37,15 +37,20 @@ export default function Login(): React.JSX.Element {
 
 	return (
 		<div className="login-body">
-			{message && <div>{message}</div>}
 			<div className="login-background">
 				<div className="login-container">
-					<div className="avatar">
+					<div className="login-avatar">
 						<img src="/images/avatar.png" alt="Avatar" />
 					</div>
-					<form>
-						<label htmlFor="username">
-							Username: 
+					<div className="login-header">
+						{message && <div>{message}</div>}
+						<h2>Bentornato in SELFIE!</h2>
+						<p>Accedi per continuare la tua esperienza</p>
+					</div>
+					<form className="login-form">
+						
+						<div>
+							<label>Username</label>
 							<input
 								type="text"
 								name="username"
@@ -54,10 +59,10 @@ export default function Login(): React.JSX.Element {
 									setUsername(e.target.value);
 								}}
 							/>
-						</label>
+						</div>
 
-						<label htmlFor="password">
-							Password: 
+						<div>
+							<label>Password</label>
 							<input
 								type={clearPswd ? "text" : "password"}
 								name="password"
@@ -66,19 +71,24 @@ export default function Login(): React.JSX.Element {
 									setPassword(e.target.value)
 								}
 							/>
+						</div>
+
+						<div style={{alignItems: "center", flexDirection: "row"}}>
 							Nascondi: 
 							<i
 								className={`bi ${clearPswd ? "bi-eye" : "bi-eye-slash"}`}
 								onClick={(): void => setClearPswd(!clearPswd)}
 								style={{ cursor: "pointer", marginLeft: "8px" }}
 							></i>
-						</label>
+						</div>
 
-						<button onClick={handleLogin}>Login</button>
-						<p className="error-message">{errorMessage}</p>
-						<p className="register-link">Not yet registered? <a href="/register">Click here!</a></p>
 						
+						<button onClick={handleLogin}>Login</button>
 					</form>
+					<p className="error-message">{errorMessage}</p>
+					<p className="login-message">
+						Non hai un account? <a href="/register">Clicca qui</a>
+					</p>
 				</div>
 			</div>
 		</div>
