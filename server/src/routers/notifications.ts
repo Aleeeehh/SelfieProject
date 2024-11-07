@@ -98,6 +98,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repeatedNotification: false,
                         repeatTime: data.repeatTime,
                         firstNotificationTime: data.firstNotificationTime,
+                        isInfiniteEvent: false,
                     },
                     sender,
                     receiver,
@@ -171,6 +172,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repeatedNotification: false,
                         repeatTime: data.repeatTime,
                         firstNotificationTime: data.firstNotificationTime,
+                        isInfiniteEvent: false,
                     },
                     sender,
                     receiver,
@@ -224,6 +226,7 @@ router.post("/", async (req: Request, res: Response) => {
                                 repeatedNotification: false,
                                 repeatTime: data.repeatTime,
                                 firstNotificationTime: data.firstNotificationTime,
+                                isInfiniteEvent: false,
                             },
                             sender,
                             receiver,
@@ -320,6 +323,7 @@ router.post("/", async (req: Request, res: Response) => {
                         repeatedNotification: false,
                         repeatTime: data.repeatTime,
                         firstNotificationTime: data.firstNotificationTime,
+                        isInfiniteEvent: false,
                     },
                     sender,
                     receiver,
@@ -373,6 +377,7 @@ router.post("/", async (req: Request, res: Response) => {
                                 repeatedNotification: false,
                                 repeatTime: data.repeatTime,
                                 firstNotificationTime: data.firstNotificationTime,
+                                isInfiniteEvent: false,
                             },
                             sender,
                             receiver,
@@ -682,7 +687,6 @@ router.post("/cleanNotifications", async (req: Request, res: Response) => {
             date: { $lt: limitDate }, // Data della notifica è minore della data limite
             read: true, // Le notifiche devono essere lette
         });
-
 
         //non eliminare una notifica se essa è infinita
         notificationsToDelete.forEach(async (notification) => {
