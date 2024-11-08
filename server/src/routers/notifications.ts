@@ -594,14 +594,27 @@ router.put("/:notificationId", async (req: Request, res: Response) => {
     try {
         const notificationId = req.params.notificationId as string;
         const readStr = req.body.read as string | undefined;
+        const snoozeDate = req.body.date; // Ottieni la data di snooze 
 
-        if (!readStr) {
+
+        if (snoozeDate && isNaN(new Date(snoozeDate).getTime())) {
+            return res.status(400).json({
+                message: "Invalid date provided for snooze",
+                status: ResponseStatus.BAD,
+            });
+        }
+
+
+
+        if (!readStr && !snoozeDate) {
             const response: ResponseBody = {
                 message: "Invalid body: 'status' or 'read' not updated, nothing to do",
                 status: ResponseStatus.BAD,
             };
             return res.status(400).json(response);
         }
+
+
         if (readStr && ["true", "false"].indexOf(readStr) === -1) {
             const response: ResponseBody = {
                 message: "Invalid body: 'read' should be 'true' or 'false'",
@@ -639,6 +652,10 @@ router.put("/:notificationId", async (req: Request, res: Response) => {
 
         // Update the notification status
         foundNotification.read = readStr === "true";
+
+        if (snoozeDate) {
+            foundNotification.data.date = new Date(snoozeDate); // Aggiorna la data della notifica
+        }
 
         const result = await NotificationSchema.findByIdAndUpdate(
             notificationId,
