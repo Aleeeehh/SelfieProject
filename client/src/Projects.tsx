@@ -2,31 +2,38 @@ import React from "react";
 import { SERVER_API } from "./params/params";
 import type { ResponseBody } from "./types/ResponseBody";
 import type Project from "./types/Project";
+import { useNavigate } from "react-router-dom";
+import { ResponseStatus } from "./types/ResponseStatus";
 
 const PREVIEW_CHARS = 200;
 export default function Projects(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [projects, setProjects] = React.useState([] as Project[]);
 
+	const nav = useNavigate();
+
+
 	// On page load, get the events for the user
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
 				const res = await fetch(`${SERVER_API}/projects`);
-
+				if (res.status !== 200) {
+					nav("/login");
+				}
+	
 				const resBody = (await res.json()) as ResponseBody;
-				console.log(resBody);
-
-				if (res.status === 200) {
-					setProjects(resBody.value as Project[]);
+	
+				if (resBody.status === ResponseStatus.GOOD) {
+					setProjects(resBody.value);
 				} else {
-					setMessage(resBody.message || "Errore nel ritrovamento dei progetti");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
 			}
 		})();
 	}, []);
+
 
 	async function handleDelete(
 		e: React.MouseEvent<HTMLButtonElement>,
