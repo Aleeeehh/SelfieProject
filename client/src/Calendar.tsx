@@ -76,7 +76,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [isInfinite, setIsInfinite] = React.useState(false);
 	const [currentDate, setCurrentDate] = React.useState(new Date());
-	const [sendInvite, setSendInvite] = React.useState(false);
+	const [sendInviteActivity, setSendInviteActivity] = React.useState(false);
 	const [addNotification, setAddNotification] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
@@ -453,7 +453,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const currentUser = await getCurrentUser();
 			console.log("Valore ottenuto:", currentUser);
 
-			const owner = currentUser.value;
+			const owner = currentUser.value.username;
 			console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
@@ -472,7 +472,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function loadActivities(): Promise<void> {
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value;
+		const owner = currentUser.value.username;
 		const resActivities = await fetch(`${SERVER_API}/activity/owner?owner=${owner}`);
 		const dataActivities = await resActivities.json();
 		if (dataActivities.status === ResponseStatus.GOOD) {
@@ -654,7 +654,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const currentUser = await getCurrentUser();
 				console.log("Valore ottenuto:", currentUser);
 
-				const owner = currentUser.value;
+				const owner = currentUser.value.username;
 				console.log("Questo è l'ownerr:", owner);
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
@@ -843,7 +843,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setCreateActivity(!createActivity);
 		setNotificationRepeat(false);
 		setAddNotification(false);
-		setSendInvite(false);
+		setSendInviteActivity(false);
 	}
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
@@ -885,7 +885,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					date: date.toISOString(),
-					owner: currentUser.value,
+					owner: currentUser.value.username,
 				}),
 			});
 			const data = await res.json();
@@ -1089,7 +1089,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
 				});
 
 				if (!res.ok) {
@@ -1238,7 +1238,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
 				});
 
 				if (!res.ok) {
@@ -1350,7 +1350,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const currentUser = await getCurrentUser();
 
-		const ownerr = currentUser.value;
+		const ownerr = currentUser.value.username;
 
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
@@ -1359,19 +1359,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 		let newNotification;
 
 		if (addNotification) {
-			const notificationDate = new Date(startTime);
+			var notificationDate = new Date(startTime);
+			notificationDate.setHours(notificationDate.getHours() + 1); // Aggiungi un'ora
 			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
 			console.log("Questa è la data di inizio evento:", startTime);
 			console.log("Questa è la data della notifica:", notificationDate);
 			var message = "";
 			if (notificationTime < 60) {
-				message = "Inizio evento " + title + " tra " + notificationTime + " minuti!";
+				message = "Scadenza " + title + " tra " + notificationTime + " minuti!";
 			} else {
-				message = "Inizio evento " + title + " tra " + notificationTime / 60 + " ore!";
+				message = "Scadenza " + title + " tra " + notificationTime / 60 + " ore!";
 			}
 
 			if (notificationTime == 0) {
-				message = "Evento " + title + " iniziato!";
+				message = "Scadenza " + title + " iniziata!";
 			}
 
 			var repeatTime = notificationRepeatTime;
@@ -1458,8 +1459,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 
 
-	function toggleSendInvite(): void {
-		setSendInvite(!sendInvite);
+	function toggleSendInviteActivity(): void {
+		setSendInviteActivity(!sendInviteActivity);
 	}
 
 
@@ -1757,7 +1758,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("Questo è il currentUser:", currentUser);
 
 
-		const owner = currentUser.value;
+		const owner = currentUser.value.username;
 
 		console.log("Questo è l'owner passato come parametro:", owner);
 		console.log("Questo è l'owner passato come parametro:", owner);
@@ -1822,7 +1823,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({
 					message: message,
 					mode: "event",
-					receiver: currentUser.value,
+					receiver: currentUser.value.username,
 					type: "event",
 					data: {
 						date: notificationDate, //data prima notifica
@@ -1888,7 +1889,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const currentUser = await getCurrentUser();
 
-		const owner = currentUser.value;
+		const owner = currentUser.value.username;
 
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
@@ -1975,7 +1976,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({
 					message: message,
 					mode: "activity",
-					receiver: currentUser.value,
+					receiver: currentUser.value.username,
 					type: "activity",
 					data: {
 						date: notificationDate, //data prima notifica
@@ -2004,7 +2005,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setAddNotification(false);
 		setNotificationTime(0);
 		setNotificationRepeatTime(0);
-		setSendInvite(false);
+		setSendInviteActivity(false);
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
@@ -2822,14 +2823,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 									<input
 										type="checkbox"
 										name="addNotification"
-										onClick={toggleSendInvite}
+										onClick={toggleSendInviteActivity}
 										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
 									Condividi attività
 
 								</label>
 
-								{sendInvite && (
+								{sendInviteActivity && (
 									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
 										<div>Scegli l'utente al quale inviare la notifica</div>
 										{users.length > 0}

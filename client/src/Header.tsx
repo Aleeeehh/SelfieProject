@@ -429,17 +429,17 @@ export default function Header(): React.JSX.Element {
             await postCurrentDate(currentDate); // invia la data corrente al server
             const currentUser = await getCurrentUser();
 
-            /*
-                        console.log("Questo è il currentUser", currentUser);
-                        console.log("Questo è il currentUser:", currentUser);
-                        console.log("Questo è il currentUser:", currentUser);
-                        console.log("Questo è il currentUser:", currentUser);
-                        console.log("Questo è il user nell'header:", currentUser.value);
-                        console.log("Questo è il user nell'header:", currentUser.value);
-                        console.log("Questo è il user nell'header:", currentUser.value);
-                        console.log("Questo è il user nell'header:", currentUser.value);
-                          */
-            setUser(currentUser.value);
+
+            console.log("Questo è il currentUser", currentUser);
+            console.log("Questo è il currentUser:", currentUser);
+            console.log("Questo è il currentUser:", currentUser);
+            console.log("Questo è il currentUser:", currentUser);
+            console.log("Questo è il user nell'header:", currentUser.value.username);
+            console.log("Questo è il user nell'header:", currentUser.value.username);
+            console.log("Questo è il user nell'header:", currentUser.value.username);
+            console.log("Questo è il user nell'header:", currentUser.value.username);
+
+            setUser(currentUser.value.username);
 
 
 
@@ -505,7 +505,7 @@ export default function Header(): React.JSX.Element {
                     Pomodoro
                 </a>
                 <a className="btn secondary"
-                    style={buttonStyle} 
+                    style={buttonStyle}
                     href="/notes">
                     Note
                 </a>
