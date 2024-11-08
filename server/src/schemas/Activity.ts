@@ -30,7 +30,7 @@ const activitySchema = new mongoose.Schema(
 		advancementType: {
 			type: String,
 			enum: [AdvancementType.TRANSLATION, AdvancementType.CONTRACTION],
-			default: [AdvancementType.TRANSLATION],
+			default: AdvancementType.TRANSLATION,
 		},
 		parent: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
 		prev: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
@@ -40,12 +40,16 @@ const activitySchema = new mongoose.Schema(
 );
 
 activitySchema.pre("save", function (next) {
-	if (this.projectId) {
-		if (!this.status || !this.start) {
-			next(new Error("'status' and 'start' are required when projectId is defined"));
-		}
+	if (this.projectId && !this.status) {
+		next(new Error("'status' is required when projectId is defined"));
 	}
 	next();
 });
 
+activitySchema.pre("save", function (next) {
+	if (this.projectId && !this.start) {
+		next(new Error("'start' is required when projectId is defined"));
+	}
+	next();
+});
 export const ActivitySchema = mongoose.model("Activity", activitySchema);
