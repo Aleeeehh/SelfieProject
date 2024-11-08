@@ -3,6 +3,7 @@ import { SERVER_API } from "./params/params";
 import type { ResponseBody } from "./types/ResponseBody";
 import type Project from "./types/Project";
 
+const PREVIEW_CHARS = 200;
 export default function Projects(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [projects, setProjects] = React.useState([] as Project[]);
@@ -55,29 +56,51 @@ export default function Projects(): React.JSX.Element {
 		}
 	}
 
+	//TODO: mettere una funzione di sorting dei progetti
+
 	return (
 		<>
 			{message && <div>{message}</div>}
-			<div>
-				{projects.map((project) => (
-					<div>
-						<div key={project.id}>{project.title}</div>
-
-						<a href={`/projects/${project.id}`}>
-							<button>Vedi Dettaglio</button>
-						</a>
-						<button
-							onClick={async (
-								e: React.MouseEvent<HTMLButtonElement>
-							): Promise<void> => handleDelete(e, project.id)}>
-							Cancella
-						</button>
-					</div>
-				))}
+			<div className="projects-container">
+				<a href={`/projects/new`}>
+					<button>Crea nuovo progetto</button>
+				</a>
+				<div className="projects-list">
+					{projects.map((project) => (
+						<div className="card-project">
+							<div className="card-project-title">
+								<h3>{project.title}</h3>
+							</div>
+							<div className="card-project-description">
+                                <p>
+                                    {project.description.length > PREVIEW_CHARS
+										? project.description.substring(
+											0,
+											PREVIEW_CHARS
+										) + "..."
+									: project.description}
+								</p>
+							</div>
+							<div className="card-project-buttons">
+								<button
+									onClick={(): void => 
+										window.location.assign(`/projects/${project.id}`)}
+								>
+									Visualizza
+								</button>
+								<button
+									style={{ backgroundColor: "#ff6b6b" }}
+									onClick={async (
+										e: React.MouseEvent<HTMLButtonElement>
+									): Promise<void> => handleDelete(e, project.id)}
+								>
+									Cancella
+								</button>
+							</div>
+						</div>
+					))}
+				</div>
 			</div>
-			<a href={`/projects/new`}>
-				<button>Crea nuovo progetto</button>
-			</a>
 		</>
 	);
 }

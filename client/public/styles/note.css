@@ -235,16 +235,6 @@
     transition: background-color 0.3s ease;
 }
 
-.notes-list-container {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 1.5em;
-    width: 100%;
-    justify-content: center;
-    padding: 2em 1em;
-}
-
 .sort-label {
     display: flex;
     align-items: center;
@@ -276,6 +266,16 @@
     color: black;
     background-color: white;
     padding: 0.5em;
+}
+
+.notes-list-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1.5em;
+    width: 100%;
+    justify-content: center;
+    padding: 2em 1em;
 }
 
 .card-note {
