@@ -595,7 +595,7 @@ export default function Header(): React.JSX.Element {
                     href="/chat"
                 >
                     Chat
-                </a> {/*TODO: non funziona*/}
+                </a>
             </div>
 
             <div className="dropdown-container">
@@ -644,7 +644,7 @@ export default function Header(): React.JSX.Element {
                             <a href="/projects">Progetti</a>
                         </li>
                         <li>
-                            <a href="/chat">Chat</a> {/*TODO: non funziona*/}
+                            <a href="/chat">Chat</a>
                         </li>
                     </ul>
                 </button>

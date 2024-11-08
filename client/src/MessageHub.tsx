@@ -20,23 +20,6 @@ function MessageHub(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 
 	const nav = useNavigate();
-/*
-	React.useEffect(() => {
-		(async (): Promise<void> => {
-			try {
-				const res = await fetch(`${SERVER_API}/chats`);
-				const resBody = (await res.json()) as ResponseBody;
-				if (res.status === 200) {
-					setChatList(resBody.value as Chat[]);
-					setActiveChat(resBody.value[0]);
-				} else {
-					setMessage("Impossibile recuperare le chat: " + resBody.message);
-				}
-			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
-			}
-		})();
-	}, []);*/
 
 	async function getAllChats(): Promise<void> {
         try {
@@ -180,7 +163,9 @@ function MessageHub(): React.JSX.Element {
                                     }}
                                     list={[]}
                                 />
-                                <button className="close-button" onClick={(): void => setAddingChat(false)}>
+                                <button
+									className="close-button"
+									onClick={(): void => setAddingChat(false)}>
                                     Chiudi
                                 </button>
                             </>
@@ -210,7 +195,9 @@ function MessageHub(): React.JSX.Element {
                                     }}
                                     list={[]}
                                 />
-                                <button className="close-button" onClick={(): void => setDeletingChat(false)}>
+                                <button
+									className="close-button" 
+									onClick={(): void => setDeletingChat(false)}>
                                     Chiudi
                                 </button>
                             </>
@@ -230,13 +217,13 @@ function MessageHub(): React.JSX.Element {
                                 activeChat.messageList &&
                                 activeChat.messageList.map((message) => (
                                     <div
-                                        className={`message ${
-                                            message.username === loggedUser?.username
-                                                ? "message-sent"
-                                                : "message-received"
-                                        }`}
-                                        key={message.id}>
-                                        <div className="message-text">{message.text}</div>
+										className={`message ${
+											message.username === loggedUser?.username
+												? "message-sent"
+												: "message-received"
+										}`}
+										key={message.id}>
+										<div className="message-text">{message.text}</div>
                                         <div className="message-info">
                                             <span>from {message.username}</span>
                                             <span>at {message.createdAt ? 
