@@ -1,11 +1,11 @@
 type User = {
-	id: String;
-	username: String;
-	password: String;
-	firstName: String;
-	lastName: String;
+	id: string;
+	username: string;
+	password: string;
+	firstName: string;
+	lastName: string;
 	birthday: Date;
-	address?: String;
+	address?: string;
 	createdAt?: Date;
 	updatedAt?: Date;
 };

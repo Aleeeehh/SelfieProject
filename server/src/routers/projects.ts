@@ -161,6 +161,151 @@ router.get("/", async (req: Request, res: Response) => {
 	}
 });
 
+// returns all projects where the current user is the owner or in the access list
+router.get("/:id", async (req: Request, res: Response) => {
+	try {
+		if (!req.user || !req.user.id) {
+			const response: ResponseBody = {
+				message: "error",
+				status: ResponseStatus.BAD,
+			};
+			return res.status(500).json(response);
+		}
+		const userId = new mongoose.Types.ObjectId(req.user.id);
+
+		const projectId = req.params.id as string;
+
+		if (!Types.ObjectId.isValid(projectId)) {
+			console.log("Project id is not valid" + projectId);
+			const response: ResponseBody = {
+				message: "Project id is not valid" + projectId,
+				status: ResponseStatus.BAD,
+			};
+			return res.status(500).json(response);
+		}
+
+		const foundProject = await ProjectSchema.findById(projectId).lean();
+
+		if (!foundProject) {
+			console.log("Project not found");
+			const response: ResponseBody = {
+				message: "Project not found",
+				status: ResponseStatus.BAD,
+			};
+			return res.status(500).json(response);
+		}
+
+		if (!foundProject.accessList.includes(userId) && !foundProject.owner.equals(userId)) {
+			console.log("Requested access for project you cannot access");
+			const response: ResponseBody = {
+				message: "Requested access for project you cannot access",
+				status: ResponseStatus.BAD,
+			};
+			return res.status(500).json(response);
+		}
+
+		console.log(foundProject);
+
+		const activityList: Activity[] = [];
+		const foundActivities = await ActivitySchema.find({
+			projectId: foundProject._id,
+		}).lean();
+
+		// get project note
+		const foundProjectNote = await NoteSchema.findOne({
+			activityId: foundProject._id,
+		}).lean();
+
+		var projectNote: Note | undefined;
+		if (!foundProjectNote) {
+			console.log("Note not found for project with id = " + foundProject._id.toString());
+		} else {
+			const note: Note = {
+				id: foundProjectNote._id.toString(),
+				title: foundProjectNote.title,
+				text: foundProjectNote.text,
+				tags: foundProjectNote.tags,
+				privacy: foundProjectNote.privacy as Privacy,
+				accessList: await getUserResultFromObjectIdList(foundProjectNote.accessList),
+				createdAt: foundProjectNote.createdAt,
+				updatedAt: foundProjectNote.updatedAt,
+				owner: foundProjectNote.owner,
+			};
+
+			projectNote = note;
+		}
+
+		// populate activity list for project
+		for (const foundActivity of foundActivities) {
+			const foundNote = await NoteSchema.findOne({
+				activityId: foundActivity._id,
+			}).lean();
+
+			var activityNote: Note | undefined = undefined;
+			if (!foundNote) {
+				console.log("Note not found for activity with id = " + foundActivity._id);
+			} else {
+				activityNote = {
+					id: foundNote._id.toString(),
+					title: foundNote.title,
+					text: foundNote.text,
+					tags: foundNote.tags,
+					privacy: foundNote.privacy as Privacy,
+					accessList: await getUserResultFromObjectIdList(foundNote.accessList),
+					createdAt: foundNote.createdAt,
+					updatedAt: foundNote.updatedAt,
+					owner: foundNote.owner,
+				};
+			}
+
+			const activity: Activity = {
+				id: foundActivity._id.toString(),
+				title: foundActivity.title,
+				description: foundActivity.description,
+				deadline: foundActivity.deadline,
+				status: await getActivityStatus(),
+				owner: foundProject.owner.toString(),
+				projectId: foundProject._id.toString(),
+				accessList: await getUserResultFromObjectIdList(foundProject.accessList),
+				milestone: foundActivity.milestone,
+				advancementType:
+					foundActivity.advancementType === null
+						? undefined
+						: foundActivity.advancementType,
+				note: activityNote,
+				completed: foundActivity.completed,
+			};
+
+			activityList.push(activity);
+		}
+
+		const project: Project = {
+			id: foundProject._id.toString(),
+			title: foundProject.title,
+			description: foundProject.description,
+			owner: foundProject.owner,
+			accessList: await getUserResultFromObjectIdList(foundProject.accessList),
+			activityList,
+			note: projectNote,
+		};
+
+		const response: ResponseBody = {
+			message: "success",
+			status: ResponseStatus.GOOD,
+			value: project,
+		};
+		return res.status(200).json(response);
+	} catch (error) {
+		console.log(error);
+
+		const response: ResponseBody = {
+			message: "error",
+			status: ResponseStatus.BAD,
+		};
+		return res.status(500).json(response);
+	}
+});
+
 // insert a new project
 router.post("/", async (req: Request, res: Response) => {
 	try {

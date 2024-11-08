@@ -11,10 +11,10 @@ export default function Projects(): React.JSX.Element {
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch(`"${SERVER_API}/projects`);
+				const res = await fetch(`${SERVER_API}/projects`);
 
-				console.log(res);
 				const resBody = (await res.json()) as ResponseBody;
+				console.log(resBody);
 
 				if (res.status === 200) {
 					setProjects(resBody.value as Project[]);
