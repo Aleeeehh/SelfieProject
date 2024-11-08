@@ -19,7 +19,17 @@ router.post("/", async (req: Request, res: Response) => {
             repetitionsEvent: number; untilDateEvent: Date;
         };
 
+        console.log("Questo è il message:", message);
+        console.log("Questo è il message:", message);
+        console.log("Questo è il message:", message);
+        console.log("Questo è il message:", message);
+
+
         const activityName = message ? message.match(/Scadenza (.+?)(?: tra| iniziata)/)?.[1] : ""; // Cattura il nome dell'attività
+
+        console.log("Questo è l'activityName:", activityName);
+        console.log("Questo è l'activityName:", activityName);
+        console.log("Questo è l'activityName:", activityName);
 
         // TODO: validate body
 
@@ -38,6 +48,7 @@ router.post("/", async (req: Request, res: Response) => {
             return res.status(401).json(response);
         }
         const sender = req.user.id;
+        console.log("Questo è il sender:", sender);
 
         let notification: Notification;
 
@@ -583,14 +594,27 @@ router.put("/:notificationId", async (req: Request, res: Response) => {
     try {
         const notificationId = req.params.notificationId as string;
         const readStr = req.body.read as string | undefined;
+        const snoozeDate = req.body.date; // Ottieni la data di snooze 
 
-        if (!readStr) {
+
+        if (snoozeDate && isNaN(new Date(snoozeDate).getTime())) {
+            return res.status(400).json({
+                message: "Invalid date provided for snooze",
+                status: ResponseStatus.BAD,
+            });
+        }
+
+
+
+        if (!readStr && !snoozeDate) {
             const response: ResponseBody = {
                 message: "Invalid body: 'status' or 'read' not updated, nothing to do",
                 status: ResponseStatus.BAD,
             };
             return res.status(400).json(response);
         }
+
+
         if (readStr && ["true", "false"].indexOf(readStr) === -1) {
             const response: ResponseBody = {
                 message: "Invalid body: 'read' should be 'true' or 'false'",
@@ -629,6 +653,10 @@ router.put("/:notificationId", async (req: Request, res: Response) => {
         // Update the notification status
         foundNotification.read = readStr === "true";
 
+        if (snoozeDate) {
+            foundNotification.data.date = new Date(snoozeDate); // Aggiorna la data della notifica
+        }
+
         const result = await NotificationSchema.findByIdAndUpdate(
             notificationId,
             foundNotification,
@@ -665,10 +693,6 @@ router.post("/cleanNotifications", async (req: Request, res: Response) => {
         console.log("CLEAN NOTIFICATIONS");
         console.log("CLEAN NOTIFICATIONS");
         console.log("CLEAN NOTIFICATIONS");
-        console.log("CLEAN NOTIFICATIONS");
-        console.log("CLEAN NOTIFICATIONS");
-        console.log("CLEAN NOTIFICATIONS");
-        console.log("CLEAN NOTIFICATIONS");
 
         const currentDate = new Date(req.body.currentDate); // Ricevi la data attuale dal corpo della richiesta
         const limitDate = new Date(currentDate);
@@ -688,12 +712,12 @@ router.post("/cleanNotifications", async (req: Request, res: Response) => {
             read: true, // Le notifiche devono essere lette
         });
 
+        console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
+
         //non eliminare una notifica se essa è infinita
         notificationsToDelete.forEach(async (notification) => {
-            if (notification.data.isInfiniteEvent === false) {
-                await NotificationSchema.deleteOne({ _id: notification._id });
-                console.log("NOTIFICA ELIMINATA:", notification);
-            }
+            await NotificationSchema.deleteOne({ _id: notification._id });
+            console.log("NOTIFICA ELIMINATA:", notification);
 
         });
 

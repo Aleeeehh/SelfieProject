@@ -10,6 +10,7 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom"
 import { Event } from "./types/Event";
+import SearchForm from "./SearchForm";
 //import mongoose from "mongoose";
 
 
@@ -55,6 +56,8 @@ const Mesi = [
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
 	const [description, setDescription] = React.useState("");
+	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
+	const [accessList, setAccessList] = React.useState([] as string[]);
 	const [createActivity, setCreateActivity] = React.useState(false);
 	const [selectedMode, setSelectedMode] = React.useState("Eventi");
 	const [create, setCreate] = React.useState(false);
@@ -69,10 +72,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [untilDate, setUntilDate] = React.useState<Date | null>(null);
 	const [repetitions, setRepetitions] = React.useState(1);
 	const [selectedValue, setSelectedValue] = React.useState("Data");
+	const [createNonDisturbare, setCreateNonDisturbare] = React.useState(false);
 	const [createEvent, setCreateEvent] = React.useState(false);
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [isInfinite, setIsInfinite] = React.useState(false);
 	const [currentDate, setCurrentDate] = React.useState(new Date());
+	const [sendInviteActivity, setSendInviteActivity] = React.useState(false);
+	const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
 	const [addNotification, setAddNotification] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
@@ -96,6 +102,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [day, setDay] = React.useState(new Date().getDate());
 	const [activeButton, setActiveButton] = React.useState(0);
 	const [year, setYear] = React.useState(new Date().getFullYear())
+	const [shareActivity, setShareActivity] = React.useState(false);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 	const [activityList, setActivityList] = React.useState<Activity[]>([]);
 	const [addTitle, setAddTitle] = React.useState(true);
@@ -449,7 +456,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const currentUser = await getCurrentUser();
 			console.log("Valore ottenuto:", currentUser);
 
-			const owner = currentUser.value;
+			const owner = currentUser.value.username;
 			console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
@@ -468,9 +475,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function loadActivities(): Promise<void> {
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value;
+		const owner = currentUser.value.username;
 		const resActivities = await fetch(`${SERVER_API}/activity/owner?owner=${owner}`);
 		const dataActivities = await resActivities.json();
+		console.log("Attività trovate dalla loadActivities:", dataActivities);
 		if (dataActivities.status === ResponseStatus.GOOD) {
 			setActivityList(dataActivities.value);
 			console.log("Questa è la lista delle attività:", activityList);
@@ -650,7 +658,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const currentUser = await getCurrentUser();
 				console.log("Valore ottenuto:", currentUser);
 
-				const owner = currentUser.value;
+				const owner = currentUser.value.username;
 				console.log("Questo è l'ownerr:", owner);
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
@@ -763,17 +771,22 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	}
 
-	function toggleAllActivitiesMode(): void {
+	async function toggleAllActivitiesMode(): Promise<void> {
 		if (!allActivitiesMode) {
 			setTodayActivitiesMode(false);
 			setAllActivitiesMode(true);
 		}
+
 		fetchCurrentDate();
+		await loadActivities();
 	}
 
 	function toggleCreateEvent(): void {
 		if (createActivity) {
 			setCreateActivity(false);
+		}
+		if (createNonDisturbare) {
+			setCreateNonDisturbare(false);
 		}
 		if (!createEvent) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -806,6 +819,45 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setFrequency(Frequency.ONCE);
 	}
 
+	function toggleCreateNonDisturbare(): void {
+		if (createActivity) {
+			setCreateActivity(false);
+		}
+
+		if (createEvent) {
+			setCreateEvent(false);
+		}
+		if (!createNonDisturbare) {
+			// Usa l'ora corrente o l'ora di startTime
+			const currentHours = startTime.getHours();
+			const currentMinutes = startTime.getMinutes();
+			const endHours = endTime.getHours();
+			const endMinutes = endTime.getMinutes();
+
+			// Imposta startTime con day, meseCorrente, year e l'ora corrente
+			var initialStartTime = new Date(year, meseCorrente, day, currentHours, currentMinutes, 0, 0);
+			setStartTime(initialStartTime);
+
+			// Imposta endTime a 30 minuti dopo startTime
+			var initialEndTime = new Date(year, meseCorrente, day, endHours, endMinutes, 0, 0);
+			if ((initialEndTime.getTime() - initialStartTime.getTime()) / (1000 * 60) < 30) {
+				initialEndTime = new Date(initialStartTime); // Crea un nuovo oggetto Date
+				initialEndTime.setMinutes(initialStartTime.getMinutes() + 30);
+			}
+			setEndTime(initialEndTime);
+		}
+		setAddTitle(true);
+		setRepeatEvent(false);
+		setAddNotification(false);
+		setAllDayEvent(false);
+		setNotificationRepeat(false);
+		setNotificationRepeatTime(0);
+		setUntil(false);
+		setTitle("");
+		setCreateNonDisturbare(!createNonDisturbare);
+		setFrequency(Frequency.ONCE);
+	}
+
 	function toggleCreate(): void {
 		setCreate(!create);
 	}
@@ -813,6 +865,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 	function toggleCreateActivity(): void {
 		if (createEvent) {
 			setCreateEvent(false);
+		}
+		if (createNonDisturbare) {
+			setCreateNonDisturbare(false);
 		}
 		if (!createActivity) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -837,6 +892,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setCreateActivity(!createActivity);
 		setNotificationRepeat(false);
 		setAddNotification(false);
+		setSendInviteActivity(false);
+		setShareActivity(false);
 	}
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
@@ -878,7 +935,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					date: date.toISOString(),
-					owner: currentUser.value,
+					owner: currentUser.value.username,
 				}),
 			});
 			const data = await res.json();
@@ -1082,7 +1139,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
 				});
 
 				if (!res.ok) {
@@ -1231,7 +1288,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
 				});
 
 				if (!res.ok) {
@@ -1317,6 +1374,271 @@ export default function Calendar(): React.JSX.Element { // prova push
 		// Aggiorna lo stato con gli eventi del mese
 		setMonthEvents(eventiMese);
 	}
+
+	function handleSelectUser(
+		e: React.ChangeEvent<HTMLSelectElement>,
+		username: string
+	): void {
+		e.preventDefault();
+		setUsers([username]);
+	}
+
+
+	async function handleSendInviteActivity(
+		e: React.MouseEvent<HTMLButtonElement>
+	): Promise<void> {
+		e.preventDefault();
+		if (!(users.length > 0)) {
+			console.log("Nessun utente selezionato");
+			return;
+		}
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("Questo è il receiver:", users[0]);
+
+		//const currentUser = await getCurrentUser();
+
+		//const ownerr = currentUser.value.username;
+
+		const startTime = new Date(endTime);
+		startTime.setHours(endTime.getHours() - 1);
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+
+		let newNotification;
+
+		if (addNotification) {
+			var notificationDate = new Date(startTime);
+			notificationDate.setHours(notificationDate.getHours() + 1); // Aggiungi un'ora
+			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+			console.log("Questa è la data di inizio evento:", startTime);
+			console.log("Questa è la data della notifica:", notificationDate);
+			var message = "";
+			if (notificationTime < 60) {
+				message = "Scadenza " + title + " tra " + notificationTime + " minuti!";
+			} else {
+				message = "Scadenza " + title + " tra " + notificationTime / 60 + " ore!";
+			}
+
+			if (notificationTime == 0) {
+				message = "Scadenza " + title + " iniziata!";
+			}
+
+			var repeatTime = notificationRepeatTime;
+			var repeatedNotification = false;
+			if (repeatTime > 0) {
+				repeatedNotification = true;
+			}
+
+			newNotification = {
+				message: message,
+				mode: "activity",
+				receiver: users[0],
+				type: "activity",
+				data: {
+					date: notificationDate, //data prima notifica
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+				},
+
+			}
+		}
+
+
+
+
+		const newEvent = {
+			idEventoNotificaCondiviso,
+			owner: users[0],
+			title: "Scadenza " + title,
+			startTime: startTime.toISOString(),
+			endTime: endTime.toISOString(),
+			untilDate: null,
+			isInfinite: false,
+			frequency: "once",
+			location,
+			repetitions: 1,
+		};
+
+		const newActivity = {
+			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+			_id: "1",
+			title,
+			deadline: endTime,
+			description,
+			owner: users[0],
+			accessList: [users[0]],
+			completed: false,
+		};
+
+
+		const res3 = await fetch(`${SERVER_API}/notifications`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				message: "Hai ricevuto un invito per un'attività",
+				mode: "acitvity",
+				receiver: users[0],
+				type: "message",
+				data: {
+					date: currentDate, //data prima notifica
+					activity: newActivity,
+					event: newEvent,
+					notification: newNotification,
+				},
+			}),
+
+		});
+		console.log("Notifica creata:", res3);
+
+
+
+
+		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
+
+		if (resBody.status === ResponseStatus.GOOD) {
+			alert("Invito inviato correttamente");
+			setUsers([]);
+		} else {
+			alert(resBody.message);
+		}
+	}
+
+	async function handleSendInviteEvent(
+		e: React.MouseEvent<HTMLButtonElement>
+	): Promise<void> {
+		e.preventDefault();
+		if (!(users.length > 0)) {
+			console.log("Nessun utente selezionato");
+			return;
+		}
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("Questo è il receiver:", users[0]);
+
+		//const currentUser = await getCurrentUser();
+
+		//const ownerr = currentUser.value.username;
+
+		const startTime = new Date(endTime);
+		startTime.setHours(endTime.getHours() - 1);
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+
+		let newNotification;
+
+		if (addNotification) {
+			const notificationDate = new Date(startTime);
+			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+			console.log("Questa è la data di inizio evento:", startTime);
+			console.log("Questa è la data della notifica:", notificationDate);
+			var message = "";
+			if (notificationTime < 60) {
+				message = "Inizio evento " + title + " tra " + notificationTime + " minuti!";
+			} else {
+				message = "Inizio evento " + title + " tra " + notificationTime / 60 + " ore!";
+			}
+
+			if (notificationTime == 0) {
+				message = "Evento " + title + " iniziato!";
+			}
+
+			var repeatTime = notificationRepeatTime;
+			var repeatedNotification = false;
+			if (repeatTime > 0) {
+				repeatedNotification = true;
+			}
+
+			newNotification = {
+				message: message,
+				mode: "event",
+				receiver: users[0],
+				type: "event",
+				data: {
+					date: notificationDate, //data prima notifica
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+					frequencyEvent: frequency,
+					isInfiniteEvent: isInfinite,
+					repetitionsEvent: repetitions,
+					untilDateEvent: untilDate,
+				},
+
+			}
+		}
+
+
+
+
+		const newEvent = {
+			idEventoNotificaCondiviso,
+			owner: users[0],
+			title,
+			startTime: startTime.toISOString(),
+			endTime: endTime.toISOString(),
+			untilDate: untilDate,
+			isInfinite,
+			frequency: frequency,
+			location,
+			repetitions,
+		};
+
+
+		const res3 = await fetch(`${SERVER_API}/notifications`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				message: "Hai ricevuto un invito per un evento",
+				mode: "event",
+				receiver: users[0],
+				type: "message",
+				data: {
+					date: currentDate, //data prima notifica
+					event: newEvent,
+					notification: newNotification,
+				},
+			}),
+
+		});
+		console.log("Notifica creata:", res3);
+
+
+
+
+		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
+
+		if (resBody.status === ResponseStatus.GOOD) {
+			alert("Invito inviato correttamente");
+			setUsers([]);
+		} else {
+			alert(resBody.message);
+		}
+	}
+
+	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
+		setAccessList([...accessList, users[0]]);
+	}
+
+	function toggleShareActivity(): void {
+		setShareActivity(!shareActivity);
+	}
+
+
+
+	function toggleSendInviteActivity(): void {
+		setSendInviteActivity(!sendInviteActivity);
+	}
+
+	function toggleSendInviteEvent(): void {
+		setSendInviteEvent(!sendInviteEvent);
+	}
+
+
+
 
 	async function handleDeleteEvent(id: string, groupId: string): Promise<void> {
 		//console.log("day:", day);
@@ -1610,7 +1932,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("Questo è il currentUser:", currentUser);
 
 
-		const owner = currentUser.value;
+		const owner = currentUser.value.username;
 
 		console.log("Questo è l'owner passato come parametro:", owner);
 		console.log("Questo è l'owner passato come parametro:", owner);
@@ -1675,7 +1997,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({
 					message: message,
 					mode: "event",
-					receiver: currentUser.value,
+					receiver: currentUser.value.username,
 					type: "event",
 					data: {
 						date: notificationDate, //data prima notifica
@@ -1725,6 +2047,74 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setFrequency(Frequency.ONCE);
 	}
 
+	async function handleCreateNonDisturbare(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+		//Validazione dell'input
+		if (!startTime || !endTime) {
+			setMessage("Tutti i campi dell'evento devono essere riempiti!");
+			return;
+		}
+
+		if (startTime > endTime) {
+			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			return;
+		}
+
+		const start = new Date(startTime).getTime();
+		const end = new Date(endTime).getTime();
+
+		//l'evento che creo dura almeno 30 minuti?
+		if ((end - start) / (1000 * 60) < 30) {
+			setMessage("L'evento deve durare almeno 30 minuti");
+			return;
+		}
+		const currentUser = await getCurrentUser();
+		const owner = currentUser.value.username;
+
+		//se all'evento è associata una notifica, inserisci idEventoNotificaCondiviso sia nella POST della notifica, che nell'evento
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+		console.log("ID CONDIVISO EVENTO/NOTIFCA:", idEventoNotificaCondiviso);
+
+		const res = await fetch(`${SERVER_API}/events`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				idEventoNotificaCondiviso,
+				owner,
+				title: "Non disturbare",
+				startTime: startTime.toISOString(),
+				endTime: endTime.toISOString(),
+				untilDate: untilDate,
+				isInfinite: isInfinite,
+				frequency: frequency,
+				location: "Non disturbare",
+				repetitions: repetitions,
+			}),
+		});
+		console.log("Non disturbare creato:", res);
+
+		// Aggiorna la lista degli eventi
+		await loadEvents();
+		handleDateClick(startTime.getDate());
+
+		//setMessage(data.message || "Undefined error");
+		setAllDayEvent(false);
+		setAddNotification(false);
+		setNotificationTime(0);
+		setNotificationRepeatTime(0);
+
+		//ripristina l'orario dopo nel pannelo createEvent, dopo aver creato un evento
+		const now = new Date();
+		const startT = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
+		const endT = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
+		setStartTime(startT);
+
+		setEndTime(endT);
+		setRepeatEvent(false);
+		setFrequency(Frequency.ONCE);
+		setCreateNonDisturbare(!createNonDisturbare);
+	}
+
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();	//Validazione dell'input
 
@@ -1741,7 +2131,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const currentUser = await getCurrentUser();
 
-		const owner = currentUser.value;
+		const owner = currentUser.value.username;
 
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
@@ -1766,6 +2156,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		});
 		console.log("Evento scadenza creato:", res);
 
+
+
 		const newActivity = {
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 			_id: "1",
@@ -1773,7 +2165,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			deadline: endTime,
 			description,
 			owner: owner,
-			accessList: [owner],
+			accessList: [...new Set([...accessList, owner])],
 			completed: false,
 		};
 		setActivityList([...activityList, newActivity]);
@@ -1789,7 +2181,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				deadline: endTime.toISOString(),
 				description,
 				owner: owner,
-				accessList: [owner],
+				accessList: [...new Set([...accessList, owner])],
 			}),
 		});
 		console.log("Attività creata:", res2);
@@ -1818,29 +2210,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repeatedNotification = true;
 		}
 
+		const accessListt = [...new Set([...accessList, owner])];
+
+
 
 		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
 		if (addNotification) {
-			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
-			const res3 = await fetch(`${SERVER_API}/notifications`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					message: message,
-					mode: "acitvity",
-					receiver: currentUser.value,
-					type: "activity",
-					data: {
-						date: notificationDate, //data prima notifica
-						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
-						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
-						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
-						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
-					},
-				}),
-
+			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'attività ", title);
+			accessListt.forEach(async (receiver) => {
+				const res3 = await fetch(`${SERVER_API}/notifications`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						message: message,
+						mode: "activity",
+						receiver: receiver, // Cambia il receiver per ogni membro della accessList
+						type: "activity",
+						data: {
+							date: notificationDate, // data prima notifica
+							idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+							repeatedNotification: repeatedNotification, // se è true, la notifica si ripete
+							repeatTime: repeatTime, // ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+							firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
+						},
+					}),
+				});
+				console.log("Notifica creata per:", receiver, "Risposta:", res3);
 			});
-			console.log("Notifica creata:", res3);
 		}
 
 
@@ -1857,6 +2253,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setAddNotification(false);
 		setNotificationTime(0);
 		setNotificationRepeatTime(0);
+		setSendInviteActivity(false);
+		setShareActivity(false);
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
@@ -2130,6 +2528,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 									onClick={toggleCreateActivity}>
 									Attività
 								</button>
+								<button className="btn"
+									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+									onClick={toggleCreateNonDisturbare}>
+									Non disturbare
+								</button>
 							</div>)}
 
 
@@ -2243,7 +2646,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 								className="btn btn-primary"
 								style={{ backgroundColor: "bisque", color: "white", border: "0" }}
 								onClick={toggleCreateEvent}>
-								Close
+								Chiudi
 							</button>
 							<form>
 								<label htmlFor="useDefaultTitle">
@@ -2253,7 +2656,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 										onClick={toggleEventTitle}
 										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
-									Pomodoro Session
+									Sessione Pomodoro
 								</label>
 
 								<label htmlFor="allDayEvent">
@@ -2263,7 +2666,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 										onClick={toggleAllDayEvent}
 										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
-									All-day
+									Tutto il giorno
 
 								</label>
 
@@ -2354,7 +2757,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 								)}
 								{addTitle && (
 									<label htmlFor="title">
-										Title
+										Titolo
 										<input
 											className="btn border"
 											type="text"
@@ -2522,6 +2925,32 @@ export default function Calendar(): React.JSX.Element { // prova push
 									</label>
 								)}
 
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+
+										onClick={toggleSendInviteEvent}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Invia evento ad utente
+
+								</label>
+
+								{sendInviteEvent && (
+									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+										<div>Scegli l'utente al quale inviare la notifica</div>
+										{users.length > 0}
+										<SearchForm onItemClick={handleSelectUser} list={users} />
+										<button
+											onClick={handleSendInviteEvent}
+											className="btn btn-primary send-invite-button"
+											style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
+										>
+											Invia Invito
+										</button>
+									</div>
+								)}
+
 								<button
 									className="btn btn-primary"
 									style={{
@@ -2530,19 +2959,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 										border: "0",
 									}}
 									onClick={handleCreateEvent}>
-									Create Event
+									Crea
 								</button>
 							</form>
 						</div>
 
 					)}
+
 					{createActivity && (
 						<div className="create-event-container col-2">
 							<button
 								className="btn btn-primary"
 								style={{ backgroundColor: "bisque", color: "white", border: "0" }}
 								onClick={toggleCreateActivity}>
-								Close
+								Chiudi
 							</button>
 							<form>
 								{addTitle && (
@@ -2608,7 +3038,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 								<label htmlFor="allDayEvent">
 									<input
 										type="checkbox"
-										name="addNotification"
+
 										onClick={toggleAddNotification}
 										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
@@ -2668,6 +3098,59 @@ export default function Calendar(): React.JSX.Element { // prova push
 										</select>
 									</label>
 								)}
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="addNotification"
+										onClick={toggleSendInviteActivity}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Invia attività ad utente
+
+								</label>
+
+								{sendInviteActivity && (
+									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+										<div>Scegli l'utente al quale inviare la notifica</div>
+										{users.length > 0}
+										<SearchForm onItemClick={handleSelectUser} list={users} />
+										<button
+											onClick={handleSendInviteActivity}
+											className="btn btn-primary send-invite-button"
+											style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
+										>
+											Invia Invito
+										</button>
+									</div>
+								)}
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="addNotification"
+										onClick={toggleShareActivity}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Condividi attività
+
+								</label>
+
+								{shareActivity && (
+									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+										<div>Scegli l'utente con il quale condividere l'attività</div>
+										{users.length > 0}
+										<SearchForm onItemClick={handleSelectUser} list={users} />
+										<button
+											onClick={handleAddUserActivity}
+											className="btn btn-primary send-invite-button"
+											style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
+										>
+											Condividi
+										</button>
+									</div>
+								)}
+
 								<button
 									className="btn btn-primary"
 									style={{
@@ -2676,12 +3159,211 @@ export default function Calendar(): React.JSX.Element { // prova push
 										border: "0",
 									}}
 									onClick={handleCreateActivity}>
-									Create Activity
+									Crea
+								</button>
+
+
+
+
+
+							</form>
+						</div>
+
+					)}
+
+					{createNonDisturbare && (
+						<div className="create-event-container col-2">
+							<button
+								className="btn btn-primary"
+								style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+								onClick={toggleCreateNonDisturbare}>
+								Chiudi
+							</button>
+							<form>
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="allDayEvent"
+										onClick={toggleAllDayEvent}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Tutto il giorno
+
+								</label>
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="repeatEvent"
+										onClick={toggleRepeatEvent}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Ripeti
+
+								</label>
+								{repeatEvent && (
+									<>
+										<div className="flex" style={{ marginRight: "10px" }}>
+											Ripeti l'evento
+											<label htmlFor="repeatEvent">
+												<select
+													className="btn border"
+													name="repetitionType"
+													onChange={toggleSelectFrequency}
+													style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												>
+													<option value="Once">Una volta</option>
+													<option value="Daily">Ogni giorno</option>
+													<option value="Weekly">Ogni settimana</option>
+													<option value="Monthly">Ogni mese </option>
+													<option value="Yearly">Ogni anno</option>
+												</select>
+
+											</label>
+										</div>
+
+
+
+										{until && (
+											<div>
+												<div>
+													<div className="flex" style={{ marginRight: "10px" }}>
+														Fino a
+														<select className="btn border" onChange={toggleSelectUntil} defaultValue="Data">
+															<option value="Data">Data</option>
+															<option value="Ripetizioni">Ripetizioni</option>
+															<option value="Infinito">Infinito </option>
+														</select>
+													</div>
+
+													{selectedValue === "Data" && (
+														<DatePicker
+															className="btn border"
+															name="finoAData"
+															selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
+															onChange={(date: Date | null): void => {
+																if (date) {
+																	date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
+																	setUntilDate(date); // Aggiorna lo stato con la nuova data
+																}
+															}}
+															placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
+														/>
+													)}
+
+
+
+													{selectedValue === "Ripetizioni" && (
+														<div>
+															<input className="btn border" type="number" min="1"
+																onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+																	setRepetitions(Number(e.target.value));
+																	//setIsUntilDate(false);
+																	setUntilDate(null); // Aggiorna lo stato con la nuova data
+
+																	if (repetitions < 1 || isNaN(repetitions)) {
+																		setRepetitions(1);
+																	}
+																	console.log("Numero ripetizione dell'evento: ", repetitions);
+																}}>
+															</input>
+														</div>
+													)}
+
+
+												</div>
+											</div>
+										)}
+									</>
+								)}
+
+								<label htmlFor="startTime">
+									Data Inizio
+									<div>
+										<DatePicker
+											className="btn border"
+											name="startTime"
+											selected={startTime}
+											onChange={(date: Date | null): void => {
+												if (date) {
+													// Aggiorna la data mantenendo l'orario attuale
+													const newDate = new Date(startTime);
+													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+													setStartTime(newDate);
+												}
+											}}
+										/>
+									</div>
+									{!allDayEvent && (
+										<>
+											<div>
+												<input
+													className="btn border"
+													type="time"
+													value={`${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+														const [hours, minutes] = e.target.value.split(':');
+														const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
+														newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+														setStartTime(newDate); // Imposta il nuovo oggetto Date
+													}}
+												/>
+											</div>
+										</>
+									)}
+								</label>
+								<label htmlFor="endTime">
+									Data Fine
+									<div>
+										<DatePicker
+											className="btn border"
+											name="endTime"
+											selected={endTime}
+											onChange={(date: Date | null): void => {
+												if (date) {
+													// Aggiorna la data mantenendo l'orario attuale
+													const newDate = new Date(endTime);
+													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+													setEndTime(newDate);
+												}
+											}}
+										/>
+									</div>
+									{!allDayEvent && (
+										<>
+											<div>
+												<input
+													className="btn border"
+													type="time"
+													value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
+													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+														const [hours, minutes] = e.target.value.split(':');
+														const newDate = new Date(endTime);
+														newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+														setEndTime(newDate); // Imposta il nuovo oggetto Date
+													}}
+												/>
+											</div>
+										</>
+									)}
+								</label>
+
+								<button
+									className="btn btn-primary"
+									style={{
+										backgroundColor: "bisque",
+										color: "white",
+										border: "0",
+									}}
+									onClick={handleCreateNonDisturbare}>
+									Crea
 								</button>
 							</form>
 						</div>
 
 					)}
+
 					{activitiesMode && todayActivitiesMode && (
 						<>
 							<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
@@ -2793,9 +3475,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												height: `${event.height}px`, // Imposta l'altezza dell'evento
 												width: `calc(95%/${event.width})`,
 												position: "absolute", // Assicurati che sia posizionato correttamente
-												color: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red", // Colore più chiaro se currentDate è maggiore di endTime
-												borderColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red",
-												backgroundColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)", // Colore di sfondo più chiaro
+												color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
+												borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
+												backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
 												marginLeft: `${event.marginLeft}%`,
 												cursor: "default", // Imposta il cursore di default per l'intero evento
 											}}
@@ -2834,15 +3516,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 									) : (
 										<div
-											className="evento blue"
+											className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
 											style={{
 												top: `${event.top}px`, // Imposta la posizione verticale
 												height: `${event.height}px`, // Imposta l'altezza dell'evento
 												width: `calc(95%/${event.width})`,
 												position: "absolute", // Assicurati che sia posizionato correttamente
-												color: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)", // Colore più chiaro se currentDate è maggiore di endTime
-												borderColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)",
-												backgroundColor: new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)", // Colore di sfondo più chiaro
+												color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
+												borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
+												backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
 												marginLeft: `${event.marginLeft}%`,
 												cursor: "default",
 											}}
@@ -2857,7 +3539,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 														fontSize: "1.5rem",
 														margin: 0,
 														padding: 0,
-														color: "rgb(155, 223, 212)",
+														color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
 														cursor: "pointer"
 													}}
 												></i>
@@ -2866,7 +3548,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 										</div>
 
 									)
-								))}
+
+								)
+
+								)}
 							</div >
 
 

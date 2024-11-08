@@ -151,13 +151,162 @@ export default function Header(): React.JSX.Element {
         }
     };
 
-    /* useEffect(() => {
-         // Resetta noNotifications quando le notifiche cambiano
-         if (notifications && notifications.length > 0) {
-             setNoNotifications(false);
-         }
-     }, [notifications]);
-     */
+    async function handleAddActivity(notification: Notification): Promise<void> {
+        console.log("EVENTO DELLA NOTIFICA DA AGGIUNGERE ALLA LISTA DEGLI EVENTI:", notification.data.event);
+        console.log("ATTIVITÀ DELLA NOTIFICA DA AGGIUNGERE ALLA LISTA DEGLI EVENTI:", notification.data.activity);
+
+        const idEventoNotificaCondiviso = notification.data.event.idEventoNotificaCondiviso;
+        const owner = notification.data.event.owner;
+        const title = notification.data.event.title;
+        const startTime = notification.data.event.startTime;
+        const endTime = notification.data.event.endTime;
+        const location = notification.data.event.location;
+
+        //crea l'attività come evento sul calendario
+        const res = await fetch(`${SERVER_API}/events`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                idEventoNotificaCondiviso,
+                owner,
+                title: title,
+                startTime: startTime, //TOLGO TOISOTRING
+                endTime: endTime, //TOLGO TOISOTRING
+                untilDate: null,
+                isInfinite: false,
+                frequency: "once",
+                location,
+                repetitions: 1,
+            }),
+        });
+        console.log("Evento scadenza creato:", res);
+
+
+        const idEventoNotificaCondiviso1 = notification.data.activity.idEventoNotificaCondiviso;
+        const description1 = notification.data.activity.description;
+        const title1 = notification.data.activity.title;
+        const deadline1 = notification.data.activity.deadline;
+        const owner1 = notification.data.activity.owner;
+        const accessList1 = notification.data.activity.accessList;
+
+
+        //crea l'attività come attività sul calendario
+        const res2 = await fetch(`${SERVER_API}/activity`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                idEventoNotificaCondiviso: idEventoNotificaCondiviso1,
+                title: title1,
+                deadline: deadline1, //TOLGO TOISOTRING
+                description: description1,
+                owner: owner1,
+                accessList: accessList1,
+            }),
+        });
+        console.log("Attività creata:", res2);
+
+
+        //aggiungi la notifica dell'attività come notifica sul calendario
+        if (notification.data.notification) {
+            const res3 = await fetch(`${SERVER_API}/notifications`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(notification.data.notification),
+            });
+            console.log("Notifica creata:", res3);
+        }
+
+
+        //metti la notifica come letta
+        handleReadNotification(notification.id);
+
+
+    }
+
+    async function handleAddEvent(notification: Notification): Promise<void> {
+        console.log("EVENTO DELLA NOTIFICA DA AGGIUNGERE ALLA LISTA DEGLI EVENTI:", notification.data.event);
+        console.log("ATTIVITÀ DELLA NOTIFICA DA AGGIUNGERE ALLA LISTA DEGLI EVENTI:", notification.data.activity);
+
+        const idEventoNotificaCondiviso = notification.data.event.idEventoNotificaCondiviso;
+        const owner = notification.data.event.owner;
+        const title = notification.data.event.title;
+        const startTime = notification.data.event.startTime;
+        const endTime = notification.data.event.endTime;
+        const location = notification.data.event.location;
+        const isInfinite = notification.data.event.isInfinite;
+        const frequency = notification.data.event.frequency;
+        const untilDate = notification.data.event.untilDate;
+        const repetitions = notification.data.event.repetitions;
+
+
+        //crea l'attività come evento sul calendario
+        const res = await fetch(`${SERVER_API}/events`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                idEventoNotificaCondiviso,
+                owner,
+                title: title,
+                startTime: startTime, //TOLGO TOISOTRING
+                endTime: endTime, //TOLGO TOISOTRING
+                untilDate: untilDate,
+                isInfinite: isInfinite,
+                frequency: frequency,
+                location,
+                repetitions: repetitions,
+            }),
+        });
+        console.log("Evento scadenza creato:", res);
+
+
+
+        //aggiungi la notifica dell'attività come notifica sul calendario
+        if (notification.data.notification) {
+            const res3 = await fetch(`${SERVER_API}/notifications`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(notification.data.notification),
+            });
+            console.log("Notifica creata:", res3);
+        }
+
+
+        //metti la notifica come letta
+        handleReadNotification(notification.id);
+
+
+    }
+
+    async function handleSnoozeNotification(notificationId: string): Promise<void> {
+        try {
+            const snoozeDate = new Date(currentDate.getTime() + 1000 * 60 * 60); // Aggiungi 1 ora
+            const res = await fetch(
+                `${SERVER_API}/notifications/${notificationId}`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ date: snoozeDate }), //posticipa la notifica di 1 ora
+                }
+            );
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                console.error(
+                    "Errore durante l'aggiornamento della notifica:",
+                    errorData
+                );
+            } else {
+                console.log(
+                    `Notifica con ID ${notificationId} aggiornata con successo.`
+                );
+                // Aggiorna lo stato locale se necessario
+                // Ad esempio, puoi aggiornare l'array delle notifiche per riflettere il cambiamento
+            }
+            cleanNotifications();
+        } catch (error) {
+            console.error("Errore nello snooze della notifica:", error);
+        }
+    }
 
     const handleReadNotification = async (
         notificationId: string
@@ -189,18 +338,6 @@ export default function Header(): React.JSX.Element {
         } catch (error) {
             console.error("Errore nella richiesta:", error);
         }
-        /*
-                try {
-                    const res = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ notification_id: notificationId }),
-                    });
-                    console.log("Risposta dalla deleteNotification:", res);
-                } catch (error) {
-                    console.error("Errore nella richiesta:", error);
-                }
-                    */
     };
 
     async function postCurrentDate(data: Date): Promise<void> {
@@ -244,7 +381,7 @@ export default function Header(): React.JSX.Element {
                 notification &&
                 (notification.type === "event" ||
                     notification.type === "activity") &&
-                notification.read === false && notification.data.isInfiniteEvent === false
+                notification.read === false && !notification.data.isInfiniteEvent
             ) {
                 // Includi anche il tipo "activity"
                 const eventDate = new Date(notification.data.date); // Assicurati che notification.data.date sia un formato valido
@@ -300,6 +437,10 @@ export default function Header(): React.JSX.Element {
                         true
                     );
                 }
+            }
+
+            if (notification && notification.type === "message" && notification.read === false) {
+                return true;
             }
 
             // Restituisci false se non è di tipo "event" o "activity"
@@ -361,17 +502,17 @@ export default function Header(): React.JSX.Element {
             await postCurrentDate(currentDate); // invia la data corrente al server
             const currentUser = await getCurrentUser();
 
-            /*
-                        console.log("Questo è il currentUser", currentUser);
-                        console.log("Questo è il currentUser:", currentUser);
-                        console.log("Questo è il currentUser:", currentUser);
-                        console.log("Questo è il currentUser:", currentUser);
-                        console.log("Questo è il user nell'header:", currentUser.value);
-                        console.log("Questo è il user nell'header:", currentUser.value);
-                        console.log("Questo è il user nell'header:", currentUser.value);
-                        console.log("Questo è il user nell'header:", currentUser.value);
-                          */
-            setUser(currentUser.value);
+
+            console.log("Questo è il currentUser", currentUser);
+            console.log("Questo è il currentUser:", currentUser);
+            console.log("Questo è il currentUser:", currentUser);
+            console.log("Questo è il currentUser:", currentUser);
+            console.log("Questo è il user nell'header:", currentUser.value.username);
+            console.log("Questo è il user nell'header:", currentUser.value.username);
+            console.log("Questo è il user nell'header:", currentUser.value.username);
+            console.log("Questo è il user nell'header:", currentUser.value.username);
+
+            setUser(currentUser.value.username);
 
 
 
@@ -437,7 +578,7 @@ export default function Header(): React.JSX.Element {
                     Pomodoro
                 </a>
                 <a className="btn secondary"
-                    style={buttonStyle} 
+                    style={buttonStyle}
                     href="/notes">
                     Note
                 </a>
@@ -920,6 +1061,275 @@ export default function Header(): React.JSX.Element {
 
 
                                             }
+
+                                            else if (
+                                                notification.type === "message" &&
+                                                notification.data.activity &&
+                                                notification.receiver === user &&
+                                                notification.read === false
+                                            ) {
+                                                const eventDate = new Date(
+                                                    notification.data.date
+                                                ); // Crea un oggetto Date
+                                                if (eventDate < currentDate) {
+                                                    return (
+                                                        <div key={index}>
+                                                            Hai ricevuto un invito
+                                                            per un'{" "}
+                                                            <span
+                                                                style={{
+                                                                    color: "orange",
+                                                                    fontWeight: "bold",
+                                                                }}
+                                                            >
+                                                                attività
+                                                            </span>
+                                                            !
+
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleAddActivity(
+                                                                            notification
+                                                                        );
+
+
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-check"
+                                                                    style={{
+                                                                        color: "green",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di tick */}
+                                                            </button>
+
+
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleReadNotification(
+                                                                            notification.id
+                                                                        );
+
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-times"
+                                                                    style={{
+                                                                        color: "red",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di elimazione */}
+                                                            </button>
+
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleSnoozeNotification(
+                                                                            notification.id
+                                                                        );
+
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-arrows-alt-h"
+                                                                    style={{
+                                                                        color: "lightblue",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di elimazione */}
+                                                            </button>
+                                                        </div>
+
+
+                                                    );
+                                                }
+                                            }
+
+                                            else if (
+                                                notification.type === "message" &&
+                                                !notification.data.activity &&
+                                                notification.receiver === user &&
+                                                notification.read === false
+                                            ) {
+                                                const eventDate = new Date(
+                                                    notification.data.date
+                                                ); // Crea un oggetto Date
+                                                if (eventDate < currentDate) {
+                                                    return (
+                                                        <div key={index}>
+                                                            Hai ricevuto un invito
+                                                            per un{" "}
+                                                            <span
+                                                                style={{
+                                                                    color: "bisque",
+                                                                    fontWeight: "bold",
+                                                                }}
+                                                            >
+                                                                evento
+                                                            </span>
+                                                            !
+
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleAddEvent(
+                                                                            notification
+                                                                        );
+
+
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-check"
+                                                                    style={{
+                                                                        color: "green",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di tick */}
+                                                            </button>
+
+
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleReadNotification(
+                                                                            notification.id
+                                                                        );
+
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-times"
+                                                                    style={{
+                                                                        color: "red",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di elimazione */}
+                                                            </button>
+
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background:
+                                                                        "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleSnoozeNotification(
+                                                                            notification.id
+                                                                        );
+
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-arrows-alt-h"
+                                                                    style={{
+                                                                        color: "lightblue",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di elimazione */}
+                                                            </button>
+                                                        </div>
+
+
+                                                    );
+                                                }
+                                            }
+
 
                                             return null;
                                         }))

@@ -164,7 +164,6 @@ button.btn:focus {
 	width: 2%;
 	border-radius: 10px;
 	/* Larghezza della barra colorata */
-	background-color: rgb(155, 223, 212);
 	/* Colore della barra */
 }
 
@@ -174,6 +173,11 @@ button.btn:focus {
 
 .evento.blue::before {
 	background-color: rgb(155, 223, 212);
+}
+
+.evento.non-disturbare::before {
+	background-color: rgba(128, 138, 136, 1);
+	/* Colore per "Non disturbare" */
 }
 
 
