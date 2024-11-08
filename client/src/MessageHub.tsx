@@ -1,7 +1,8 @@
 import React from "react";
 import { SERVER_API } from "./params/params";
 import { ResponseBody } from "./types/ResponseBody";
-// import { useNavigate } from "react-router-dom";
+import { ResponseStatus } from "./types/ResponseStatus";
+import { useNavigate } from "react-router-dom";
 // import UserResult from "./types/UserResult";
 import SearchForm from "./SearchForm";
 import type Chat from "./types/Chat";
@@ -18,8 +19,8 @@ function MessageHub(): React.JSX.Element {
 
 	const [message, setMessage] = React.useState("");
 
-	// const nav = useNavigate();
-
+	const nav = useNavigate();
+/*
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
@@ -35,7 +36,29 @@ function MessageHub(): React.JSX.Element {
 				setMessage("Impossibile raggiungere il server");
 			}
 		})();
-	}, []);
+	}, []);*/
+
+	async function getAllChats(): Promise<void> {
+        try {
+            const res = await fetch(`${SERVER_API}/chats`);
+            if (res.status !== 200) {
+                nav("/login");
+            }
+
+            const resBody = (await res.json()) as ResponseBody;
+
+            if (resBody.status === ResponseStatus.GOOD) {
+                setChatList(resBody.value);
+            } else {
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
+        }
+    }
+
+	React.useEffect(() => {
+        getAllChats();
+    }, []);
 
 	async function handleSendMessage(): Promise<void> {
 		try {
