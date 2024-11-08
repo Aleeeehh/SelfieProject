@@ -87,6 +87,12 @@ router.get("/owner", async (req: Request, res: Response) => {
     //  console.log("questo è l'owner passato come query:" + ownerId);
 
     try {
+        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+
         //Controllo se l'owner è stato inserito
         if (!ownerId) {
             return res.status(400).json({
@@ -95,9 +101,21 @@ router.get("/owner", async (req: Request, res: Response) => {
             });
         }
 
+        console.log("SUBITO PRIMA DELLA FIND:", ownerId);
+        console.log("SUBITO PRIMA DELLA FIND:", ownerId);
+        console.log("SUBITO PRIMA DELLA FIND:", ownerId);
+        console.log("SUBITO PRIMA DELLA FIND:", ownerId);
+
+
         const foundDBActivities = await ActivitySchema.find({
-            owner: ownerId,
+            accessList: ownerId, // Cerca in accessList invece che per owner
         }).lean();
+
+        console.log("SUBITO DOPO DELLA FIND:", ownerId);
+        console.log("SUBITO DOPO DELLA FIND:", ownerId);
+        console.log("SUBITO DOPO DELLA FIND:", ownerId);
+
+        console.log("Attività trovate:", foundDBActivities);
 
         if (foundDBActivities.length === 0) {
             const resBody: ResponseBody = {

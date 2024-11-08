@@ -57,7 +57,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
 	const [description, setDescription] = React.useState("");
 	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
-
+	const [accessList, setAccessList] = React.useState([] as string[]);
 	const [createActivity, setCreateActivity] = React.useState(false);
 	const [selectedMode, setSelectedMode] = React.useState("Eventi");
 	const [create, setCreate] = React.useState(false);
@@ -102,6 +102,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [day, setDay] = React.useState(new Date().getDate());
 	const [activeButton, setActiveButton] = React.useState(0);
 	const [year, setYear] = React.useState(new Date().getFullYear())
+	const [shareActivity, setShareActivity] = React.useState(false);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 	const [activityList, setActivityList] = React.useState<Activity[]>([]);
 	const [addTitle, setAddTitle] = React.useState(true);
@@ -477,6 +478,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const owner = currentUser.value.username;
 		const resActivities = await fetch(`${SERVER_API}/activity/owner?owner=${owner}`);
 		const dataActivities = await resActivities.json();
+		console.log("Attività trovate dalla loadActivities:", dataActivities);
 		if (dataActivities.status === ResponseStatus.GOOD) {
 			setActivityList(dataActivities.value);
 			console.log("Questa è la lista delle attività:", activityList);
@@ -891,6 +893,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setNotificationRepeat(false);
 		setAddNotification(false);
 		setSendInviteActivity(false);
+		setShareActivity(false);
 	}
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
@@ -1393,9 +1396,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("ENTRO NELLA HANDLESENDINVITE");
 		console.log("Questo è il receiver:", users[0]);
 
-		const currentUser = await getCurrentUser();
+		//const currentUser = await getCurrentUser();
 
-		const ownerr = currentUser.value.username;
+		//const ownerr = currentUser.value.username;
 
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
@@ -1465,7 +1468,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			deadline: endTime,
 			description,
 			owner: users[0],
-			accessList: [users[0], ownerr],
+			accessList: [users[0]],
 			completed: false,
 		};
 
@@ -1612,6 +1615,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 		} else {
 			alert(resBody.message);
 		}
+	}
+
+	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
+		setAccessList([...accessList, users[0]]);
+	}
+
+	function toggleShareActivity(): void {
+		setShareActivity(!shareActivity);
 	}
 
 
@@ -2143,6 +2156,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		});
 		console.log("Evento scadenza creato:", res);
 
+
+
 		const newActivity = {
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 			_id: "1",
@@ -2150,7 +2165,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			deadline: endTime,
 			description,
 			owner: owner,
-			accessList: [owner],
+			accessList: [...new Set([...accessList, owner])],
 			completed: false,
 		};
 		setActivityList([...activityList, newActivity]);
@@ -2166,7 +2181,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				deadline: endTime.toISOString(),
 				description,
 				owner: owner,
-				accessList: [owner],
+				accessList: [...new Set([...accessList, owner])],
 			}),
 		});
 		console.log("Attività creata:", res2);
@@ -2195,29 +2210,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repeatedNotification = true;
 		}
 
+		const accessListt = [...new Set([...accessList, owner])];
+
+
 
 		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
 		if (addNotification) {
-			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
-			const res3 = await fetch(`${SERVER_API}/notifications`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					message: message,
-					mode: "activity",
-					receiver: currentUser.value.username,
-					type: "activity",
-					data: {
-						date: notificationDate, //data prima notifica
-						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
-						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
-						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
-						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
-					},
-				}),
-
+			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'attività ", title);
+			accessListt.forEach(async (receiver) => {
+				const res3 = await fetch(`${SERVER_API}/notifications`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						message: message,
+						mode: "activity",
+						receiver: receiver, // Cambia il receiver per ogni membro della accessList
+						type: "activity",
+						data: {
+							date: notificationDate, // data prima notifica
+							idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+							repeatedNotification: repeatedNotification, // se è true, la notifica si ripete
+							repeatTime: repeatTime, // ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+							firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
+						},
+					}),
+				});
+				console.log("Notifica creata per:", receiver, "Risposta:", res3);
 			});
-			console.log("Notifica creata:", res3);
 		}
 
 
@@ -2235,6 +2254,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setNotificationTime(0);
 		setNotificationRepeatTime(0);
 		setSendInviteActivity(false);
+		setShareActivity(false);
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
@@ -3104,6 +3124,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 										</button>
 									</div>
 								)}
+
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+										name="addNotification"
+										onClick={toggleShareActivity}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Condividi attività
+
+								</label>
+
+								{shareActivity && (
+									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+										<div>Scegli l'utente con il quale condividere l'attività</div>
+										{users.length > 0}
+										<SearchForm onItemClick={handleSelectUser} list={users} />
+										<button
+											onClick={handleAddUserActivity}
+											className="btn btn-primary send-invite-button"
+											style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
+										>
+											Condividi
+										</button>
+									</div>
+								)}
+
 								<button
 									className="btn btn-primary"
 									style={{

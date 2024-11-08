@@ -381,7 +381,7 @@ export default function Header(): React.JSX.Element {
                 notification &&
                 (notification.type === "event" ||
                     notification.type === "activity") &&
-                notification.read === false && notification.data.isInfiniteEvent === false
+                notification.read === false && !notification.data.isInfiniteEvent
             ) {
                 // Includi anche il tipo "activity"
                 const eventDate = new Date(notification.data.date); // Assicurati che notification.data.date sia un formato valido
