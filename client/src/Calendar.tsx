@@ -77,6 +77,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [isInfinite, setIsInfinite] = React.useState(false);
 	const [currentDate, setCurrentDate] = React.useState(new Date());
 	const [sendInviteActivity, setSendInviteActivity] = React.useState(false);
+	const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
 	const [addNotification, setAddNotification] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
@@ -1344,8 +1345,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		console.log("ENTRO NELLA HANDLESENDINVITE");
 		console.log("ENTRO NELLA HANDLESENDINVITE");
-		console.log("ENTRO NELLA HANDLESENDINVITE");
-		console.log("ENTRO NELLA HANDLESENDINVITE");
 		console.log("Questo è il receiver:", users[0]);
 
 		const currentUser = await getCurrentUser();
@@ -1457,10 +1456,126 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 	}
 
+	async function handleSendInviteEvent(
+		e: React.MouseEvent<HTMLButtonElement>
+	): Promise<void> {
+		e.preventDefault();
+		if (!(users.length > 0)) {
+			console.log("Nessun utente selezionato");
+			return;
+		}
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("Questo è il receiver:", users[0]);
+
+		//const currentUser = await getCurrentUser();
+
+		//const ownerr = currentUser.value.username;
+
+		const startTime = new Date(endTime);
+		startTime.setHours(endTime.getHours() - 1);
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+
+		let newNotification;
+
+		if (addNotification) {
+			const notificationDate = new Date(startTime);
+			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+			console.log("Questa è la data di inizio evento:", startTime);
+			console.log("Questa è la data della notifica:", notificationDate);
+			var message = "";
+			if (notificationTime < 60) {
+				message = "Inizio evento " + title + " tra " + notificationTime + " minuti!";
+			} else {
+				message = "Inizio evento " + title + " tra " + notificationTime / 60 + " ore!";
+			}
+
+			if (notificationTime == 0) {
+				message = "Evento " + title + " iniziato!";
+			}
+
+			var repeatTime = notificationRepeatTime;
+			var repeatedNotification = false;
+			if (repeatTime > 0) {
+				repeatedNotification = true;
+			}
+
+			newNotification = {
+				message: message,
+				mode: "event",
+				receiver: users[0],
+				type: "event",
+				data: {
+					date: notificationDate, //data prima notifica
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+					frequencyEvent: frequency,
+					isInfiniteEvent: isInfinite,
+					repetitionsEvent: repetitions,
+					untilDateEvent: untilDate,
+				},
+
+			}
+		}
+
+
+
+
+		const newEvent = {
+			idEventoNotificaCondiviso,
+			owner: users[0],
+			title,
+			startTime: startTime.toISOString(),
+			endTime: endTime.toISOString(),
+			untilDate: untilDate,
+			isInfinite,
+			frequency: frequency,
+			location,
+			repetitions,
+		};
+
+
+		const res3 = await fetch(`${SERVER_API}/notifications`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				message: "Hai ricevuto un invito per un evento",
+				mode: "event",
+				receiver: users[0],
+				type: "message",
+				data: {
+					date: currentDate, //data prima notifica
+					event: newEvent,
+					notification: newNotification,
+				},
+			}),
+
+		});
+		console.log("Notifica creata:", res3);
+
+
+
+
+		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
+
+		if (resBody.status === ResponseStatus.GOOD) {
+			alert("Invito inviato correttamente");
+			setUsers([]);
+		} else {
+			alert(resBody.message);
+		}
+	}
+
 
 
 	function toggleSendInviteActivity(): void {
 		setSendInviteActivity(!sendInviteActivity);
+	}
+
+	function toggleSendInviteEvent(): void {
+		setSendInviteEvent(!sendInviteEvent);
 	}
 
 
@@ -2671,6 +2786,32 @@ export default function Calendar(): React.JSX.Element { // prova push
 									</label>
 								)}
 
+								<label htmlFor="allDayEvent">
+									<input
+										type="checkbox"
+
+										onClick={toggleSendInviteEvent}
+										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+									/>
+									Invia evento ad utente
+
+								</label>
+
+								{sendInviteEvent && (
+									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+										<div>Scegli l'utente al quale inviare la notifica</div>
+										{users.length > 0}
+										<SearchForm onItemClick={handleSelectUser} list={users} />
+										<button
+											onClick={handleSendInviteEvent}
+											className="btn btn-primary send-invite-button"
+											style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
+										>
+											Invia Invito
+										</button>
+									</div>
+								)}
+
 								<button
 									className="btn btn-primary"
 									style={{
@@ -2758,7 +2899,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 								<label htmlFor="allDayEvent">
 									<input
 										type="checkbox"
-										name="addNotification"
+
 										onClick={toggleAddNotification}
 										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
@@ -2826,7 +2967,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 										onClick={toggleSendInviteActivity}
 										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
-									Condividi attività
+									Invia attività ad utente
 
 								</label>
 
