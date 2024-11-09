@@ -849,8 +849,8 @@ export default function Header(): React.JSX.Element {
 
                                                 return (
                                                     <>
-                                                        <a
-                                                            href={`/ pomodoro ? cycles = ${nCycles} & studyTime=${nStudyTime} & pauseTime=${nPauseTime}`}
+                                                        <div
+
                                                             key={index} // Sposta la chiave qui
                                                             style={{
                                                                 color: "black",
@@ -868,38 +868,75 @@ export default function Header(): React.JSX.Element {
                                                                 pomodoro
                                                             </span>
                                                             !
-                                                        </a>
-                                                        <button
-                                                            className="btn secondary"
-                                                            style={{
-                                                                background: "none",
-                                                                cursor: "pointer",
-                                                            }}
-                                                            onClick={(): void => {
-                                                                if (
-                                                                    notification.id
-                                                                ) {
-                                                                    // Controlla se notification.id è definito
-                                                                    handleReadNotification(
-                                                                        notification.id
-                                                                    );
-                                                                } else {
-                                                                    console.error(
-                                                                        "ID notifica non definito"
-                                                                    );
-                                                                }
-                                                            }}
-                                                        >
-                                                            <i
-                                                                className="fas fa-check"
+
+
+                                                            <button
+                                                                className="btn secondary"
                                                                 style={{
-                                                                    color: "green",
-                                                                    fontSize:
-                                                                        "20px",
+                                                                    background: "none",
+                                                                    cursor: "pointer",
                                                                 }}
-                                                            ></i>{" "}
-                                                            {/* Icona di tick */}
-                                                        </button>
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleReadNotification(
+                                                                            notification.id
+                                                                        );
+                                                                        window.location.href = `/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`;
+
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-check"
+                                                                    style={{
+                                                                        color: "green",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di tick */}
+                                                            </button>
+
+
+                                                            <button
+                                                                className="btn secondary"
+                                                                style={{
+                                                                    background: "none",
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={(): void => {
+                                                                    if (
+                                                                        notification.id
+                                                                    ) {
+                                                                        // Controlla se notification.id è definito
+                                                                        handleReadNotification(
+                                                                            notification.id
+                                                                        );
+                                                                    } else {
+                                                                        console.error(
+                                                                            "ID notifica non definito"
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <i
+                                                                    className="fas fa-times"
+                                                                    style={{
+                                                                        color: "red",
+                                                                        fontSize:
+                                                                            "20px",
+                                                                    }}
+                                                                ></i>{" "}
+                                                                {/* Icona di tick */}
+                                                            </button>
+                                                        </div>
                                                     </>
                                                 );
 
