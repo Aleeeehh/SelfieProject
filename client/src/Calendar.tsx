@@ -55,6 +55,8 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
+	const [file, setFile] = React.useState<File | null>(null);
+	//const [insertFile, setInsertFile] = React.useState(false);
 	const [description, setDescription] = React.useState("");
 	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
 	const [accessList, setAccessList] = React.useState([] as string[]);
@@ -450,6 +452,54 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	}
 
+	async function handleDownloadCalendar(): Promise<void> {
+		const currentUser = await getCurrentUser();
+		const owner = currentUser.value.username;
+		const res = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
+		if (res.ok) {
+			const data = await res.blob();  // Ottieni il blob del file
+			console.log("icalString:", data);
+			const url = URL.createObjectURL(data); // Crea un URL per il blob
+			const a = document.createElement('a'); // Crea un elemento <a>
+			a.style.display = 'none'; // Nascondi l'elemento
+			a.href = url; // Imposta l'URL del blob come href
+			a.download = 'calendar.ics'; // Nome del file da scaricare
+			a.click(); // Simula un clic per avviare il download
+			window.URL.revokeObjectURL(url); // Pulisce l'URL del blob
+		} else {
+			setMessage("Errore nel download del calendario");
+		}
+	}
+
+	async function handleImportCalendar(): Promise<void> {
+		if (!file) {
+			console.log("Nessun file selezionato");
+			return;
+		}
+
+		const currentUser = await getCurrentUser();
+		const owner = currentUser.value.username;
+
+		const formData = new FormData();
+		formData.append('calendarFile', file); // Aggiungi il file al FormData
+		formData.append('owner', owner); // Aggiungi l'owner al FormData
+		console.log("Questo è il file:", file);
+
+		// Esegui una richiesta per importare il file
+		const response = await fetch(`${SERVER_API}/events/importCalendar`, {
+			method: 'POST',
+			body: formData,
+		});
+
+		if (response.ok) {
+			console.log("Calendario importato con successo");
+		} else {
+			console.error("Errore durante l'importazione del calendario");
+		}
+		loadEvents();
+		handleDateClick(day);
+	};
+
 
 	async function loadEvents(): Promise<void> {
 		try {
@@ -470,6 +520,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
+		}
+	}
+
+	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>): void {
+		const file = e.target.files?.[0];
+		if (file) {
+			setFile(file);
 		}
 	}
 
@@ -2050,6 +2107,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
+
+		//chiamata alla route per ical
+		const res4 = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
+		const data4 = await res4.json();
+		console.log("ICAL:", data4);
 	}
 
 	async function handleCreateNonDisturbare(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -2644,6 +2706,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 								<option value="2">Attività</option>
 							</select>
 						</div>
+
+
+						<div style={{ marginTop: "10px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+							<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+								onClick={handleDownloadCalendar}>Scarica Calendario
+							</button>
+							<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "black", border: "0", marginLeft: "20px" }}
+								onClick={handleImportCalendar}>Importa Calendario
+							</button>
+
+
+							<div style={{ marginLeft: "20px", maxWidth: "100px" }}>
+								<input
+									className="btn border"
+									style={{ display: "none" }}
+									type="file" accept=".ics"
+									onChange={handleFileChange}
+									id="file-upload" // Aggiungi un ID per il collegamento
+								/>
+								<label htmlFor="file-upload" className="btn btn-primary border" style={{ backgroundColor: "white", color: "black", border: "0", marginLeft: "20px" }}>
+									Scegli file
+								</label>
+							</div>
+
+
+						</div>
+
 					</div>
 					{createEvent && (
 						<div className="create-event-container col-2">

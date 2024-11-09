@@ -4,9 +4,12 @@ import { Event } from "../types/Event.js";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import EventSchema from "../schemas/Event.js";
+import multer from 'multer';
+import ical from 'ical';
 import { validDateString } from "../lib.js";
 
 const router: Router = Router();
+const upload = multer(); // Configura multer
 
 function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
     const eventList: Event[] = [];
@@ -928,15 +931,6 @@ router.post("/", async (req: Request, res: Response) => {
         return res.status(500).json(resBody);
     }
 });
-
-
-
-
-
-
-
-
-
 router.post("/deleteEvent", async (req: Request, res: Response) => {
     // console.log("Richiesta ricevuta per eliminare evento");
 
@@ -1171,6 +1165,96 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
         res.status(500).json(resBody);
     }
+});
+
+router.get("/ical", async (req: Request, res: Response) => {
+    const owner = req.query.owner as string;
+    const events = await EventSchema.find({ owner: owner }).lean(); //ottengo tutti gli eventi dell'owner
+    const icalEvents: { [key: string]: any } = {};
+    // const ical = require('ical');
+
+    for (const event of events) {
+        // Crea l'oggetto evento iCalendar manualmente
+        const icalEvent = {
+            uid: event._id.toString(),
+            summary: event.title,
+            description: "", // Aggiungi la descrizione se disponibile
+            location: event.location || "", // Aggiungi la posizione se disponibile
+            start: event.startTime,
+            end: event.endTime,
+            // Aggiungi altri campi se necessario
+        };
+        icalEvents[event._id.toString()] = icalEvent;
+    }
+    console.log("icalEvents:", icalEvents);
+
+    const icalString = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Your Organization//Your Product//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+` + Object.keys(icalEvents).map(key => {
+        const e = icalEvents[key];
+        return `BEGIN:VEVENT
+UID:${e.uid}
+SUMMARY:${e.summary}
+DESCRIPTION:${e.description}
+LOCATION:${e.location}
+DTSTART:${e.start.toISOString().replace(/-|:|\.\d+/g, '')}
+DTEND:${e.end.toISOString().replace(/-|:|\.\d+/g, '')}
+END:VEVENT`;
+    }).join('\n') + '\nEND:VCALENDAR';
+
+
+
+
+
+    res.set("Content-Type", "text/calendar");
+    res.set("Content-Disposition", 'attachment; filename="calendar.ics"');
+    res.send(icalString);
+});
+
+router.post("/importCalendar", upload.single('calendarFile'), async (req: Request, res: Response) => {
+    const icalString = req.file?.buffer.toString(); // Ottieni il contenuto del file come stringa
+    const owner = req.body.owner;
+
+    if (!icalString) {
+        return res.status(400).send("Nessun file iCalendar fornito");
+    }
+
+    console.log("icalString:", icalString);
+
+
+    const parsedEvents = ical.parseICS(icalString); // Usa ical per analizzare il file
+
+    // Itera sugli eventi e salvali nel database
+    for (const key in parsedEvents) {
+        const event = parsedEvents[key];
+        console.log("event:", event);
+        if (event.type === 'VEVENT') {
+            const groupId = new mongoose.Types.ObjectId().toString();
+            const newEvent = new EventSchema({
+                uid: event.uid,
+                title: event.summary,
+                owner: owner,
+                description: event.description || '',
+                location: event.location || '',
+                groupId: groupId,
+                frequency: "once",
+                repetitions: 1,
+                startTime: event.start,
+                endTime: event.end,
+                // Aggiungi altri campi se necessario
+            });
+            await EventSchema.create(newEvent);
+        }
+
+        //await newEvent.save(); // Salva l'evento nel database
+    }
+
+
+    res.status(200).send("Calendario importato con successo");
+
 });
 
 export default router;

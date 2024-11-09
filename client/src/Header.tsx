@@ -487,26 +487,25 @@ export default function Header(): React.JSX.Element {
 
     //ottengo tutti gli eventi, e guardo se la currentDate cade in un evento di tipo "NON DISTURBARE". Se si, ritorna true.
     const checkDoNotDisturb = async (): Promise<void> => {
-        // const currentUser = await getCurrentUser();
-        //const owner = currentUser.value.username;
-        console.log("Questo è il currentUser nell'header:", user);
-        const res = await fetch(`${SERVER_API}/events/owner?owner=${user}`);
+        const currentUser = await getCurrentUser();
+        const owner = currentUser.value.username;
+        const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
         const eventi = await res.json();
-
+        // console.log("eventi:", eventi);
         // console.log("Questi sono gli eventi trovati nell'header:", eventi);
         const eventiValue = eventi.value;
-        console.log("Questi sono gli eventi trovati nell'header:", eventiValue);
+        // console.log("eventiValue:", eventiValue);
 
         for (const evento of eventiValue) {
-            console.log("Questo è l'evento di un iterazione:", evento);
+            //console.log("Questo è l'evento di un iterazione:", evento);
             if (evento.title === "Non disturbare") {
                 const startTime = new Date(evento.startTime);
                 const endTime = new Date(evento.endTime);
-                console.log("Questa è la currentDate:", currentDate);
-                console.log("Questo è l'orario di inizio:", startTime);
-                console.log("Questo è l'orario di fine:", endTime);
+                //console.log("Questa è la currentDate:", currentDate);
+                //console.log("Questo è l'orario di inizio:", startTime);
+                //console.log("Questo è l'orario di fine:", endTime);
                 if (currentDate >= startTime && currentDate <= endTime) {
-                    console.log("Trovato evento doNotDisturb che concorre con la currentDate");
+                    //console.log("Trovato evento doNotDisturb che concorre con la currentDate");
                     setDoNotDisturb(true); //trovato evento non disturbare, non ricevere inviti eventi/attività finchè è true
                     return;
                 }
