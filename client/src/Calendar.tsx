@@ -454,17 +454,17 @@ export default function Calendar(): React.JSX.Element { // prova push
 	async function loadEvents(): Promise<void> {
 		try {
 			const currentUser = await getCurrentUser();
-			console.log("Valore ottenuto:", currentUser);
+			//console.log("Valore ottenuto:", currentUser);
 
 			const owner = currentUser.value.username;
-			console.log("Questo è l'owner:", owner);
+			//console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
-			console.log("Eventi trovati:", data);
+			//console.log("Eventi trovati:", data);
 
 			if (data.status === ResponseStatus.GOOD) {
 				setEventList(data.value);
-				console.log("stampo data.values:", data.value);
+				//console.log("stampo data.values:", data.value);
 			} else {
 				setMessage("Errore nel ritrovamento degli eventi");
 			}
@@ -678,15 +678,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 	}, []);
 
 	React.useEffect(() => {
-		console.log("EventList aggiornato", eventList);
+		//console.log("EventList aggiornato", eventList);
 	}, [eventList]); // Esegui questo effetto ogni volta che eventList cambia
 
 	React.useEffect(() => {
-		console.log("ActivityList aggiornato", activityList);
+		//console.log("ActivityList aggiornato", activityList);
 	}, [activityList]); // Esegui questo effetto ogni volta che activityList cambia
 
 	React.useEffect(() => {
-		console.log("CurrentDate aggiornato", currentDate);
+		//console.log("CurrentDate aggiornato", currentDate);
 	}, [currentDate]); // Esegui questo effetto ogni volta che currentDate cambia
 
 	//funzione per aggiungere pallino al giorno che contiene eventi
@@ -1498,11 +1498,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
 
 		if (resBody.status === ResponseStatus.GOOD) {
-			alert("Invito inviato correttamente");
+			//alert("Invito inviato correttamente");
 			setUsers([]);
 		} else {
 			alert(resBody.message);
 		}
+
+		toggleCreateActivity();
 	}
 
 	async function handleSendInviteEvent(
@@ -1610,11 +1612,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
 
 		if (resBody.status === ResponseStatus.GOOD) {
-			alert("Invito inviato correttamente");
+			//alert("Invito inviato correttamente");
 			setUsers([]);
 		} else {
 			alert(resBody.message);
 		}
+
+		toggleCreateEvent();
+
 	}
 
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {

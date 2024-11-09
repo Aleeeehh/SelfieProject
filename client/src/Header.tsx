@@ -22,6 +22,7 @@ export default function Header(): React.JSX.Element {
     const [showTimeMachine, setShowTimeMachine] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
+    const [doNotDisturb, setDoNotDisturb] = useState(false);
     // const [noNotifications, setNoNotifications] = useState(false);
     const [notifications, setNotifications] = useState([] as Notification[]);
     const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
@@ -118,6 +119,7 @@ export default function Header(): React.JSX.Element {
     useEffect(() => {
         if (showNotifications) {
             cleanNotifications(); // Chiama la funzione per pulire le notifiche
+            checkDoNotDisturb();
         }
     }, [showNotifications]); // Dipendenza da showNotifications
 
@@ -139,7 +141,7 @@ export default function Header(): React.JSX.Element {
 
             // Invia la nuova data al server
             await postCurrentDate(newDate); // Invia la nuova data al server
-
+            checkDoNotDisturb();
             fetchNotifications(); //ogni volta che modifico la data corrente, ottieni le notifiche
             hasEventNotifications(); //aggiorna il fatto che ci siano notifiche o meno di tipo event
             // console.log("NOTIFICHE:", notifications);
@@ -470,24 +472,10 @@ export default function Header(): React.JSX.Element {
                 `${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`
             );
             const data = await response.json();
-            /*
-            console.log("Questa è la risposta alla fetch delle notifiche:", data);
-            console.log("Questa è la risposta alla fetch delle notifiche:", data);
-            console.log("Questa è la risposta alla fetch delle notifiche:", data);
-            console.log("Questa è la risposta alla fetch delle notifiche:", data);
-            */
 
             // console.log("Notifications:", data);
             if (data.status === ResponseStatus.GOOD) {
                 setNotifications(data.value);
-                /*
-                console.log("Queste sono le notifiche nell'header:", notifications);
-                console.log("Queste sono le notifiche nell'header:", notifications);
-                console.log("Queste sono le notifiche nell'header:", notifications);
-                console.log("Queste sono le notifiche nell'header:", notifications);
-                console.log("Queste sono le notifiche nell'header:", notifications);
-                */
-
 
             } else {
                 console.error("Error:", data.message);
@@ -497,20 +485,45 @@ export default function Header(): React.JSX.Element {
         }
     };
 
+    //ottengo tutti gli eventi, e guardo se la currentDate cade in un evento di tipo "NON DISTURBARE". Se si, ritorna true.
+    const checkDoNotDisturb = async (): Promise<void> => {
+        // const currentUser = await getCurrentUser();
+        //const owner = currentUser.value.username;
+        console.log("Questo è il currentUser nell'header:", user);
+        const res = await fetch(`${SERVER_API}/events/owner?owner=${user}`);
+        const eventi = await res.json();
+
+        // console.log("Questi sono gli eventi trovati nell'header:", eventi);
+        const eventiValue = eventi.value;
+        console.log("Questi sono gli eventi trovati nell'header:", eventiValue);
+
+        for (const evento of eventiValue) {
+            console.log("Questo è l'evento di un iterazione:", evento);
+            if (evento.title === "Non disturbare") {
+                const startTime = new Date(evento.startTime);
+                const endTime = new Date(evento.endTime);
+                console.log("Questa è la currentDate:", currentDate);
+                console.log("Questo è l'orario di inizio:", startTime);
+                console.log("Questo è l'orario di fine:", endTime);
+                if (currentDate >= startTime && currentDate <= endTime) {
+                    console.log("Trovato evento doNotDisturb che concorre con la currentDate");
+                    setDoNotDisturb(true); //trovato evento non disturbare, non ricevere inviti eventi/attività finchè è true
+                    return;
+                }
+            }
+
+        }
+        //se non trova l'evento non disturbare, allora non disturbare è false
+        setDoNotDisturb(false);
+    }
+
+
+
+
     useEffect(() => {
         const fetchData = async (): Promise<void> => {
             await postCurrentDate(currentDate); // invia la data corrente al server
             const currentUser = await getCurrentUser();
-
-
-            console.log("Questo è il currentUser", currentUser);
-            console.log("Questo è il currentUser:", currentUser);
-            console.log("Questo è il currentUser:", currentUser);
-            console.log("Questo è il currentUser:", currentUser);
-            console.log("Questo è il user nell'header:", currentUser.value.username);
-            console.log("Questo è il user nell'header:", currentUser.value.username);
-            console.log("Questo è il user nell'header:", currentUser.value.username);
-            console.log("Questo è il user nell'header:", currentUser.value.username);
 
             setUser(currentUser.value.username);
 
@@ -528,17 +541,7 @@ export default function Header(): React.JSX.Element {
 
     useEffect(() => {
         fetchNotifications(); // Fetch delle notifiche
-        /*
-        console.log("Questo è il user nell'header:", user);
-        console.log("Questo è il user nell'header:", user);
-        console.log("Questo è il user nell'header:", user);
-        console.log("Questo è il user nell'header:", user);
-
-        console.log("Queste sono le notifiche nell'header:", notifications);
-        console.log("Queste sono le notifiche nell'header:", notifications);
-        console.log("Queste sono le notifiche nell'header:", notifications);
-        console.log("Queste sono le notifiche nell'header:", notifications);
-        */
+        checkDoNotDisturb();
 
         // Aggiorna la currentDate della Home ogni secondo
         const intervalId = setInterval(() => {
@@ -801,9 +804,14 @@ export default function Header(): React.JSX.Element {
                         }
                     >
                         <i className="fas fa-bell" />
-                        {hasEventNotifications() && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
+                        {hasEventNotifications() && !doNotDisturb && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
                             <span className="notification-dot" />
                         )}
+                        {hasEventNotifications() && doNotDisturb && ( // Mostra il pallino grigio se sei in modalità non disturbare
+                            <span className="notification-dot-gray" />
+                        )}
+
+
                     </button>
                     {showNotifications && (
                         <>
@@ -819,12 +827,17 @@ export default function Header(): React.JSX.Element {
                                     borderRadius: "10px",
                                 }}
                             >
+                                {doNotDisturb && (
+                                    <div>
+                                        Sei in modalità <span style={{ fontWeight: "bold", color: "gray" }}>non disturbare</span>
+                                    </div>
+                                )}
                                 {notifications && notifications.length > 0 ? (
                                     (
                                         notifications.map((notification, index) => {
                                             console.log("NOTIFICHE ATTUALI:", notifications);
                                             // TODO: Differentiate by type
-                                            if (notification.type === "pomodoro") {
+                                            if (notification.type === "pomodoro" /*&& notification.receiver === user*/) {
                                                 const nCycles =
                                                     notification.data.cycles || 5;
                                                 const nStudyTime =
@@ -837,7 +850,7 @@ export default function Header(): React.JSX.Element {
                                                 return (
                                                     <>
                                                         <a
-                                                            href={`/pomodoro?cycles=${nCycles}&studyTime=${nStudyTime}&pauseTime=${nPauseTime}`}
+                                                            href={`/ pomodoro ? cycles = ${nCycles} & studyTime=${nStudyTime} & pauseTime=${nPauseTime}`}
                                                             key={index} // Sposta la chiave qui
                                                             style={{
                                                                 color: "black",
@@ -997,7 +1010,8 @@ export default function Header(): React.JSX.Element {
                                             }
 
                                             else if (
-                                                notification.data.isInfiniteEvent === true
+                                                notification.data.isInfiniteEvent === true &&
+                                                notification.receiver === user
                                             ) {
                                                 console.log(
                                                     "ENTRO NELL'IF DELLA NOTIFICA INFINITA:",
@@ -1067,6 +1081,7 @@ export default function Header(): React.JSX.Element {
                                                 notification.data.activity &&
                                                 notification.receiver === user &&
                                                 notification.read === false
+                                                && doNotDisturb === false
                                             ) {
                                                 const eventDate = new Date(
                                                     notification.data.date
@@ -1201,6 +1216,7 @@ export default function Header(): React.JSX.Element {
                                                 !notification.data.activity &&
                                                 notification.receiver === user &&
                                                 notification.read === false
+                                                && doNotDisturb === false
                                             ) {
                                                 const eventDate = new Date(
                                                     notification.data.date
@@ -1329,6 +1345,7 @@ export default function Header(): React.JSX.Element {
                                                     );
                                                 }
                                             }
+
 
 
                                             return null;
