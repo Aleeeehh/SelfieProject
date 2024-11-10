@@ -154,6 +154,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 		})();
 	}, []);
 
+	/*
+	React.useEffect(() => {
+		const intervalId = setInterval(() => {
+			fetchCurrentDate(); // Chiama la funzione per ottenere la data corrente solo se non stai usando il time machine
+		}, 1000);
+
+		return () => clearInterval(intervalId); // Pulizia dell'intervallo al momento dello smontaggio
+	}, []);
+	*/
+
 	const fetchCurrentDate = async (): Promise<void> => {
 		try {
 			const response = await fetch(`${SERVER_API}/currentDate`);
@@ -549,6 +559,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 		loadEvents();
 	}, []);
 
+	/*
+		React.useEffect(() => {
+			//loadEvents();
+		}, [currentDate]);
+		/*
+	/*
+		React.useEffect(() => {
+			handleDateClick(day);
+		}, [eventList]);
+		*/
 	React.useEffect(() => {
 		loadActivities();
 	}, []);
@@ -952,6 +972,21 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setSendInviteActivity(false);
 		setShareActivity(false);
 	}
+
+	const handleScroll = (e: React.WheelEvent<HTMLDivElement>): void => {
+		e.preventDefault(); // Previene il comportamento di scroll predefinito
+		const scrollAmount = e.deltaY; // Ottieni la quantità di scroll
+		const orarioDivs = document.querySelectorAll('.orario'); // Seleziona tutti i div con classe 'orario'
+
+		// Calcola il nuovo scroll per il div attivo
+		const activeDiv = e.currentTarget as HTMLDivElement;
+		const newScrollTop = activeDiv.scrollTop + scrollAmount;
+
+		// Applica lo scroll a ciascun div
+		orarioDivs.forEach(div => {
+			div.scrollTop = newScrollTop; // Imposta la stessa posizione di scroll
+		});
+	};
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
 		//console.log("SITUAZIONE EVENT LIST PRIMA DEL CLICK:", eventList);
@@ -1456,7 +1491,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//const currentUser = await getCurrentUser();
 
 		//const ownerr = currentUser.value.username;
-
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
@@ -1500,6 +1534,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				},
 
 			}
+
 		}
 
 
@@ -1562,6 +1597,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 
 		toggleCreateActivity();
+		setSendInviteActivity(false);
 	}
 
 	async function handleSendInviteEvent(
@@ -1580,8 +1616,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		//const ownerr = currentUser.value.username;
 
-		const startTime = new Date(endTime);
-		startTime.setHours(endTime.getHours() - 1);
+
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
 		let newNotification;
@@ -1676,6 +1711,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 
 		toggleCreateEvent();
+		setSendInviteEvent(false);
+
 
 	}
 
@@ -1683,6 +1720,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		e.preventDefault();
 		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
 		setAccessList([...accessList, users[0]]);
+
 	}
 
 	function toggleShareActivity(): void {
@@ -2887,12 +2925,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<input
 													className="btn border"
 													type="time"
-													value={`${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`}
+													value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 														const [hours, minutes] = e.target.value.split(':');
-														const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-														newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
-														setStartTime(newDate); // Imposta il nuovo oggetto Date
+														if (hours && minutes) { // Controlla se hours e minutes sono definiti
+															const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
+															newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+															setStartTime(newDate); // Imposta il nuovo oggetto Date
+														}
+													}}
+													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+														if (e.key === 'Backspace') {
+															e.preventDefault(); // Impedisce l'input del tasto backspace
+														}
 													}}
 												/>
 											</div>
@@ -2925,9 +2970,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 													value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 														const [hours, minutes] = e.target.value.split(':');
-														const newDate = new Date(endTime);
-														newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-														setEndTime(newDate); // Imposta il nuovo oggetto Date
+														if (hours && minutes) { // Controlla se hours e minutes sono definiti
+															const newDate = new Date(endTime);
+															newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+															setEndTime(newDate); // Imposta il nuovo oggetto Date
+														}
+													}}
+													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+														if (e.key === 'Backspace') {
+															e.preventDefault(); // Impedisce l'input del tasto backspace
+														}
 													}}
 												/>
 											</div>
@@ -3123,6 +3175,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 												const newDate = new Date(endTime);
 												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
 												setEndTime(newDate); // Imposta il nuovo oggetto Date
+											}}
+											onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+												if (e.key === 'Backspace') {
+													e.preventDefault(); // Impedisce l'input del tasto backspace
+												}
 											}}
 										/>
 									</div>
@@ -3395,12 +3452,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<input
 													className="btn border"
 													type="time"
-													value={`${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`}
+													value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 														const [hours, minutes] = e.target.value.split(':');
-														const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-														newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
-														setStartTime(newDate); // Imposta il nuovo oggetto Date
+														if (hours && minutes) { // Controlla se hours e minutes sono definiti
+															const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
+															newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+															setStartTime(newDate); // Imposta il nuovo oggetto Date
+														}
+													}}
+													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+														if (e.key === 'Backspace') {
+															e.preventDefault(); // Impedisce l'input del tasto backspace
+														}
 													}}
 												/>
 											</div>
@@ -3433,9 +3497,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 													value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 														const [hours, minutes] = e.target.value.split(':');
-														const newDate = new Date(endTime);
-														newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-														setEndTime(newDate); // Imposta il nuovo oggetto Date
+														if (hours && minutes) { // Controlla se hours e minutes sono definiti
+															const newDate = new Date(endTime);
+															newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+															setEndTime(newDate); // Imposta il nuovo oggetto Date
+														}
+													}}
+													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+														if (e.key === 'Backspace') {
+															e.preventDefault(); // Impedisce l'input del tasto backspace
+														}
 													}}
 												/>
 											</div>
@@ -3767,7 +3838,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												width: "95%",
 												flex: "1",
 												position: "relative",
-											}}>
+												overflowY: "auto",
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 0)}
 
@@ -3837,7 +3910,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 1)}
 
@@ -3900,7 +3974,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 
 											{renderWeekEvents(weekEvents, 2)}
@@ -3962,7 +4037,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 3)}
 											<time>00:00</time>
@@ -4023,7 +4099,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 4)}
 											<time>00:00</time>
@@ -4084,7 +4161,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 5)}
 											<time>00:00</time>
@@ -4145,7 +4223,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 6)}
 											<time>00:00</time>

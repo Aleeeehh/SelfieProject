@@ -629,6 +629,8 @@ router.post("/", async (req: Request, res: Response) => {
                     createdAt: now,
                     updatedAt: now,
                 };
+
+                console.log("Questo è l'evento da salvare:", event);
                 await EventSchema.create(event);
                 //      console.log("Inserted event: ", event);
             }

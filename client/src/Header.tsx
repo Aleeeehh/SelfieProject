@@ -34,6 +34,11 @@ export default function Header(): React.JSX.Element {
         setCurrentDate(event.target.value);
     };*/
 
+    function playNotificationSound(): void {
+        const ring = new Audio('public/images/Notification.mp3'); // Assicurati che il percorso sia corretto
+        ring.play();
+    }
+
     const formatDate = (date: Date): string => {
         return date.toLocaleString("it-IT", {
             // Formato italiano
@@ -239,6 +244,9 @@ export default function Header(): React.JSX.Element {
         const frequency = notification.data.event.frequency;
         const untilDate = notification.data.event.untilDate;
         const repetitions = notification.data.event.repetitions;
+
+        console.log("START TIME DELL'EVENTO DA CREARE:", startTime);
+        console.log("END TIME DELL'EVENTO DA CREARE:", endTime);
 
 
         //crea l'attività come evento sul calendario
@@ -487,30 +495,36 @@ export default function Header(): React.JSX.Element {
 
     //ottengo tutti gli eventi, e guardo se la currentDate cade in un evento di tipo "NON DISTURBARE". Se si, ritorna true.
     const checkDoNotDisturb = async (): Promise<void> => {
+        // console.log("ENTRO ED EFFETTUO LA CHECKDONOTDISTURB");
         const currentUser = await getCurrentUser();
         const owner = currentUser.value.username;
-        const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
-        const eventi = await res.json();
-        // console.log("eventi:", eventi);
-        // console.log("Questi sono gli eventi trovati nell'header:", eventi);
-        const eventiValue = eventi.value;
-        // console.log("eventiValue:", eventiValue);
+        try {
+            const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+            const eventi = await res.json();
+            // console.log("eventi:", eventi);
+            // console.log("Questi sono gli eventi trovati nell'header:", eventi);
+            const eventiValue = eventi.value;
+            // console.log("eventiValue:", eventiValue);
 
-        for (const evento of eventiValue) {
-            //console.log("Questo è l'evento di un iterazione:", evento);
-            if (evento.title === "Non disturbare") {
-                const startTime = new Date(evento.startTime);
-                const endTime = new Date(evento.endTime);
-                //console.log("Questa è la currentDate:", currentDate);
-                //console.log("Questo è l'orario di inizio:", startTime);
-                //console.log("Questo è l'orario di fine:", endTime);
-                if (currentDate >= startTime && currentDate <= endTime) {
-                    //console.log("Trovato evento doNotDisturb che concorre con la currentDate");
-                    setDoNotDisturb(true); //trovato evento non disturbare, non ricevere inviti eventi/attività finchè è true
-                    return;
+            for (const evento of eventiValue) {
+                //console.log("Questo è l'evento di un iterazione:", evento);
+                if (evento.title === "Non disturbare") {
+                    const startTime = new Date(evento.startTime);
+                    const endTime = new Date(evento.endTime);
+                    //console.log("Questa è la currentDate:", currentDate);
+                    //console.log("Questo è l'orario di inizio:", startTime);
+                    //console.log("Questo è l'orario di fine:", endTime);
+                    if (currentDate >= startTime && currentDate <= endTime) {
+                        //console.log("Trovato evento doNotDisturb che concorre con la currentDate");
+                        setDoNotDisturb(true); //trovato evento non disturbare, non ricevere inviti eventi/attività finchè è true
+                        return;
+                    }
                 }
-            }
 
+            }
+        } catch (e) {
+            console.error("Errore nel ritrovare eventi dell'utente", e);
+            setDoNotDisturb(false);
         }
         //se non trova l'evento non disturbare, allora non disturbare è false
         setDoNotDisturb(false);
@@ -798,9 +812,10 @@ export default function Header(): React.JSX.Element {
                             position: "relative", // Posizionamento relativo per il pallino
                             width: "45px",
                         }}
-                        onClick={(): void =>
-                            setShowNotifications(!showNotifications)
-                        }
+                        onClick={(): void => {
+                            setShowNotifications(!showNotifications);
+                            playNotificationSound();
+                        }}
                     >
                         <i className="fas fa-bell" />
                         {hasEventNotifications() && !doNotDisturb && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
