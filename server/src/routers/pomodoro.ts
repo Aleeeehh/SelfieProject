@@ -237,11 +237,11 @@ router.post("/notifications", async (req: Request, res: Response) => {
             return res.status(400).json(resBody);
         }
 
-        const foundReceiver = await UserSchema.findById(receiver);
+        const foundReceiver = await UserSchema.findOne({ username: receiver });
 
         if (!foundReceiver) {
             const resBody: ResponseBody = {
-                message: "User with id " + receiver + " not found!",
+                message: "User with username " + receiver + " not found!",
                 status: ResponseStatus.BAD,
             };
             return res.status(400).json(resBody);

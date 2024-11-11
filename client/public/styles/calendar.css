@@ -138,6 +138,29 @@ button.btn:focus {
 	width: 100%;
 }
 
+.orario {
+	overflow-y: scroll;
+	/* Assicurati che lo scroll sia abilitato */
+}
+
+/* Nascondi la scrollbar per WebKit (Chrome, Safari) */
+.orario::-webkit-scrollbar {
+	display: none;
+	/* Nasconde la scrollbar */
+}
+
+/* Nascondi la scrollbar per Firefox */
+.orario {
+	scrollbar-width: none;
+	/* Nasconde la scrollbar */
+}
+
+/* Nascondi la scrollbar per Internet Explorer e Edge */
+.orario {
+	-ms-overflow-style: none;
+	/* Nasconde la scrollbar */
+}
+
 .evento {
 	position: absolute;
 	display: flex;

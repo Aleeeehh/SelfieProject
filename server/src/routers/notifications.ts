@@ -19,17 +19,7 @@ router.post("/", async (req: Request, res: Response) => {
             repetitionsEvent: number; untilDateEvent: Date;
         };
 
-        console.log("Questo è il message:", message);
-        console.log("Questo è il message:", message);
-        console.log("Questo è il message:", message);
-        console.log("Questo è il message:", message);
-
-
         const activityName = message ? message.match(/Scadenza (.+?)(?: tra| iniziata)/)?.[1] : ""; // Cattura il nome dell'attività
-
-        console.log("Questo è l'activityName:", activityName);
-        console.log("Questo è l'activityName:", activityName);
-        console.log("Questo è l'activityName:", activityName);
 
         // TODO: validate body
 
@@ -52,19 +42,69 @@ router.post("/", async (req: Request, res: Response) => {
 
         let notification: Notification;
 
-        //Notifica base che si crea sempre
-        const newNotification: Notification = {
-            data: data || {},
-            sender,
-            receiver,
-            type,
-            sentAt: new Date(),
-            message,
-            isInfiniteEvent: data.isInfiniteEvent || false,
-            frequencyEvent: data.frequencyEvent || "",
-        };
-        notification = await NotificationSchema.create(newNotification);
-        console.log("NOTIFICA CREATA A PRESCINDERE (LA PRIMA):", newNotification);
+        if (type === "event") {
+
+            const notificationTime = data.firstNotificationTime;
+
+            // Determina il messaggio per questa notifica
+            let displayTime = notificationTime;
+            let timeUnit = "minuti";
+
+            if (notificationTime === 60) {
+                displayTime = 1; // 1 ora
+                timeUnit = "ora"; // Singolare
+            }
+            else if (notificationTime === 120) {
+                displayTime = 2; // 2 ore
+                timeUnit = "ore"; // Plurale
+            }
+
+            else if (notificationTime > 60 && notificationTime < 120) {
+                const remainingMinutes = notificationTime - 60; // Calcola i minuti rimanenti
+                displayTime = 1; // 1 ora
+                timeUnit = `ora e ${remainingMinutes} minuti`; // Visualizza "1 ora e X minuti"
+            } else if (notificationTime > 120) {
+                displayTime = Math.floor(notificationTime / 60); // Calcola le ore
+                timeUnit = "ore"; // Plurale
+            }
+
+            // Crea un nuovo messaggio per la notifica
+            const messageForNotification = message.replace(/(\d+)(?=\s+(minuti|ore))/g, displayTime.toString())
+                .replace(/minuti|ore/, timeUnit);
+
+
+            //Notifica base che si crea sempre
+            const newNotification: Notification = {
+                data: data || {},
+                sender,
+                receiver,
+                type,
+                sentAt: new Date(),
+                message: messageForNotification,
+                isInfiniteEvent: data.isInfiniteEvent || false,
+                frequencyEvent: data.frequencyEvent || "",
+            };
+
+
+            notification = await NotificationSchema.create(newNotification);
+            console.log("NOTIFICA CREATA A PRESCINDERE (LA PRIMA):", newNotification);
+        }
+        else {
+            //Notifica base che si crea sempre
+            const newNotification: Notification = {
+                data: data || {},
+                sender,
+                receiver,
+                type,
+                sentAt: new Date(),
+                message: message,
+                isInfiniteEvent: data.isInfiniteEvent || false,
+                frequencyEvent: data.frequencyEvent || "",
+            };
+
+
+            notification = await NotificationSchema.create(newNotification);
+        }
 
 
         //se ci sono più notifiche da aggiungere
@@ -101,6 +141,10 @@ router.post("/", async (req: Request, res: Response) => {
                 // Crea un nuovo messaggio per la notifica
                 const messageForNotification = message.replace(/(\d+)(?=\s+(minuti|ore))/g, displayTime.toString())
                     .replace(/minuti|ore/, timeUnit);
+
+                console.log("TIME UNIT:", timeUnit);
+
+                console.log("MESSAGGIO DELLA NOTIFICA RIPETUTA:", messageForNotification);
 
                 const anotherNotification: Notification = {
                     data: {
@@ -146,32 +190,32 @@ router.post("/", async (req: Request, res: Response) => {
                     default:
                         break;
                 }
+
+                const notificationTime = data.firstNotificationTime;
+                let displayTime = notificationTime;
+                let timeUnit = "minuti";
+
+                if (notificationTime === 60) {
+                    displayTime = 1; // 1 ora
+                    timeUnit = "ora"; // Singolare
+                }
+                else if (notificationTime === 120) {
+                    displayTime = 2; // 2 ore
+                    timeUnit = "ore"; // Plurale
+                }
+
+                else if (notificationTime > 60 && notificationTime < 120) {
+                    const remainingMinutes = notificationTime - 60; // Calcola i minuti rimanenti
+                    displayTime = 1; // 1 ora
+                    timeUnit = `ora e ${remainingMinutes} minuti`; // Visualizza "1 ora e X minuti"
+                } else if (notificationTime > 120) {
+                    displayTime = Math.floor(notificationTime / 60); // Calcola le ore
+                    timeUnit = "ore"; // Plurale
+                }
+
                 // Crea un nuovo messaggio per la notifica
-                var messageForNotification = message.replace(/(\d+)(?=\s+(minuti|ore))/g, (match) => {
-                    const notificationsTime = data.firstNotificationTime;
-
-                    // Se notificationsTime è maggiore di 60, calcola ore e minuti
-                    if (notificationsTime > 60) {
-                        const hours = Math.floor(notificationsTime / 60);
-                        const minutes = notificationsTime % 60; // Resto per ottenere i minuti
-                        let result = `${hours} ${hours === 1 ? 'ora' : 'ore'}`; // Aggiungi ore
-
-                        // Aggiungi minuti solo se sono maggiori di 0
-                        if (minutes > 0) {
-                            result += ` e ${minutes} minuti`;
-                        }
-
-                        return result;
-                    }
-
-                    // Se notificationsTime è 60 o meno, restituisci il valore originale
-                    return notificationsTime.toString();
-                });
-
-                // Assicurati di sostituire solo il numero e non "minuti" o "ore"
-                messageForNotification = messageForNotification.replace(/minuti|ore/g, (match) => {
-                    return match; // Mantieni "minuti" o "ore" come sono
-                });
+                const messageForNotification = message.replace(/(\d+)(?=\s+(minuti|ore))/g, displayTime.toString())
+                    .replace(/minuti|ore/, timeUnit);
 
                 console.log("FIRST NOTIFICATION TIME CHE DOVREBBE ESSERE UGUALE PER TUTTI:", data.firstNotificationTime);
                 console.log("MESSAGGIO DELLA NOTIFICA:", messageForNotification);
@@ -281,7 +325,7 @@ router.post("/", async (req: Request, res: Response) => {
             switch (frequency) {
                 case "day":
                     nextDate.setDate(nextDate.getDate() + 1);
-                    untilDate.setDate(untilDate.getDate() + 1); //DAI SPAZIO ALLA UNTILDATE PER FARE UN'ITERAZIONE IN PIU NEL WHILE
+                    //untilDate.setDate(untilDate.getDate() + 1); //DAI SPAZIO ALLA UNTILDATE PER FARE UN'ITERAZIONE IN PIU NEL WHILE
                     break;
                 case "week":
                     nextDate.setDate(nextDate.getDate() + 7);
@@ -301,29 +345,34 @@ router.post("/", async (req: Request, res: Response) => {
                 console.log("ENTRATO DENTRO AL WHILE CON DATA NEXTDATE:", nextDate);
                 // Crea un nuovo messaggio per la notifica
 
-                const messageForNotification = message.replace(/(\d+)(?=\s+(minuti|ore))/g, (match) => {
-                    const notificationsTime = data.firstNotificationTime;
+                const notificationTime = data.firstNotificationTime;
 
-                    // Se notificationsTime è maggiore di 60, calcola ore e minuti
-                    if (notificationsTime >= 60) {
-                        const hours = Math.floor(notificationsTime / 60);
-                        const minutes = notificationsTime % 60; // Resto per ottenere i minuti
-                        let result = `${hours} ${hours === 1 ? 'ora' : 'ore'}`; // Aggiungi ore
+                // Determina il messaggio per questa notifica
+                let displayTime = notificationTime;
+                let timeUnit = "minuti";
 
-                        // Aggiungi minuti solo se sono maggiori di 0
-                        if (minutes > 0) {
-                            result += ` e ${minutes} minuti`;
-                        }
+                if (notificationTime === 60) {
+                    displayTime = 1; // 1 ora
+                    timeUnit = "ora"; // Singolare
+                }
+                else if (notificationTime === 120) {
+                    displayTime = 2; // 2 ore
+                    timeUnit = "ore"; // Plurale
+                }
 
-                        return result; // Restituisci il risultato formattato
-                    }
+                else if (notificationTime > 60 && notificationTime < 120) {
+                    const remainingMinutes = notificationTime - 60; // Calcola i minuti rimanenti
+                    displayTime = 1; // 1 ora
+                    timeUnit = `ora e ${remainingMinutes} minuti`; // Visualizza "1 ora e X minuti"
+                } else if (notificationTime > 120) {
+                    displayTime = Math.floor(notificationTime / 60); // Calcola le ore
+                    timeUnit = "ore"; // Plurale
+                }
 
-                    // Se notificationsTime è 60 o meno, restituisci il valore originale con "minuti"
-                    return `${notificationsTime} ${notificationsTime === 1 ? 'minuto' : 'minuti'}`;
-                }).replace(/minuti|ore/g, (match) => {
-                    // Mantieni "minuti" o "ore" come sono, evitando duplicati
-                    return match;
-                });
+                // Crea un nuovo messaggio per la notifica
+                const messageForNotification = message.replace(/(\d+)(?=\s+(minuti|ore))/g, displayTime.toString())
+                    .replace(/minuti|ore/, timeUnit);
+
                 console.log("MESSAGGIO ORIGINALE:", message);
                 console.log("MESSAGGIO MODIFICATO:", messageForNotification);
 
@@ -333,7 +382,7 @@ router.post("/", async (req: Request, res: Response) => {
                         idEventoNotificaCondiviso: data.idEventoNotificaCondiviso,
                         repeatedNotification: false,
                         repeatTime: data.repeatTime,
-                        firstNotificationTime: data.firstNotificationTime,
+                        firstNotificationTime: messageForNotification,
                         isInfiniteEvent: false,
                     },
                     sender,

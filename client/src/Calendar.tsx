@@ -55,6 +55,8 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
+	const [file, setFile] = React.useState<File | null>(null);
+	//const [insertFile, setInsertFile] = React.useState(false);
 	const [description, setDescription] = React.useState("");
 	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
 	const [accessList, setAccessList] = React.useState([] as string[]);
@@ -151,6 +153,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}
 		})();
 	}, []);
+
+	/*
+	React.useEffect(() => {
+		const intervalId = setInterval(() => {
+			fetchCurrentDate(); // Chiama la funzione per ottenere la data corrente solo se non stai usando il time machine
+		}, 1000);
+
+		return () => clearInterval(intervalId); // Pulizia dell'intervallo al momento dello smontaggio
+	}, []);
+	*/
 
 	const fetchCurrentDate = async (): Promise<void> => {
 		try {
@@ -450,26 +462,81 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	}
 
+	async function handleDownloadCalendar(): Promise<void> {
+		const currentUser = await getCurrentUser();
+		const owner = currentUser.value.username;
+		const res = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
+		if (res.ok) {
+			const data = await res.blob();  // Ottieni il blob del file
+			console.log("icalString:", data);
+			const url = URL.createObjectURL(data); // Crea un URL per il blob
+			const a = document.createElement('a'); // Crea un elemento <a>
+			a.style.display = 'none'; // Nascondi l'elemento
+			a.href = url; // Imposta l'URL del blob come href
+			a.download = 'calendar.ics'; // Nome del file da scaricare
+			a.click(); // Simula un clic per avviare il download
+			window.URL.revokeObjectURL(url); // Pulisce l'URL del blob
+		} else {
+			setMessage("Errore nel download del calendario");
+		}
+	}
+
+	async function handleImportCalendar(): Promise<void> {
+		if (!file) {
+			console.log("Nessun file selezionato");
+			return;
+		}
+
+		const currentUser = await getCurrentUser();
+		const owner = currentUser.value.username;
+
+		const formData = new FormData();
+		formData.append('calendarFile', file); // Aggiungi il file al FormData
+		formData.append('owner', owner); // Aggiungi l'owner al FormData
+		console.log("Questo è il file:", file);
+
+		// Esegui una richiesta per importare il file
+		const response = await fetch(`${SERVER_API}/events/importCalendar`, {
+			method: 'POST',
+			body: formData,
+		});
+
+		if (response.ok) {
+			console.log("Calendario importato con successo");
+		} else {
+			console.error("Errore durante l'importazione del calendario");
+		}
+		loadEvents();
+		handleDateClick(day);
+	};
+
 
 	async function loadEvents(): Promise<void> {
 		try {
 			const currentUser = await getCurrentUser();
-			console.log("Valore ottenuto:", currentUser);
+			//console.log("Valore ottenuto:", currentUser);
 
 			const owner = currentUser.value.username;
-			console.log("Questo è l'owner:", owner);
+			//console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
-			console.log("Eventi trovati:", data);
+			//console.log("Eventi trovati:", data);
 
 			if (data.status === ResponseStatus.GOOD) {
 				setEventList(data.value);
-				console.log("stampo data.values:", data.value);
+				//console.log("stampo data.values:", data.value);
 			} else {
 				setMessage("Errore nel ritrovamento degli eventi");
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
+		}
+	}
+
+	function handleFileChange(e: React.ChangeEvent<HTMLInputElement>): void {
+		const file = e.target.files?.[0];
+		if (file) {
+			setFile(file);
 		}
 	}
 
@@ -492,6 +559,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 		loadEvents();
 	}, []);
 
+	/*
+		React.useEffect(() => {
+			//loadEvents();
+		}, [currentDate]);
+		/*
+	/*
+		React.useEffect(() => {
+			handleDateClick(day);
+		}, [eventList]);
+		*/
 	React.useEffect(() => {
 		loadActivities();
 	}, []);
@@ -678,15 +755,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 	}, []);
 
 	React.useEffect(() => {
-		console.log("EventList aggiornato", eventList);
+		//console.log("EventList aggiornato", eventList);
 	}, [eventList]); // Esegui questo effetto ogni volta che eventList cambia
 
 	React.useEffect(() => {
-		console.log("ActivityList aggiornato", activityList);
+		//console.log("ActivityList aggiornato", activityList);
 	}, [activityList]); // Esegui questo effetto ogni volta che activityList cambia
 
 	React.useEffect(() => {
-		console.log("CurrentDate aggiornato", currentDate);
+		//console.log("CurrentDate aggiornato", currentDate);
 	}, [currentDate]); // Esegui questo effetto ogni volta che currentDate cambia
 
 	//funzione per aggiungere pallino al giorno che contiene eventi
@@ -895,6 +972,21 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setSendInviteActivity(false);
 		setShareActivity(false);
 	}
+
+	const handleScroll = (e: React.WheelEvent<HTMLDivElement>): void => {
+		e.preventDefault(); // Previene il comportamento di scroll predefinito
+		const scrollAmount = e.deltaY; // Ottieni la quantità di scroll
+		const orarioDivs = document.querySelectorAll('.orario'); // Seleziona tutti i div con classe 'orario'
+
+		// Calcola il nuovo scroll per il div attivo
+		const activeDiv = e.currentTarget as HTMLDivElement;
+		const newScrollTop = activeDiv.scrollTop + scrollAmount;
+
+		// Applica lo scroll a ciascun div
+		orarioDivs.forEach(div => {
+			div.scrollTop = newScrollTop; // Imposta la stessa posizione di scroll
+		});
+	};
 
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
 		//console.log("SITUAZIONE EVENT LIST PRIMA DEL CLICK:", eventList);
@@ -1399,7 +1491,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//const currentUser = await getCurrentUser();
 
 		//const ownerr = currentUser.value.username;
-
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
@@ -1443,6 +1534,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				},
 
 			}
+
 		}
 
 
@@ -1498,11 +1590,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
 
 		if (resBody.status === ResponseStatus.GOOD) {
-			alert("Invito inviato correttamente");
+			//alert("Invito inviato correttamente");
 			setUsers([]);
 		} else {
 			alert(resBody.message);
 		}
+
+		toggleCreateActivity();
+		setSendInviteActivity(false);
 	}
 
 	async function handleSendInviteEvent(
@@ -1521,8 +1616,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		//const ownerr = currentUser.value.username;
 
-		const startTime = new Date(endTime);
-		startTime.setHours(endTime.getHours() - 1);
+
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
 		let newNotification;
@@ -1610,17 +1704,23 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
 
 		if (resBody.status === ResponseStatus.GOOD) {
-			alert("Invito inviato correttamente");
+			//alert("Invito inviato correttamente");
 			setUsers([]);
 		} else {
 			alert(resBody.message);
 		}
+
+		toggleCreateEvent();
+		setSendInviteEvent(false);
+
+
 	}
 
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
 		setAccessList([...accessList, users[0]]);
+
 	}
 
 	function toggleShareActivity(): void {
@@ -2045,6 +2145,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
+
+		//chiamata alla route per ical
+		const res4 = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
+		const data4 = await res4.json();
+		console.log("ICAL:", data4);
 	}
 
 	async function handleCreateNonDisturbare(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -2639,6 +2744,33 @@ export default function Calendar(): React.JSX.Element { // prova push
 								<option value="2">Attività</option>
 							</select>
 						</div>
+
+
+						<div style={{ marginTop: "10px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+							<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+								onClick={handleDownloadCalendar}>Scarica Calendario
+							</button>
+							<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "black", border: "0", marginLeft: "20px" }}
+								onClick={handleImportCalendar}>Importa Calendario
+							</button>
+
+
+							<div style={{ marginLeft: "20px", maxWidth: "100px" }}>
+								<input
+									className="btn border"
+									style={{ display: "none" }}
+									type="file" accept=".ics"
+									onChange={handleFileChange}
+									id="file-upload" // Aggiungi un ID per il collegamento
+								/>
+								<label htmlFor="file-upload" className="btn btn-primary border" style={{ backgroundColor: "white", color: "black", border: "0", marginLeft: "20px" }}>
+									Scegli file
+								</label>
+							</div>
+
+
+						</div>
+
 					</div>
 					{createEvent && (
 						<div className="create-event-container col-2">
@@ -2793,12 +2925,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<input
 													className="btn border"
 													type="time"
-													value={`${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`}
+													value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 														const [hours, minutes] = e.target.value.split(':');
-														const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-														newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
-														setStartTime(newDate); // Imposta il nuovo oggetto Date
+														if (hours && minutes) { // Controlla se hours e minutes sono definiti
+															const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
+															newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+															setStartTime(newDate); // Imposta il nuovo oggetto Date
+														}
+													}}
+													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+														if (e.key === 'Backspace') {
+															e.preventDefault(); // Impedisce l'input del tasto backspace
+														}
 													}}
 												/>
 											</div>
@@ -2831,9 +2970,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 													value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 														const [hours, minutes] = e.target.value.split(':');
-														const newDate = new Date(endTime);
-														newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-														setEndTime(newDate); // Imposta il nuovo oggetto Date
+														if (hours && minutes) { // Controlla se hours e minutes sono definiti
+															const newDate = new Date(endTime);
+															newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+															setEndTime(newDate); // Imposta il nuovo oggetto Date
+														}
+													}}
+													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+														if (e.key === 'Backspace') {
+															e.preventDefault(); // Impedisce l'input del tasto backspace
+														}
 													}}
 												/>
 											</div>
@@ -3029,6 +3175,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 												const newDate = new Date(endTime);
 												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
 												setEndTime(newDate); // Imposta il nuovo oggetto Date
+											}}
+											onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+												if (e.key === 'Backspace') {
+													e.preventDefault(); // Impedisce l'input del tasto backspace
+												}
 											}}
 										/>
 									</div>
@@ -3301,12 +3452,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<input
 													className="btn border"
 													type="time"
-													value={`${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`}
+													value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 														const [hours, minutes] = e.target.value.split(':');
-														const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-														newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
-														setStartTime(newDate); // Imposta il nuovo oggetto Date
+														if (hours && minutes) { // Controlla se hours e minutes sono definiti
+															const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
+															newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+															setStartTime(newDate); // Imposta il nuovo oggetto Date
+														}
+													}}
+													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+														if (e.key === 'Backspace') {
+															e.preventDefault(); // Impedisce l'input del tasto backspace
+														}
 													}}
 												/>
 											</div>
@@ -3339,9 +3497,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 													value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
 													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 														const [hours, minutes] = e.target.value.split(':');
-														const newDate = new Date(endTime);
-														newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-														setEndTime(newDate); // Imposta il nuovo oggetto Date
+														if (hours && minutes) { // Controlla se hours e minutes sono definiti
+															const newDate = new Date(endTime);
+															newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+															setEndTime(newDate); // Imposta il nuovo oggetto Date
+														}
+													}}
+													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+														if (e.key === 'Backspace') {
+															e.preventDefault(); // Impedisce l'input del tasto backspace
+														}
 													}}
 												/>
 											</div>
@@ -3673,7 +3838,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												width: "95%",
 												flex: "1",
 												position: "relative",
-											}}>
+												overflowY: "auto",
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 0)}
 
@@ -3743,7 +3910,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 1)}
 
@@ -3806,7 +3974,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 
 											{renderWeekEvents(weekEvents, 2)}
@@ -3868,7 +4037,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 3)}
 											<time>00:00</time>
@@ -3929,7 +4099,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 4)}
 											<time>00:00</time>
@@ -3990,7 +4161,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 5)}
 											<time>00:00</time>
@@ -4051,7 +4223,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 												fontSize: "0.8vw",
 												width: "calc(100% - 10px)",
 												flex: "1",
-											}}>
+											}}
+											onWheel={handleScroll}>
 
 											{renderWeekEvents(weekEvents, 6)}
 											<time>00:00</time>
