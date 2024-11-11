@@ -117,10 +117,11 @@ export default function ActivityForm({
 	}
 
 	return (
-		<form>
-			<label htmlFor="title">
-				Title
+		<form style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+			<label htmlFor="title" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+				Titolo
 				<input
+					style={{backgroundColor: "white"}}
 					className="btn border"
 					type="text"
 					name="title"
@@ -130,9 +131,10 @@ export default function ActivityForm({
 					}
 				/>
 			</label>
-			<label htmlFor="description">
+			<label htmlFor="description" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
 				Descrizione
 				<input
+					style={{backgroundColor: "white"}}
 					className="btn border"
 					type="text"
 					name="title"
@@ -142,7 +144,7 @@ export default function ActivityForm({
 					}
 				/>
 			</label>
-			<label htmlFor="endTime">
+			<label htmlFor="endTime" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
 				Scadenza
 				<div>
 					<DatePicker
@@ -165,6 +167,7 @@ export default function ActivityForm({
 				</div>
 				<div>
 					<input
+						style={{backgroundColor: "white"}}
 						className="btn border"
 						type="time"
 						value={`${activity.deadline
@@ -185,17 +188,17 @@ export default function ActivityForm({
 			</label>
 
 			<label htmlFor="allDayEvent">
+				Aggiungi notifica
 				<input
 					type="checkbox"
 					name="addNotification"
 					onClick={(): void => setAddNotification(!addNotification)}
 					style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 				/>
-				Aggiungi notifica
 			</label>
 
 			{addNotification && (
-				<label htmlFor="notificationTime">
+				<label htmlFor="notificationTime" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
 					Quanto tempo prima mandare la notifica
 					<select
 						id="notificationTimeSelect"
@@ -208,7 +211,7 @@ export default function ActivityForm({
 								setNotificationRepeat(false);
 							}
 						}}
-						style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+						style={{ backgroundColor: "white" }} // Aggiungi margine se necessario
 					>
 						<option value="0">All'ora d'inizio</option>
 						<option value="5">5 minuti prima</option>
@@ -224,9 +227,10 @@ export default function ActivityForm({
 			)}
 
 			{notificationRepeat && (
-				<label htmlFor="notificationRepeatTime">
-					Quanto tempo ripetere la notifica
+				<label htmlFor="notificationRepeatTime" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+					Ripetizioni notifica
 					<select
+						style={{backgroundColor: "white"}}
 						className="btn border"
 						name="notificationRepeatTime"
 						onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -252,7 +256,7 @@ export default function ActivityForm({
 						// activity.prev = prev;
 						// activity.next = prev;
 					}
-					<label htmlFor="start">
+					<label htmlFor="start" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
 						Data di inizio
 						<div>
 							<DatePicker
@@ -275,6 +279,7 @@ export default function ActivityForm({
 						</div>
 						<div>
 							<input
+								style={{backgroundColor: "white"}}
 								className="btn border"
 								type="time"
 								value={
@@ -308,6 +313,7 @@ export default function ActivityForm({
 					<label htmlFor="milestone">
 						Milestone:
 						<input
+							style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 							type="checkbox"
 							name="milestone"
 							checked={activity.milestone || false}
@@ -316,8 +322,9 @@ export default function ActivityForm({
 							}}
 						/>
 					</label>
-					<label htmlFor="advancementType">
+					<label htmlFor="advancementType" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
 						<select
+							style={{backgroundColor: "white"}}
 							className="btn border"
 							name="advancementType"
 							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -336,8 +343,9 @@ export default function ActivityForm({
 							/>
 						</select>
 					</label>
-					<label htmlFor="parent">
+					<label htmlFor="parent" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
 						<select
+							style={{backgroundColor: "white"}}
 							className="btn border"
 							name="parent"
 							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -351,8 +359,9 @@ export default function ActivityForm({
 							))}
 						</select>
 					</label>
-					<label htmlFor="prev">
+					<label htmlFor="prev" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
 						<select
+							style={{backgroundColor: "white"}}
 							className="btn border"
 							name="prev"
 							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -366,8 +375,9 @@ export default function ActivityForm({
 							))}
 						</select>
 					</label>
-					<label htmlFor="next">
+					<label htmlFor="next" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
 						<select
+							style={{backgroundColor: "white"}}
 							className="btn border"
 							name="next"
 							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -388,11 +398,11 @@ export default function ActivityForm({
 				className="btn btn-primary"
 				style={{
 					backgroundColor: "bisque",
-					color: "white",
+					color: "black",
 					border: "0",
 				}}
 				onClick={inputActivity ? handleUpdateActivity : handleCreateActivity}>
-				{inputActivity ? "Update Activity" : "Create Activity"}
+				{inputActivity ? "Aggiorna attività" : "Crea attività"}
 			</button>
 		</form>
 	);

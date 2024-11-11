@@ -69,7 +69,7 @@ export default function Projects(): React.JSX.Element {
 		<>
 			{message && <div>{message}</div>}
 			<div className="projects-container">
-				<a href={`/projects/new`}>
+				<a href={`/projects/new`} style={{ marginTop: "1em" }}>
 					<button>Crea nuovo progetto</button>
 				</a>
 				<div className="projects-list">

@@ -260,77 +260,88 @@ export default function ProjectPage(): React.JSX.Element {
 	return (
 		<>
 			<div className="project-background">
-				<div className="project-container">
-					<div className="page-title">
-						{id === NEW ? "Crea un nuovo progetto" : "Modifica progetto"}
-					</div>
-					{/* render title */}
-					{isEditing ? (
-						<label htmlFor="title">
-							Titolo
-							<input name="title" value={project.title} onChange={handleChange} />
-						</label>
-					) : (
-						<div className="project-title">
-							<div>Titolo del progetto</div>
-							<div>{project.title}</div>
-						</div>
-					)}
-					{/* render description */}
-					{isEditing ? (
+                <div className="project-container">
+                    <div className="project-page-title">
+                        {id === NEW ? "Crea un nuovo progetto" : "Modifica progetto"}
+                        <a href="/projects" className="close-link">X</a>
+                    </div>
+                    {/* render title */}
+                    {isEditing ? (
+                        <label htmlFor="title">
+                            Titolo
+                            <input
+                                name="title"
+                                value={project.title}
+                                onChange={handleChange}
+                            />
+                        </label>
+                    ) : (
+                        <div className="project-title">{project.title}</div>
+                    )}
+                    {/* render description */}
+                    {isEditing ? (
 						<label htmlFor="description">
 							Descrizione
-							<input
+							<textarea
 								name="description"
 								value={project.description}
 								onChange={handleChange}
+								maxLength={1500}
 							/>
 						</label>
 					) : (
-						<div className="project-description">
-							<div>Descrizione</div>
-							<div>{project.description}</div>
-						</div>
+						<div className="note-description">{project.description}</div>
 					)}
-					{/* render access list */}
-					<div>
+                    {/* render access list */}
+                    <label>
+						Utenti partecipanti al progetto
 						{isEditing && (
-							<>
-								<div>Aggiungi partecipanti al progetto</div>
-								<SearchForm onItemClick={addUser} list={project.accessList} />
-							</>
+							<div className="project-users-form">
+								<label>
+									<SearchForm onItemClick={addUser} list={project.accessList} />
+								</label>
+							</div>
 						)}
-						<div>
-							<div>Utenti attualmente inseriti</div>
+						<div className="project-users-container">
 							{project.accessList.map((u) => (
-								<div>
-									<div>{u}</div>
+								<div className="project-user-box">
+									{u}
 									{isEditing && (
 										<button
+											style={{
+												marginLeft: "0.5em",
+												padding: "0",
+												backgroundColor: "#d64545",
+											}}
+											className="project-user-delete"
 											onClick={(
 												e: React.MouseEvent<HTMLButtonElement>
-											): void => deleteUser(e, u)}>
-											Elimina
+											): void => deleteUser(e, u)
+											}
+										>
+											X
 										</button>
 									)}
 								</div>
 							))}
 						</div>
-					</div>
-
-					{/* render activity list */}
-					<div>
+					</label>
+                    {/* render activity list */}
+					<div className="project-activities-container">
 						{!activityFormOpen ? (
 							<>
-								<div>Lista di Attività legate al progetto</div>
-								{project.activityList &&
-									project.activityList.map((a) => (
-										<div key={"activity-" + a.id}>
-											<div>{a.title}</div>
+								<label className="project-activities-label">
+									Attività legate al progetto
+									{project.activityList &&
+										project.activityList.map((a) => (
+										<div key={"activity-" + a.id} className="project-activity-item">
+											{a.title}
 
 											{isEditing && (
 												<>
 													<button
+														style={{backgroundColor: "#3a7a3c", padding: "5px"}}
+														className="project-activity-edit"
 														onClick={(
 															e: React.MouseEvent<HTMLButtonElement>
 														): void => toggleEditActivity(e, a.id)}>
@@ -338,6 +349,8 @@ export default function ProjectPage(): React.JSX.Element {
 													</button>
 
 													<button
+														style={{backgroundColor: "#d64545", padding: "5px"}}
+														className="project-activity-delete"
 														onClick={async (
 															e: React.MouseEvent<HTMLButtonElement>
 														): Promise<void> =>
@@ -349,14 +362,19 @@ export default function ProjectPage(): React.JSX.Element {
 											)}
 										</div>
 									))}
+								</label>
 								{isEditing && (
-									<button onClick={handleCreateActivityOpen}>
+									<button
+										className="project-activity-create"
+										onClick={handleCreateActivityOpen}
+									>
 										Crea Attività
 									</button>
 								)}
 							</>
 						) : (
-							<div>
+							<label className="project-activity-form">
+								Aggiungi Attività al progetto
 								<ActivityForm
 									inputActivity={currentActivity}
 									projectId={project.id}
@@ -370,27 +388,32 @@ export default function ProjectPage(): React.JSX.Element {
 									}}
 								/>
 								<button
+									className="project-activity-cancel"
 									onClick={(): void => {
 										setActivityFormOpen(false);
 									}}>
 									Annulla
 								</button>
-							</div>
+							</label>
 						)}
 					</div>
-					{/* render note */}
+                    {/* render note */}
 
-					{/* manage project */}
+					{/* manage project */	}
 					{/* if is owner, can modify project */}
 					{/* if new project, can save new project */}
 					{id === NEW ? (
-						<button onClick={handleCreateProject}>Crea nuovo progetto</button>
+						<button onClick={handleCreateProject}>
+							Crea nuovo progetto
+						</button>
 					) : isEditing ? (
 						<button style={{ backgroundColor: "green" }} onClick={handleUpdateProject}>
 							Salva progetto
 						</button>
 					) : (
-						<button onClick={toggleEdit}>Modifica progetto</button>
+						<button onClick={toggleEdit}>
+							Modifica progetto
+						</button>
 					)}
 					{/* if is owner, can delete project (not new project) */}
 					{id !== NEW && (
@@ -398,10 +421,10 @@ export default function ProjectPage(): React.JSX.Element {
 							Cancella Progetto
 						</button>
 					)}
-				</div>
-			</div>
+                </div>
+            </div>
 
-			{message && <div>{message}</div>}
+            {message && <div>{message}</div>}
 		</>
 	);
 }
