@@ -25,7 +25,7 @@
 	transition: transform 0.2s;
 }
 
-.page-title {
+.note-page-title {
     position: relative;
     display: flex;
     justify-content: center;
@@ -35,6 +35,11 @@
     color: #333;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     margin-bottom: 1em;
+}
+
+.note-title {
+    text-align: left;
+    font-weight: bold;
 }
 
 .close-link {
@@ -51,7 +56,7 @@
     color: white;
     font-size: 1em;
     font-weight: bold;
-    border-radius: 5px;
+    border-radius: 8px;
     text-decoration: none;
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
@@ -130,6 +135,7 @@
 	flex-direction: row;
 	flex-wrap: wrap;
 	gap: 0.5em;
+    margin-top: 5px;
 }
 
 .tag-box {
@@ -343,4 +349,16 @@
     width: 80%;
     text-align: center;
     font-size: 0.95em;
+}
+
+@media screen and (max-width: 600px) {
+    .close-link {
+        top: 0;
+        right: 50%;
+        transform: translate(50%, 0);
+    }
+
+    .note-page-title {
+        padding-top: 2em;
+    }
 }
