@@ -195,61 +195,60 @@ export default function Pomodoros(): React.JSX.Element {
     }
 
     function startProcess(): void {
-        if (inputCheck()) {
-            playRing();
-            setInitialCycles(data.cycles);
-            clearInterval(data.intervalId);
+        playRing();
+        setInitialCycles(data.cycles);
+        clearInterval(data.intervalId);
 
-            const interval = setInterval(() => {
-                updateTimer();
-            }, 1000);
+        const interval = setInterval(() => {
+            updateTimer();
+        }, 1000);
 
-            setData({
-                ...data,
-                message: MESSAGE.VOID,
-                studying: true,
-                activeTimer: true,
-                intervalId: interval,
-                status: STATUS.STUDY,
-                minutes: data.studyTime,
-                seconds: 0,
-            });
-            startAnimation(true);
-        } else {
-            setData({ ...data, message: MESSAGE.ERROR });
-        }
+        setData({
+            ...data,
+            message: MESSAGE.VOID,
+            studying: true,
+            activeTimer: true,
+            intervalId: interval,
+            status: STATUS.STUDY,
+            minutes: data.studyTime,
+            seconds: 0,
+        });
+        startAnimation(true);
     }
 
     async function handleSavePomodoroConfig(
         e: React.MouseEvent<HTMLButtonElement>
     ): Promise<void> {
         e.preventDefault();
+        if (inputCheck()) {
+            try {
+                const pomodoroConfig = {
+                    studyTime: data.studyTime,
+                    pauseTime: data.pauseTime,
+                    cycles: data.cycles,
+                    owner: "",
+                };
+                console.log("Dati inviati al server:", pomodoroConfig);
 
-        try {
-            const pomodoroConfig = {
-                studyTime: data.studyTime,
-                pauseTime: data.pauseTime,
-                cycles: data.cycles,
-                owner: "",
-            };
-            console.log("Dati inviati al server:", pomodoroConfig);
+                const res = await fetch(`${SERVER_API}/pomodoro`, {
+                    method: "POST",
+                    body: JSON.stringify(pomodoroConfig),
+                    headers: { "Content-Type": "application/json" },
+                });
 
-            const res = await fetch(`${SERVER_API}/pomodoro`, {
-                method: "POST",
-                body: JSON.stringify(pomodoroConfig),
-                headers: { "Content-Type": "application/json" },
-            });
+                const resBody = await res.json();
 
-            const resBody = await res.json();
-
-            if (resBody.status === ResponseStatus.GOOD) {
-                startProcess();
-                //await updateTomatoList();
-            } else {
-                console.log("Errore nel salvataggio della configurazione");
+                if (resBody.status === ResponseStatus.GOOD) {
+                    startProcess();
+                    //await updateTomatoList();
+                } else {
+                    console.log("Errore nel salvataggio della configurazione");
+                }
+            } catch (e) {
+                console.log("Impossibile raggiungere il server");
             }
-        } catch (e) {
-            console.log("Impossibile raggiungere il server");
+        } else {
+            setData({ ...data, message: MESSAGE.ERROR });
         }
     }
 
