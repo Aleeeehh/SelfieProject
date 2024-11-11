@@ -8,11 +8,44 @@ import { ObjectId } from "mongodb";
 import { ActivitySchema } from "../schemas/Activity.js";
 import type Activity from "../types/Activity.js";
 import { validDateString } from "../lib.ts";
+import { ProjectSchema } from "../schemas/Project.ts";
+import { AdvancementType, ActivityStatus } from "../types/Activity.js";
 // import { validDateString } from "../lib.js";
 
 const router: Router = Router();
 
 const DEFAULT_GET_NUMBER = 10;
+
+// Returns only statuses: ACTIVABLE, NOT_ACTIVABLE, LATE
+async function getStatusForCreatedActivity(activity: Activity): Promise<ActivityStatus> {
+	var activable = false;
+	var late = false;
+
+	// if no prev activity, the current is activable
+	if (!activity.prev) activable = true;
+
+	const prevActivity = await ActivitySchema.findById(activity.prev).lean();
+	if (!prevActivity) activable = true;
+
+	// if prev activity is completed, the current is activable
+	if (prevActivity && prevActivity.completed) activable = true;
+
+	// if activity is activable, check if it is late
+	if (activable) {
+		if (activity.deadline.getTime() < new Date().getTime()) {
+			late = true;
+		}
+	}
+
+	// return the value for the status
+	if (activable && late) {
+		return ActivityStatus.LATE;
+	} else if (activable) {
+		return ActivityStatus.ACTIVABLE;
+	} else {
+		return ActivityStatus.NOT_ACTIVABLE;
+	}
+}
 
 // Returns the activity list for the current user; defaults to first ten items
 router.get("/", async (req: Request, res: Response) => {
@@ -85,45 +118,41 @@ router.get("/owner", async (req: Request, res: Response) => {
     const ownerId = req.query.owner as string; //ottieni l'owner
     //  console.log("questo è l'owner passato come query:" + ownerId);
 
-    try {
-        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
-        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
-        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
-        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
-        console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+	try {
+		console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+		console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+		console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+		console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
+		console.log("Questo è l'owner passato come query alla get delle attività:", ownerId);
 
-        //Controllo se l'owner è stato inserito
-        if (!ownerId) {
-            return res.status(400).json({
-                status: ResponseStatus.BAD,
-                message: "Owner è la stringa vuota",
-            });
-        }
+		//Controllo se l'owner è stato inserito
+		if (!ownerId) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Owner è la stringa vuota",
+			});
+		}
 
-        console.log("SUBITO PRIMA DELLA FIND:", ownerId);
-        console.log("SUBITO PRIMA DELLA FIND:", ownerId);
-        console.log("SUBITO PRIMA DELLA FIND:", ownerId);
-        console.log("SUBITO PRIMA DELLA FIND:", ownerId);
+		console.log("SUBITO PRIMA DELLA FIND:", ownerId);
+		console.log("SUBITO PRIMA DELLA FIND:", ownerId);
+		console.log("SUBITO PRIMA DELLA FIND:", ownerId);
+		console.log("SUBITO PRIMA DELLA FIND:", ownerId);
 
+		const foundDBActivities = await ActivitySchema.find({
+			accessList: ownerId, // Cerca in accessList invece che per owner
+		}).lean();
 
-        const foundDBActivities = await ActivitySchema.find({
-            accessList: ownerId, // Cerca in accessList invece che per owner
-        }).lean();
+		console.log("SUBITO DOPO DELLA FIND:", ownerId);
+		console.log("SUBITO DOPO DELLA FIND:", ownerId);
+		console.log("SUBITO DOPO DELLA FIND:", ownerId);
 
-        console.log("SUBITO DOPO DELLA FIND:", ownerId);
-        console.log("SUBITO DOPO DELLA FIND:", ownerId);
-        console.log("SUBITO DOPO DELLA FIND:", ownerId);
+		console.log("Attività trovate:", foundDBActivities);
 
-        console.log("Attività trovate:", foundDBActivities);
-
-        if (foundDBActivities.length === 0) {
-            const resBody: ResponseBody = {
-                message:
-                    "L'attività con l'owner" +
-                    ownerId +
-                    " Non è stato trovato!",
-                status: ResponseStatus.BAD,
-            };
+		if (foundDBActivities.length === 0) {
+			const resBody: ResponseBody = {
+				message: "L'attività con l'owner" + ownerId + " Non è stato trovato!",
+				status: ResponseStatus.BAD,
+			};
 
             return res.status(400).json(resBody);
         }
@@ -298,22 +327,28 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 router.post("/", async (req: Request, res: Response) => {
-    console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-    try {
-        // TODO: validate note input
-        // TODO: validate body fields
-        const title = req.body.title as string;
-        const description = req.body.description as string;
-        const accessList = req.body.accessList as string[];
-        const deadline = req.body.deadline;
-        console.log("deadline:", deadline);
-        const deadlineDate = new Date(deadline);
-        console.log("deadlineDate:", deadlineDate);
-        const owner = req.body.owner as string;
-        const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as string;
+	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+	try {
+		// TODO: validate note input
+		// TODO: validate body fields
+		const title = req.body.title as string;
+		const description = req.body.description as string;
+		const accessList = req.body.accessList as string[];
+		const deadline = req.body.deadline;
+		const deadlineDate = new Date(deadline);
+		const owner = req.body.owner || (req.user?.id as string); // TODO: l'owner può non essere l'utente loggato?
+		const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as string;
 
-        console.log("ottenuto dal body le info necessarie per creare l'attività:", title, description, accessList, deadline, owner, idEventoNotificaCondiviso);
+		// Leo - Progetti - BGN
+		const projectId = req.body.projectId as string | undefined;
+		const startDateStr = req.body.start as string | undefined;
+		const milestone = req.body.milestone as boolean | undefined;
 
+		var advancementType = req.body.advancementType as AdvancementType | undefined;
+
+		const parent = req.body.parent as string | undefined;
+		const prev = req.body.prev as string | undefined;
+		const next = req.body.next as string | undefined;
 
         // Leo - Progetti - BGN
         const projectId = req.body.projectId as string | undefined;
@@ -323,7 +358,119 @@ router.post("/", async (req: Request, res: Response) => {
         const prev = req.body.prev as string | undefined;
         const next = req.body.next as string | undefined;
 
-        console.log("ottenuto dal body le info relative ai progetti:", projectId, startDateStr, milestone, parent, prev, next);
+		if (projectId && !Types.ObjectId.isValid(projectId)) {
+			const resBody: ResponseBody = {
+				status: ResponseStatus.BAD,
+				message: "Invalid project id",
+			};
+			console.log("Invalid project id");
+			return res.status(400).json(resBody);
+		}
+
+		if (projectId) {
+			const project = await ProjectSchema.findById(projectId).lean();
+			if (!project) {
+				const resBody: ResponseBody = {
+					status: ResponseStatus.BAD,
+					message: "Invalid project id",
+				};
+				console.log("Invalid project id");
+				return res.status(400).json(resBody);
+			}
+
+			if (project.owner.toString() !== owner) {
+				const resBody: ResponseBody = {
+					status: ResponseStatus.BAD,
+					message: "You are not the owner of this project, cannot add activity",
+				};
+				console.log("You are not the owner of this project, cannot add activity");
+				return res.status(403).json(resBody);
+			}
+		}
+
+		const startDate = new Date(startDateStr || "");
+		if (startDate.getTime() > deadlineDate.getTime()) {
+			const resBody: ResponseBody = {
+				status: ResponseStatus.BAD,
+				message: "Start date cannot be after deadline",
+			};
+			console.log("Start date cannot be after deadline");
+			return res.status(400).json(resBody);
+		}
+
+		if (advancementType && !Object.values(AdvancementType).includes(advancementType)) {
+			const resBody: ResponseBody = {
+				status: ResponseStatus.BAD,
+				message: "Invalid advancement type",
+			};
+			console.log("Invalid advancement type");
+			return res.status(400).json(resBody);
+		}
+
+		if (parent && !Types.ObjectId.isValid(parent)) {
+			const resBody: ResponseBody = {
+				status: ResponseStatus.BAD,
+				message: "Invalid parent id",
+			};
+			console.log("Invalid parent id");
+			return res.status(400).json(resBody);
+		}
+
+		if (parent) {
+			const foundParent = await ActivitySchema.findById(parent).lean();
+			if (!foundParent) {
+				const resBody: ResponseBody = {
+					status: ResponseStatus.BAD,
+					message: "Invalid parent id",
+				};
+				console.log("Invalid parent id");
+				return res.status(400).json(resBody);
+			}
+		}
+
+		if (prev && !Types.ObjectId.isValid(prev)) {
+			const resBody: ResponseBody = {
+				status: ResponseStatus.BAD,
+				message: "Invalid prev id",
+			};
+			console.log("Invalid prev id");
+			return res.status(400).json(resBody);
+		}
+
+		if (prev) {
+			const foundPrev = await ActivitySchema.findById(prev).lean();
+			if (!foundPrev) {
+				const resBody: ResponseBody = {
+					status: ResponseStatus.BAD,
+					message: "Invalid prev id",
+				};
+				console.log("Invalid prev id");
+				return res.status(400).json(resBody);
+			}
+		}
+
+		if (next && !Types.ObjectId.isValid(next)) {
+			const resBody: ResponseBody = {
+				status: ResponseStatus.BAD,
+				message: "Invalid next id",
+			};
+			console.log("Invalid next id");
+			return res.status(400).json(resBody);
+		}
+
+		if (next) {
+			const foundNext = await ActivitySchema.findById(next).lean();
+			if (!foundNext) {
+				const resBody: ResponseBody = {
+					status: ResponseStatus.BAD,
+					message: "Invalid next id",
+				};
+				console.log("Invalid next id");
+				return res.status(400).json(resBody);
+			}
+		}
+
+		// Leo - Progetti - END
 
         if (startDateStr && !validDateString(startDateStr)) {
             const resBody: ResponseBody = {
@@ -334,10 +481,23 @@ router.post("/", async (req: Request, res: Response) => {
             return res.status(400).json(resBody);
         }
 
-        console.log("PASSATO LA VALIDAZIONE DELLA DATA:", startDateStr);
+			// Leo - Progetti - BGN
+			projectId,
+			start: startDate,
+			milestone,
+			advancementType,
+			parent,
+			prev,
+			next,
+			// Leo - Progetti - END
+		};
 
-        const startDate = new Date(startDateStr || "");
-        // Leo - Progetti - END
+		// Leo - Progetti - BGN
+		newActivity.status = await getStatusForCreatedActivity(newActivity);
+		console.log(owner, startDate, req.user?.id);
+		// Leo - Progetti - END
+
+		const createdActivity = await ActivitySchema.create(newActivity);
 
         const deadlineDaPassare = new Date(deadlineDate.getTime());
         console.log("questa è la deadlineDaPassare:", deadlineDaPassare);
