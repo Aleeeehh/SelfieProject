@@ -71,7 +71,7 @@ export default function SearchForm({
                 />
                 {searchResults.length > 0 && (
                     <select
-                        style={{ width: "100%", margin: "0 5px" }}
+                        style={{ width: "100%" }}
                         onChange={handleSelectChange}
                     >
                         <option value="">

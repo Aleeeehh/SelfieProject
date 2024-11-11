@@ -258,7 +258,7 @@ export default function NotePage(): React.JSX.Element {
         <>
             <div className="note-background">
                 <div className="note-container">
-                    <div className="page-title">
+                    <div className="note-page-title">
                         {id === NEW ? "Crea una nuova nota" : "Modifica nota"}
                         <a href="/notes" className="close-link">X</a>
                     </div>
@@ -436,8 +436,7 @@ export default function NotePage(): React.JSX.Element {
                                                 className="user-delete"
                                                 onClick={(
                                                     e: React.MouseEvent<HTMLElement>
-                                                ): void =>
-                                                    deleteUser(e, username)
+                                                ): void => deleteUser(e, username)
                                                 }
                                             >
                                                 X
