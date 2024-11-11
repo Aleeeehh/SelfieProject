@@ -5,7 +5,7 @@ import { ProjectSchema } from "../schemas/Project.ts";
 import type Project from "../types/Project.ts";
 import { ActivitySchema } from "../schemas/Activity.ts";
 import type Activity from "../types/Activity.ts";
-import { ActivityStatus } from "../types/Activity.ts";
+import { ActivityStatus, type AdvancementType } from "../types/Activity.ts";
 import NoteSchema from "../schemas/Note.ts";
 import type Note from "../types/Note.ts";
 // import type UserResult from "../types/UserResult.ts";
@@ -36,6 +36,10 @@ async function getActivityStatus(): Promise<ActivityStatus> {
 	// TODO: implement function
 	console.log("getActivityStatus() not implemented yet");
 	return ActivityStatus.ACTIVE;
+}
+
+async function getActivityFromProjectId(projectId: Types.ObjectId): Promise<Activity> {
+	return {} as Activity;
 }
 
 // returns all projects where the current user is the owner or in the access list
@@ -123,7 +127,7 @@ router.get("/", async (req: Request, res: Response) => {
 					advancementType:
 						foundActivity.advancementType === null
 							? undefined
-							: foundActivity.advancementType,
+							: (foundActivity.advancementType as AdvancementType),
 					note,
 					completed: foundActivity.completed,
 				};
@@ -271,7 +275,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 				advancementType:
 					foundActivity.advancementType === null
 						? undefined
-						: foundActivity.advancementType,
+						: (foundActivity.advancementType as AdvancementType),
 				note: activityNote,
 				completed: foundActivity.completed,
 			};
