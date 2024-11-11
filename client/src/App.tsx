@@ -14,7 +14,8 @@ import Profile from "./Profile";
 import Register from "./Register";
 import MessageHub from "./MessageHub";
 import ProjectPage from "./ProjectPage";
-import ProjectGantt from "./ProjectGantt";
+import GanttDiagram from "./ProjectGantt";
+
 function App(): React.JSX.Element {
 	return (
 		<div id="body-container">
@@ -34,7 +35,7 @@ function App(): React.JSX.Element {
 						<Route path="chat" element={<MessageHub />} />
 						<Route path="notes/:id" element={<NotePage />} />
 						<Route path="projects/:id" element={<ProjectPage />} />
-						<Route path="projects/:id/gantt" element={<ProjectGantt />} />
+						<Route path="projects/:id/gantt" element={<GanttDiagram />} />
 						{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
 					</Route>
 					<Route path="*" element={<NotFound />} />
@@ -52,13 +53,13 @@ interface WithLayoutProps<T extends React.ReactNode> {
 function WithLayout<T extends React.ReactNode>({
 	children,
 }: WithLayoutProps<T>): React.JSX.Element {
-    return (
-        <>
-            <Header />
-            <div className="global-div">{children}</div>
-            <Footer />
-        </>
-    );
+	return (
+		<>
+			<Header />
+			<div className="global-div">{children}</div>
+			<Footer />
+		</>
+	);
 }
 
 export default App;
