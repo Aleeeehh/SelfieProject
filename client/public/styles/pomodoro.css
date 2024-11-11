@@ -1,23 +1,75 @@
+.background {
+	background-image: url('/images/background.png');
+    background-size: cover;
+    background-repeat: repeat;
+    width: 100vw;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+	flex-direction: column;
+}
+
+.top-container {
+	display: flex;
+	width: 100vw;
+	height: 100%;
+	margin: 1em;
+	align-items: center;
+	justify-content: center;
+}
+
+.actions-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+	justify-content: center;
+	background-color: rgba(255, 255, 255, 0.9);
+	border-radius: 15px;
+	padding: 15px;
+	width: 60%;
+	text-align: center;
+}
+
+.body-container {
+	display: flex;
+	width: 100vw;
+	height: 100%;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	margin: 1em;
+}
+
 .pomodoro-container {
-	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 	display: flex;
 	align-items: center;
-	margin: 1em auto;
-	height: calc(100vh - 10em);
 	flex-direction: column;
     background-color: rgba(255, 255, 255, 0.9);
-	width:60%;
 	border-radius: 15px;
 	height: 60%;
 	text-align: center;
+	padding: 15px;
+	max-width: 400px;
+	margin: 20px 20px;
+}
+
+.config-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+	background-color: rgba(255, 255, 255, 0.9);
+	padding: 15px;
+	text-align: center;
+	border-radius: 15px;
+	max-width: 400px;
+	margin: 20px 20px;
 }
 
 .title {
 	display: flex;
 	flex-direction: column;
 	font-size: 50px;
-	margin-bottom: 0px;
-	margin-top: 20px;
 	color: black;
 	font-weight: bold;
 }
@@ -39,16 +91,17 @@ h1 {
 
 .add-event-button, .previous-pomodoros-button, .share-config-button {
 	background-color: bisque;
-	color: darkslategray;
+	color: black;
 	border-radius: 16px;
 	width: 140px;
 	padding: 3px;
+	border: 1px solid black;
 }
 
 .preview {
     justify-content: center;
     align-items: center;
-    margin: 50px 10px;
+    margin: 20px;
     color: black;
     width: 100%;
 	flex-direction: row;
@@ -93,17 +146,22 @@ h1 {
 	text-align: center;
 }
 
-.border {
-	border: 2px solid black;
+.start-button,
+.stop-button {
+	width: 100px;
+	margin: 1px;
 }
 
-.start-button,
-.stop-button,
 .skip-phase-button,
 .skip-cycle-button,
-.repeat-cycle-button,
-.send-invite-button {
-	width: 130px;
+.repeat-cycle-button {
+	border: none;
+    padding: 0.5em;
+	margin: 1px;
+    border-radius: 8px;
+    color: black;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 .commands-container {
@@ -120,6 +178,7 @@ h1 {
 	width: 100%;
 	color: black;
 	text-align: center;
+	
 }
 
 .pannello {
@@ -132,10 +191,11 @@ h1 {
 .pannello label {
 	margin: auto;
 	padding: 0 3px;
+	width: 50%;
 }
 
 .studyTime, .breakTime, .studyCycles, .totMinutes, .totHours {
-	width: 300px;
+	width: 100%;
 	justify-content: space-between;
 }
 
@@ -144,7 +204,7 @@ h1 {
 	border: none;
 	padding: 16px;
 	font-size: 15px;
-	width: 150px
+	width: 50%;
 }
 
 .animate-pomodoro {
@@ -230,16 +290,7 @@ h1 {
     display: none;
 }
 
-.background {
-	background-image: url('/images/background.png');
-    background-size: cover;
-    background-repeat: repeat;
-    width: 100vw;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+
 
 .send-invite-container {
     margin: 1em;
@@ -253,13 +304,21 @@ h1 {
 
 /*Media query per il responsive*/
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 768px) {
 	.create-event-container > form {
 		width: 300px;
 	}
 
 	.title {
 		font-size: 30px;
+	}
+
+	.body-container {
+		flex-direction: column;
+	}
+
+	.config-container {
+		width: 300px;
 	}
 
 	.buttons-container, .commands-container {
@@ -285,6 +344,13 @@ h1 {
 		height: 200px;
 	}
 
+	.skip-cycle-button,
+	.skip-phase-button,
+	.repeat-cycle-button {
+		width: 100px;
+		font-size: 14px;
+	}
+
 	.timer {
 		top: 48%;
 		font-size: 30px;
@@ -295,28 +361,18 @@ h1 {
 		font-size: large;
 	}
 
-	.start-button,
-	.stop-button,
-	.skip-phase-button,
-	.skip-cycle-button,
-	.repeat-cycle-button,
-	.send-invite-button {
-		width: 80px;
-		font-size: smaller !important;
-		padding: 3px 6px !important;
-	}
-
-	.studyTime, .breakTime, .studyCycles, .totMinutes, .totHours {
-		width: 170px;
+	.pannello label {
+		font-size: 14px;
 	}
 
 	.pannello input {
-		width: 70px;
+		width: 40%;
 		padding: 10px;
 	}
+}
 
-	.paragraph {
-		font-size: smaller;
-		width: 150px;
+@media screen and (max-width: 480px) {
+	.actions-container, .pomodoro-container, .config-container {
+		width: 250px;
 	}
 }

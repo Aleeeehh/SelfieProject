@@ -1005,7 +1005,7 @@ export default function Pomodoros(): React.JSX.Element {
         <>
             <audio id="ring" src="/images/ring.mp3"></audio>
             <div className="background">
-            {addEvent && (
+                {addEvent && (
                     <div className="overlay">   
                         <div className="create-event-container col-2">
                             <form className="create-event-form-overlay" style={{ overflowY: "auto", maxHeight: "600px" }}>
@@ -1270,236 +1270,242 @@ export default function Pomodoros(): React.JSX.Element {
                     </div>
                 )}
 
-            <div className={addEvent ? "hidden" : "pomodoro-container"}>
-                <header>
-                    <h1 className="title">
-                        POMODORO TIMER
-                    </h1>
-                </header>
+                <div className="top-container">
+                    <div className={addEvent ? "hidden" : "actions-container"}>
+                        <header>
+                            <h1 className="title">
+                                POMODORO TIMER
+                            </h1>
+                        </header>
 
-                <div className="buttons-container">
-                    <button
-                        className="add-event-button border"
-                        onClick={toggleAddEvent}
-                        disabled={data.activeTimer}
-                    >
-                        Crea evento Pomodoro
-                    </button>
-                    <button
-                        className="previous-pomodoros-button border"
-                        onClick={togglePreviousPomodoros}
-                    >
-                        Visualizza ultimi Pomodoro
-                    </button>
-                    <button
-                        className="share-config-button border"
-                        onClick={toggleShareConfig}
-                    >
-                        <a href="#send-invite" style={{ textDecoration: 'none', color: 'inherit' }}>
-                            Condividi configurazione
-                        </a>
-                    </button>
+                        <div className="buttons-container">
+                            <button
+                                className="add-event-button"
+                                onClick={toggleAddEvent}
+                                disabled={data.activeTimer}
+                            >
+                                Crea evento Pomodoro
+                            </button>
+                            <button
+                                className="previous-pomodoros-button"
+                                onClick={togglePreviousPomodoros}
+                            >
+                                Visualizza ultimi Pomodoro
+                            </button>
+                            <button
+                                className="share-config-button"
+                                onClick={toggleShareConfig}
+                            >
+                                <a style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    Condividi configurazione
+                                </a>
+                            </button>
+                        </div>
+
+                        <div className="preview" style={{display: previousPomodoros ? "flex" : "none"}}>
+                            <div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
+                            {tomatoList.slice(-3).map((pomodoro, index) => (
+                                <button
+                                    className="previous-pomodoros"
+                                    key={index}
+                                    onClick={(): void =>
+                                        setData({
+                                            ...data,
+                                            studyTime: pomodoro.studyTime,
+                                            pauseTime: pomodoro.pauseTime,
+                                            cycles: pomodoro.cycles,
+                                        })
+                                    }
+                                >
+                                    {pomodoro.studyTime} min - {pomodoro.pauseTime} min
+                                    - {pomodoro.cycles} cicli
+                                    <br />
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="send-invite-container" style={{display: shareConfig ? "block" : "none"}}>
+                            <div>Scegli l'utente al quale inviare la notifica</div>
+                            {users.length > 0}
+                            <SearchForm onItemClick={handleSelectUser} list={users}/>
+                            <button
+                                onClick={handleSendInvite}
+                                className="btn btn-primary send-invite-button"
+                            >
+                                Invia Invito
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="preview" style={{display: previousPomodoros ? "flex" : "none"}}>
-                    <div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
-                    {tomatoList.slice(-3).map((pomodoro, index) => (
-                        <button
-                            className="previous-pomodoros"
-                            key={index}
-                            onClick={(): void =>
-                                setData({
-                                    ...data,
-                                    studyTime: pomodoro.studyTime,
-                                    pauseTime: pomodoro.pauseTime,
-                                    cycles: pomodoro.cycles,
-                                })
-                            }
-                        >
-                            {pomodoro.studyTime} min - {pomodoro.pauseTime} min
-                            - {pomodoro.cycles} cicli
+                <div className="body-container">
+                    <div className={addEvent ? "hidden" : "pomodoro-container"}>
+
+                        <div ref={pomodoroRef} className="pomodoro">
+                            <img src="/images/tomato.png" alt="tomato.png" />
+                            <div className="timer">
+                                {data.activeTimer
+                                    ? `${pad(data.minutes)}:${pad(data.seconds)}`
+                                    : ""}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 className="status">
+                                {data.status}
+                            </h4>
+
+                            <div>
+                                <button
+                                    type="button"
+                                    className="btn btn-success start-button"
+                                    onClick={handleSavePomodoroConfig}
+                                    disabled={data.activeTimer}
+                                >
+                                    START
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-danger stop-button"
+                                    onClick={stopProcess}
+                                    disabled={!data.activeTimer}
+                                >
+                                    STOP
+                                </button>
+                            </div>
+
                             <br />
-                        </button>
-                    ))}
-                </div>
 
-                <div ref={pomodoroRef} className="pomodoro">
-                    <img src="/images/tomato.png" alt="tomato.png" />
-                    <div className="timer">
-                        {data.activeTimer
-                            ? `${pad(data.minutes)}:${pad(data.seconds)}`
-                            : ""}
-                    </div>
-                </div>
+                            <div className="commands-container" style={{ width: "100%" }}>
+                                <button
+                                    type="button"
+                                    className="bg-warning skip-phase-button"
+                                    onClick={nextPhase}
+                                    disabled={!data.activeTimer}
+                                >
+                                    SALTA FASE
+                                </button>
 
-                <div>
-                    <h4 className="status">
-                        {data.status}
-                    </h4>
+                                <button
+                                    type="button"
+                                    className="bg-warning skip-cycle-button"
+                                    onClick={nextCycle}
+                                    disabled={!data.activeTimer}
+                                >
+                                    SALTA CICLO
+                                </button>
 
-                    <div>
-                        <button
-                            type="button"
-                            className="btn btn-success border start-button"
-                            onClick={handleSavePomodoroConfig}
-                            disabled={data.activeTimer}
-                        >
-                            START
-                        </button>
-
-                        <button
-                            type="button"
-                            className="btn btn-danger border stop-button"
-                            onClick={stopProcess}
-                            disabled={!data.activeTimer}
-                        >
-                            STOP
-                        </button>
+                                <button
+                                    type="button"
+                                    className="bg-warning repeat-cycle-button"
+                                    onClick={repeatCycle}
+                                    disabled={!data.activeTimer}
+                                >
+                                    RIPETI CICLO
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <br />
+                    <div className={addEvent ? "hidden" : "config-container"}>
+                        <div className="paragraph">{data.message}</div>
 
-                    <div className="commands-container" style={{ width: "100%" }}>
-                        <button
-                            type="button"
-                            className="btn btn-warning border skip-phase-button"
-                            onClick={nextPhase}
-                            disabled={!data.activeTimer}
-                        >
-                            SALTA FASE
-                        </button>
+                        <div className="pannello studyTime">
+                            <label htmlFor="inputStudy">Minuti di studio</label>
+                            <input
+                                name="inputStudy"
+                                type="number"
+                                placeholder="Enter the time"
+                                className="inputStudyTime"
+                                id="inputStudy"
+                                value={data.studyTime}
+                                onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+                                    setData({
+                                        ...data,
+                                        studyTime: parseInt(e.target.value),
+                                    })
+                                }
+                                disabled={data.activeTimer}
+                            />
+                        </div>
 
-                        <button
-                            type="button"
-                            className="btn btn-warning border skip-cycle-button"
-                            onClick={nextCycle}
-                            disabled={!data.activeTimer}
-                        >
-                            SALTA CICLO
-                        </button>
+                        <div className="pannello breakTime">
+                            <label htmlFor="inputPause">Minuti di pausa</label>
+                            <input
+                                name="inputPause"
+                                type="number"
+                                placeholder="Enter the time"
+                                id="inputPause"
+                                value={data.pauseTime}
+                                onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+                                    setData({
+                                        ...data,
+                                        pauseTime: parseInt(e.target.value),
+                                    })
+                                }
+                                disabled={data.activeTimer}
+                            />
+                        </div>
 
-                        <button
-                            type="button"
-                            className="btn btn-warning border repeat-cycle-button"
-                            onClick={repeatCycle}
-                            disabled={!data.activeTimer}
-                        >
-                            RIPETI CICLO
-                        </button>
+                        <div className="pannello studyCycles">
+                            <label htmlFor="inputCycles">
+                                Numero di cicli
+                            </label>
+                            <input
+                                name="inputCycles"
+                                type="number"
+                                placeholder="Enter the study cycles"
+                                id="inputCycles"
+                                value={data.cycles}
+                                onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+                                    setData({
+                                        ...data,
+                                        cycles: parseInt(e.target.value),
+                                    })
+                                }
+                                disabled={data.activeTimer}
+                            />
+                        </div>
+
+                        <div className="pannello totMinutes">
+                            <label htmlFor="totMinutes">Minuti totali</label>
+                            <input
+                                name="totMinutes"
+                                type="number"
+                                placeholder="Enter the total minutes"
+                                value={data.totMinutes}
+                                onChange={(e: ChangeEvent<HTMLInputElement>): void => {
+                                    setData({
+                                        ...data,
+                                        totMinutes: parseInt(e.target.value),
+                                    });
+                                    proposalsMinutes();
+                                }}
+                                disabled={data.activeTimer}
+                            />
+                        </div>
+                            
+
+                        <div className="pannello totHours">
+                            <label htmlFor="totHours">Ore totali</label>
+                            <input
+                                name="totHours"
+                                type="number"
+                                placeholder="Enter the total hours"
+                                value={data.totHours}
+                                onChange={(e: ChangeEvent<HTMLInputElement>): void => {
+                                    setData({
+                                        ...data,
+                                        totHours: parseInt(e.target.value),
+                                    });
+                                    proposalsHours();
+                                }}
+                                disabled={data.activeTimer}
+                            />
+                        </div>
                     </div>
-
-                    <div className="paragraph">{data.message}</div>
                 </div>
-
-                <div className="pannello studyTime border">
-                    <label htmlFor="inputStudy">Minuti di studio</label>
-                    <input
-                        name="inputStudy"
-                        type="number"
-                        placeholder="Enter the time"
-                        className="inputStudyTime"
-                        id="inputStudy"
-                        value={data.studyTime}
-                        onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-                            setData({
-                                ...data,
-                                studyTime: parseInt(e.target.value),
-                            })
-                        }
-                        disabled={data.activeTimer}
-                    />
-                </div>
-
-                <div className="pannello breakTime border">
-                    <label htmlFor="inputPause">Minuti di pausa</label>
-                    <input
-                        name="inputPause"
-                        type="number"
-                        placeholder="Enter the time"
-                        id="inputPause"
-                        value={data.pauseTime}
-                        onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-                            setData({
-                                ...data,
-                                pauseTime: parseInt(e.target.value),
-                            })
-                        }
-                        disabled={data.activeTimer}
-                    />
-                </div>
-
-                <div className="pannello studyCycles border">
-                    <label htmlFor="inputCycles">
-                        Numero di cicli
-                    </label>
-                    <input
-                        name="inputCycles"
-                        type="number"
-                        placeholder="Enter the study cycles"
-                        id="inputCycles"
-                        value={data.cycles}
-                        onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-                            setData({
-                                ...data,
-                                cycles: parseInt(e.target.value),
-                            })
-                        }
-                        disabled={data.activeTimer}
-                    />
-                </div>
-
-                <div className="pannello totMinutes border">
-                    <label htmlFor="totMinutes">Minuti totali</label>
-                    <input
-                        name="totMinutes"
-                        type="number"
-                        placeholder="Enter the total minutes"
-                        value={data.totMinutes}
-                        onChange={(e: ChangeEvent<HTMLInputElement>): void => {
-                            setData({
-                                ...data,
-                                totMinutes: parseInt(e.target.value),
-                            });
-                            proposalsMinutes();
-                        }}
-                        disabled={data.activeTimer}
-                    />
-                </div>
-                    
-
-                <div className="pannello totHours border">
-                    <label htmlFor="totHours">Ore totali</label>
-                    <input
-                        name="totHours"
-                        type="number"
-                        placeholder="Enter the total hours"
-                        value={data.totHours}
-                        onChange={(e: ChangeEvent<HTMLInputElement>): void => {
-                            setData({
-                                ...data,
-                                totHours: parseInt(e.target.value),
-                            });
-                            proposalsHours();
-                        }}
-                        disabled={data.activeTimer}
-                    />
-                </div>
-                    
-
-                
-
-                <div id="send-invite" className="send-invite-container" style={{display: shareConfig ? "block" : "none"}}>
-                    <div>Scegli l'utente al quale inviare la notifica</div>
-                    {users.length > 0}
-                    <SearchForm onItemClick={handleSelectUser} list={users}/>
-                    <button
-                        onClick={handleSendInvite}
-                        className="btn btn-primary send-invite-button"
-                    >
-                        Invia Invito
-                    </button>
-                </div>
-            </div>
             </div>
         </>
     );
