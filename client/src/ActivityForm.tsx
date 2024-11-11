@@ -56,6 +56,7 @@ export default function ActivityForm({
 		e.preventDefault();
 
 		// create the new activity here (inside the component)
+		console.log("Creating activity");
 
 		const res = await fetch(`${SERVER_API}/activity`, {
 			method: "POST",
@@ -82,6 +83,8 @@ export default function ActivityForm({
 
 	async function handleUpdateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+
+		console.log("Updating activity: " + activity.id);
 
 		// update the activity here (inside the component)
 

@@ -11,38 +11,37 @@ import SearchForm from "./SearchForm";
 import type Project from "./types/Project";
 import type Activity from "./types/Activity";
 import ActivityForm from "./ActivityForm";
-import { useAuth } from "./AuthContext";
 
 const baseNote: Note = {
-    id: "",
-    title: "",
-    text: "",
-    owner: "",
-    tags: [] as string[],
-    privacy: Privacy.PRIVATE,
-    accessList: [] as string[],
-    toDoList: [] as ListItem[],
+	id: "",
+	title: "",
+	text: "",
+	owner: "",
+	tags: [] as string[],
+	privacy: Privacy.PRIVATE,
+	accessList: [] as string[],
+	toDoList: [] as ListItem[],
 };
 
 const baseActivity: Activity = {
-    id: "",
-    title: "",
-    description: "",
-    deadline: new Date(),
-    owner: "",
-    accessList: [] as string[],
-    completed: false,
-    start: new Date(),
+	id: "",
+	title: "",
+	description: "",
+	deadline: new Date(),
+	owner: "",
+	accessList: [] as string[],
+	completed: false,
+	start: new Date(),
 };
 
 const baseProject: Project = {
-    id: "",
-    title: "",
-    description: "",
-    owner: "",
-    accessList: [] as string[],
-    activityList: [] as Activity[],
-    note: baseNote,
+	id: "",
+	title: "",
+	description: "",
+	owner: "",
+	accessList: [] as string[],
+	activityList: [] as Activity[],
+	note: baseNote,
 };
 
 //TODO: aggiungere un bottone per uscire dalla creazione di una nota
@@ -50,415 +49,359 @@ const baseProject: Project = {
 const NEW = "new";
 
 export default function ProjectPage(): React.JSX.Element {
-    const { id } = useParams();
-    const [project, setProject] = React.useState(baseProject);
-    const [message, setMessage] = React.useState("");
-    const [isEditing, setIsEditing] = React.useState(id === NEW);
-    const [activityFormOpen, setActivityFormOpen] = React.useState(false);
-    const [isOwner, setIsOwner] = React.useState(id === NEW);
-    const [currentActivity, setCurrentActivity] =
-        React.useState<Activity>(baseActivity);
-    const { loggedUser } = useAuth();
-    // const [isPreview, setIsPreview] = React.useState(false);
+	const { id } = useParams();
+	const [project, setProject] = React.useState(baseProject);
+	const [message, setMessage] = React.useState("");
+	const [isEditing, setIsEditing] = React.useState(id === NEW);
+	const [activityFormOpen, setActivityFormOpen] = React.useState(false);
+	const [currentActivity, setCurrentActivity] = React.useState<Activity | undefined>(
+		baseActivity
+	);
 
-    const nav = useNavigate();
+	const nav = useNavigate();
 
-    async function updateProject(): Promise<void> {
-        if (id !== NEW)
-            fetch(`${SERVER_API}/projects/${id}`)
-                .then((res) => res.json())
-                .then((data) => {
-                    if (data.status === ResponseStatus.GOOD) {
-                        setProject(data.value as Project);
-                        setIsOwner(
-                            id === NEW ||
-                                data.value.owner === loggedUser?.id ||
-                                data.value.owner === loggedUser?.username
-                        );
-                        setIsEditing(id === NEW);
-                        setActivityFormOpen(false);
-                        console.log(data.value);
-                    } else {
-                        console.log(
-                            data.message ||
-                                "Errore nel caricamento del progetto"
-                        );
-                        // nav("/projects");
-                    }
-                })
-                .catch(() => {
-                    setMessage("Impossibile raggiungere il server");
-                    // nav("/projects");
-                });
-    }
+	async function updateProject(): Promise<void> {
+		if (id !== NEW)
+			fetch(`${SERVER_API}/projects/${id}`)
+				.then((res) => res.json())
+				.then((data) => {
+					if (data.status === ResponseStatus.GOOD) {
+						setProject(data.value as Project);
+						setIsEditing(id === NEW);
+						setActivityFormOpen(false);
+						console.log(data.value);
+					} else {
+						console.log(data.message || "Errore nel caricamento del progetto");
+						// nav("/projects");
+					}
+				})
+				.catch(() => {
+					setMessage("Impossibile raggiungere il server");
+					// nav("/projects");
+				});
+	}
 
-    // On page load, get the project data
-    React.useEffect(() => {
-        updateProject();
-    }, []);
+	// On page load, get the project data
+	React.useEffect(() => {
+		updateProject();
+	}, []);
 
-    function handleChange(
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ): void {
-        setProject({ ...project, [e.target.name]: e.target.value });
-    }
+	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
+		setProject({ ...project, [e.target.name]: e.target.value });
+	}
 
-    async function handleCreateProject(
-        e: React.MouseEvent<HTMLButtonElement>
-    ): Promise<void> {
-        e.preventDefault();
+	async function handleCreateProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
 
-        try {
-            const res = await fetch(`${SERVER_API}/projects`, {
-                method: "POST",
-                body: JSON.stringify({
-                    title: project.title,
-                    description: project.description,
-                    accessList: project.accessList,
-                }),
-                headers: { "Content-Type": "application/json" },
-            });
+		try {
+			const res = await fetch(`${SERVER_API}/projects`, {
+				method: "POST",
+				body: JSON.stringify({
+					title: project.title,
+					description: project.description,
+					accessList: project.accessList,
+				}),
+				headers: { "Content-Type": "application/json" },
+			});
 
-            const resBody = (await res.json()) as ResponseBody;
+			const resBody = (await res.json()) as ResponseBody;
 
-            if (resBody.status === ResponseStatus.GOOD) {
-                const newNoteId: string = resBody.value;
-                alert("Progetto creato correttamente!");
+			if (resBody.status === ResponseStatus.GOOD) {
+				const newNoteId: string = resBody.value;
+				alert("Progetto creato correttamente!");
 
-                // redirect to update page of the created note
-                nav(`/projects/${newNoteId}`);
-            } else {
-                setMessage(
-                    resBody.message || "Errore nel caricamento del progetto"
-                );
-            }
-        } catch (e) {
-            setMessage("Impossibile raggiungere il server");
-        }
-    }
+				// redirect to update page of the created note
+				nav(`/projects/${newNoteId}`);
+			} else {
+				setMessage(resBody.message || "Errore nel caricamento del progetto");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
 
-    async function handleUpdateProject(
-        e: React.MouseEvent<HTMLButtonElement>
-    ): Promise<void> {
-        e.preventDefault();
+	async function handleUpdateProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
 
-        // TODO: validate inputs (not empty, max length)
-        try {
-            const res = await fetch(`${SERVER_API}/projects/${id}`, {
-                method: "PUT",
-                body: JSON.stringify(project),
-                headers: { "Content-Type": "application/json" },
-            });
+		// TODO: validate inputs (not empty, max length)
+		try {
+			const res = await fetch(`${SERVER_API}/projects/${id}`, {
+				method: "PUT",
+				body: JSON.stringify(project),
+				headers: { "Content-Type": "application/json" },
+			});
 
-            console.log(res);
-            const resBody = (await res.json()) as ResponseBody;
+			console.log(res);
+			const resBody = (await res.json()) as ResponseBody;
 
-            if (resBody.status === ResponseStatus.GOOD) {
-                alert("Progetto aggiornato correttamente!");
+			if (resBody.status === ResponseStatus.GOOD) {
+				alert("Progetto aggiornato correttamente!");
 
-                await updateProject();
+				await updateProject();
 
-                console.log(resBody.value as Note);
-            } else {
-                setMessage(
-                    resBody.message || "Errore nell'aggiornamento del progetto"
-                );
-            }
-        } catch (e) {
-            setMessage("Impossibile raggiungere il server");
-        }
-    }
+				console.log(resBody.value as Note);
+			} else {
+				setMessage(resBody.message || "Errore nell'aggiornamento del progetto");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
 
-    async function handleDeleteProject(
-        e: React.MouseEvent<HTMLButtonElement>
-    ): Promise<void> {
-        e.preventDefault();
+	async function handleDeleteProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
 
-        // TODO: validate inputs (not empty, max length)
-        try {
-            const res = await fetch(`${SERVER_API}/projects/${id}`, {
-                method: "DELETE",
-            });
+		// TODO: validate inputs (not empty, max length)
+		try {
+			const res = await fetch(`${SERVER_API}/projects/${id}`, {
+				method: "DELETE",
+			});
 
-            console.log(res);
-            const resBody = (await res.json()) as ResponseBody;
+			console.log(res);
+			const resBody = (await res.json()) as ResponseBody;
 
-            if (resBody.status === ResponseStatus.GOOD) {
-                alert("Progetto cancellato correttamente!");
-                nav("/projects");
-            } else {
-                setMessage(
-                    resBody.message || "Errore della cancellazione del progetto"
-                );
-            }
-        } catch (e) {
-            setMessage("Impossibile raggiungere il server");
-        }
-    }
+			if (resBody.status === ResponseStatus.GOOD) {
+				alert("Progetto cancellato correttamente!");
+				nav("/projects");
+			} else {
+				setMessage(resBody.message || "Errore della cancellazione del progetto");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
 
-    async function handleDeleteActivity(
-        e: React.MouseEvent<HTMLButtonElement>,
-        id: string | undefined
-    ): Promise<void> {
-        e.preventDefault();
+	async function handleDeleteActivity(
+		e: React.MouseEvent<HTMLButtonElement>,
+		id: string | undefined
+	): Promise<void> {
+		e.preventDefault();
 
-        if (!id) {
-            console.log("Id non trovato per l'attività, impossibile eliminare");
-            setMessage("Id non trovato per l'attività, impossibile eliminare");
-            return;
-        }
+		if (!id) {
+			console.log("Id non trovato per l'attività, impossibile eliminare");
+			setMessage("Id non trovato per l'attività, impossibile eliminare");
+			return;
+		}
 
-        try {
-            const res = await fetch(`${SERVER_API}/activity/${id}`, {
-                method: "DELETE",
-            });
+		try {
+			const res = await fetch(`${SERVER_API}/activity/${id}`, {
+				method: "DELETE",
+			});
 
-            console.log(res);
-            const resBody = (await res.json()) as ResponseBody;
+			console.log(res);
+			const resBody = (await res.json()) as ResponseBody;
 
-            if (resBody.status === ResponseStatus.GOOD) {
-                alert("Attività cancellata correttamente!");
+			if (resBody.status === ResponseStatus.GOOD) {
+				alert("Attività cancellata correttamente!");
 
-                await updateProject();
-            } else {
-                setMessage(
-                    resBody.message || "Errore della cancellazione del progetto"
-                );
-            }
-        } catch (e) {
-            setMessage("Impossibile raggiungere il server");
-        }
-    }
+				await updateProject();
+			} else {
+				setMessage(resBody.message || "Errore della cancellazione del progetto");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
 
-    function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
-        if (isEditing) {
-            handleUpdateProject(e);
-        }
+	function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
+		if (isEditing) {
+			handleUpdateProject(e);
+		}
 
-        setIsEditing(!isEditing);
-    }
-    function toggleEditActivity(
-        e: React.MouseEvent<HTMLButtonElement>,
-        id: string | undefined
-    ): void {
-        e.preventDefault();
+		setIsEditing(!isEditing);
+	}
 
-        if (!id) {
-            console.log("Id non trovato per l'attività, impossibile eliminare");
-            setMessage("Id non trovato per l'attività, impossibile eliminare");
-            return;
-        }
+	function toggleEditActivity(
+		e: React.MouseEvent<HTMLButtonElement>,
+		id: string | undefined
+	): void {
+		e.preventDefault();
 
-        setCurrentActivity(project.activityList.find((act) => act.id === id)!);
-        setActivityFormOpen(true);
-    }
+		if (!id) {
+			console.log("Id non trovato per l'attività, impossibile eliminare");
+			setMessage("Id non trovato per l'attività, impossibile eliminare");
+			return;
+		}
 
-    function addUser(
-        e: React.ChangeEvent<HTMLSelectElement>,
-        user: string
-    ): void {
-        e.preventDefault();
+		setCurrentActivity(project.activityList.find((act) => act.id === id)!);
+		setActivityFormOpen(true);
+	}
 
-        if (!project.accessList.includes(user))
-            // TODO: optimize
-            setProject((prevProj) => {
-                return {
-                    ...prevProj,
-                    accessList: [...prevProj.accessList, user],
-                };
-            });
-    }
+	function handleCreateActivityOpen(e: React.MouseEvent<HTMLButtonElement>): void {
+		e.preventDefault();
+		setCurrentActivity(undefined);
+		setActivityFormOpen(true);
+	}
 
-    function deleteUser(
-        e: React.MouseEvent<HTMLElement>,
-        username: string
-    ): void {
-        e.preventDefault();
+	function addUser(e: React.ChangeEvent<HTMLSelectElement>, user: string): void {
+		e.preventDefault();
 
-        setProject((prevProj) => {
-            return {
-                ...prevProj,
-                accessList: prevProj.accessList.filter((u) => u !== username),
-            };
-        });
-    }
+		if (!project.accessList.includes(user))
+			// TODO: optimize
+			setProject((prevProj) => {
+				return {
+					...prevProj,
+					accessList: [...prevProj.accessList, user],
+				};
+			});
+	}
 
-    return (
-        <>
-            <div className="project-background">
-                <div className="project-container">
-                    <div className="page-title">
-                        {id === NEW
-                            ? "Crea un nuovo progetto"
-                            : "Modifica progetto"}
-                    </div>
-                    {/* render title */}
-                    {isOwner && isEditing ? (
-                        <label htmlFor="title">
-                            Titolo
-                            <input
-                                name="title"
-                                value={project.title}
-                                onChange={handleChange}
-                            />
-                        </label>
-                    ) : (
-                        <div className="project-title">
-                            <div>Titolo del progetto</div>
-                            <div>{project.title}</div>
-                        </div>
-                    )}
-                    {/* render description */}
-                    {isOwner && isEditing ? (
-                        <label htmlFor="description">
-                            Descrizione
-                            <input
-                                name="description"
-                                value={project.description}
-                                onChange={handleChange}
-                            />
-                        </label>
-                    ) : (
-                        <div className="project-description">
-                            <div>Descrizione</div>
-                            <div>{project.description}</div>
-                        </div>
-                    )}
-                    {/* render access list */}
-                    <div>
-                        {isOwner && isEditing && (
-                            <>
-                                <div>Aggiungi partecipanti al progetto</div>
-                                <SearchForm
-                                    onItemClick={addUser}
-                                    list={project.accessList}
-                                />
-                            </>
-                        )}
-                        <div>
-                            <div>Utenti attualmente inseriti</div>
-                            {project.accessList.map((u) => (
-                                <div>
-                                    <div>{u}</div>
-                                    {isOwner && isEditing && (
-                                        <button
-                                            onClick={(
-                                                e: React.MouseEvent<HTMLButtonElement>
-                                            ): void => deleteUser(e, u)}
-                                        >
-                                            Elimina
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+	function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
+		e.preventDefault();
 
-                    {/* render activity list */}
-                    <div>
-                        <div>Lista di Attività legate al progetto</div>
-                        {project.activityList &&
-                            project.activityList.map((a) => (
-                                <div key={"activity-" + a.id}>
-                                    <div>{a.title}</div>
+		setProject((prevProj) => {
+			return {
+				...prevProj,
+				accessList: prevProj.accessList.filter((u) => u !== username),
+			};
+		});
+	}
 
-                                    {isEditing && !activityFormOpen && (
-                                        <button
-                                            onClick={(
-                                                e: React.MouseEvent<HTMLButtonElement>
-                                            ): void =>
-                                                toggleEditActivity(e, a.id)
-                                            }
-                                        >
-                                            Modifica
-                                        </button>
-                                    )}
+	return (
+		<>
+			<div className="project-background">
+				<div className="project-container">
+					<div className="page-title">
+						{id === NEW ? "Crea un nuovo progetto" : "Modifica progetto"}
+					</div>
+					{/* render title */}
+					{isEditing ? (
+						<label htmlFor="title">
+							Titolo
+							<input name="title" value={project.title} onChange={handleChange} />
+						</label>
+					) : (
+						<div className="project-title">
+							<div>Titolo del progetto</div>
+							<div>{project.title}</div>
+						</div>
+					)}
+					{/* render description */}
+					{isEditing ? (
+						<label htmlFor="description">
+							Descrizione
+							<input
+								name="description"
+								value={project.description}
+								onChange={handleChange}
+							/>
+						</label>
+					) : (
+						<div className="project-description">
+							<div>Descrizione</div>
+							<div>{project.description}</div>
+						</div>
+					)}
+					{/* render access list */}
+					<div>
+						{isEditing && (
+							<>
+								<div>Aggiungi partecipanti al progetto</div>
+								<SearchForm onItemClick={addUser} list={project.accessList} />
+							</>
+						)}
+						<div>
+							<div>Utenti attualmente inseriti</div>
+							{project.accessList.map((u) => (
+								<div>
+									<div>{u}</div>
+									{isEditing && (
+										<button
+											onClick={(
+												e: React.MouseEvent<HTMLButtonElement>
+											): void => deleteUser(e, u)}>
+											Elimina
+										</button>
+									)}
+								</div>
+							))}
+						</div>
+					</div>
 
-                                    {isOwner && isEditing && (
-                                        <button
-                                            onClick={async (
-                                                e: React.MouseEvent<HTMLButtonElement>
-                                            ): Promise<void> =>
-                                                await handleDeleteActivity(
-                                                    e,
-                                                    a.id
-                                                )
-                                            }
-                                        >
-                                            Elimina
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                        {isEditing &&
-                            (!activityFormOpen ? (
-                                <button
-                                    onClick={(): void => {
-                                        setActivityFormOpen(true);
-                                    }}
-                                >
-                                    Crea Attività
-                                </button>
-                            ) : (
-                                <div>
-                                    <ActivityForm
-                                        inputActivity={currentActivity}
-                                        projectId={project.id}
-                                        onSuccess={async (): Promise<void> => {
-                                            setActivityFormOpen(false);
-                                            alert(
-                                                "Attività creata con successo"
-                                            );
-                                            await updateProject();
-                                        }}
-                                        onFail={(): void => {
-                                            setMessage(
-                                                "Errore nel creare attività"
-                                            );
-                                        }}
-                                    />
-                                    <button
-                                        onClick={(): void => {
-                                            setActivityFormOpen(false);
-                                        }}
-                                    >
-                                        Annulla
-                                    </button>
-                                </div>
-                            ))}
-                    </div>
-                    {/* render note */}
+					{/* render activity list */}
+					<div>
+						{!activityFormOpen ? (
+							<>
+								<div>Lista di Attività legate al progetto</div>
+								{project.activityList &&
+									project.activityList.map((a) => (
+										<div key={"activity-" + a.id}>
+											<div>{a.title}</div>
 
-                    {/* manage project */}
-                    {/* if is owner, can modify project */}
-                    {/* if new project, can save new project */}
-                    {id === NEW ? (
-                        <button onClick={handleCreateProject}>
-                            Crea nuovo progetto
-                        </button>
-                    ) : isEditing ? (
-                        <button
-                            style={{ backgroundColor: "green" }}
-                            onClick={handleUpdateProject}
-                        >
-                            Salva progetto
-                        </button>
-                    ) : (
-                        <button onClick={toggleEdit}>Modifica progetto</button>
-                    )}
-                    {/* if is owner, can delete project (not new project) */}
-                    {id !== NEW && isOwner && (
-                        <button
-                            style={{ backgroundColor: "red" }}
-                            onClick={handleDeleteProject}
-                        >
-                            Cancella Progetto
-                        </button>
-                    )}
-                </div>
-            </div>
+											{isEditing && (
+												<>
+													<button
+														onClick={(
+															e: React.MouseEvent<HTMLButtonElement>
+														): void => toggleEditActivity(e, a.id)}>
+														Modifica
+													</button>
 
-            {message && <div>{message}</div>}
-        </>
-    );
+													<button
+														onClick={async (
+															e: React.MouseEvent<HTMLButtonElement>
+														): Promise<void> =>
+															await handleDeleteActivity(e, a.id)
+														}>
+														Elimina
+													</button>
+												</>
+											)}
+										</div>
+									))}
+								{isEditing && (
+									<button onClick={handleCreateActivityOpen}>
+										Crea Attività
+									</button>
+								)}
+							</>
+						) : (
+							<div>
+								<ActivityForm
+									inputActivity={currentActivity}
+									projectId={project.id}
+									onSuccess={async (): Promise<void> => {
+										setActivityFormOpen(false);
+										alert("Attività creata con successo");
+										await updateProject();
+									}}
+									onFail={(): void => {
+										setMessage("Errore nel creare attività");
+									}}
+								/>
+								<button
+									onClick={(): void => {
+										setActivityFormOpen(false);
+									}}>
+									Annulla
+								</button>
+							</div>
+						)}
+					</div>
+					{/* render note */}
+
+					{/* manage project */}
+					{/* if is owner, can modify project */}
+					{/* if new project, can save new project */}
+					{id === NEW ? (
+						<button onClick={handleCreateProject}>Crea nuovo progetto</button>
+					) : isEditing ? (
+						<button style={{ backgroundColor: "green" }} onClick={handleUpdateProject}>
+							Salva progetto
+						</button>
+					) : (
+						<button onClick={toggleEdit}>Modifica progetto</button>
+					)}
+					{/* if is owner, can delete project (not new project) */}
+					{id !== NEW && (
+						<button style={{ backgroundColor: "red" }} onClick={handleDeleteProject}>
+							Cancella Progetto
+						</button>
+					)}
+				</div>
+			</div>
+
+			{message && <div>{message}</div>}
+		</>
+	);
 }
