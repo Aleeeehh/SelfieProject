@@ -20,7 +20,6 @@ const noteSchema = new mongoose.Schema(
 				ref: "User",
 			},
 		],
-
 		// project related fields
 		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
 		activityId: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },

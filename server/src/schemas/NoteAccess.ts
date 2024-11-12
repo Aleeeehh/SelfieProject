@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+/* import mongoose from "mongoose";
 
 const noteAccessSchema = new mongoose.Schema(
     {
@@ -18,4 +18,6 @@ const noteAccessSchema = new mongoose.Schema(
 
 const NoteAccessSchema = mongoose.model("NoteAccess", noteAccessSchema);
 
-export default NoteAccessSchema;
+export default NoteAccessSchema;*/
+
+export {};

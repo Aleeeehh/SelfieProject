@@ -8,12 +8,12 @@ import type Note from "../types/Note.js";
 import UserSchema from "../schemas/User.js";
 import { Types } from "mongoose";
 import { ObjectId } from "mongodb";
-import NoteAccessSchema from "../schemas/NoteAccess.js";
+// import NoteAccessSchema from "../schemas/NoteAccess.js";
 // import UserResult from "../types/UserResult.js";
 import { Privacy } from "../types/Privacy.js";
 import NoteItemSchema from "../schemas/NoteList.js";
 import type { ListItem } from "../types/Note.js";
-import { getUsernameListFromIdList } from "./lib.ts";
+import { getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.ts";
 
 const router: Router = Router();
 
@@ -160,11 +160,11 @@ router.get("/:id", async (req: Request, res: Response) => {
 		}
 
 		// database collection note_access [user_id, note_id]
-		const foundaccessList = await NoteAccessSchema.find({
-			note: noteId,
-		}).lean();
+		// const foundaccessList = await NoteAccessSchema.find({
+		// 	note: noteId,
+		// }).lean();
 
-		const accessList = await getUsernameListFromIdList(foundaccessList.map((x) => x.userId));
+		const accessList = await getUsernameListFromIdList(foundNote.accessList.map((x) => x._id));
 
 		const foundItemList = await NoteItemSchema.find({
 			noteId: noteId,
@@ -199,10 +199,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 		if (foundNote.owner.toString() !== req.user.id) {
 			// check if the user can access the note
 
-			const foundAccess = await NoteAccessSchema.findOne({
-				user: req.user.id,
-				note: noteId,
-			});
+			const foundAccess = foundNote.accessList.includes(new Types.ObjectId(req.user.id));
 
 			if (!foundAccess) {
 				const resBody: ResponseBody = {
@@ -242,8 +239,11 @@ router.post("/", async (req: Request, res: Response) => {
 		const inputText = req.body.text as string | undefined;
 		const inputTags = req.body.tags as string[] | [];
 		const privacyStr = req.body.privacy as string | undefined;
-		const inputItemList = req.body.toDoList as ListItem[] | undefined;
 		const accessListStr = req.body.accessList as string[] | undefined; // list of usernames
+
+		// Leo - Note 18-33 - BEGIN
+		const inputItemList = req.body.toDoList as ListItem[] | undefined;
+		// Leo - Note 18-33 - END
 
 		if (!inputTitle || !inputText) {
 			console.log("Invalid body: 'title' and 'text' required");
@@ -260,19 +260,9 @@ router.post("/", async (req: Request, res: Response) => {
 				message: "Invalid privacy: should be 'public', 'protected' or 'private'",
 			});
 
-		var accessList: Types.ObjectId[] = [];
-		if (!accessListStr) accessList = [];
-		else
-			for (const username of accessListStr) {
-				const user = await UserSchema.findOne({ username }).lean();
-				if (!user)
-					return res.status(400).json({
-						status: ResponseStatus.BAD,
-						message: "Invalid user id",
-					});
-
-				accessList.push(user._id);
-			}
+		const newAccessList: Types.ObjectId[] = accessListStr
+			? await getIdListFromUsernameList(accessListStr)
+			: [];
 
 		if (!req.user || !req.user.id) {
 			return res.status(400).json({
@@ -283,13 +273,11 @@ router.post("/", async (req: Request, res: Response) => {
 
 		const privacy: Privacy = privacyStr as Privacy;
 
-		if (privacy === Privacy.PRIVATE && accessList.length > 0)
+		if (privacy === Privacy.PRIVATE && newAccessList.length > 0)
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message: "Access list is private, but access list is not empty",
 			});
-
-		const newAccessList = await getUsernameListFromIdList(accessList);
 
 		const newNote: Note = {
 			owner: new ObjectId(req.user.id),
@@ -297,13 +285,10 @@ router.post("/", async (req: Request, res: Response) => {
 			text: inputText,
 			tags: inputTags,
 			privacy,
-			accessList: newAccessList,
+			accessList: newAccessList.map((x)=>x.toString()),
 		};
 
 		const createdNote = await NoteSchema.create(newNote);
-		const createdAccessList = await NoteAccessSchema.insertMany(
-			accessList.map((x) => ({ userId: x, noteId: createdNote._id }))
-		);
 
 		const itemList: ListItem[] = [];
 
@@ -312,6 +297,7 @@ router.post("/", async (req: Request, res: Response) => {
 				itemList.push({
 					text: item.text,
 					completed: item.completed,
+					endDate: item.endDate,
 				});
 			}
 		}
@@ -321,11 +307,12 @@ router.post("/", async (req: Request, res: Response) => {
 				text: x.text,
 				completed: x.completed,
 				note: createdNote._id,
+				endDate: x.endDate,
 			}))
 		);
 
 		console.log("Inserted note: ", createdNote._id.toString());
-		console.log("Inserted access list: ", createdAccessList);
+		console.log("Inserted access list: ", newAccessList);
 		console.log("Inserted item list: ", createdItemList);
 
 		const resBody: ResponseBody = {
@@ -484,20 +471,15 @@ router.put("/:id", async (req: Request, res: Response) => {
 		}
 
 		if (inputItemList) {
-			const deletedItems = await NoteItemSchema.deleteMany({
-				note: noteId,
-			});
-			const insertedItems = await NoteItemSchema.insertMany(
-				inputItemList.map((item) => ({
-					note: noteId,
-					completed: item.completed,
-					text: item.text,
-				}))
-			);
+			for (const inputItem of inputItemList) {
+				const updatedItem = await NoteItemSchema.findByIdAndUpdate(inputItem.id, {
+					text: inputItem.text,
+					endDate: inputItem.endDate,
+					completed: inputItem.completed,
+				});
 
-			// TODO: can be improved by removing double access to db
-			console.log("Deleted items: ", deletedItems);
-			console.log("Inserted items: ", insertedItems);
+				console.log("Updated note Item: ", updatedItem);
+			}
 		}
 
 		const updatedNote: Note = {
@@ -513,18 +495,13 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		await NoteSchema.findByIdAndUpdate(noteId, updatedNote);
 
-		await NoteAccessSchema.deleteMany({
-			note: noteId,
-		});
-
 		const list = updatedAccessList.map((id) => ({
 			noteId: noteId,
 			userId: id,
 		}));
 		console.log("Updated access list: ", list);
 
-		await NoteAccessSchema.insertMany(list);
-
+        // to return usernames and not ids
 		updatedNote.accessList = await getUsernameListFromIdList(updatedAccessList);
 
 		// TODO: filter the fields of the found note
@@ -573,16 +550,11 @@ router.delete("/:id", async (req: Request, res: Response) => {
 			return res.status(400).json(resBody);
 		}
 
-		const deletedAccessList = await NoteAccessSchema.deleteMany({
-			note: noteId,
-		});
-
 		const deletedItems = await NoteItemSchema.deleteMany({
 			note: noteId,
 		});
 
 		console.log("Deleted note: ", foundNote);
-		console.log("Deleted access list: ", deletedAccessList);
 		console.log("Deleted items: ", deletedItems);
 
 		// TODO: filter the fields of the found note
