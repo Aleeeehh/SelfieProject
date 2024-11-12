@@ -12,7 +12,7 @@ import type Note from "../types/Note.ts";
 import UserSchema from "../schemas/User.ts";
 import mongoose, { Types } from "mongoose";
 import type { Privacy } from "../types/Privacy.ts";
-import { getIdListFromUsernameList } from "./lib.ts";
+import { getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.ts";
 
 const router: Router = Router();
 
@@ -38,8 +38,45 @@ async function getActivityStatus(): Promise<ActivityStatus> {
 	return ActivityStatus.ACTIVE;
 }
 
-async function getActivityFromProjectId(projectId: Types.ObjectId): Promise<Activity> {
-	return {} as Activity;
+// if parentID === undefined, then get the activity list for the project
+async function getActivityList(
+	projectId: Types.ObjectId,
+	parentId: Types.ObjectId | undefined
+): Promise<Activity[]> {
+	// get all activities for projectId
+	const foundActivities = await ActivitySchema.find({
+		projectId: projectId,
+		parent: parentId,
+	}).lean();
+
+	const activityList: Activity[] = [];
+
+	// if parent, push the activity to the children of the parent activity
+	for (const foundActivity of foundActivities) {
+		const newActivity: Activity = {
+			id: foundActivity._id.toString(),
+			title: foundActivity.title,
+			description: foundActivity.description,
+			deadline: foundActivity.deadline,
+			completed: foundActivity.completed,
+			owner: foundActivity.owner.toString(),
+			accessList: await getUsernameListFromIdList(foundActivity.accessList),
+			projectId: foundActivity.projectId || undefined,
+			start: foundActivity.start || undefined,
+			milestone: foundActivity.milestone,
+			advancementType: (foundActivity.advancementType as AdvancementType) || undefined,
+			parent: foundActivity.parent || undefined,
+			prev: foundActivity.prev || undefined,
+			next: foundActivity.next || undefined,
+		};
+		newActivity.children = await getActivityList(
+			projectId,
+			new Types.ObjectId(newActivity.id!)
+		);
+		activityList.push(newActivity);
+	}
+
+	return activityList;
 }
 
 // returns all projects where the current user is the owner or in the access list
@@ -210,11 +247,6 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 		console.log(foundProject);
 
-		const activityList: Activity[] = [];
-		const foundActivities = await ActivitySchema.find({
-			projectId: foundProject._id,
-		}).lean();
-
 		// get project note
 		const foundProjectNote = await NoteSchema.findOne({
 			activityId: foundProject._id,
@@ -240,7 +272,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 		}
 
 		// populate activity list for project
-		for (const foundActivity of foundActivities) {
+		/* for (const foundActivity of foundActivities) {
 			const foundNote = await NoteSchema.findOne({
 				activityId: foundActivity._id,
 			}).lean();
@@ -281,7 +313,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 			};
 
 			activityList.push(activity);
-		}
+		}*/
 
 		const project: Project = {
 			id: foundProject._id.toString(),
@@ -289,7 +321,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 			description: foundProject.description,
 			owner: foundProject.owner,
 			accessList: await getUserResultFromObjectIdList(foundProject.accessList),
-			activityList,
+			activityList: await getActivityList(new Types.ObjectId(projectId), undefined),
 			note: projectNote,
 		};
 
@@ -418,7 +450,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const id = req.params.id;
 		const title = req.body.title;
 		const description = req.body.description;
-		const accessList = req.body.accessList as string[];
+		const accessList = req.body.accessList as string[]; // username list
 
 		if (!Types.ObjectId.isValid(id)) {
 			const resBody: ResponseBody = {
@@ -429,15 +461,20 @@ router.put("/:id", async (req: Request, res: Response) => {
 			return res.status(400).json(resBody);
 		}
 
+		var accestIdList: Types.ObjectId[] = [];
 		for (let i = 0; i < accessList.length; i++) {
-			if (!Types.ObjectId.isValid(accessList[i])) {
+			const foundUser = await UserSchema.findOne({ username: accessList[i] });
+
+			if (!foundUser) {
 				const resBody: ResponseBody = {
-					message: "Invalid user id: " + accessList[i],
+					message: "User not found: " + accessList[i],
 					status: ResponseStatus.BAD,
 				};
-				console.log("Invalid user id: " + accessList[i]);
+				console.log("User not found: " + accessList[i]);
 				return res.status(400).json(resBody);
 			}
+
+			accestIdList.push(foundUser._id);
 		}
 
 		const project = await ProjectSchema.findById(id);
@@ -464,7 +501,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 			{
 				title,
 				description,
-				accessList,
+				accessList: accestIdList,
 			},
 			{ new: true }
 		);

@@ -47,6 +47,36 @@ async function getStatusForCreatedActivity(activity: Activity): Promise<Activity
 	}
 }
 
+async function getStatusForUpdatedActivity(activity: Activity): Promise<ActivityStatus> {
+	var activable = false;
+	var late = false;
+
+	// if no prev activity, the current is activable
+	if (!activity.prev) activable = true;
+
+	const prevActivity = await ActivitySchema.findById(activity.prev).lean();
+	if (!prevActivity) activable = true;
+
+	// if prev activity is completed, the current is activable
+	if (prevActivity && prevActivity.completed) activable = true;
+
+	// if activity is activable, check if it is late
+	if (activable) {
+		if (activity.deadline.getTime() < new Date().getTime()) {
+			late = true;
+		}
+	}
+
+	// return the value for the status
+	if (activable && late) {
+		return ActivityStatus.LATE;
+	} else if (activable) {
+		return ActivityStatus.ACTIVABLE;
+	} else {
+		return ActivityStatus.NOT_ACTIVABLE;
+	}
+}
+
 // Returns the activity list for the current user; defaults to first ten items
 router.get("/", async (req: Request, res: Response) => {
 	try {
@@ -526,6 +556,8 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
 	const activityId = req.params.id as string;
 
+	console.log("PUT ACTIVITY", activityId, req.body);
+
 	try {
 		// TODO: validate param
 		// TODO: validate body fields
@@ -533,16 +565,16 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const inputDescription = req.body.description as string | undefined;
 		const inputDeadline = req.body.deadline as string | undefined;
 		const inputCompleted = req.body.completed as string | undefined;
-		const inputTags = req.body.tags as string[] | undefined;
-		const inputAccessList = req.body.accessList as string[] | undefined;
+		const inputAccessList = req.body.accessList as string[] | undefined; // username list
 
 		// Leo - Progetti - BGN
 		// cannot change projectId
 		// cannot change parentActivity
-		const inputStartDate = req.body.startDate as string | undefined;
+		const inputStartDate = req.body.start as string | undefined;
 		const inputMilestone = req.body.milestone as string | undefined;
 		const inputPrev = req.body.prev as string | undefined;
 		const inputNext = req.body.next as string | undefined;
+		const inputAdvancementType = req.body.advancementType as AdvancementType | undefined;
 		// Leo - Progetti - END
 
 		if (
@@ -550,19 +582,22 @@ router.put("/:id", async (req: Request, res: Response) => {
 			!inputDescription &&
 			!inputDeadline &&
 			!inputCompleted &&
-			!inputTags &&
 			!inputAccessList
 		) {
+			console.log(
+				"Invalid body: 'title', 'description', 'deadline', 'completed' or 'accessList' required, nothing to update"
+			);
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message:
-					"Invalid body: 'title', 'description', 'deadline', 'completed', 'tags' or 'accessList' required, nothing to update",
+					"Invalid body: 'title', 'description', 'deadline', 'completed' or 'accessList' required, nothing to update",
 			});
 		}
 
 		const foundActivity = await ActivitySchema.findById(activityId).lean();
 
 		if (!foundActivity) {
+			console.log("Activity with id " + activityId + " not found!");
 			const resBody: ResponseBody = {
 				message: "Activity with id " + activityId + " not found!",
 				status: ResponseStatus.BAD,
@@ -571,27 +606,28 @@ router.put("/:id", async (req: Request, res: Response) => {
 			return res.status(400).json(resBody);
 		}
 
+		const projectId = foundActivity.projectId;
+
 		const updatedAccessList: Types.ObjectId[] = [];
 
-		if (inputAccessList)
+		if (inputAccessList) {
 			for (const id of inputAccessList) {
-				if (!Types.ObjectId.isValid(id))
+				const foundUser = await UserSchema.findOne({ username: id });
+
+				if (!foundUser) {
+					console.log("Invalid username: " + id);
 					return res.status(400).json({
 						status: ResponseStatus.BAD,
-						message: "Invalid user id",
+						message: "Invalid username",
 					});
+				}
 
-				const user = await UserSchema.findById(id);
-				if (!user)
-					return res.status(400).json({
-						status: ResponseStatus.BAD,
-						message: "Invalid user id: " + id,
-					});
-
-				updatedAccessList.push(user._id);
+				updatedAccessList.push(foundUser._id);
 			}
+		}
 
 		if (inputCompleted && !["true", "false"].includes(inputCompleted)) {
+			console.log("Invalid body: 'completed' should be 'true' or 'false'");
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message: "Invalid body: 'completed' should be 'true' or 'false'",
@@ -603,56 +639,75 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		// Leo - Progetti - BGN
 
-		if (inputStartDate && !validDateString(inputStartDate)) {
+		if (projectId && inputStartDate && !validDateString(inputStartDate)) {
+			console.log("Invalid start date");
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message: "Invalid start date",
 			});
 		}
 
-		const updatedStartDate: Date | undefined = inputStartDate
-			? new Date(inputStartDate)
-			: new Date(foundActivity.start || "");
+		const updatedStartDate: Date | undefined = projectId
+			? inputStartDate
+				? new Date(inputStartDate)
+				: new Date(foundActivity.start || "")
+			: undefined;
 
-		const updatedMilestone: boolean = inputMilestone
-			? !!inputMilestone
-			: foundActivity.milestone;
+		console.log(updatedStartDate);
 
-		if (inputPrev && !Types.ObjectId.isValid(inputPrev) && inputPrev) {
+		const updatedMilestone: boolean | undefined = projectId
+			? inputMilestone
+				? !!inputMilestone
+				: foundActivity.milestone
+			: undefined;
+
+		if (projectId && inputPrev && !Types.ObjectId.isValid(inputPrev) && inputPrev) {
+			console.log("Invalid prev id");
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message: "Invalid prev id",
 			});
 		}
 
-		if (inputNext && !Types.ObjectId.isValid(inputNext)) {
+		if (projectId && inputNext && !Types.ObjectId.isValid(inputNext)) {
+			console.log("Invalid next id");
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message: "Invalid next id",
 			});
 		}
 
-		const updatedPrev: Types.ObjectId | null | undefined = inputPrev
-			? new Types.ObjectId(inputPrev)
-			: foundActivity.prev;
-		const updatedNext: Types.ObjectId | null | undefined = inputNext
-			? new Types.ObjectId(inputNext)
-			: foundActivity.next;
+		const updatedPrev: Types.ObjectId | null | undefined = projectId
+			? inputPrev
+				? new Types.ObjectId(inputPrev)
+				: foundActivity.prev
+			: undefined;
+		const updatedNext: Types.ObjectId | null | undefined = projectId
+			? inputNext
+				? new Types.ObjectId(inputNext)
+				: foundActivity.next
+			: undefined;
 
+		const updateAdvancementType: AdvancementType | undefined = projectId
+			? inputAdvancementType
+			: (foundActivity.advancementType as AdvancementType | undefined);
+
+		console.log(updateAdvancementType, inputAdvancementType, foundActivity.advancementType);
 		// Leo - Progetti - END
 
 		const updatedActivity: Activity = {
 			owner: foundActivity.owner.toString(),
 			title: inputTitle || foundActivity.title,
 			description: inputDescription || foundActivity.description,
-			// tags: inputTags || foundActivity.tags,
 			accessList: updatedAccessList.map((id) => id.toString()) || foundActivity.accessList,
 			deadline: updatedDeadline || foundActivity.deadline,
-			completed: !!inputCompleted || foundActivity.completed,
+			completed: inputCompleted ? !!inputCompleted : foundActivity.completed,
 			completedAt: inputCompleted ? new Date() : undefined,
+			idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso || undefined,
 
 			// Leo - Progetti - BGN
 			projectId: foundActivity.projectId || undefined,
+			advancementType: updateAdvancementType,
 			start: updatedStartDate,
 			milestone: updatedMilestone,
 			parent: foundActivity.parent || undefined,
@@ -660,6 +715,8 @@ router.put("/:id", async (req: Request, res: Response) => {
 			next: updatedNext || undefined,
 			// Leo - Progetti - END
 		};
+
+		updatedActivity.status = await getStatusForUpdatedActivity(updatedActivity);
 
 		console.log("Updating activity: ", foundActivity, " to ", updatedActivity);
 

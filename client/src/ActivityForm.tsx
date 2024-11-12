@@ -2,6 +2,7 @@ import DatePicker from "react-datepicker";
 import Activity, { AdvancementType } from "./types/Activity";
 import React from "react";
 import { SERVER_API } from "./params/params";
+import { ResponseStatus } from "./types/ResponseStatus";
 
 const baseActivity: Activity = {
 	id: "",
@@ -30,7 +31,15 @@ export default function ActivityForm({
 	// const { loggedUser } = useAuth();
 	const [addNotification, setAddNotification] = React.useState(false);
 
-	const [activity, setActivity] = React.useState<Activity>(inputActivity || baseActivity);
+	const [activity, setActivity] = React.useState<Activity>(
+		inputActivity
+			? {
+					...inputActivity,
+					start: new Date(inputActivity.start || ""),
+					deadline: new Date(inputActivity.deadline),
+			  }
+			: baseActivity
+	);
 	const [siblingActivities, setSiblingActivities] = React.useState<Activity[]>([]);
 
 	const [notificationTime, setNotificationTime] = React.useState(0);
@@ -38,12 +47,19 @@ export default function ActivityForm({
 	const [_, setNotificationRepeatTime] = React.useState(0);
 
 	React.useEffect(() => {
-		if (projectId) {
-			setSiblingActivities(getActivitiesForProject(projectId));
+		if (inputActivity) {
+			fetch(`${SERVER_API}/activity/${inputActivity.id}/siblings`)
+				.then((res) => res.json())
+				.then((data) => {
+					if (data.status === ResponseStatus.GOOD) {
+						setSiblingActivities(data.value as Activity[]);
+					}
+				})
+				.catch((e) => {
+					console.log(e);
+				});
 		} else {
-			console.log(
-				"Project id not inserted. This is a normal activity, not related to a project."
-			);
+			console.log("Siblings not found for activity");
 		}
 	}, []);
 
@@ -56,7 +72,7 @@ export default function ActivityForm({
 		e.preventDefault();
 
 		// create the new activity here (inside the component)
-		console.log("Creating activity");
+		console.log("Creating activity: ", JSON.stringify(activity));
 
 		const res = await fetch(`${SERVER_API}/activity`, {
 			method: "POST",
@@ -65,14 +81,15 @@ export default function ActivityForm({
 				title: activity.title,
 				description: activity.description,
 				accessList: activity.accessList,
-				deadline: activity.deadline,
+				deadline: activity.deadline.toISOString().split("T")[0],
 				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
 				projectId: projectId,
-				start: activity.start?.toISOString().split("T")[0],
+				start: activity.start?.toISOString().split("T")[0] || undefined,
 				milestone: activity.milestone,
 				parent: activity.parent,
 				prev: activity.prev,
 				next: activity.next,
+				advancementType: activity.advancementType,
 			}),
 		});
 
@@ -84,14 +101,27 @@ export default function ActivityForm({
 	async function handleUpdateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
-		console.log("Updating activity: " + activity.id);
+		console.log("Updating activity: ", JSON.stringify(activity));
 
 		// update the activity here (inside the component)
 
-		const res = await fetch(`${SERVER_API}/activity`, {
+		const res = await fetch(`${SERVER_API}/activity/${activity.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(activity),
+			body: JSON.stringify({
+				title: activity.title,
+				description: activity.description,
+				accessList: activity.accessList,
+				deadline: activity.deadline.toISOString().split("T")[0],
+				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
+				projectId: projectId,
+				start: activity.start?.toISOString().split("T")[0] || undefined,
+				milestone: activity.milestone,
+				parent: activity.parent,
+				prev: activity.prev,
+				next: activity.next,
+				advancementType: activity.advancementType,
+			}),
 		});
 
 		// received action post activity update handle
@@ -99,7 +129,7 @@ export default function ActivityForm({
 		else onFail();
 	}
 
-	function getActivitiesForProject(id: string): Activity[] {
+	/* function getActivitiesForProject(id: string): Activity[] {
 		if (!id) return [];
 
 		fetch(`${SERVER_API}/projects/${id}/activities`)
@@ -114,14 +144,16 @@ export default function ActivityForm({
 			});
 
 		return [];
-	}
+	} */
 
 	return (
-		<form style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
-			<label htmlFor="title" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+		<form style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+			<label
+				htmlFor="title"
+				style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 				Titolo
 				<input
-					style={{backgroundColor: "white"}}
+					style={{ backgroundColor: "white" }}
 					className="btn border"
 					type="text"
 					name="title"
@@ -131,10 +163,12 @@ export default function ActivityForm({
 					}
 				/>
 			</label>
-			<label htmlFor="description" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+			<label
+				htmlFor="description"
+				style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 				Descrizione
 				<input
-					style={{backgroundColor: "white"}}
+					style={{ backgroundColor: "white" }}
 					className="btn border"
 					type="text"
 					name="title"
@@ -144,7 +178,9 @@ export default function ActivityForm({
 					}
 				/>
 			</label>
-			<label htmlFor="endTime" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+			<label
+				htmlFor="endTime"
+				style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 				Scadenza
 				<div>
 					<DatePicker
@@ -167,13 +203,13 @@ export default function ActivityForm({
 				</div>
 				<div>
 					<input
-						style={{backgroundColor: "white"}}
+						style={{ backgroundColor: "white" }}
 						className="btn border"
 						type="time"
-						value={`${activity.deadline
+						value={`${new Date(activity.deadline)
 							.getHours()
 							.toString()
-							.padStart(2, "0")}:${activity.deadline
+							.padStart(2, "0")}:${new Date(activity.deadline)
 							.getMinutes()
 							.toString()
 							.padStart(2, "0")}`}
@@ -198,7 +234,9 @@ export default function ActivityForm({
 			</label>
 
 			{addNotification && (
-				<label htmlFor="notificationTime" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+				<label
+					htmlFor="notificationTime"
+					style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 					Quanto tempo prima mandare la notifica
 					<select
 						id="notificationTimeSelect"
@@ -227,10 +265,12 @@ export default function ActivityForm({
 			)}
 
 			{notificationRepeat && (
-				<label htmlFor="notificationRepeatTime" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+				<label
+					htmlFor="notificationRepeatTime"
+					style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 					Ripetizioni notifica
 					<select
-						style={{backgroundColor: "white"}}
+						style={{ backgroundColor: "white" }}
 						className="btn border"
 						name="notificationRepeatTime"
 						onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -256,13 +296,15 @@ export default function ActivityForm({
 						// activity.prev = prev;
 						// activity.next = prev;
 					}
-					<label htmlFor="start" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+					<label
+						htmlFor="start"
+						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 						Data di inizio
 						<div>
 							<DatePicker
 								className="btn border"
 								name="start"
-								selected={activity.start}
+								selected={activity.start || new Date()}
 								onChange={(date: Date | null): void => {
 									if (date) {
 										// Aggiorna la data mantenendo l'orario attuale
@@ -279,15 +321,15 @@ export default function ActivityForm({
 						</div>
 						<div>
 							<input
-								style={{backgroundColor: "white"}}
+								style={{ backgroundColor: "white" }}
 								className="btn border"
 								type="time"
 								value={
 									activity.start
-										? `${activity.start
+										? `${new Date(activity.start)
 												.getHours()
 												.toString()
-												.padStart(2, "0")}:${activity.start
+												.padStart(2, "0")}:${new Date(activity.start)
 												.getMinutes()
 												.toString()
 												.padStart(2, "0")}`
@@ -322,9 +364,11 @@ export default function ActivityForm({
 							}}
 						/>
 					</label>
-					<label htmlFor="advancementType" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+					<label
+						htmlFor="advancementType"
+						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 						<select
-							style={{backgroundColor: "white"}}
+							style={{ backgroundColor: "white" }}
 							className="btn border"
 							name="advancementType"
 							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -332,20 +376,25 @@ export default function ActivityForm({
 									...activity,
 									advancementType: e.target.value as AdvancementType,
 								});
-							}}>
-							<option
-								key={AdvancementType.CONTRACTION}
-								value={AdvancementType.CONTRACTION}
-							/>
+							}}
+							value={activity.advancementType}>
 							<option
 								key={AdvancementType.TRANSLATION}
-								value={AdvancementType.TRANSLATION}
-							/>
+								value={AdvancementType.TRANSLATION}>
+								{AdvancementType.TRANSLATION}
+							</option>
+							<option
+								key={AdvancementType.CONTRACTION}
+								value={AdvancementType.CONTRACTION}>
+								{AdvancementType.CONTRACTION}
+							</option>
 						</select>
 					</label>
-					<label htmlFor="parent" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+					<label
+						htmlFor="parent"
+						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 						<select
-							style={{backgroundColor: "white"}}
+							style={{ backgroundColor: "white" }}
 							className="btn border"
 							name="parent"
 							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -355,13 +404,17 @@ export default function ActivityForm({
 								});
 							}}>
 							{siblingActivities.map((act) => (
-								<option key={act.title} value={act.id} />
+								<option key={act.title} value={act.id}>
+									{act.title}
+								</option>
 							))}
 						</select>
 					</label>
-					<label htmlFor="prev" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+					<label
+						htmlFor="prev"
+						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 						<select
-							style={{backgroundColor: "white"}}
+							style={{ backgroundColor: "white" }}
 							className="btn border"
 							name="prev"
 							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -371,13 +424,17 @@ export default function ActivityForm({
 								});
 							}}>
 							{siblingActivities.map((act) => (
-								<option key={act.title} value={act.id} />
+								<option key={act.title} value={act.id}>
+									{act.title}
+								</option>
 							))}
 						</select>
 					</label>
-					<label htmlFor="next" style={{display: "flex", flexDirection: "column", gap: "0.5em"}}>
+					<label
+						htmlFor="next"
+						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
 						<select
-							style={{backgroundColor: "white"}}
+							style={{ backgroundColor: "white" }}
 							className="btn border"
 							name="next"
 							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
@@ -387,7 +444,9 @@ export default function ActivityForm({
 								});
 							}}>
 							{siblingActivities.map((act) => (
-								<option key={act.title} value={act.id} />
+								<option key={act.title} value={act.id}>
+									{act.title}
+								</option>
 							))}
 						</select>
 					</label>

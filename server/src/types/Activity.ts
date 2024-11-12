@@ -26,6 +26,7 @@ type Activity = {
 	parent?: Types.ObjectId | string;
 	prev?: Types.ObjectId | string;
 	next?: Types.ObjectId | string;
+	children?: Activity[];
 };
 
 export default Activity;
