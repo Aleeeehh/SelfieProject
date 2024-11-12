@@ -147,9 +147,9 @@ function Home(): React.JSX.Element {
 						<label>
 							Mostra
 							<select
-							value={numEvents}
-							className="home-select"
-							onChange={(e): void => setNumEvents(Number(e.target.value))}
+								value={numEvents}
+								className="home-select"
+								onChange={(e): void => setNumEvents(Number(e.target.value))}
 							>
 								<option value="1">1</option>
 								<option value="2">2</option>
@@ -158,17 +158,17 @@ function Home(): React.JSX.Element {
 							</select>
 							eventi:
 						</label>
-						<div className="preview-calendar-cards-container">
+						<div className="preview-calendar-cards-container" >
 							{eventList
 								.filter((_, i) => i < numEvents)
 								.map((event) => (
-									<a className="preview-calendar-card" href={`/events`}>
+									<a className="preview-calendar-card" href={`/calendar`}>
 										<div>
 											<div className="preview-calendar-card-title">
 												{event.title.length > HOME_MAX_TITLE_CHARS
 													? event.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
+														0,
+														HOME_MAX_TITLE_CHARS
 													) + "..."
 													: event.title}
 											</div>
@@ -184,16 +184,16 @@ function Home(): React.JSX.Element {
 					<div className="preview preview-pomodoro">
 						<h4>Pomodoro recenti:</h4>
 						<label>
-								Mostra
-								<select
+							Mostra
+							<select
 								value={numPomodoros}
 								className="home-select"
 								onChange={(e): void => setNumPomodoros(Number(e.target.value))}
-								>
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
+							>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
 							</select>
 							pomodoro:
 						</label>
@@ -216,16 +216,16 @@ function Home(): React.JSX.Element {
 					<div className="preview preview-note">
 						<h4>Le tue note recenti:</h4>
 						<label>
-								Mostra
-								<select
+							Mostra
+							<select
 								value={numNotes}
 								className="home-select"
 								onChange={(e): void => setNumNotes(Number(e.target.value))}
-								>
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
+							>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
 							</select>
 							note:
 						</label>
@@ -238,8 +238,8 @@ function Home(): React.JSX.Element {
 											<div className="preview-note-card-title">
 												{note.title.length > HOME_MAX_TITLE_CHARS
 													? note.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
+														0,
+														HOME_MAX_TITLE_CHARS
 													) + "..."
 													: note.title}
 											</div>
@@ -258,22 +258,22 @@ function Home(): React.JSX.Element {
 					<div className="preview preview-projects">
 						<h4>I tuoi progetti:</h4>
 						<label>
-								Mostra
-								<select
+							Mostra
+							<select
 								value={numProjects}
 								className="home-select"
 								onChange={(e): void => setNumProjects(Number(e.target.value))}
-								>
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
+							>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
 							</select>
 							progetti:
 						</label>
 					</div>
 				</div>
-			</div>
+			</div >
 		</>
 	);
 }

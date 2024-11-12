@@ -56,6 +56,8 @@ const Mesi = [
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
 	const [file, setFile] = React.useState<File | null>(null);
+	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
+
 	//const [insertFile, setInsertFile] = React.useState(false);
 	const [description, setDescription] = React.useState("");
 	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
@@ -547,8 +549,21 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const dataActivities = await resActivities.json();
 		console.log("Attività trovate dalla loadActivities:", dataActivities);
 		if (dataActivities.status === ResponseStatus.GOOD) {
-			setActivityList(dataActivities.value);
-			console.log("Questa è la lista delle attività:", activityList);
+			//ULTIMA MODIFICA
+
+			//salvo il risultato in una variabile
+			const activities = dataActivities.value;
+
+			//aggiungo subito nel calendario, le attività che hanno come owner l'utente corrente
+			//(in quanto le ha create lui, o sono destinate solo a lui)
+			//const filteredActivities = activities.filter((activity: any) => activity.owner === owner);
+
+			setActivityList(activities);
+
+
+
+			//setActivityList(activities);
+			//console.log("Questa è la lista delle attività:", activityList);
 		}
 		else {
 			//setMessage("ERRORE RITROVAMENTO ATTIVITA'");
@@ -974,7 +989,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	}
 
 	const handleScroll = (e: React.WheelEvent<HTMLDivElement>): void => {
-		e.preventDefault(); // Previene il comportamento di scroll predefinito
+		//e.preventDefault(); // Previene il comportamento di scroll predefinito
 		const scrollAmount = e.deltaY; // Ottieni la quantità di scroll
 		const orarioDivs = document.querySelectorAll('.orario'); // Seleziona tutti i div con classe 'orario'
 
@@ -2263,6 +2278,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 
 
+
 		const newActivity = {
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 			_id: "1",
@@ -2273,6 +2289,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			accessList: [...new Set([...accessList, owner])],
 			completed: false,
 		};
+
 		setActivityList([...activityList, newActivity]);
 
 
