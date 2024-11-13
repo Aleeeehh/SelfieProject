@@ -198,17 +198,6 @@ export default function NotePage(): React.JSX.Element {
 			});
 	}
 
-	function deleteListItem(e: React.MouseEvent<HTMLElement>, item: ListItem): void {
-		e.preventDefault();
-
-		setNote((prevNote) => {
-			return {
-				...prevNote,
-				toDoList: prevNote.toDoList.filter((u) => u !== item),
-			};
-		});
-	}
-
 	function handleAddItem(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
 		const newItem: ListItem = { text: "", completed: false };
