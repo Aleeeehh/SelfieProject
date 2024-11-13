@@ -32,6 +32,7 @@ async function getUserResultFromIdList(idList: string[]): Promise<string[]> {
 async function getUserResultFromObjectIdList(idList: Types.ObjectId[]): Promise<string[]> {
 	return await getUserResultFromIdList(idList.map((id) => id.toString()));
 }
+
 async function getActivityStatus(): Promise<ActivityStatus> {
 	// TODO: implement function
 	console.log("getActivityStatus() not implemented yet");
@@ -44,6 +45,8 @@ async function getActivityList(
 	parentId: Types.ObjectId | undefined
 ): Promise<Activity[]> {
 	// get all activities for projectId
+
+	console.log("Searching: project ", projectId, " parent ", parentId);
 	const foundActivities = await ActivitySchema.find({
 		projectId: projectId,
 		parent: parentId,
@@ -68,16 +71,16 @@ async function getActivityList(
 			parent: foundActivity.parent || undefined,
 			prev: foundActivity.prev || undefined,
 			next: foundActivity.next || undefined,
+			status: await getActivityStatus(),
 		};
-		newActivity.children = await getActivityList(
-			projectId,
-			new Types.ObjectId(newActivity.id!)
-		);
+		newActivity.children = await getActivityList(projectId, foundActivity._id);
 		activityList.push(newActivity);
 	}
 
 	return activityList;
 }
+
+// async function getProjectById(id: string): Promise<Project> {}
 
 // returns all projects where the current user is the owner or in the access list
 router.get("/", async (req: Request, res: Response) => {
@@ -99,10 +102,10 @@ router.get("/", async (req: Request, res: Response) => {
 		console.log(foundProjects);
 		const projectList: Project[] = [];
 		for (const foundProject of foundProjects) {
-			const activityList: Activity[] = [];
-			const foundActivities = await ActivitySchema.find({
-				projectId: foundProject._id,
-			}).lean();
+			// const activityList: Activity[] = [];
+			// const foundActivities = await ActivitySchema.find({
+			// 	projectId: foundProject._id,
+			// }).lean();
 
 			// get project note
 			const foundProjectNote = await NoteSchema.findOne({
@@ -129,7 +132,7 @@ router.get("/", async (req: Request, res: Response) => {
 			}
 
 			// populate activity list for project
-			for (const foundActivity of foundActivities) {
+			/*for (const foundActivity of foundActivities) {
 				const foundNote = await NoteSchema.findOne({
 					activityId: foundActivity._id,
 				}).lean();
@@ -170,7 +173,7 @@ router.get("/", async (req: Request, res: Response) => {
 				};
 
 				activityList.push(activity);
-			}
+			}*/
 
 			const project: Project = {
 				id: foundProject._id.toString(),
@@ -178,7 +181,7 @@ router.get("/", async (req: Request, res: Response) => {
 				description: foundProject.description,
 				owner: foundProject.owner,
 				accessList: await getUserResultFromObjectIdList(foundProject.accessList),
-				activityList,
+				activityList: await getActivityList(foundProject._id, undefined),
 				note: projectNote,
 			};
 
@@ -314,6 +317,8 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 			activityList.push(activity);
 		}*/
+
+		console.log(projectId);
 
 		const project: Project = {
 			id: foundProject._id.toString(),

@@ -10,6 +10,7 @@ import type Activity from "../types/Activity.js";
 import { validDateString } from "../lib.ts";
 import { ProjectSchema } from "../schemas/Project.ts";
 import { AdvancementType, ActivityStatus } from "../types/Activity.js";
+import { getIdListFromUsernameList } from "./lib.ts";
 // import { validDateString } from "../lib.js";
 
 const router: Router = Router();
@@ -363,7 +364,7 @@ router.post("/", async (req: Request, res: Response) => {
 		// TODO: validate body fields
 		const title = req.body.title as string;
 		const description = req.body.description as string;
-		const accessList = req.body.accessList as string[];
+		const accessList = req.body.accessList as string[]; // username list
 		const deadline = req.body.deadline;
 		const deadlineDate = new Date(deadline);
 		const owner = req.body.owner || (req.user?.id as string); // TODO: l'owner può non essere l'utente loggato?
@@ -510,7 +511,7 @@ router.post("/", async (req: Request, res: Response) => {
 			title,
 			description,
 			deadline: deadlineDate,
-			accessList,
+			accessList: (await getIdListFromUsernameList(accessList)).map((id) => id.toString()),
 			completed: false,
 			completedAt: undefined,
 
@@ -536,7 +537,7 @@ router.post("/", async (req: Request, res: Response) => {
 		console.log("INSERITA ATTIVITA' NEL DB:", createdActivity);
 
 		const resBody: ResponseBody = {
-			message: "Note inserted into database",
+			message: "Activity inserted into database",
 			status: ResponseStatus.GOOD,
 			value: createdActivity._id.toString(),
 		};

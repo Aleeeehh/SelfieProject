@@ -2,7 +2,6 @@ import DatePicker from "react-datepicker";
 import Activity, { AdvancementType } from "./types/Activity";
 import React from "react";
 import { SERVER_API } from "./params/params";
-import { ResponseStatus } from "./types/ResponseStatus";
 
 const baseActivity: Activity = {
 	id: "",
@@ -20,6 +19,7 @@ interface ActivityCreateFormProps {
 	onFail: () => void;
 	projectId?: string;
 	inputActivity?: Activity;
+	siblings?: { id: string | undefined; title: string }[];
 }
 
 export default function ActivityForm({
@@ -27,6 +27,7 @@ export default function ActivityForm({
 	onSuccess,
 	projectId,
 	inputActivity,
+	siblings,
 }: ActivityCreateFormProps): React.JSX.Element {
 	// const { loggedUser } = useAuth();
 	const [addNotification, setAddNotification] = React.useState(false);
@@ -40,28 +41,10 @@ export default function ActivityForm({
 			  }
 			: baseActivity
 	);
-	const [siblingActivities, setSiblingActivities] = React.useState<Activity[]>([]);
 
 	const [notificationTime, setNotificationTime] = React.useState(0);
 	const [notificationRepeat, setNotificationRepeat] = React.useState(false);
 	const [_, setNotificationRepeatTime] = React.useState(0);
-
-	React.useEffect(() => {
-		if (inputActivity) {
-			fetch(`${SERVER_API}/activity/${inputActivity.id}/siblings`)
-				.then((res) => res.json())
-				.then((data) => {
-					if (data.status === ResponseStatus.GOOD) {
-						setSiblingActivities(data.value as Activity[]);
-					}
-				})
-				.catch((e) => {
-					console.log(e);
-				});
-		} else {
-			console.log("Siblings not found for activity");
-		}
-	}, []);
 
 	const getValidRepeatOptions = (time: number): number[] => {
 		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
@@ -390,25 +373,31 @@ export default function ActivityForm({
 							</option>
 						</select>
 					</label>
+					{/* Parent cannot be changed once is */}
 					<label
 						htmlFor="parent"
 						className="activity-vertical">
-						<select
-							style={{ backgroundColor: "white" }}
-							className="btn border"
-							name="parent"
-							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-								setActivity({
-									...activity,
-									parent: e.target.value,
-								});
-							}}>
-							{siblingActivities.map((act) => (
-								<option key={act.title} value={act.id}>
-									{act.title}
-								</option>
-							))}
-						</select>
+						{inputActivity ? (
+							<select
+								style={{ backgroundColor: "white" }}
+								className="btn border"
+								name="parent"
+								onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+									setActivity({
+										...activity,
+										parent: e.target.value,
+									});
+								}}>
+								{siblings &&
+									siblings.map((act) => (
+										<option key={act.title} value={act.id}>
+											{act.title}
+										</option>
+									))}
+							</select>
+						) : (
+							<div>{activity.parent}</div>
+						)}
 					</label>
 					<label
 						htmlFor="prev"
@@ -423,11 +412,12 @@ export default function ActivityForm({
 									prev: e.target.value,
 								});
 							}}>
-							{siblingActivities.map((act) => (
-								<option key={act.title} value={act.id}>
-									{act.title}
-								</option>
-							))}
+							{siblings &&
+								siblings.map((act) => (
+									<option key={act.title} value={act.id}>
+										{act.title}
+									</option>
+								))}
 						</select>
 					</label>
 					<label
@@ -443,11 +433,12 @@ export default function ActivityForm({
 									next: e.target.value,
 								});
 							}}>
-							{siblingActivities.map((act) => (
-								<option key={act.title} value={act.id}>
-									{act.title}
-								</option>
-							))}
+							{siblings &&
+								siblings.map((act) => (
+									<option key={act.title} value={act.id}>
+										{act.title}
+									</option>
+								))}
 						</select>
 					</label>
 				</div>
