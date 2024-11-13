@@ -20,7 +20,7 @@
 
 .home-container > .preview {
     max-width: 250px;
-    height: auto; /* Consenti altezza variabile per contenere tutti gli elementi */
+    height: auto;
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
     border: 1px solid black;
@@ -69,7 +69,10 @@
     padding: 0.5em;
 }
 
-.preview-note, .preview-pomodoro, .preview-calendar, .preview-projects {
+.preview-note,
+.preview-pomodoro,
+.preview-calendar,
+.preview-projects {
 	padding: 1em;
 	display: flex;
 	flex-direction: column;
@@ -88,11 +91,13 @@
     width: 100%;
 }
 
-.preview-note-card, .preview-pomodoro-card, .preview-calendar-card {
+.preview-note-card,
+.preview-pomodoro-card,
+.preview-calendar-card {
     background-color: burlywood;
-    min-width: 120px; /* Min-width di 120px per adattarsi in spazi stretti */
+    min-width: 120px;
     max-width: 180px;
-    height: 120px; /* Altezza fissa per una dimensione uniforme */
+    height: 120px;
     border-radius: 16px;
     display: flex;
     flex-direction: column;

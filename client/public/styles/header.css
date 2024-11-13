@@ -52,14 +52,12 @@
 	height: 15px;
 	border-radius: 50%;
 	background-color: #ff007f;
-	/* Colore del pallino */
 	color: white;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-size: 0.7rem;
 	border: 1px solid white;
-	/* Bordo bianco per migliorare la visibilità */
 }
 
 .notification-dot-gray {
@@ -72,14 +70,12 @@
 	height: 15px;
 	border-radius: 50%;
 	background-color: gray;
-	/* Colore del pallino */
 	color: white;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-size: 0.7rem;
 	border: 1px solid white;
-	/* Bordo bianco per migliorare la visibilità */
 }
 
 .dropdown-menu {

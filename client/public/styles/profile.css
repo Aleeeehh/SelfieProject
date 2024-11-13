@@ -8,7 +8,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: url('/images/background.png'); /* Percorso dello sfondo */
+    background-image: url('/images/background.png');
     background-size: cover;
     background-position: center;
     height: 100%;
