@@ -60,37 +60,31 @@ export default function SearchForm({
     }
 
     return (
-        <>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <input
-                    style={{ width: "100%", margin: "0 5px" }}
-                    type="text"
-                    placeholder="Cerca utente"
-                    value={search}
-                    onChange={handleChange}
-                />
-                {searchResults.length > 0 && (
-                    <select
-                        style={{ width: "100%" }}
-                        onChange={handleSelectChange}
-                    >
-                        <option value="">
-                            {selectedUsername
-                                ? selectedUsername
-                                : "Seleziona un utente"}
-                        </option>
-                        {searchResults
-                            .filter(
-                                (username) => !list.find((u) => u === username)
-                            )
-                            .map((user) => (
-                                <option key={user} value={user}>
-                                    {user}
-                                </option>
-                            ))}
-                    </select>
-                )}
-            </div>
-        </>
+        <div className="search-form-container">
+            <input
+                className="search-form-input"
+                type="text"
+                placeholder="Cerca utente"
+                value={search}
+                onChange={handleChange}
+            />
+            {searchResults.length > 0 && (
+                <select
+                    className="search-form-select"
+                    onChange={handleSelectChange}
+                >
+                    <option value="">
+                        {selectedUsername ? selectedUsername : "Seleziona un utente"}
+                    </option>
+                    {searchResults
+                        .filter((username) => !list.find((u) => u === username))
+                        .map((user) => (
+                            <option key={user} value={user}>
+                                {user}
+                            </option>
+                        ))}
+                </select>
+            )}
+        </div>
     );
 }

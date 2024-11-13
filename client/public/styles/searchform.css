@@ -1,0 +1,32 @@
+.search-form-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 8px;
+    max-width: 500px;
+    margin: 10px auto;
+}
+
+.search-form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+    font-size: 16px;
+    color: #333;
+    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-form-select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    outline: none;
+    font-size: 16px;
+    color: #333;
+    background-color: #fff;
+    cursor: pointer;
+    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+}

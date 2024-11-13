@@ -8,6 +8,9 @@
 @import url("./profile.css");
 @import url("./messagehub.css");
 @import url("./projects.css");
+@import url("./musicplayer.css");
+@import url("./activityform.css");
+@import url("./searchform.css");
 
 * {
 	box-sizing: border-box;

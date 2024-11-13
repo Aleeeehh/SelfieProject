@@ -147,10 +147,10 @@ export default function ActivityForm({
 	} */
 
 	return (
-		<form style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+		<form className="activity-vertical">
 			<label
 				htmlFor="title"
-				style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+				className="activity-vertical">
 				Titolo
 				<input
 					style={{ backgroundColor: "white" }}
@@ -165,7 +165,7 @@ export default function ActivityForm({
 			</label>
 			<label
 				htmlFor="description"
-				style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+				className="activity-vertical">
 				Descrizione
 				<input
 					style={{ backgroundColor: "white" }}
@@ -180,7 +180,7 @@ export default function ActivityForm({
 			</label>
 			<label
 				htmlFor="endTime"
-				style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+				className="activity-vertical">
 				Scadenza
 				<div>
 					<DatePicker
@@ -236,7 +236,7 @@ export default function ActivityForm({
 			{addNotification && (
 				<label
 					htmlFor="notificationTime"
-					style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+					className="activity-vertical">
 					Quanto tempo prima mandare la notifica
 					<select
 						id="notificationTimeSelect"
@@ -267,7 +267,7 @@ export default function ActivityForm({
 			{notificationRepeat && (
 				<label
 					htmlFor="notificationRepeatTime"
-					style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+					className="activity-vertical">
 					Ripetizioni notifica
 					<select
 						style={{ backgroundColor: "white" }}
@@ -298,7 +298,7 @@ export default function ActivityForm({
 					}
 					<label
 						htmlFor="start"
-						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+						className="activity-vertical">
 						Data di inizio
 						<div>
 							<DatePicker
@@ -366,7 +366,7 @@ export default function ActivityForm({
 					</label>
 					<label
 						htmlFor="advancementType"
-						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+						className="activity-vertical">
 						<select
 							style={{ backgroundColor: "white" }}
 							className="btn border"
@@ -392,7 +392,7 @@ export default function ActivityForm({
 					</label>
 					<label
 						htmlFor="parent"
-						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+						className="activity-vertical">
 						<select
 							style={{ backgroundColor: "white" }}
 							className="btn border"
@@ -412,7 +412,7 @@ export default function ActivityForm({
 					</label>
 					<label
 						htmlFor="prev"
-						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+						className="activity-vertical">
 						<select
 							style={{ backgroundColor: "white" }}
 							className="btn border"
@@ -432,7 +432,7 @@ export default function ActivityForm({
 					</label>
 					<label
 						htmlFor="next"
-						style={{ display: "flex", flexDirection: "column", gap: "0.5em" }}>
+						className="activity-vertical">
 						<select
 							style={{ backgroundColor: "white" }}
 							className="btn border"
