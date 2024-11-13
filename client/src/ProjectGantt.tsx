@@ -101,69 +101,67 @@ const GanttDiagram = (): React.JSX.Element => {
 	}
 
 	return (
-		<div>
-			<div style={{ margin: "auto", textAlign: "center" }}>
-				Diagramma di Gantt - Progetto: {dummyProject.name}
-			</div>
-			<div>
-				<input
-					type="date"
-					name="start"
-					value={start ? start.toISOString().split("T")[0] : ""}
-					onChange={handleChange}
-				/>
-				<input
-					type="date"
-					name="end"
-					value={end ? end.toISOString().split("T")[0] : ""}
-					onChange={handleChange}
-				/>
-				<button onClick={getDays}>Aggiorna</button>
-			</div>
-			<table style={{ overflowX: "scroll" }}>
-				<thead>
-					<tr>
-						<th>Task</th>
-						<th>Partecipanti</th>
-						{days.map((day, index) => (
-							<th key={index}>{new Date(day).toISOString().split("T")[0]}</th>
-						))}
-					</tr>
-				</thead>
-				<tbody>
-					{dummyData.map((task, index) => (
-						<tr key={index}>
-							<td>{task.name}</td>
-							<td>
-								{task.users.map((u) => (
-									<div>{u}</div>
+		<div className="gantt-background">
+			<div className="gantt-container">
+				<h2 className="gantt-title">
+					Diagramma di Gantt - Progetto: {dummyProject.name}
+				</h2>
+				
+				<div className="gantt-date-input-container">
+					<input
+						type="date"
+						name="start"
+						value={start ? start.toISOString().split("T")[0] : ""}
+						onChange={handleChange}
+						className="gantt-date-input"
+					/>
+					<input
+						type="date"
+						name="end"
+						value={end ? end.toISOString().split("T")[0] : ""}
+						onChange={handleChange}
+						className="gantt-date-input"
+					/>
+					<button onClick={getDays} className="gantt-update-button">Aggiorna</button>
+				</div>
+
+				<div className="gantt-table-container">
+					<table className="gantt-table">
+						<thead className="gantt-table-header">
+							<tr>
+								<th className="gantt-table-head-cell">Task</th>
+								<th className="gantt-table-head-cell">Partecipanti</th>
+								{days.map((day, index) => (
+									<th key={index} className="gantt-table-head-cell">
+										{new Date(day).toISOString().split("T")[0]}
+									</th>
 								))}
-							</td>
-							{days.map((day, index) => (
-								<td key={index}>
-									{getTaskDays(task).includes(day) ? (
-										<div
-											style={{
-												backgroundColor: "blue",
-												width: "10px",
-												height: "10px",
-											}}
-										/>
-									) : (
-										<div
-											style={{
-												backgroundColor: "gray",
-												width: "10px",
-												height: "10px",
-											}}
-										/>
-									)}
-								</td>
+							</tr>
+						</thead>
+						<tbody>
+							{dummyData.map((task, index) => (
+								<tr key={index} className="table-row">
+									<td className="gantt-task-cell">{task.name}</td>
+									<td className="gantt-participants-cell">
+										{task.users.map((u, i) => (
+											<div key={i} className="gantt-participant">{u}</div>
+										))}
+									</td>
+									{days.map((day, dayIndex) => (
+										<td key={dayIndex} className="day-cell">
+											{getTaskDays(task).includes(day) ? (
+												<div className="gantt-task-bar"></div>
+											) : (
+												<div className="gantt-empty-cell"></div>
+											)}
+										</td>
+									))}
+								</tr>
 							))}
-						</tr>
-					))}
-				</tbody>
-			</table>
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 	);
 };

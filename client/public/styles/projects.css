@@ -356,3 +356,137 @@
         padding-top: 2em;
     }
 }
+
+
+
+/* PROJECT GANTT */
+
+.gantt-background {
+    background-image: url('/images/background.png');
+    background-size: cover;
+    background-repeat: repeat;
+    width: 100vw;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.gantt-container {
+	font-family: 'Arial', sans-serif;
+	text-align: center;
+	padding: 20px;
+    width: 80%;
+    border-radius: 15px;
+	background-color: #f4f4f9;
+	color: #333;
+    margin: 50px 0px;
+}
+
+.gantt-title {
+	font-size: 24px;
+	margin-bottom: 20px;
+	color: #4a4a8c;
+}
+
+.gantt-date-input-container {
+	margin-bottom: 15px;
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+}
+
+.gantt-date-input {
+	padding: 8px;
+	border-radius: 5px;
+	border: 1px solid #ccc;
+}
+
+.gantt-update-button {
+	padding: 8px 12px;
+	background-color: #4a4a8c;
+	color: #fff;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+.gantt-table-container {
+	overflow-x: auto;
+	margin-top: 20px;
+	border-radius: 8px;
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+	background-color: #ffffff;
+}
+
+.gantt-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.gantt-table-header {
+	background-color: #4a4a8c;
+	color: #fff;
+}
+
+.gantt-table-head-cell {
+	padding: 10px;
+	font-size: 12px;
+	text-align: center;
+	min-width: 80px;
+}
+
+.gantt-table-row {
+	border-bottom: 1px solid #ddd;
+}
+
+.gantt-task-cell {
+	padding: 10px;
+	text-align: left;
+	font-weight: bold;
+	color: #333;
+}
+
+.gantt-participants-cell {
+    display: flex;
+    flex-direction: column;
+	padding: 10px;
+	text-align: center;
+}
+
+.gantt-participant {
+	background-color: #e0e7ff;
+	border-radius: 4px;
+	padding: 5px;
+	margin: 2px 0;
+	display: inline-block;
+	color: #333;
+}
+
+.gantt-day-cell {
+	text-align: center;
+	padding: 10px;
+}
+
+.gantt-task-bar {
+	background-color: #4a4a8c;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	margin: auto;
+}
+
+.gantt-empty-cell {
+	background-color: #e0e0e0;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	margin: auto;
+}
+
+@media screen and (max-width: 640px) {
+    .gantt-date-input-container {
+        flex-direction: column;
+    }
+}
