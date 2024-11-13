@@ -185,6 +185,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 					id: x._id.toString(),
 					text: x.text,
 					completed: x.completed,
+					endDate: x.endDate || undefined,
 				};
 			}),
 		};
@@ -285,7 +286,7 @@ router.post("/", async (req: Request, res: Response) => {
 			text: inputText,
 			tags: inputTags,
 			privacy,
-			accessList: newAccessList.map((x)=>x.toString()),
+			accessList: newAccessList.map((x) => x.toString()),
 		};
 
 		const createdNote = await NoteSchema.create(newNote);
@@ -336,6 +337,7 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
 	const noteId = req.params.id as string;
 
+	console.log("PUT note: ", req.body);
 	try {
 		// TODO: validate param
 		// TODO: validate body fields
@@ -354,6 +356,10 @@ router.put("/:id", async (req: Request, res: Response) => {
 			!inputPrivacyStr &&
 			!inputItemList
 		) {
+			console.log(
+				"Invalid body: 'title', 'text', 'tags', 'accessList', 'toDoList' or 'privacy' required, nothing to update"
+			);
+
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message:
@@ -362,6 +368,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		}
 
 		if (inputPrivacyStr && !Object.values(Privacy).includes(inputPrivacyStr as Privacy)) {
+			console.log("Invalid privacy: should be 'public', 'protected' or 'private'");
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message: "Invalid privacy: should be 'public', 'protected' or 'private'",
@@ -371,6 +378,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const foundNote = await NoteSchema.findById(noteId).lean();
 
 		if (!foundNote) {
+			console.log("Note with id " + noteId + " not found!");
 			const resBody: ResponseBody = {
 				message: "Note with id " + noteId + " not found!",
 				status: ResponseStatus.BAD,
@@ -389,6 +397,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		// was public, remains public: validate that no input access list is defined
 		if (inputPrivacy === Privacy.PUBLIC && foundNote.privacy === Privacy.PUBLIC) {
 			if (inputAccessList && inputAccessList.length > 0) {
+				console.log("Access list is public, but access list is not empty");
 				return res.status(400).json({
 					status: ResponseStatus.BAD,
 					message: "Access list is public, but access list is not empty",
@@ -398,6 +407,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		// was private, remains private: validate that no input access list is defined
 		if (inputPrivacy === Privacy.PRIVATE && foundNote.privacy === Privacy.PRIVATE) {
 			if (inputAccessList && inputAccessList.length > 0) {
+				console.log("Access list is private, but access list is not empty");
 				return res.status(400).json({
 					status: ResponseStatus.BAD,
 					message: "Access list is private, but access list is not empty",
@@ -411,6 +421,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 				for (const username of inputAccessList) {
 					const user = await UserSchema.findOne({ username }).lean();
 					if (!user) {
+						console.log("Invalid user: " + username);
 						return res.status(400).json({
 							status: ResponseStatus.BAD,
 							message: "Invalid user: " + username,
@@ -430,6 +441,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 				for (const username of inputAccessList) {
 					const user = await UserSchema.findOne({ username }).lean();
 					if (!user) {
+						console.log("Invalid user id: " + username);
 						return res.status(400).json({
 							status: ResponseStatus.BAD,
 							message: "Invalid user id: " + username,
@@ -457,6 +469,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 				for (const username of inputAccessList) {
 					const user = await UserSchema.findOne({ username }).lean();
 					if (!user) {
+						console.log("Invalid user id: " + username);
 						return res.status(400).json({
 							status: ResponseStatus.BAD,
 							message: "Invalid user id: " + username,
@@ -499,9 +512,10 @@ router.put("/:id", async (req: Request, res: Response) => {
 			noteId: noteId,
 			userId: id,
 		}));
+
 		console.log("Updated access list: ", list);
 
-        // to return usernames and not ids
+		// to return usernames and not ids
 		updatedNote.accessList = await getUsernameListFromIdList(updatedAccessList);
 
 		// TODO: filter the fields of the found note
