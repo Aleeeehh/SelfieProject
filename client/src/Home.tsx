@@ -299,13 +299,13 @@ function Home(): React.JSX.Element {
 						</label>
 						<div className="preview-projects-cards-container">
 							{projects
-								.filter((_, i) => i < numNotes)
+								.filter((_, i) => i < numProjects)
 								.map((project) => (
 									<a
-										className="preview-project-card"
+										className="preview-projects-card"
 										href={`/projects/${project.id}`}>
 										<div>
-											<div className="preview-project-card-title">
+											<div className="preview-projects-card-title">
 												{project.title.length > HOME_MAX_TITLE_CHARS
 													? project.title.substring(
 															0,
@@ -313,7 +313,7 @@ function Home(): React.JSX.Element {
 													  ) + "..."
 													: project.title}
 											</div>
-											<div className="preview-note-card-text">
+											<div className="preview-projects-card-text">
 												{project.description.length > HOME_MAX_TEXT_CHARS
 													? project.description.substring(
 															0,

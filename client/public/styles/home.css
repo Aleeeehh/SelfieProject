@@ -46,6 +46,8 @@
 	align-items: center;
 	gap: 5px;
 	margin-bottom: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .home-select {
@@ -82,7 +84,8 @@
 
 .preview-note-cards-container, 
 .preview-pomodoro-cards-container, 
-.preview-calendar-cards-container {
+.preview-calendar-cards-container,
+.preview-projects-cards-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -93,10 +96,10 @@
 
 .preview-note-card,
 .preview-pomodoro-card,
-.preview-calendar-card {
+.preview-calendar-card,
+.preview-projects-card {
     background-color: burlywood;
-    min-width: 120px;
-    max-width: 180px;
+    width: 180px;
     height: 120px;
     border-radius: 16px;
     display: flex;
@@ -112,12 +115,15 @@
 	font-size: 1em;
 }
 
-.preview-note-card-title, .preview-calendar-card-title {
+.preview-note-card-title,
+.preview-calendar-card-title,
+.preview-projects-card-title {
     font-weight: bold;
     font-size: 0.9em;
 }
 
-.preview-note-card-text {
+.preview-note-card-text,
+.preview-projects-card-text {
     font-size: 0.7em;
 }
 
