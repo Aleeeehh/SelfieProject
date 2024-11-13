@@ -82,6 +82,7 @@ h1 {
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
+	flex-wrap: wrap;
 	gap: 3%;
 	width: 100%;
 	align-items: center;
@@ -89,13 +90,17 @@ h1 {
 	margin-top: 2%;
 }
 
-.add-event-button, .previous-pomodoros-button, .share-config-button {
+.add-event-button,
+.previous-pomodoros-button,
+.share-config-button,
+.music-button {
 	background-color: bisque;
 	color: black;
 	border-radius: 16px;
 	width: 140px;
 	padding: 3px;
 	border: 1px solid black;
+	margin: 3px;
 }
 
 .preview {
@@ -113,6 +118,7 @@ h1 {
 	border-radius: 16px;
 	width: 150px;
 	padding: 3px;
+	border: 1px solid black;
 }
 
 .pomodoro img {
@@ -194,7 +200,11 @@ h1 {
 	width: 50%;
 }
 
-.studyTime, .breakTime, .studyCycles, .totMinutes, .totHours {
+.studyTime,
+.breakTime,
+.studyCycles,
+.totMinutes,
+.totHours {
 	width: 100%;
 	justify-content: space-between;
 }
@@ -290,9 +300,15 @@ h1 {
     display: none;
 }
 
-
-
 .send-invite-container {
+    margin: 1em;
+}
+
+.send-invite-button {
+	margin-top: 10px;
+}
+
+.music-container {
     margin: 1em;
 }
 
@@ -302,7 +318,7 @@ h1 {
 
 
 
-/*Media query per il responsive*/
+/*Media query per responsiveness*/
 
 @media screen and (max-width: 768px) {
 	.create-event-container > form {
@@ -321,13 +337,15 @@ h1 {
 		width: 300px;
 	}
 
-	.buttons-container, .commands-container {
+	.commands-container {
 		flex-direction: column;
 	}
 
-	.add-event-button, .previous-pomodoros-button, .share-config-button {
+	.add-event-button,
+	.previous-pomodoros-button,
+	.music-button,
+	.share-config-button {
 		width: 110px;
-		margin-top: 1%;
 		font-size: smaller;
 	}
 
@@ -372,7 +390,9 @@ h1 {
 }
 
 @media screen and (max-width: 480px) {
-	.actions-container, .pomodoro-container, .config-container {
+	.actions-container,
+	.pomodoro-container,
+	.config-container {
 		width: 250px;
 	}
 }

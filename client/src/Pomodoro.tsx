@@ -117,6 +117,7 @@ export default function Pomodoros(): React.JSX.Element {
 	const [selectedValue, setSelectedValue] = React.useState("Data"); // Per selezionare la frequenza dell'evento
 	const [shareConfig, setShareConfig] = React.useState(false); // Per condividere la configurazione del pomodoro
 	const [previousPomodoros, setPreviousPomodoros] = React.useState(false); // Per vedere i pomodori recenti
+	const [chooseMusic, setChooseMusic] = React.useState(false); // Per scegliere la musica
 
 	const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
@@ -923,6 +924,10 @@ export default function Pomodoros(): React.JSX.Element {
 		setShareConfig(!shareConfig);
 	}
 
+	function toggleChooseMusic(): void {
+		setChooseMusic(!chooseMusic);
+	}
+
 	return (
 		<>
 			<audio id="ring" src="/images/ring.mp3"></audio>
@@ -1230,6 +1235,9 @@ export default function Pomodoros(): React.JSX.Element {
 									Condividi configurazione
 								</a>
 							</button>
+							<button className="music-button" onClick={toggleChooseMusic}>
+								Scegli la tua musica
+							</button>
 						</div>
 
 						<div
@@ -1258,7 +1266,9 @@ export default function Pomodoros(): React.JSX.Element {
 						<div
 							className="send-invite-container"
 							style={{ display: shareConfig ? "block" : "none" }}>
-							<div>Scegli l'utente al quale inviare la notifica</div>
+							<div style={{marginBottom: "10px", fontWeight: "bold"}}>
+								Invia la configurazione del Pomodoro ad un amico
+							</div>
 							{users.length > 0}
 							<SearchForm onItemClick={handleSelectUser} list={users} />
 							<button
@@ -1266,6 +1276,15 @@ export default function Pomodoros(): React.JSX.Element {
 								className="btn btn-primary send-invite-button">
 								Invia Invito
 							</button>
+						</div>
+
+						<div
+							className="music-container"
+							style={{ display: chooseMusic ? "block" : "none" }}>
+							<div style={{marginBottom: "10px", fontWeight: "bold"}}>
+								Scegli che canzone vuoi ascoltare
+							</div>
+							<Mp3Player />
 						</div>
 					</div>
 				</div>
@@ -1428,7 +1447,6 @@ export default function Pomodoros(): React.JSX.Element {
 					</div>
 				</div>
 			</div>
-			<Mp3Player />
 		</>
 	);
 }
