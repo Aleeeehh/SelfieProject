@@ -25,6 +25,7 @@ type Activity = {
 	parent?: string;
 	prev?: string;
 	next?: string;
+	children?: Activity[];
 };
 
 export default Activity;
