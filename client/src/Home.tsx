@@ -7,8 +7,7 @@ import { Event } from "./types/Event";
 import { useNavigate } from "react-router-dom";
 import { ResponseStatus } from "./types/ResponseStatus";
 import User from "./types/User";
-
-
+import type Project from "./types/Project";
 
 const HOME_MAX_TITLE_CHARS = 20;
 const HOME_MAX_TEXT_CHARS = 10;
@@ -18,6 +17,7 @@ function Home(): React.JSX.Element {
 	const [pomodoros, setPomodoros] = React.useState([] as Pomodoro[]);
 	const [notes, setNotes] = React.useState([] as Note[]);
 	const [events, setEvents] = React.useState([] as Event[]);
+	const [projects, setProjects] = React.useState([] as Project[]);
 	const [numEvents, setNumEvents] = React.useState(4);
 	const [numPomodoros, setNumPomodoros] = React.useState(4);
 	const [numNotes, setNumNotes] = React.useState(4);
@@ -66,13 +66,29 @@ function Home(): React.JSX.Element {
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
 			}
+
+			// get projects
+			try {
+				const res = await fetch(`${SERVER_API}/projects`);
+				if (res.status === 200) {
+					const resBody = (await res.json()) as ResponseBody;
+					console.log(resBody);
+
+					setProjects(resBody.value as Project[]);
+				} else {
+					nav("/login");
+				}
+			} catch (e) {
+				setMessage("Impossibile raggiungere il server");
+			}
 		})();
 	}, []);
 
 	async function getCurrentUser(): Promise<Promise<any> | null> {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
-			if (!res.ok) { // Controlla se la risposta non è ok
+			if (!res.ok) {
+				// Controlla se la risposta non è ok
 				setMessage("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
@@ -141,7 +157,6 @@ function Home(): React.JSX.Element {
 
 			<div className="home-background">
 				<div className="home-container">
-
 					<div className="preview preview-calendar">
 						<h4>Prossimi eventi:</h4>
 						<label>
@@ -149,8 +164,7 @@ function Home(): React.JSX.Element {
 							<select
 								value={numEvents}
 								className="home-select"
-								onChange={(e): void => setNumEvents(Number(e.target.value))}
-							>
+								onChange={(e): void => setNumEvents(Number(e.target.value))}>
 								<option value="1">1</option>
 								<option value="2">2</option>
 								<option value="3">3</option>
@@ -158,7 +172,7 @@ function Home(): React.JSX.Element {
 							</select>
 							eventi:
 						</label>
-						<div className="preview-calendar-cards-container" >
+						<div className="preview-calendar-cards-container">
 							{eventList
 								.filter((_, i) => i < numEvents)
 								.map((event) => (
@@ -167,13 +181,29 @@ function Home(): React.JSX.Element {
 											<div className="preview-calendar-card-title">
 												{event.title.length > HOME_MAX_TITLE_CHARS
 													? event.title.substring(
-														0,
-														HOME_MAX_TITLE_CHARS
-													) + "..."
+															0,
+															HOME_MAX_TITLE_CHARS
+													  ) + "..."
 													: event.title}
 											</div>
-											<div>{new Date(event.startTime).toLocaleString("it-IT", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-											<div>{new Date(event.endTime).toLocaleString("it-IT", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+											<div>
+												{new Date(event.startTime).toLocaleString("it-IT", {
+													day: "2-digit",
+													month: "2-digit",
+													year: "numeric",
+													hour: "2-digit",
+													minute: "2-digit",
+												})}
+											</div>
+											<div>
+												{new Date(event.endTime).toLocaleString("it-IT", {
+													day: "2-digit",
+													month: "2-digit",
+													year: "numeric",
+													hour: "2-digit",
+													minute: "2-digit",
+												})}
+											</div>
 											<div>{event.location}</div>
 										</div>
 									</a>
@@ -188,8 +218,7 @@ function Home(): React.JSX.Element {
 							<select
 								value={numPomodoros}
 								className="home-select"
-								onChange={(e): void => setNumPomodoros(Number(e.target.value))}
-							>
+								onChange={(e): void => setNumPomodoros(Number(e.target.value))}>
 								<option value="1">1</option>
 								<option value="2">2</option>
 								<option value="3">3</option>
@@ -199,7 +228,7 @@ function Home(): React.JSX.Element {
 						</label>
 						<div className="preview-pomodoro-cards-container">
 							{pomodoros
-								.slice(-(numPomodoros)) // perchè non devo filtrare come nelle note
+								.slice(-numPomodoros) // perchè non devo filtrare come nelle note
 								.map((pomodoro) => (
 									<a className="preview-pomodoro-card" href={`/pomodoro`}>
 										<div>
@@ -210,7 +239,6 @@ function Home(): React.JSX.Element {
 									</a>
 								))}
 						</div>
-
 					</div>
 
 					<div className="preview preview-note">
@@ -220,8 +248,7 @@ function Home(): React.JSX.Element {
 							<select
 								value={numNotes}
 								className="home-select"
-								onChange={(e): void => setNumNotes(Number(e.target.value))}
-							>
+								onChange={(e): void => setNumNotes(Number(e.target.value))}>
 								<option value="1">1</option>
 								<option value="2">2</option>
 								<option value="3">3</option>
@@ -238,15 +265,15 @@ function Home(): React.JSX.Element {
 											<div className="preview-note-card-title">
 												{note.title.length > HOME_MAX_TITLE_CHARS
 													? note.title.substring(
-														0,
-														HOME_MAX_TITLE_CHARS
-													) + "..."
+															0,
+															HOME_MAX_TITLE_CHARS
+													  ) + "..."
 													: note.title}
 											</div>
 											<div className="preview-note-card-text">
 												{note.text.length > HOME_MAX_TEXT_CHARS
 													? note.text.substring(0, HOME_MAX_TEXT_CHARS) +
-													"..."
+													  "..."
 													: note.text}
 											</div>
 										</div>
@@ -262,8 +289,7 @@ function Home(): React.JSX.Element {
 							<select
 								value={numProjects}
 								className="home-select"
-								onChange={(e): void => setNumProjects(Number(e.target.value))}
-							>
+								onChange={(e): void => setNumProjects(Number(e.target.value))}>
 								<option value="1">1</option>
 								<option value="2">2</option>
 								<option value="3">3</option>
@@ -271,9 +297,37 @@ function Home(): React.JSX.Element {
 							</select>
 							progetti:
 						</label>
+						<div className="preview-projects-cards-container">
+							{projects
+								.filter((_, i) => i < numNotes)
+								.map((project) => (
+									<a
+										className="preview-project-card"
+										href={`/projects/${project.id}`}>
+										<div>
+											<div className="preview-project-card-title">
+												{project.title.length > HOME_MAX_TITLE_CHARS
+													? project.title.substring(
+															0,
+															HOME_MAX_TITLE_CHARS
+													  ) + "..."
+													: project.title}
+											</div>
+											<div className="preview-note-card-text">
+												{project.description.length > HOME_MAX_TEXT_CHARS
+													? project.description.substring(
+															0,
+															HOME_MAX_TEXT_CHARS
+													  ) + "..."
+													: project.description}
+											</div>
+										</div>
+									</a>
+								))}
+						</div>
 					</div>
 				</div>
-			</div >
+			</div>
 		</>
 	);
 }
