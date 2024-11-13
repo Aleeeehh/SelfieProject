@@ -576,13 +576,14 @@ export default function Header(): React.JSX.Element {
             {/*Parte sinistra dell'header*/}
             <div className="link-container">
                 <a href="/">
-                    <img src="/images/logo.jpeg" alt="logo.jpeg" />
+                    <img src="/images/logo.jpeg" alt="logo.jpeg" title="Home" />
                 </a>
 
                 <a
                     className="btn secondary"
                     style={buttonStyle}
                     href="/calendar"
+                    title="Calendario"
                 >
                     Calendario
                 </a>
@@ -590,33 +591,38 @@ export default function Header(): React.JSX.Element {
                     className="btn secondary"
                     style={buttonStyle}
                     href="/pomodoro"
+                    title="Pomodoro"
                 >
                     Pomodoro
                 </a>
                 <a className="btn secondary"
                     style={buttonStyle}
-                    href="/notes">
+                    href="/notes"
+                    title="Note"
+                >
                     Note
                 </a>
                 <a
                     className="btn secondary"
                     style={buttonStyle}
                     href="/projects"
+                    title="Progetti"
                 >
                     Progetti
                 </a>
-                <a
+                {/*<a
                     className="btn secondary"
                     style={buttonStyle}
                     href="/chat"
+                    title="Chat"
                 >
                     Chat
-                </a>
+                </a>*/}
             </div>
 
             <div className="dropdown-container">
                 <a href="/">
-                    <img src="/images/logo.jpeg" alt="logo.jpeg" />
+                    <img src="/images/logo.jpeg" alt="logo.jpeg" title="Home" />
                 </a>
                 <button
                     type="button"
@@ -648,20 +654,20 @@ export default function Header(): React.JSX.Element {
                         }}
                     >
                         <li>
-                            <a href="/calendar">Calendario</a>
+                            <a href="/calendar" title="Calendario">Calendario</a>
                         </li>
                         <li>
-                            <a href="/pomodoro">Pomodoro</a>
+                            <a href="/pomodoro" title="Pomodoro">Pomodoro</a>
                         </li>
                         <li>
-                            <a href="/notes">Note</a>
+                            <a href="/notes" title="Note">Note</a>
                         </li>
                         <li>
-                            <a href="/projects">Progetti</a>
+                            <a href="/projects" title="Progetti">Progetti</a>
                         </li>
-                        <li>
-                            <a href="/chat">Chat</a>
-                        </li>
+                        {/*<li>
+                            <a href="/chat" title="Chat">Chat</a>
+                        </li>*/}
                     </ul>
                 </button>
             </div>
@@ -688,6 +694,7 @@ export default function Header(): React.JSX.Element {
 
                     <button
                         className="btn secondary"
+                        title="Time Machine"
                         style={{ ...buttonStyle, width: "45px" }}
                         onClick={(): void =>
                             setShowTimeMachine(!showTimeMachine)
@@ -807,6 +814,7 @@ export default function Header(): React.JSX.Element {
 
                     <button
                         className="btn secondary"
+                        title="Notifiche"
                         style={{
                             ...buttonStyle,
                             position: "relative", // Posizionamento relativo per il pallino
@@ -1422,6 +1430,7 @@ export default function Header(): React.JSX.Element {
                     >
                         <a
                             href="/profile"
+                            title="Profilo"
                             style={{
                                 width: "40px",
                                 height: "40px",
@@ -1441,6 +1450,7 @@ export default function Header(): React.JSX.Element {
             ) : (
                 <a
                     href="/login"
+                    title="Login"
                     className="btn secondary"
                     style={{
                         ...buttonStyle,
