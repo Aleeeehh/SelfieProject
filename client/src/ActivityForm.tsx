@@ -383,25 +383,6 @@ export default function ActivityForm({
 							<div>{activity.parent}</div>
 						)}
 					</label>
-					<label htmlFor="prev" className="activity-vertical">
-						<select
-							style={{ backgroundColor: "white" }}
-							className="btn border"
-							name="prev"
-							onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-								setActivity({
-									...activity,
-									prev: e.target.value,
-								});
-							}}>
-							{siblings &&
-								siblings.map((act) => (
-									<option key={act.title} value={act.id}>
-										{act.title}
-									</option>
-								))}
-						</select>
-					</label>
 					<label htmlFor="next" className="activity-vertical">
 						<select
 							style={{ backgroundColor: "white" }}

@@ -329,7 +329,7 @@ export default function ProjectPage(): React.JSX.Element {
 					{/* render activity list */}
 					<div className="project-activities-container">
 						{!activityFormOpen ? (
-							<>
+							<div key={String(activityFormOpen)}>
 								<label className="project-activities-label">
 									Attività legate al progetto
 									{project.activityList &&
@@ -405,9 +405,9 @@ export default function ProjectPage(): React.JSX.Element {
 										Crea Attività
 									</button>
 								)}
-							</>
+							</div>
 						) : (
-							<label className="project-activity-form">
+							<label className="project-activity-form" key={String(activityFormOpen)}>
 								Aggiungi Attività al progetto
 								<ActivityForm
 									inputActivity={currentActivity}
