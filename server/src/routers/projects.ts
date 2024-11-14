@@ -3,82 +3,15 @@ import type { ResponseBody } from "../types/ResponseBody.ts";
 import { ResponseStatus } from "../types/ResponseStatus.ts";
 import { ProjectSchema } from "../schemas/Project.ts";
 import type Project from "../types/Project.ts";
-import { ActivitySchema } from "../schemas/Activity.ts";
-import type Activity from "../types/Activity.ts";
-import { ActivityStatus, type AdvancementType } from "../types/Activity.ts";
 import NoteSchema from "../schemas/Note.ts";
 import type Note from "../types/Note.ts";
 // import type UserResult from "../types/UserResult.ts";
 import UserSchema from "../schemas/User.ts";
 import mongoose, { Types } from "mongoose";
 import type { Privacy } from "../types/Privacy.ts";
-import { getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.ts";
+import { getActivityList, getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.ts";
 
 const router: Router = Router();
-
-async function getUserResultFromIdList(idList: string[]): Promise<string[]> {
-	const userResultList: string[] = [];
-	for (const userId of idList) {
-		const foundUser = await UserSchema.findById(userId).lean();
-		if (!foundUser) {
-			console.log("User not found: " + userId);
-			continue;
-		}
-		userResultList.push(foundUser.username);
-	}
-	return userResultList;
-}
-
-async function getUserResultFromObjectIdList(idList: Types.ObjectId[]): Promise<string[]> {
-	return await getUserResultFromIdList(idList.map((id) => id.toString()));
-}
-
-async function getActivityStatus(): Promise<ActivityStatus> {
-	// TODO: implement function
-	console.log("getActivityStatus() not implemented yet");
-	return ActivityStatus.ACTIVE;
-}
-
-// if parentID === undefined, then get the activity list for the project
-async function getActivityList(
-	projectId: Types.ObjectId,
-	parentId: Types.ObjectId | undefined
-): Promise<Activity[]> {
-	// get all activities for projectId
-
-	console.log("Searching: project ", projectId, " parent ", parentId);
-	const foundActivities = await ActivitySchema.find({
-		projectId: projectId,
-		parent: parentId,
-	}).lean();
-
-	const activityList: Activity[] = [];
-
-	// if parent, push the activity to the children of the parent activity
-	for (const foundActivity of foundActivities) {
-		const newActivity: Activity = {
-			id: foundActivity._id.toString(),
-			title: foundActivity.title,
-			description: foundActivity.description,
-			deadline: foundActivity.deadline,
-			completed: foundActivity.completed,
-			owner: foundActivity.owner.toString(),
-			accessList: await getUsernameListFromIdList(foundActivity.accessList),
-			projectId: foundActivity.projectId || undefined,
-			start: foundActivity.start || undefined,
-			milestone: foundActivity.milestone,
-			advancementType: (foundActivity.advancementType as AdvancementType) || undefined,
-			parent: foundActivity.parent || undefined,
-			prev: foundActivity.prev || undefined,
-			next: foundActivity.next || undefined,
-			status: await getActivityStatus(),
-		};
-		newActivity.children = await getActivityList(projectId, foundActivity._id);
-		activityList.push(newActivity);
-	}
-
-	return activityList;
-}
 
 // async function getProjectById(id: string): Promise<Project> {}
 
@@ -122,7 +55,7 @@ router.get("/", async (req: Request, res: Response) => {
 					text: foundProjectNote.text,
 					tags: foundProjectNote.tags,
 					privacy: foundProjectNote.privacy as Privacy,
-					accessList: await getUserResultFromObjectIdList(foundProjectNote.accessList),
+					accessList: await getUsernameListFromIdList(foundProjectNote.accessList),
 					createdAt: foundProjectNote.createdAt,
 					updatedAt: foundProjectNote.updatedAt,
 					owner: foundProjectNote.owner,
@@ -180,7 +113,7 @@ router.get("/", async (req: Request, res: Response) => {
 				title: foundProject.title,
 				description: foundProject.description,
 				owner: foundProject.owner,
-				accessList: await getUserResultFromObjectIdList(foundProject.accessList),
+				accessList: await getUsernameListFromIdList(foundProject.accessList),
 				activityList: await getActivityList(foundProject._id, undefined),
 				note: projectNote,
 			};
@@ -265,7 +198,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 				text: foundProjectNote.text,
 				tags: foundProjectNote.tags,
 				privacy: foundProjectNote.privacy as Privacy,
-				accessList: await getUserResultFromObjectIdList(foundProjectNote.accessList),
+				accessList: await getUsernameListFromIdList(foundProjectNote.accessList),
 				createdAt: foundProjectNote.createdAt,
 				updatedAt: foundProjectNote.updatedAt,
 				owner: foundProjectNote.owner,
@@ -325,7 +258,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 			title: foundProject.title,
 			description: foundProject.description,
 			owner: foundProject.owner,
-			accessList: await getUserResultFromObjectIdList(foundProject.accessList),
+			accessList: await getUsernameListFromIdList(foundProject.accessList),
 			activityList: await getActivityList(new Types.ObjectId(projectId), undefined),
 			note: projectNote,
 		};

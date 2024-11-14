@@ -367,7 +367,7 @@ export default function ProjectPage(): React.JSX.Element {
 											<div
 												key={"activity-" + a.id}
 												className="project-activity-item">
-												{a.title}
+												<a href={`/activity/${a.id}`}>{a.title}</a>
 
 												{isEditing && (
 													<>

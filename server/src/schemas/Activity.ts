@@ -23,17 +23,19 @@ const activitySchema = new mongoose.Schema(
 		status: {
 			type: String,
 			enum: ActivityStatus,
+            required: true
 		},
-		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
-		start: { type: Date },
-		milestone: { type: Boolean, default: false },
+		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project"},
+		start: { type: Date},
+		milestone: { type: Boolean, default: false},
 		advancementType: {
 			type: String,
 			enum: AdvancementType,
 			default: AdvancementType.TRANSLATION,
+			
 		},
 		parent: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
-		prev: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
+		// prev: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
 		next: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
 	},
 	{ timestamps: true }
@@ -52,4 +54,5 @@ activitySchema.pre("save", function (next) {
 	}
 	next();
 });
+
 export const ActivitySchema = mongoose.model("Activity", activitySchema);

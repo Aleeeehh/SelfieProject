@@ -17,16 +17,16 @@ type Activity = {
 	accessList: string[]; // sono gli attori per i progetti, username list
 
 	// parameters added for project management
-	status?: ActivityStatus;
-	projectId?: Types.ObjectId | string;
-	start?: Date;
-	milestone?: boolean;
-	advancementType?: AdvancementType;
-	note?: Note; // Nota descrittiva del progetto
-	parent?: Types.ObjectId | string;
-	prev?: Types.ObjectId | string;
-	next?: Types.ObjectId | string;
-	children?: Activity[];
+	projectId: Types.ObjectId | string | null;
+	status: ActivityStatus | null;
+	start: Date | null;
+	milestone: boolean | null;
+	advancementType: AdvancementType | null;
+	// note?: Note | null; // Nota descrittiva del progetto
+	parent: Types.ObjectId | string | null;
+	// prev?: Types.ObjectId | string;
+	next: Types.ObjectId | string | null;
+	children: Activity[] | null;
 };
 
 export default Activity;

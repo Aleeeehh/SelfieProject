@@ -131,9 +131,7 @@ export default function ActivityForm({
 
 	return (
 		<form className="activity-vertical">
-			<label
-				htmlFor="title"
-				className="activity-vertical">
+			<label htmlFor="title" className="activity-vertical">
 				Titolo
 				<input
 					style={{ backgroundColor: "white" }}
@@ -146,9 +144,7 @@ export default function ActivityForm({
 					}
 				/>
 			</label>
-			<label
-				htmlFor="description"
-				className="activity-vertical">
+			<label htmlFor="description" className="activity-vertical">
 				Descrizione
 				<input
 					style={{ backgroundColor: "white" }}
@@ -161,9 +157,7 @@ export default function ActivityForm({
 					}
 				/>
 			</label>
-			<label
-				htmlFor="endTime"
-				className="activity-vertical">
+			<label htmlFor="endTime" className="activity-vertical">
 				Scadenza
 				<div>
 					<DatePicker
@@ -217,9 +211,7 @@ export default function ActivityForm({
 			</label>
 
 			{addNotification && (
-				<label
-					htmlFor="notificationTime"
-					className="activity-vertical">
+				<label htmlFor="notificationTime" className="activity-vertical">
 					Quanto tempo prima mandare la notifica
 					<select
 						id="notificationTimeSelect"
@@ -248,9 +240,7 @@ export default function ActivityForm({
 			)}
 
 			{notificationRepeat && (
-				<label
-					htmlFor="notificationRepeatTime"
-					className="activity-vertical">
+				<label htmlFor="notificationRepeatTime" className="activity-vertical">
 					Ripetizioni notifica
 					<select
 						style={{ backgroundColor: "white" }}
@@ -279,9 +269,7 @@ export default function ActivityForm({
 						// activity.prev = prev;
 						// activity.next = prev;
 					}
-					<label
-						htmlFor="start"
-						className="activity-vertical">
+					<label htmlFor="start" className="activity-vertical">
 						Data di inizio
 						<div>
 							<DatePicker
@@ -347,9 +335,7 @@ export default function ActivityForm({
 							}}
 						/>
 					</label>
-					<label
-						htmlFor="advancementType"
-						className="activity-vertical">
+					<label htmlFor="advancementType" className="activity-vertical">
 						<select
 							style={{ backgroundColor: "white" }}
 							className="btn border"
@@ -360,7 +346,7 @@ export default function ActivityForm({
 									advancementType: e.target.value as AdvancementType,
 								});
 							}}
-							value={activity.advancementType}>
+							value={activity.advancementType || undefined}>
 							<option
 								key={AdvancementType.TRANSLATION}
 								value={AdvancementType.TRANSLATION}>
@@ -374,9 +360,7 @@ export default function ActivityForm({
 						</select>
 					</label>
 					{/* Parent cannot be changed once is */}
-					<label
-						htmlFor="parent"
-						className="activity-vertical">
+					<label htmlFor="parent" className="activity-vertical">
 						{inputActivity ? (
 							<select
 								style={{ backgroundColor: "white" }}
@@ -399,9 +383,7 @@ export default function ActivityForm({
 							<div>{activity.parent}</div>
 						)}
 					</label>
-					<label
-						htmlFor="prev"
-						className="activity-vertical">
+					<label htmlFor="prev" className="activity-vertical">
 						<select
 							style={{ backgroundColor: "white" }}
 							className="btn border"
@@ -420,9 +402,7 @@ export default function ActivityForm({
 								))}
 						</select>
 					</label>
-					<label
-						htmlFor="next"
-						className="activity-vertical">
+					<label htmlFor="next" className="activity-vertical">
 						<select
 							style={{ backgroundColor: "white" }}
 							className="btn border"

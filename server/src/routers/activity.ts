@@ -10,12 +10,13 @@ import type Activity from "../types/Activity.js";
 import { validDateString } from "../lib.ts";
 import { ProjectSchema } from "../schemas/Project.ts";
 import { AdvancementType, ActivityStatus } from "../types/Activity.js";
-import { getIdListFromUsernameList } from "./lib.ts";
+import { getActivityList, getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.ts";
 // import { validDateString } from "../lib.js";
 
 const router: Router = Router();
 
-const DEFAULT_GET_NUMBER = 10;
+// max positive integer
+const DEFAULT_GET_NUMBER = Number.MAX_SAFE_INTEGER;
 
 // Returns only statuses: ACTIVABLE, NOT_ACTIVABLE, LATE
 async function getStatusForCreatedActivity(activity: Activity): Promise<ActivityStatus> {
@@ -23,13 +24,13 @@ async function getStatusForCreatedActivity(activity: Activity): Promise<Activity
 	var late = false;
 
 	// if no prev activity, the current is activable
-	if (!activity.prev) activable = true;
+	// if (!activity.prev) activable = true;
 
-	const prevActivity = await ActivitySchema.findById(activity.prev).lean();
-	if (!prevActivity) activable = true;
+	// const prevActivity = await ActivitySchema.findById(activity.prev).lean();
+	// if (!prevActivity) activable = true;
 
 	// if prev activity is completed, the current is activable
-	if (prevActivity && prevActivity.completed) activable = true;
+	// if (prevActivity && prevActivity.completed) activable = true;
 
 	// if activity is activable, check if it is late
 	if (activable) {
@@ -53,13 +54,13 @@ async function getStatusForUpdatedActivity(activity: Activity): Promise<Activity
 	var late = false;
 
 	// if no prev activity, the current is activable
-	if (!activity.prev) activable = true;
+	// if (!activity.prev) activable = true;
 
-	const prevActivity = await ActivitySchema.findById(activity.prev).lean();
-	if (!prevActivity) activable = true;
+	//const prevActivity = await ActivitySchema.findById(activity.prev).lean();
+	// if (!prevActivity) activable = true;
 
 	// if prev activity is completed, the current is activable
-	if (prevActivity && prevActivity.completed) activable = true;
+	// if (prevActivity && prevActivity.completed) activable = true;
 
 	// if activity is activable, check if it is late
 	if (activable) {
@@ -82,11 +83,11 @@ async function getStatusForUpdatedActivity(activity: Activity): Promise<Activity
 router.get("/", async (req: Request, res: Response) => {
 	try {
 		// TODO: validate param
-		const countStr = req.query.count as string;
-		const fromStr = req.query.from as string;
+		const countStr = req.query.count as string | undefined;
+		const fromStr = req.query.from as string | undefined;
 
-		const count = parseInt(countStr) || DEFAULT_GET_NUMBER;
-		const from = parseInt(fromStr) || 0;
+		const count = countStr ? parseInt(countStr) : DEFAULT_GET_NUMBER;
+		const from = fromStr ? parseInt(fromStr) : 0;
 
 		if (count < 0 || from < 0)
 			return res.status(400).json({
@@ -101,12 +102,17 @@ router.get("/", async (req: Request, res: Response) => {
 			});
 		}
 
+		// only logged user accessible
 		const filter = {
-			owner: req.user.id,
+			$or: [{ owner: req.user.id }, { accessList: [req.user.id] }],
 		};
 
-		// TODO: filter per logged user
+		console.log("Filter: ", filter);
+
 		const foundActivities = await ActivitySchema.find(filter).lean();
+
+		console.log("Found activities: ", foundActivities);
+
 		const activities = [];
 
 		for (const activity of foundActivities) {
@@ -119,7 +125,15 @@ router.get("/", async (req: Request, res: Response) => {
 				updatedAt: activity.updatedAt,
 				deadline: activity.deadline,
 				completed: activity.completed,
-				accessList: activity.accessList.map((id) => id.toString()),
+				accessList: await getUsernameListFromIdList(activity.accessList),
+				projectId: activity.projectId || null,
+				next: activity.next || null,
+				status: activity.status as ActivityStatus | null,
+				milestone: activity.milestone,
+				advancementType: activity.advancementType as AdvancementType | null,
+				parent: activity.parent || null,
+				start: activity.start || null,
+				children: await getActivityList(activity.projectId || undefined, activity._id),
 			};
 
 			activities.push(newActivity);
@@ -130,7 +144,7 @@ router.get("/", async (req: Request, res: Response) => {
 			return a.deadline.getTime() - b.deadline.getTime();
 		});
 
-		sortedActivities.splice(from, count);
+		sortedActivities.filter((_, index) => index >= from && index < from + count);
 
 		return res.status(200).json({ status: ResponseStatus.GOOD, value: sortedActivities });
 	} catch (e) {
@@ -314,12 +328,28 @@ router.get("/:id", async (req: Request, res: Response) => {
 			// tags: foundActivity.tags,
 			createdAt: foundActivity.createdAt,
 			updatedAt: foundActivity.updatedAt,
-			accessList: foundActivity.accessList.map((id) => id.toString()),
+			accessList: await getUsernameListFromIdList(foundActivity.accessList),
 			deadline: foundActivity.deadline,
 			completed: foundActivity.completed,
 			idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso || undefined,
 			completedAt: foundActivity.completedAt === null ? undefined : foundActivity.completedAt,
+
+			// Leo - Progetti - BGN
+			projectId: foundActivity.projectId || null,
+			advancementType: foundActivity.advancementType as AdvancementType | null,
+			start: foundActivity.start || null,
+			milestone: foundActivity.milestone,
+			parent: foundActivity.parent || null,
+			next: foundActivity.next || null,
+			status: null,
+			children: await getActivityList(
+				foundActivity.projectId ? new Types.ObjectId(foundActivity.projectId) : undefined,
+				foundActivity._id
+			),
+			// Leo - Progetti - END
 		};
+
+		activity.status = await getStatusForUpdatedActivity(activity);
 
 		if (!req.user || !req.user.id)
 			return res.status(401).json({
@@ -362,13 +392,12 @@ router.post("/", async (req: Request, res: Response) => {
 	try {
 		// TODO: validate note input
 		// TODO: validate body fields
-		const title = req.body.title as string;
-		const description = req.body.description as string;
-		const accessList = req.body.accessList as string[]; // username list
-		const deadline = req.body.deadline;
-		const deadlineDate = new Date(deadline);
-		const owner = req.body.owner || (req.user?.id as string); // TODO: l'owner può non essere l'utente loggato?
-		const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as string;
+		const title = req.body.title as string | undefined;
+		const description = req.body.description as string | undefined;
+		const accessList = (req.body.accessList as string[]) || []; // username list
+		const deadline = req.body.deadline as string | undefined;
+		const owner = req.body.owner || (req.user?.id as string) || undefined; // TODO: l'owner può non essere l'utente loggato?
+		const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as string | undefined;
 
 		// Leo - Progetti - BGN
 		const projectId = req.body.projectId as string | undefined;
@@ -378,8 +407,19 @@ router.post("/", async (req: Request, res: Response) => {
 		var advancementType = req.body.advancementType as AdvancementType | undefined;
 
 		const parent = req.body.parent as string | undefined;
-		const prev = req.body.prev as string | undefined;
+		// const prev = req.body.prev as string | undefined;
 		const next = req.body.next as string | undefined;
+
+		if (!title || !description || !deadline || !owner) {
+			const resBody: ResponseBody = {
+				status: ResponseStatus.BAD,
+				message: "Missing required fields: 'title', 'description', 'deadline', 'owner'",
+			};
+			console.log("Missing required fields: 'title', 'description', 'deadline', 'owner'");
+			return res.status(400).json(resBody);
+		}
+
+		const deadlineDate = new Date(deadline);
 
 		if (projectId && !Types.ObjectId.isValid(projectId)) {
 			const resBody: ResponseBody = {
@@ -391,6 +431,7 @@ router.post("/", async (req: Request, res: Response) => {
 		}
 
 		let startDate: Date | undefined;
+		let realOwner = owner;
 		if (projectId) {
 			const project = await ProjectSchema.findById(projectId).lean();
 			if (!project) {
@@ -411,7 +452,27 @@ router.post("/", async (req: Request, res: Response) => {
 				return res.status(403).json(resBody);
 			}
 
-			startDate = new Date(startDateStr || "");
+			realOwner = project.owner.toString();
+
+			if (!startDateStr) {
+				const resBody: ResponseBody = {
+					message: "Start date is required when inserting project activity",
+					status: ResponseStatus.BAD,
+				};
+				console.log("Start date is required when inserting project activity");
+				return res.status(400).json(resBody);
+			}
+
+			if (!validDateString(startDateStr)) {
+				const resBody: ResponseBody = {
+					message: "Invalid start date format",
+					status: ResponseStatus.BAD,
+				};
+				console.log("Invalid start date format");
+				return res.status(400).json(resBody);
+			}
+
+			startDate = new Date(startDateStr);
 			if (startDate.getTime() > deadlineDate.getTime()) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
@@ -451,26 +512,26 @@ router.post("/", async (req: Request, res: Response) => {
 				}
 			}
 
-			if (prev && !Types.ObjectId.isValid(prev)) {
-				const resBody: ResponseBody = {
-					status: ResponseStatus.BAD,
-					message: "Invalid prev id",
-				};
-				console.log("Invalid prev id");
-				return res.status(400).json(resBody);
-			}
+			//if (prev && !Types.ObjectId.isValid(prev)) {
+			//	const resBody: ResponseBody = {
+			//		status: ResponseStatus.BAD,
+			//		message: "Invalid prev id",
+			//	};
+			// 	console.log("Invalid prev id");
+			// 	return res.status(400).json(resBody);
+			// }
 
-			if (prev) {
-				const foundPrev = await ActivitySchema.findById(prev).lean();
-				if (!foundPrev) {
-					const resBody: ResponseBody = {
-						status: ResponseStatus.BAD,
-						message: "Invalid prev id",
-					};
-					console.log("Invalid prev id");
-					return res.status(400).json(resBody);
-				}
-			}
+			// if (prev) {
+			// 	const foundPrev = await ActivitySchema.findById(prev).lean();
+			// 	if (!foundPrev) {
+			// 		const resBody: ResponseBody = {
+			// 			status: ResponseStatus.BAD,
+			// 			message: "Invalid prev id",
+			// 		};
+			// 		console.log("Invalid prev id");
+			// 		return res.status(400).json(resBody);
+			// 	}
+			// }
 
 			if (next && !Types.ObjectId.isValid(next)) {
 				const resBody: ResponseBody = {
@@ -491,6 +552,33 @@ router.post("/", async (req: Request, res: Response) => {
 					console.log("Invalid next id");
 					return res.status(400).json(resBody);
 				}
+
+				// should be of the same project
+				if (
+					foundNext.projectId &&
+					projectId &&
+					foundNext.projectId.toString() !== projectId
+				) {
+					const resBody: ResponseBody = {
+						status: ResponseStatus.BAD,
+						message: "Invalid next id: wrong project",
+					};
+					console.log("Invalid next id: wrong project");
+					return res.status(400).json(resBody);
+				}
+
+				// should have the same parent
+				if (
+					(!foundNext.parent && parent) ||
+					(foundNext.parent && (!parent || foundNext.parent.toString() !== parent))
+				) {
+					const resBody: ResponseBody = {
+						status: ResponseStatus.BAD,
+						message: "Invalid next id: wrong parent",
+					};
+					console.log("Invalid next id: wrong parent");
+					return res.status(400).json(resBody);
+				}
 			}
 
 			if (startDateStr && !validDateString(startDateStr)) {
@@ -507,7 +595,9 @@ router.post("/", async (req: Request, res: Response) => {
 		console.log("ID EVENTO NOTIFICA CONDIVISOOOOOOOOOOOOOOOOOO:", idEventoNotificaCondiviso);
 		const newActivity: Activity = {
 			idEventoNotificaCondiviso,
-			owner,
+			// Leo - Progetti - BEGIN
+			owner: realOwner,
+			// Leo - Progetti - END
 			title,
 			description,
 			deadline: deadlineDate,
@@ -516,23 +606,47 @@ router.post("/", async (req: Request, res: Response) => {
 			completedAt: undefined,
 
 			// Leo - Progetti - BGN
-			projectId,
-			start: startDate,
-			milestone,
-			parent,
-			prev,
-			next,
+			projectId: projectId || null,
+			start: startDate || null,
+			milestone: milestone || null,
+			parent: parent || null,
+			// prev,
+			next: next || null,
+			status: null,
+			advancementType: advancementType || null,
+			children: null,
 			// Leo - Progetti - END
 		};
 
 		// Leo - Progetti - BGN
 		newActivity.status = await getStatusForCreatedActivity(newActivity);
+		newActivity.children = await getActivityList(
+			newActivity.projectId ? new Types.ObjectId(newActivity.projectId) : undefined,
+			new Types.ObjectId(newActivity.id)
+		);
+
 		console.log(owner, startDateStr, req.user?.id);
 		// Leo - Progetti - END
 
 		console.log("CREATA STRUTTURA DA INSERIRE NEL DB:", newActivity);
 
 		const createdActivity = await ActivitySchema.create(newActivity);
+
+		// Leo - Progetti - BGN
+		// update activity sequence
+		if (createdActivity.next) {
+			const prevActivity = await ActivitySchema.findOne({
+				next: createdActivity.next,
+			}).lean();
+			if (!prevActivity) {
+				console.log("Prev activity not found; this is a new head");
+			} else {
+				await ActivitySchema.findByIdAndUpdate(prevActivity._id, {
+					next: createdActivity._id,
+				}).lean();
+			}
+		}
+		// Leo - Progetti - END
 
 		console.log("INSERITA ATTIVITA' NEL DB:", createdActivity);
 
@@ -573,7 +687,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		// cannot change parentActivity
 		const inputStartDate = req.body.start as string | undefined;
 		const inputMilestone = req.body.milestone as string | undefined;
-		const inputPrev = req.body.prev as string | undefined;
+		// const inputPrev = req.body.prev as string | undefined;
 		const inputNext = req.body.next as string | undefined;
 		const inputAdvancementType = req.body.advancementType as AdvancementType | undefined;
 		// Leo - Progetti - END
@@ -662,13 +776,13 @@ router.put("/:id", async (req: Request, res: Response) => {
 				: foundActivity.milestone
 			: undefined;
 
-		if (projectId && inputPrev && !Types.ObjectId.isValid(inputPrev) && inputPrev) {
-			console.log("Invalid prev id");
-			return res.status(400).json({
-				status: ResponseStatus.BAD,
-				message: "Invalid prev id",
-			});
-		}
+		//if (projectId && inputPrev && !Types.ObjectId.isValid(inputPrev) && inputPrev) {
+		//	console.log("Invalid prev id");
+		//	return res.status(400).json({
+		//		status: ResponseStatus.BAD,
+		//		message: "Invalid prev id",
+		//	});
+		//}
 
 		if (projectId && inputNext && !Types.ObjectId.isValid(inputNext)) {
 			console.log("Invalid next id");
@@ -678,11 +792,47 @@ router.put("/:id", async (req: Request, res: Response) => {
 			});
 		}
 
-		const updatedPrev: Types.ObjectId | null | undefined = projectId
-			? inputPrev
-				? new Types.ObjectId(inputPrev)
-				: foundActivity.prev
-			: undefined;
+		if (projectId && inputNext) {
+			const foundNext = await ActivitySchema.findById(inputNext).lean();
+			if (!foundNext) {
+				console.log("Invalid next id");
+				return res.status(400).json({
+					status: ResponseStatus.BAD,
+					message: "Invalid next id",
+				});
+			}
+
+			// should be of the same project
+			if (foundNext.projectId && foundNext.projectId.toString() !== projectId.toString()) {
+				const resBody: ResponseBody = {
+					status: ResponseStatus.BAD,
+					message: "Invalid next id: wrong project",
+				};
+				console.log("Invalid next id: wrong project");
+				return res.status(400).json(resBody);
+			}
+
+			// should have the same parent
+			if (
+				(!foundNext.parent && foundActivity.parent) ||
+				(foundNext.parent &&
+					(!foundActivity.parent ||
+						foundNext.parent.toString() !== foundActivity.parent.toString()))
+			) {
+				const resBody: ResponseBody = {
+					status: ResponseStatus.BAD,
+					message: "Invalid next id: wrong parent",
+				};
+				console.log("Invalid next id: wrong parent");
+				return res.status(400).json(resBody);
+			}
+		}
+
+		//const updatedPrev: Types.ObjectId | null | undefined = projectId
+		//	? inputPrev
+		//		? new Types.ObjectId(inputPrev)
+		//		: foundActivity.prev
+		// 	: undefined;
 		const updatedNext: Types.ObjectId | null | undefined = projectId
 			? inputNext
 				? new Types.ObjectId(inputNext)
@@ -707,13 +857,18 @@ router.put("/:id", async (req: Request, res: Response) => {
 			idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso || undefined,
 
 			// Leo - Progetti - BGN
-			projectId: foundActivity.projectId || undefined,
-			advancementType: updateAdvancementType,
-			start: updatedStartDate,
-			milestone: updatedMilestone,
-			parent: foundActivity.parent || undefined,
-			prev: updatedPrev || undefined,
-			next: updatedNext || undefined,
+			projectId: foundActivity.projectId || null,
+			advancementType: updateAdvancementType || null,
+			start: updatedStartDate || null,
+			milestone: updatedMilestone || null,
+			parent: foundActivity.parent || null,
+			// prev: updatedPrev || undefined,
+			next: updatedNext || null,
+			children: await getActivityList(
+				foundActivity.projectId ? new Types.ObjectId(foundActivity.projectId) : undefined,
+				foundActivity._id
+			),
+			status: null,
 			// Leo - Progetti - END
 		};
 
@@ -723,7 +878,15 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		const result = await ActivitySchema.findByIdAndUpdate(activityId, updatedActivity);
 
-		// TODO: filter the fields of the found note
+		if (projectId && inputNext) {
+			// set prev next to null, and update to new next
+			const foundPreviuosNext = await ActivitySchema.findById(foundActivity.next).lean();
+			if (foundPreviuosNext) {
+				foundPreviuosNext.next = null;
+				await ActivitySchema.findByIdAndUpdate(foundPreviuosNext._id, foundPreviuosNext);
+			}
+		}
+
 		const resBody: ResponseBody = {
 			message: "Note updated in database",
 			status: ResponseStatus.GOOD,
@@ -749,27 +912,41 @@ router.delete("/:id", async (req: Request, res: Response) => {
 		// TODO: validate param
 		// TODO: validate body fields
 
-		const foundActivity = await ActivitySchema.findByIdAndDelete(activityId);
+		const deletedActivity = await ActivitySchema.findByIdAndDelete(activityId);
 
-		if (!foundActivity) {
+		if (!deletedActivity) {
 			const resBody: ResponseBody = {
 				message: "Activity with id " + activityId + " not found!",
 				status: ResponseStatus.BAD,
 			};
 
-			res.status(400).json(resBody);
+			return res.status(400).json(resBody);
 		}
 
-		console.log("Deleted activity: ", foundActivity);
+		console.log("Deleted activity: ", deletedActivity);
+
+		// Leo - Progetti - BEGIN
+		// delete the reference to the
+		const foundPreviuos = await ActivitySchema.findOne({ next: deletedActivity._id }).lean();
+
+		if (foundPreviuos) {
+			foundPreviuos.next = null;
+			console.log(
+				"Eliminato il riferimento 'next' per l'attività eliminata, attività precedente:",
+				foundPreviuos._id.toString()
+			);
+			await ActivitySchema.findByIdAndUpdate(foundPreviuos._id, foundPreviuos);
+		}
+		// Leo - Progetti - END
 
 		// TODO: filter the fields of the found note
 		const resBody: ResponseBody = {
 			message: "Activity deleted from database",
 			status: ResponseStatus.GOOD,
-			value: foundActivity,
+			value: deletedActivity._id.toString(),
 		};
 
-		res.json(resBody);
+		return res.status(200).json(resBody);
 	} catch (e) {
 		console.log(e);
 		const resBody: ResponseBody = {
@@ -777,7 +954,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 			status: ResponseStatus.BAD,
 		};
 
-		res.status(500).json(resBody);
+		return res.status(500).json(resBody);
 	}
 });
 
