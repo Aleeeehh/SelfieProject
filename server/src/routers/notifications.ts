@@ -3,6 +3,7 @@ import NotificationSchema from "../schemas/Notification.js";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import type Notification from "../types/Notification.js";
+import UserSchema from "../schemas/User.ts";
 const router = express.Router();
 
 // Definisci l'interfaccia per il tuo oggetto di notifica
@@ -650,6 +651,8 @@ router.post("/deleteNotification", async (req: Request, res: Response) => {
 			"data.idEventoNotificaCondiviso": idEventoNotificaCondiviso,
 		});
 		console.log("NOTIFICHE ELIMINATE:", result);
+
+		return res.status(200).json("Eliminate " + result.deletedCount + " notifiche");
 	} catch (e) {
 		console.log(e);
 		const response: ResponseBody = {
@@ -697,7 +700,15 @@ router.put("/:notificationId", async (req: Request, res: Response) => {
 			return res.status(401).json(response);
 		}
 
-		const userId = req.user.username;
+		const foundUser = await UserSchema.findById(req.user.id).lean();
+		if (!foundUser) {
+			const response: ResponseBody = {
+				message: "User not found",
+				status: ResponseStatus.BAD,
+			};
+			return res.status(404).json(response);
+		}
+		const userId = foundUser.username;
 		const foundNotification = await NotificationSchema.findById(notificationId).lean();
 
 		if (!foundNotification) {

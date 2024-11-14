@@ -7,17 +7,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import type Activity from "./types/Activity";
 import { ActivityStatus, AdvancementType } from "./types/Activity";
 
-/*const baseNote: Note = {
-	id: "",
-	title: "",
-	text: "",
-	owner: "",
-	tags: [] as string[],
-	privacy: Privacy.PRIVATE,
-	accessList: [] as string[],
-	toDoList: [] as ListItem[],
-};*/
-
 //TODO: aggiungere un bottone per uscire dalla creazione di una nota
 const dummyActivity: Activity = {
 	id: "6735dd4a516cf3e8d510ae08",
@@ -35,7 +24,7 @@ const dummyActivity: Activity = {
 	milestone: false,
 	advancementType: AdvancementType.TRANSLATION,
 	parent: null,
-	start: new Date("2024-11-10T00:00:00.000Z"),
+	// start: new Date("2024-11-10T00:00:00.000Z"),
 	children: [
 		{
 			id: "6735e7226c68b78ecea68fd6",
@@ -46,7 +35,7 @@ const dummyActivity: Activity = {
 			owner: "6735dc1c5d397ea3c3e2b616",
 			accessList: ["fv2"],
 			projectId: "6735dc405d397ea3c3e2b63b",
-			start: new Date("2024-11-10T00:00:00.000Z"),
+			// start: new Date("2024-11-10T00:00:00.000Z"),
 			milestone: null,
 			advancementType: null,
 			parent: "6735dd4a516cf3e8d510ae08",
@@ -92,12 +81,14 @@ export default function ActivityPage(): React.JSX.Element {
 			<div className="activity-background">
 				<div className="activity-container">
 					<div className="activity-page-title">
-						<a href="/activity" className="close-link">
+						<a href="/activities" className="close-link">
 							X
 						</a>
 					</div>
 					{/* render title */}
 					<div className="activity-title">{activity.title}</div>
+					{/* render description */}
+					<div className="activity-description">{activity.description}</div>
 					{/* render project */}
 					{activity.projectId && (
 						<div className="activity-project">
@@ -107,9 +98,28 @@ export default function ActivityPage(): React.JSX.Element {
 							</div>
 						</div>
 					)}
+					{/* render completed */}
+					<div className="activity-completed">
+						<div>{activity.completed}</div>
+					</div>
+					{/* render status */}
+					<div className="activity-status">
+						<div>{activity.status}</div>
+					</div>
+					{/* render milestone */}
+					<div className="activity-milestone">
+						<div>{activity.milestone}</div>
+					</div>
+					{/* render advancement type */}
+					<div className="activity-advancementType">
+						<div>{activity.advancementType}</div>
+					</div>
+					{/* render dates */}
+					<div className="activity-dates">
+						<div>Da completare entro: {new Date(activity.deadline).toISOString()}</div>
+					</div>
 					{/* render description */}
 					<div className="note-description">{activity.description}</div>
-
 					{/* render access list */}
 					<label>
 						Utenti partecipanti all'attività
@@ -119,7 +129,12 @@ export default function ActivityPage(): React.JSX.Element {
 							))}
 						</div>
 					</label>
-
+					{/* parent*/}
+					{activity.parent && (
+						<a href={"/activities/" + activity.parent}>
+							<div>See parent: {activity.parent}</div>
+						</a>
+					)}
 					{/* render children list */}
 					<div>
 						<div>sotto-attività</div>

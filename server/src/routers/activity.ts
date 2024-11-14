@@ -132,7 +132,7 @@ router.get("/", async (req: Request, res: Response) => {
 				milestone: activity.milestone,
 				advancementType: activity.advancementType as AdvancementType | null,
 				parent: activity.parent || null,
-				start: activity.start || null,
+				// start: activity.start || null,
 				children: await getActivityList(activity.projectId || undefined, activity._id),
 			};
 
@@ -337,7 +337,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 			// Leo - Progetti - BGN
 			projectId: foundActivity.projectId || null,
 			advancementType: foundActivity.advancementType as AdvancementType | null,
-			start: foundActivity.start || null,
+			// start: foundActivity.start || null,
 			milestone: foundActivity.milestone,
 			parent: foundActivity.parent || null,
 			next: foundActivity.next || null,
@@ -401,7 +401,7 @@ router.post("/", async (req: Request, res: Response) => {
 
 		// Leo - Progetti - BGN
 		const projectId = req.body.projectId as string | undefined;
-		const startDateStr = req.body.start as string | undefined;
+		// const startDateStr = req.body.start as string | undefined;
 		const milestone = req.body.milestone as boolean | undefined;
 
 		var advancementType = req.body.advancementType as AdvancementType | undefined;
@@ -430,7 +430,7 @@ router.post("/", async (req: Request, res: Response) => {
 			return res.status(400).json(resBody);
 		}
 
-		let startDate: Date | undefined;
+		// let startDate: Date | undefined;
 		let realOwner = owner;
 		if (projectId) {
 			const project = await ProjectSchema.findById(projectId).lean();
@@ -454,33 +454,33 @@ router.post("/", async (req: Request, res: Response) => {
 
 			realOwner = project.owner.toString();
 
-			if (!startDateStr) {
-				const resBody: ResponseBody = {
-					message: "Start date is required when inserting project activity",
-					status: ResponseStatus.BAD,
-				};
-				console.log("Start date is required when inserting project activity");
-				return res.status(400).json(resBody);
-			}
+			//if (!startDateStr) {
+			//	const resBody: ResponseBody = {
+			//		message: "Start date is required when inserting project activity",
+			//		status: ResponseStatus.BAD,
+			//	};
+			//	console.log("Start date is required when inserting project activity");
+			//	return res.status(400).json(resBody);
+			//}
 
-			if (!validDateString(startDateStr)) {
-				const resBody: ResponseBody = {
-					message: "Invalid start date format",
-					status: ResponseStatus.BAD,
-				};
-				console.log("Invalid start date format");
-				return res.status(400).json(resBody);
-			}
+			// if (!validDateString(startDateStr)) {
+			// 	const resBody: ResponseBody = {
+			// 		message: "Invalid start date format",
+			// 		status: ResponseStatus.BAD,
+			// 	};
+			// 	console.log("Invalid start date format");
+			// 	return res.status(400).json(resBody);
+			// }
 
-			startDate = new Date(startDateStr);
-			if (startDate.getTime() > deadlineDate.getTime()) {
-				const resBody: ResponseBody = {
-					status: ResponseStatus.BAD,
-					message: "Start date cannot be after deadline",
-				};
-				console.log("Start date cannot be after deadline");
-				return res.status(400).json(resBody);
-			}
+			// startDate = new Date(startDateStr);
+			// if (startDate.getTime() > deadlineDate.getTime()) {
+			// 	const resBody: ResponseBody = {
+			// 		status: ResponseStatus.BAD,
+			// 		message: "Start date cannot be after deadline",
+			// 	};
+			// 	console.log("Start date cannot be after deadline");
+			// 	return res.status(400).json(resBody);
+			// }
 
 			if (advancementType && !Object.values(AdvancementType).includes(advancementType)) {
 				const resBody: ResponseBody = {
@@ -581,14 +581,14 @@ router.post("/", async (req: Request, res: Response) => {
 				}
 			}
 
-			if (startDateStr && !validDateString(startDateStr)) {
-				const resBody: ResponseBody = {
-					status: ResponseStatus.BAD,
-					message: "Invalid start date: format 'YYYY-MM-DD'",
-				};
-				console.log("Invalid start date: format 'YYYY-MM-DD'");
-				return res.status(400).json(resBody);
-			}
+			// if (startDateStr && !validDateString(startDateStr)) {
+			// 	const resBody: ResponseBody = {
+			// 		status: ResponseStatus.BAD,
+			// 		message: "Invalid start date: format 'YYYY-MM-DD'",
+			// 	};
+			// 	console.log("Invalid start date: format 'YYYY-MM-DD'");
+			// 	return res.status(400).json(resBody);
+			// }
 		}
 		// Leo - Progetti - END
 
@@ -607,7 +607,7 @@ router.post("/", async (req: Request, res: Response) => {
 
 			// Leo - Progetti - BGN
 			projectId: projectId || null,
-			start: startDate || null,
+			// start: startDate || null,
 			milestone: milestone || null,
 			parent: parent || null,
 			// prev,
@@ -625,7 +625,7 @@ router.post("/", async (req: Request, res: Response) => {
 			new Types.ObjectId(newActivity.id)
 		);
 
-		console.log(owner, startDateStr, req.user?.id);
+		console.log(owner, req.user?.id);
 		// Leo - Progetti - END
 
 		console.log("CREATA STRUTTURA DA INSERIRE NEL DB:", newActivity);
@@ -762,13 +762,13 @@ router.put("/:id", async (req: Request, res: Response) => {
 			});
 		}
 
-		const updatedStartDate: Date | undefined = projectId
-			? inputStartDate
-				? new Date(inputStartDate)
-				: new Date(foundActivity.start || "")
-			: undefined;
+		//const updatedStartDate: Date | undefined = projectId
+		//	? inputStartDate
+		//		? new Date(inputStartDate)
+		//		: new Date(foundActivity.start || "")
+		//	: undefined;
 
-		console.log(updatedStartDate);
+		//console.log(updatedStartDate);
 
 		const updatedMilestone: boolean | undefined = projectId
 			? inputMilestone
@@ -859,7 +859,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 			// Leo - Progetti - BGN
 			projectId: foundActivity.projectId || null,
 			advancementType: updateAdvancementType || null,
-			start: updatedStartDate || null,
+			// start: updatedStartDate || null,
 			milestone: updatedMilestone || null,
 			parent: foundActivity.parent || null,
 			// prev: updatedPrev || undefined,
@@ -905,6 +905,24 @@ router.put("/:id", async (req: Request, res: Response) => {
 	}
 });
 
+// Delete recursively children activities
+async function deleteActivity(activityId: string): Promise<number> {
+	const deletedActivity = await ActivitySchema.findByIdAndDelete(activityId);
+
+	if (!deletedActivity) {
+		console.log("Activity not found while deleting:", activityId);
+		return 0;
+	}
+
+	var count = 1;
+	const foundChildren = await ActivitySchema.find({ parent: activityId });
+	for (const child of foundChildren) {
+		count = count + (await deleteActivity(child._id.toString()));
+	}
+
+	return count;
+}
+
 router.delete("/:id", async (req: Request, res: Response) => {
 	const activityId = req.params.id as string;
 
@@ -912,9 +930,11 @@ router.delete("/:id", async (req: Request, res: Response) => {
 		// TODO: validate param
 		// TODO: validate body fields
 
-		const deletedActivity = await ActivitySchema.findByIdAndDelete(activityId);
+		// Leo - Progetti - BEGIN
+		const foundActivity = await ActivitySchema.findById(activityId).lean();
 
-		if (!deletedActivity) {
+		if (!foundActivity) {
+			console.log("Activity with id " + activityId + " not found!");
 			const resBody: ResponseBody = {
 				message: "Activity with id " + activityId + " not found!",
 				status: ResponseStatus.BAD,
@@ -923,11 +943,12 @@ router.delete("/:id", async (req: Request, res: Response) => {
 			return res.status(400).json(resBody);
 		}
 
-		console.log("Deleted activity: ", deletedActivity);
+		const count = await deleteActivity(activityId);
 
-		// Leo - Progetti - BEGIN
-		// delete the reference to the
-		const foundPreviuos = await ActivitySchema.findOne({ next: deletedActivity._id }).lean();
+		console.log("Deleted ", count, "activities");
+
+		// update next field for prev activity
+		const foundPreviuos = await ActivitySchema.findOne({ next: foundActivity._id }).lean();
 
 		if (foundPreviuos) {
 			foundPreviuos.next = null;
@@ -937,13 +958,14 @@ router.delete("/:id", async (req: Request, res: Response) => {
 			);
 			await ActivitySchema.findByIdAndUpdate(foundPreviuos._id, foundPreviuos);
 		}
+
 		// Leo - Progetti - END
 
 		// TODO: filter the fields of the found note
 		const resBody: ResponseBody = {
-			message: "Activity deleted from database",
+			message: "Activity Deleted " + count + " from database.",
 			status: ResponseStatus.GOOD,
-			value: deletedActivity._id.toString(),
+			value: foundActivity._id.toString(),
 		};
 
 		return res.status(200).json(resBody);

@@ -11,7 +11,7 @@ type Project = {
 	activityList: Activity[];
 	createdAt?: Date;
 	updatedAt?: Date;
-	note: Note;
+	note?: Note;
 };
 
 export default Project;

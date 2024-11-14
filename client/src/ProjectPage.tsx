@@ -31,7 +31,7 @@ const baseActivity: Activity = {
 	owner: "",
 	accessList: [] as string[],
 	completed: false,
-	start: new Date(),
+	// start: new Date(),
 };
 
 const baseProject: Project = {
@@ -44,15 +44,11 @@ const baseProject: Project = {
 	note: baseNote,
 };
 
-//TODO: aggiungere un bottone per uscire dalla creazione di una nota
-
-const NEW = "new";
-
 export default function ProjectPage(): React.JSX.Element {
 	const { id } = useParams();
 	const [project, setProject] = React.useState(baseProject);
 	const [message, setMessage] = React.useState("");
-	const [isEditing, setIsEditing] = React.useState(id === NEW);
+	const [isEditing, setIsEditing] = React.useState(false);
 	const [activityFormOpen, setActivityFormOpen] = React.useState(false);
 	const [currentActivity, setCurrentActivity] = React.useState<Activity | undefined>(
 		baseActivity
@@ -61,24 +57,22 @@ export default function ProjectPage(): React.JSX.Element {
 	const nav = useNavigate();
 
 	async function updateProject(): Promise<void> {
-		if (id !== NEW)
-			fetch(`${SERVER_API}/projects/${id}`)
-				.then((res) => res.json())
-				.then((data) => {
-					if (data.status === ResponseStatus.GOOD) {
-						setProject(data.value as Project);
-						setIsEditing(id === NEW);
-						setActivityFormOpen(false);
-						console.log(data.value);
-					} else {
-						console.log(data.message || "Errore nel caricamento del progetto");
-						// nav("/projects");
-					}
-				})
-				.catch(() => {
-					setMessage("Impossibile raggiungere il server");
+		fetch(`${SERVER_API}/projects/${id}`)
+			.then((res) => res.json())
+			.then((data) => {
+				if (data.status === ResponseStatus.GOOD) {
+					setProject(data.value as Project);
+					setActivityFormOpen(false);
+					console.log(data.value);
+				} else {
+					console.log(data.message || "Errore nel caricamento del progetto");
 					// nav("/projects");
-				});
+				}
+			})
+			.catch(() => {
+				setMessage("Impossibile raggiungere il server");
+				// nav("/projects");
+			});
 	}
 
 	/* function getSiblings(activity: Activity): { title: string; id: string | undefined }[] {
@@ -124,36 +118,6 @@ export default function ProjectPage(): React.JSX.Element {
 		setProject({ ...project, [e.target.name]: e.target.value });
 	}
 
-	async function handleCreateProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
-
-		try {
-			const res = await fetch(`${SERVER_API}/projects`, {
-				method: "POST",
-				body: JSON.stringify({
-					title: project.title,
-					description: project.description,
-					accessList: project.accessList,
-				}),
-				headers: { "Content-Type": "application/json" },
-			});
-
-			const resBody = (await res.json()) as ResponseBody;
-
-			if (resBody.status === ResponseStatus.GOOD) {
-				const newNoteId: string = resBody.value;
-				alert("Progetto creato correttamente!");
-
-				// redirect to update page of the created note
-				nav(`/projects/${newNoteId}`);
-			} else {
-				setMessage(resBody.message || "Errore nel caricamento del progetto");
-			}
-		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
-		}
-	}
-
 	async function handleUpdateProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
@@ -172,6 +136,8 @@ export default function ProjectPage(): React.JSX.Element {
 				alert("Progetto aggiornato correttamente!");
 
 				await updateProject();
+
+				setIsEditing(false);
 
 				console.log(resBody.value as Note);
 			} else {
@@ -296,7 +262,7 @@ export default function ProjectPage(): React.JSX.Element {
 			<div className="project-background">
 				<div className="project-container">
 					<div className="project-page-title">
-						{id === NEW ? "Crea un nuovo progetto" : "Modifica progetto"}
+						Modifica progetto
 						<a href="/projects" className="close-link">
 							X
 						</a>
@@ -335,25 +301,29 @@ export default function ProjectPage(): React.JSX.Element {
 							</div>
 						)}
 						<div className="project-users-container">
-							{project.accessList.map((u) => (
-								<div className="project-user-box">
-									{u}
-									{isEditing && (
-										<button
-											style={{
-												marginLeft: "0.5em",
-												padding: "0",
-												backgroundColor: "#d64545",
-											}}
-											className="project-user-delete"
-											onClick={(
-												e: React.MouseEvent<HTMLButtonElement>
-											): void => deleteUser(e, u)}>
-											X
-										</button>
-									)}
-								</div>
-							))}
+							{project.accessList.length > 0 ? (
+								project.accessList.map((u) => (
+									<div className="project-user-box">
+										{u}
+										{isEditing && (
+											<button
+												style={{
+													marginLeft: "0.5em",
+													padding: "0",
+													backgroundColor: "#d64545",
+												}}
+												className="project-user-delete"
+												onClick={(
+													e: React.MouseEvent<HTMLButtonElement>
+												): void => deleteUser(e, u)}>
+												X
+											</button>
+										)}
+									</div>
+								))
+							) : (
+								<div>Nessun partecipante</div>
+							)}
 						</div>
 					</label>
 					{/* render activity list */}
@@ -363,42 +333,69 @@ export default function ProjectPage(): React.JSX.Element {
 								<label className="project-activities-label">
 									Attività legate al progetto
 									{project.activityList &&
-										project.activityList.map((a) => (
-											<div
-												key={"activity-" + a.id}
-												className="project-activity-item">
-												<a href={`/activity/${a.id}`}>{a.title}</a>
+										(project.activityList.length ? (
+											project.activityList.map((a) => (
+												<div
+													key={"activity-" + a.id}
+													className="project-activity-item">
+													<a href={`/activities/${a.id}`}>
+														{a.title} - {a.status}
+													</a>
 
-												{isEditing && (
-													<>
-														<button
-															style={{
-																backgroundColor: "#3a7a3c",
-																padding: "5px",
-															}}
-															className="project-activity-edit"
-															onClick={(
-																e: React.MouseEvent<HTMLButtonElement>
-															): void => toggleEditActivity(e, a.id)}>
-															Modifica
-														</button>
+													{isEditing ? (
+														<>
+															<button
+																style={{
+																	backgroundColor: "#3a7a3c",
+																	padding: "5px",
+																}}
+																className="project-activity-edit"
+																onClick={(
+																	e: React.MouseEvent<HTMLButtonElement>
+																): void =>
+																	toggleEditActivity(e, a.id)
+																}>
+																Modifica
+															</button>
 
-														<button
-															style={{
-																backgroundColor: "#d64545",
-																padding: "5px",
-															}}
-															className="project-activity-delete"
-															onClick={async (
-																e: React.MouseEvent<HTMLButtonElement>
-															): Promise<void> =>
-																await handleDeleteActivity(e, a.id)
-															}>
-															Elimina
-														</button>
-													</>
-												)}
-											</div>
+															<button
+																style={{
+																	backgroundColor: "#d64545",
+																	padding: "5px",
+																}}
+																className="project-activity-delete"
+																onClick={async (
+																	e: React.MouseEvent<HTMLButtonElement>
+																): Promise<void> =>
+																	await handleDeleteActivity(
+																		e,
+																		a.id
+																	)
+																}>
+																Elimina
+															</button>
+														</>
+													) : (
+														<div>
+															{a.children &&
+																a.children.map((c) => (
+																	<div
+																		style={{
+																			backgroundColor: "gray",
+																		}}>
+																		<a
+																			href={`/activities/${c.id}`}>
+																			Child - {c.title} -{" "}
+																			{c.status}
+																		</a>
+																	</div>
+																))}
+														</div>
+													)}
+												</div>
+											))
+										) : (
+											<div>Nessuna attività</div>
 										))}
 								</label>
 								{isEditing && (
@@ -440,9 +437,7 @@ export default function ProjectPage(): React.JSX.Element {
 					{/* manage project */}
 					{/* if is owner, can modify project */}
 					{/* if new project, can save new project */}
-					{id === NEW ? (
-						<button onClick={handleCreateProject}>Crea nuovo progetto</button>
-					) : isEditing ? (
+					{isEditing ? (
 						<button style={{ backgroundColor: "green" }} onClick={handleUpdateProject}>
 							Salva progetto
 						</button>
@@ -450,11 +445,9 @@ export default function ProjectPage(): React.JSX.Element {
 						<button onClick={toggleEdit}>Modifica progetto</button>
 					)}
 					{/* if is owner, can delete project (not new project) */}
-					{id !== NEW && (
-						<button style={{ backgroundColor: "red" }} onClick={handleDeleteProject}>
-							Cancella Progetto
-						</button>
-					)}
+					<button style={{ backgroundColor: "red" }} onClick={handleDeleteProject}>
+						Cancella Progetto
+					</button>
 				</div>
 			</div>
 

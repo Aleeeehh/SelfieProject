@@ -16,6 +16,8 @@ import MessageHub from "./MessageHub";
 import ProjectPage from "./ProjectPage";
 import GanttDiagram from "./ProjectGantt";
 import ActivityPage from "./ActivityPage";
+import Activities from "./Activities";
+import CreateProjectForm from "./CreateProjectForm";
 //import "bootstrap/dist/css/bootstrap.min.css";
 
 function App(): React.JSX.Element {
@@ -36,8 +38,10 @@ function App(): React.JSX.Element {
 						{/* Route notes/new creates the new page for note*/}
 						<Route path="chat" element={<MessageHub />} />
 						<Route path="notes/:id" element={<NotePage />} />
+						<Route path="projects/new" element={<CreateProjectForm />} />
 						<Route path="projects/:id" element={<ProjectPage />} />
 						<Route path="projects/:id/gantt" element={<GanttDiagram />} />
+						<Route path="activities" element={<Activities />} />
 						<Route path="activities/:id" element={<ActivityPage />} />
 
 						{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}

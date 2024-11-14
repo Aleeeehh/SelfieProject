@@ -23,16 +23,14 @@ const activitySchema = new mongoose.Schema(
 		status: {
 			type: String,
 			enum: ActivityStatus,
-            required: true
+			required: true,
 		},
-		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project"},
-		start: { type: Date},
-		milestone: { type: Boolean, default: false},
+		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
+		milestone: { type: Boolean, default: false },
 		advancementType: {
 			type: String,
 			enum: AdvancementType,
 			default: AdvancementType.TRANSLATION,
-			
 		},
 		parent: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
 		// prev: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
@@ -44,13 +42,6 @@ const activitySchema = new mongoose.Schema(
 activitySchema.pre("save", function (next) {
 	if (this.projectId && !this.status) {
 		next(new Error("'status' is required when projectId is defined"));
-	}
-	next();
-});
-
-activitySchema.pre("save", function (next) {
-	if (this.projectId && !this.start) {
-		next(new Error("'start' is required when projectId is defined"));
 	}
 	next();
 });

@@ -11,7 +11,7 @@ const baseActivity: Activity = {
 	owner: "",
 	accessList: [] as string[],
 	completed: false,
-	start: new Date(),
+	// start: new Date(),
 };
 
 interface ActivityCreateFormProps {
@@ -36,7 +36,7 @@ export default function ActivityForm({
 		inputActivity
 			? {
 					...inputActivity,
-					start: new Date(inputActivity.start || ""),
+					// start: new Date(inputActivity.start || ""),
 					deadline: new Date(inputActivity.deadline),
 			  }
 			: baseActivity
@@ -67,7 +67,7 @@ export default function ActivityForm({
 				deadline: activity.deadline.toISOString().split("T")[0],
 				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
 				projectId: projectId,
-				start: activity.start?.toISOString().split("T")[0] || undefined,
+				// start: activity.start?.toISOString().split("T")[0] || undefined,
 				milestone: activity.milestone,
 				parent: activity.parent,
 				prev: activity.prev,
@@ -98,7 +98,7 @@ export default function ActivityForm({
 				deadline: activity.deadline.toISOString().split("T")[0],
 				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
 				projectId: projectId,
-				start: activity.start?.toISOString().split("T")[0] || undefined,
+				// start: activity.start?.toISOString().split("T")[0] || undefined,
 				milestone: activity.milestone,
 				parent: activity.parent,
 				prev: activity.prev,
@@ -269,7 +269,7 @@ export default function ActivityForm({
 						// activity.prev = prev;
 						// activity.next = prev;
 					}
-					<label htmlFor="start" className="activity-vertical">
+					{/*<label htmlFor="start" className="activity-vertical">
 						Data di inizio
 						<div>
 							<DatePicker
@@ -322,7 +322,7 @@ export default function ActivityForm({
 								}}
 							/>
 						</div>
-					</label>
+					</label>*/}
 					<label htmlFor="milestone">
 						Milestone:
 						<input

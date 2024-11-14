@@ -1,5 +1,5 @@
 import type { Types } from "mongoose";
-import type Note from "./Note.ts";
+// import type Note from "./Note.ts";
 // import type UserResult from "./UserResult.ts";
 
 type Activity = {
@@ -19,7 +19,7 @@ type Activity = {
 	// parameters added for project management
 	projectId: Types.ObjectId | string | null;
 	status: ActivityStatus | null;
-	start: Date | null;
+	// start: Date | null;
 	milestone: boolean | null;
 	advancementType: AdvancementType | null;
 	// note?: Note | null; // Nota descrittiva del progetto
