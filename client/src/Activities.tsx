@@ -67,24 +67,24 @@ export default function Activities(): React.JSX.Element {
 	return (
 		<>
 			{message && <div>{message}</div>}
-			<div className="projects-container">
+			<div className="activities-container">
 				<a href={`/activities/new`} style={{ marginTop: "1em" }}>
 					<button>Crea nuova attività</button>
 				</a>
-				<div className="projects-list">
+				<div className="activities-list">
 					{activities.map((activity) => (
-						<div className="card-project">
-							<div className="card-project-title">
+						<div className="card-activity">
+							<div className="card-activity-title">
 								<h3>{activity.title}</h3>
 							</div>
-							<div className="card-project-description">
+							<div className="card-activity-description">
 								<p>
 									{activity.description.length > PREVIEW_CHARS
 										? activity.description.substring(0, PREVIEW_CHARS) + "..."
 										: activity.description}
 								</p>
 							</div>
-							<div className="card-project-buttons">
+							<div className="card-activity-buttons">
 								<button onClick={(): void => nav(`/activities/${activity.id}`)}>
 									Visualizza
 								</button>

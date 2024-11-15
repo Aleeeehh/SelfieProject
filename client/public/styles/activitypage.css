@@ -1,0 +1,320 @@
+/* SINGLE ACTIVITY PAGE */
+
+/*
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}*/
+
+.activity-background {
+    background-image: url('/images/background.png');
+    background-size: cover;
+    background-repeat: repeat;
+    width: 100vw;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.activity-container {
+    width: calc(100% - 4em);
+	height: calc(100% - 4em);
+	margin: 2em auto;
+	max-width: 800px;
+	display: flex;
+	flex-direction: column;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.9);
+	padding: 2em;
+	border-radius: 15px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	transition: transform 0.2s;
+}
+
+.activity-container > * {
+    width: 100%;
+}
+
+.activity-page-title {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1em;
+}
+
+.activity-close-link {
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5em;
+    height: 1.5em;
+    background-color: #d64545;
+    color: white;
+    font-size: 1em;
+    font-weight: bold;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.activity-title,
+.activity-description,
+.activity-project,
+.activity-completed,
+.activity-status,
+.activity-milestone,
+.activity-advancementType,
+.activity-dates,
+.activity-participants,
+.activity-parent,
+.activity-next,
+.activity-children {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+}
+
+.activity-title > div:first-child,
+.activity-description > div:first-child,
+.activity-project > div:first-child,
+.activity-completed > div:first-child,
+.activity-status > div:first-child,
+.activity-milestone > div:first-child,
+.activity-advancementType > div:first-child,
+.activity-dates > div:first-child,
+.activity-participants > div:first-child,
+.activity-parent > div:first-child,
+.activity-next > div:first-child,
+.activity-children > div:first-child {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.activity-users-container,
+.activity-children-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.activity-user-box {
+    padding: 0.4em 0.8em;
+	background-color: #ffd57e;
+	color: #4a4a4a;
+	font-weight: 500;
+	font-style: italic;
+	display: flex;
+	align-items: center;
+	border-radius: 12px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.activity-user-delete {
+	color: #d64545;
+	width: 2em;
+	height: 1.5em;
+	font-size: 0.8em;
+	margin-left: 0.5em;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	transition: color 0.2s;
+}
+
+.activity-user-delete:hover {
+	background-color: #a12a2a;
+}
+
+.activity-container button {
+	margin: 0.5em auto;
+	padding: 0.8em 1.5em;
+	border-radius: 8px;
+	font-weight: bold;
+	font-size: 1em;
+	cursor: pointer;
+	background-color: #3a7a3c;
+	color: white;
+	border: none;
+	box-shadow: 0 2px 8px rgba(58, 122, 60, 0.2);
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #444;
+}
+
+input[type="text"],
+input[type="textarea"],
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+input[type="checkbox"] {
+    margin-left: 10px;
+}
+
+.activity-vertical {
+    margin-bottom: 20px;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: #0056b3;
+}
+
+.activity-project div,
+.activity-dates div {
+    margin-top: 8px;
+}
+
+div[message] {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: 1px solid #d6e9c6;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.activity-container button {
+    margin-right: 10px;
+}
+
+@media screen and (max-width: 600px) {
+    .activity-close-link {
+        top: 0;
+        right: 50%;
+        transform: translate(50%, 0);
+    }
+
+    .activity-page-title {
+        padding-top: 2em;
+    }
+}
+
+
+
+
+
+
+
+
+/* ACTIVITIES PAGE */
+
+.activities-container {
+    background-image: url('/images/background.png');
+    background-size: cover;
+    background-repeat: repeat;
+    width: 100vw;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.activities-container > a {
+    margin: 1em auto;
+}
+
+.activities-container > a > button {
+    background-color: bisque;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 0.8em 1.5em;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.activities-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5em;
+    width: 50%;
+    justify-content: center;
+    padding: 2em 1em;
+}
+
+.card-activity {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease;
+}
+
+.card-activity-title {
+    text-align: center;
+    background-color: rgba(255, 228, 196, 0.9);
+    color: black;
+    padding: 1em;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.card-activity-description {
+    padding: 1em;
+    color: black;
+    text-align: justify;
+    font-size: 0.9em;
+    flex-grow: 1;
+}
+
+.card-activity-buttons {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 0.5em 1em 1em;
+    gap: 0.5em;
+}
+
+.card-activity-buttons button {
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 8px;
+    background-color: #4a90e2;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+@media screen and (max-width: 540px) {
+    .card-activity-buttons {
+        flex-direction: column;
+    }
+}
