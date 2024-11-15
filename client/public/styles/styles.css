@@ -11,6 +11,7 @@
 @import url("./musicplayer.css");
 @import url("./activityform.css");
 @import url("./searchform.css");
+@import url("./activitypage.css");
 
 * {
 	box-sizing: border-box;

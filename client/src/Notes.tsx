@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { Order } from "./enums";
 
 const PREVIEW_CHARS = 100;
+const MAX_TITLE_CHARS = 17;
+
 export default function Notes(): React.JSX.Element {
     const [noteList, setNoteList] = React.useState([] as Note[]);
     const [message, setMessage] = React.useState("");
@@ -180,7 +182,14 @@ export default function Notes(): React.JSX.Element {
                         <a href={`/notes/${note.id}`}>
                             <div className="card-note">
                                 <div className="card-note-title">
-                                    <h3>{note.title}</h3>
+                                    <h3>
+                                        {note.title.length > MAX_TITLE_CHARS
+                                            ? note.title.substring(
+                                                  0,
+                                                  MAX_TITLE_CHARS
+                                              ) + "..."
+                                            : note.title}
+                                    </h3>
                                 </div>
                                 <div className="card-note-text">
                                     <p>

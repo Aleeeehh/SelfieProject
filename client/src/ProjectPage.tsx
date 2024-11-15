@@ -294,8 +294,8 @@ export default function ProjectPage(): React.JSX.Element {
             <div className="project-background">
                 <div className="project-container">
                     <div className="project-page-title">
-                        Modifica progetto
-                        <a href="/projects" className="close-link">
+                        {isEditing ? "Modifica progetto" : "Visualizza progetto"}
+                        <a href="/projects" className="project-close-link">
                             X
                         </a>
                     </div>
@@ -383,6 +383,7 @@ export default function ProjectPage(): React.JSX.Element {
                                                 >
                                                     <a
                                                         href={`/activities/${a.id}`}
+                                                        style={{ width: "100%" }}
                                                     >
                                                         {a.title} - {a.status}
                                                     </a>

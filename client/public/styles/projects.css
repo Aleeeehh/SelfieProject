@@ -82,7 +82,7 @@
     transition: background-color 0.3s ease;
 }
 
-@media screen and (max-width: 350px) {
+@media screen and (max-width: 390px) {
     .card-project-buttons {
         flex-direction: column;
     }
@@ -134,7 +134,7 @@
     font-weight: bold;
 }
 
-.close-link {
+.project-close-link {
     position: absolute;
     right: 1em;
     top: 50%;
@@ -154,7 +154,7 @@
     transition: background-color 0.2s, color 0.2s;
 }
 
-.close-link:hover {
+.project-close-link:hover {
     background-color: red;
 }
 
@@ -277,6 +277,10 @@
 	color: #4a4a4a;    
 }
 
+.project-activities-label {
+	width: 100%;
+}
+
 .project-activities-box {
     gap: 0.5em;
     flex-wrap: wrap;
@@ -290,6 +294,7 @@
     width: 40%;
 	font-style: italic;
 	display: flex;
+	margin-top: 5px;
 	align-items: center;
 	border-radius: 12px;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -346,7 +351,7 @@
 }
 
 @media screen and (max-width: 640px) {
-    .close-link {
+    .project-close-link {
         top: 0;
         right: 50%;
         transform: translate(50%, 0);
