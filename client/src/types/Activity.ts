@@ -26,6 +26,9 @@ type Activity = {
 	prev?: string | null;
 	next?: string | null;
 	children?: Activity[] | null;
+	active?: boolean | null;
+	abandoned?: boolean | null;
+	reactivated?: boolean | null;
 };
 
 export default Activity;

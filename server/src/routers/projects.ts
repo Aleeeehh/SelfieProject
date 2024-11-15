@@ -385,7 +385,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 // update the project
 router.put("/:id", async (req: Request, res: Response) => {
 	try {
-		const id = req.params.id;
+		const id = req.params.id; // project id
 		const title = req.body.title;
 		const description = req.body.description;
 		const accessList = req.body.accessList as string[]; // username list
@@ -397,22 +397,6 @@ router.put("/:id", async (req: Request, res: Response) => {
 			};
 			console.log("Invalid project id");
 			return res.status(400).json(resBody);
-		}
-
-		var accestIdList: Types.ObjectId[] = [];
-		for (let i = 0; i < accessList.length; i++) {
-			const foundUser = await UserSchema.findOne({ username: accessList[i] });
-
-			if (!foundUser) {
-				const resBody: ResponseBody = {
-					message: "User not found: " + accessList[i],
-					status: ResponseStatus.BAD,
-				};
-				console.log("User not found: " + accessList[i]);
-				return res.status(400).json(resBody);
-			}
-
-			accestIdList.push(foundUser._id);
 		}
 
 		const project = await ProjectSchema.findById(id);
@@ -432,6 +416,22 @@ router.put("/:id", async (req: Request, res: Response) => {
 			};
 			console.log("You are not the owner of this project");
 			return res.status(403).json(resBody);
+		}
+
+		var accestIdList: Types.ObjectId[] = [];
+		for (let i = 0; i < accessList.length; i++) {
+			const foundUser = await UserSchema.findOne({ username: accessList[i] });
+
+			if (!foundUser) {
+				const resBody: ResponseBody = {
+					message: "User not found: " + accessList[i],
+					status: ResponseStatus.BAD,
+				};
+				console.log("User not found: " + accessList[i]);
+				return res.status(400).json(resBody);
+			}
+
+			accestIdList.push(foundUser._id);
 		}
 
 		const updatedProject = await ProjectSchema.findByIdAndUpdate(

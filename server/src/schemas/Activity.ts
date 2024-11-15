@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { ActivityStatus, AdvancementType } from "../types/Activity.ts";
+import { AdvancementType } from "../types/Activity.ts";
 
 // "status" è un parametro derivato parzialmente: gli unici parametri
 // "selezionabili" sono [Attiva (actor) | Completa (actor) | Riattivata (owner)],
@@ -20,11 +20,6 @@ const activitySchema = new mongoose.Schema(
 		idEventoNotificaCondiviso: { type: String },
 
 		// project related fields
-		status: {
-			type: String,
-			enum: ActivityStatus,
-			required: true,
-		},
 		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
 		milestone: { type: Boolean, default: false },
 		advancementType: {
@@ -35,15 +30,32 @@ const activitySchema = new mongoose.Schema(
 		parent: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
 		// prev: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
 		next: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
+		// status related fields
+		active: { type: Boolean, default: false },
+		abandoned: { type: Boolean, default: false },
+		reactivated: { type: Boolean, default: false },
 	},
 	{ timestamps: true }
 );
 
 activitySchema.pre("save", function (next) {
-	if (this.projectId && !this.status) {
-		next(new Error("'status' is required when projectId is defined"));
+	if (this.projectId && !this.active) {
+		next(new Error("'active' is required when projectId is defined"));
 	}
 	next();
 });
 
+activitySchema.pre("save", function (next) {
+	if (this.projectId && !this.abandoned) {
+		next(new Error("'abandoned' is required when projectId is defined"));
+	}
+	next();
+});
+
+activitySchema.pre("save", function (next) {
+	if (this.projectId && !this.reactivated) {
+		next(new Error("'reactivated' is required when projectId is defined"));
+	}
+	next();
+});
 export const ActivitySchema = mongoose.model("Activity", activitySchema);

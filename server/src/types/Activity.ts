@@ -18,7 +18,7 @@ type Activity = {
 
 	// parameters added for project management
 	projectId: Types.ObjectId | string | null;
-	status: ActivityStatus | null;
+	status?: ActivityStatus | null;
 	// start: Date | null;
 	milestone: boolean | null;
 	advancementType: AdvancementType | null;
@@ -27,6 +27,10 @@ type Activity = {
 	// prev?: Types.ObjectId | string;
 	next: Types.ObjectId | string | null;
 	children: Activity[] | null;
+	// status related fields
+	active: boolean | null;
+	abandoned: boolean | null;
+	reactivated: boolean | null;
 };
 
 export default Activity;
