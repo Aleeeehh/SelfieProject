@@ -18,6 +18,7 @@ import GanttDiagram from "./ProjectGantt";
 import ActivityPage from "./ActivityPage";
 import Activities from "./Activities";
 import CreateProjectForm from "./CreateProjectForm";
+import CreateActivityForm from "./CreateActivityForm";
 //import "bootstrap/dist/css/bootstrap.min.css";
 
 function App(): React.JSX.Element {
@@ -31,17 +32,18 @@ function App(): React.JSX.Element {
 						<Route path="login" element={<Login />} />
 						<Route path="calendar" element={<Calendar />} />
 						<Route path="pomodoro" element={<Pomodoro />} />
-						<Route path="projects" element={<Projects />} />
 						<Route path="profile" element={<Profile />} />
-						<Route path="notes" element={<Notes />} />
 						<Route path="register" element={<Register />} />
 						{/* Route notes/new creates the new page for note*/}
 						<Route path="chat" element={<MessageHub />} />
+						<Route path="notes" element={<Notes />} />
 						<Route path="notes/:id" element={<NotePage />} />
+						<Route path="projects" element={<Projects />} />
 						<Route path="projects/new" element={<CreateProjectForm />} />
 						<Route path="projects/:id" element={<ProjectPage />} />
 						<Route path="projects/:id/gantt" element={<GanttDiagram />} />
 						<Route path="activities" element={<Activities />} />
+						<Route path="activities/new" element={<CreateActivityForm />} />
 						<Route path="activities/:id" element={<ActivityPage />} />
 
 						{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}

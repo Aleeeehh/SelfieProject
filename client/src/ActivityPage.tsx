@@ -10,6 +10,17 @@ import type Project from "./types/Project";
 import DatePicker from "react-datepicker";
 import SearchForm from "./SearchForm";
 
+// const baseActivity: Activity = {
+// 	id: "",
+// 	title: "",
+// 	description: "",
+// 	deadline: new Date(),
+// 	owner: "",
+// 	accessList: [] as string[],
+// 	completed: false,
+// 	// start: new Date(),
+// };
+
 //TODO: aggiungere un bottone per uscire dalla creazione di una nota
 const dummyActivity: Activity = {
     id: "6735dd4a516cf3e8d510ae08",
@@ -484,17 +495,6 @@ export default function ActivityPage(): React.JSX.Element {
                                     Status: <b>{activity.status}</b>
                                 </div>
                             </div>
-
-                            {/* render milestone */}
-                            <label className="activity-milestone">
-                                Milestone?
-                                <input
-                                    type="checkbox"
-                                    name="milestone"
-                                    checked={activity.milestone || false}
-                                    onChange={handleCheckboxChange}
-                                />
-                            </label>
 
                             {/* render advancement type */}
                             <div className="activity-advancementType">

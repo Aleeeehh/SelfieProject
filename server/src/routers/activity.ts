@@ -663,6 +663,8 @@ router.post("/", async (req: Request, res: Response) => {
 			value: createdActivity._id.toString(),
 		};
 
+		// TODO: if projectid, send notification to access list users
+
 		return res.status(200).json(resBody);
 	} catch (e) {
 		console.log(e);
@@ -923,6 +925,8 @@ router.put("/:id", async (req: Request, res: Response) => {
 			status: ResponseStatus.GOOD,
 			value: result,
 		};
+
+		// TODO: if projectid, send notification to access list users
 
 		return res.status(200).json(resBody);
 	} catch (e) {
