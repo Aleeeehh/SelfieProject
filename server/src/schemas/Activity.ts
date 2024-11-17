@@ -39,43 +39,49 @@ const activitySchema = new mongoose.Schema(
 		},
 		idEventoNotificaCondiviso: { type: String },
 
-		// project related fields
-		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
-		milestone: { type: Boolean, default: false },
-		advancementType: {
-			type: String,
-			enum: AdvancementType,
-			default: AdvancementType.TRANSLATION,
-		},
-		parent: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
-		// prev: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
-		next: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
-		// status related fields
-		active: { type: Boolean, default: false },
-		abandoned: { type: Boolean, default: false },
-		reactivated: { type: Boolean, default: false },
-	},
-	{ timestamps: true }
+        // project related fields
+        projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
+        milestone: { type: Boolean, default: false },
+        advancementType: {
+            type: String,
+            enum: AdvancementType,
+            default: AdvancementType.TRANSLATION,
+        },
+        parent: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
+        // prev: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
+        next: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },
+        // status related fields
+        active: { type: Boolean, default: false },
+        abandoned: { type: Boolean, default: false },
+        reactivated: { type: Boolean, default: false },
+    },
+    { timestamps: true }
 );
 
 activitySchema.pre("save", function (next) {
-	if (this.projectId && !this.active) {
-		next(new Error("'active' is required when projectId is defined"));
-	}
-	next();
+    if (this.projectId && (this.active == null || this.active === undefined)) {
+        next(new Error("'active' is required when projectId is defined"));
+    }
+    next();
 });
 
 activitySchema.pre("save", function (next) {
-	if (this.projectId && !this.abandoned) {
-		next(new Error("'abandoned' is required when projectId is defined"));
-	}
-	next();
+    if (
+        this.projectId &&
+        (this.abandoned == null || this.abandoned === undefined)
+    ) {
+        next(new Error("'abandoned' is required when projectId is defined"));
+    }
+    next();
 });
 
 activitySchema.pre("save", function (next) {
-	if (this.projectId && !this.reactivated) {
-		next(new Error("'reactivated' is required when projectId is defined"));
-	}
-	next();
+    if (
+        this.projectId &&
+        (this.reactivated == null || this.reactivated === undefined)
+    ) {
+        next(new Error("'reactivated' is required when projectId is defined"));
+    }
+    next();
 });
 export const ActivitySchema = mongoose.model("Activity", activitySchema);

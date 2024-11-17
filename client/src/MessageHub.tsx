@@ -6,22 +6,24 @@ import { useNavigate } from "react-router-dom";
 // import UserResult from "./types/UserResult";
 import SearchForm from "./SearchForm";
 import type Chat from "./types/Chat";
-import { useAuth } from "./AuthContext";
 // import Message from "./types/Message";
 
 function MessageHub(): React.JSX.Element {
-	const [activeChat, setActiveChat] = React.useState({} as Chat);
-	const [chatList, setChatList] = React.useState([] as Chat[]);
-	const [input, setInput] = React.useState("");
-	const [addingChat, setAddingChat] = React.useState(false);
-	const [deletingChat, setDeletingChat] = React.useState(false);
-	const { loggedUser } = useAuth();
+    const [activeChat, setActiveChat] = React.useState({} as Chat);
+    const [chatList, setChatList] = React.useState([] as Chat[]);
+    const [input, setInput] = React.useState("");
+    const [addingChat, setAddingChat] = React.useState(false);
+    const [deletingChat, setDeletingChat] = React.useState(false);
+    const loggedUser = {
+        username: localStorage.getItem("loggedUserName"),
+        id: localStorage.getItem("loggedUserId"),
+    };
 
-	const [message, setMessage] = React.useState("");
+    const [message, setMessage] = React.useState("");
 
-	const nav = useNavigate();
+    const nav = useNavigate();
 
-	async function getAllChats(): Promise<void> {
+    async function getAllChats(): Promise<void> {
         try {
             const res = await fetch(`${SERVER_API}/chats`);
             if (res.status !== 200) {
@@ -39,120 +41,134 @@ function MessageHub(): React.JSX.Element {
         }
     }
 
-	React.useEffect(() => {
+    React.useEffect(() => {
         getAllChats();
     }, []);
 
-	async function handleSendMessage(): Promise<void> {
-		try {
-			const res = await fetch(`${SERVER_API}/chats/${activeChat.id}/messages`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					text: input,
-				}),
-			});
-			const resBody = (await res.json()) as ResponseBody;
-			if (res.status === 200) {
-				console.log(resBody);
-				setInput("");
-			} else {
-				setMessage("Impossibile inviare il messaggio: " + resBody.message);
-			}
-		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
-		}
-	}
+    async function handleSendMessage(): Promise<void> {
+        try {
+            const res = await fetch(
+                `${SERVER_API}/chats/${activeChat.id}/messages`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        text: input,
+                    }),
+                }
+            );
+            const resBody = (await res.json()) as ResponseBody;
+            if (res.status === 200) {
+                console.log(resBody);
+                setInput("");
+            } else {
+                setMessage(
+                    "Impossibile inviare il messaggio: " + resBody.message
+                );
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
+        }
+    }
 
-	async function addNewChat(
-		e: React.ChangeEvent<HTMLSelectElement>,
-		username: string
-	): Promise<void> {
-		e.preventDefault();
+    async function addNewChat(
+        e: React.ChangeEvent<HTMLSelectElement>,
+        username: string
+    ): Promise<void> {
+        e.preventDefault();
 
-		try {
-			const res = await fetch(`${SERVER_API}/chats`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					firstUser: loggedUser?.username,
-					secondUser: username,
-					type: "private",
-				}),
-			});
+        try {
+            const res = await fetch(`${SERVER_API}/chats`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    firstUser: loggedUser?.username,
+                    secondUser: username,
+                    type: "private",
+                }),
+            });
 
-			console.log(loggedUser);
-			const resBody = (await res.json()) as ResponseBody;
+            console.log(loggedUser);
+            const resBody = (await res.json()) as ResponseBody;
 
-			if (res.status === 200) {
-				console.log(resBody);
+            if (res.status === 200) {
+                console.log(resBody);
 
-				// Get updated chat list
+                // Get updated chat list
 
-				const chats = await fetch(`${SERVER_API}/chats`);
-				const resBody2 = (await chats.json()) as ResponseBody;
-				if (res.status === 200) {
-					setChatList(resBody2.value as Chat[]);
-					setActiveChat(resBody2.value[0]);
-				} else {
-					setMessage("Impossibile recuperare le chat: " + resBody.message);
-				}
-			} else {
-				setMessage("Impossibile creare la chat: " + resBody.message);
-			}
-		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
-		}
-	}
-
+                const chats = await fetch(`${SERVER_API}/chats`);
+                const resBody2 = (await chats.json()) as ResponseBody;
+                if (res.status === 200) {
+                    setChatList(resBody2.value as Chat[]);
+                    setActiveChat(resBody2.value[0]);
+                } else {
+                    setMessage(
+                        "Impossibile recuperare le chat: " + resBody.message
+                    );
+                }
+            } else {
+                setMessage("Impossibile creare la chat: " + resBody.message);
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
+        }
+    }
 
     //TODO: non funziona
-	async function deleteChat(
-		e: React.ChangeEvent<HTMLSelectElement>,
-	): Promise<void> {
-		e.preventDefault();
-		const otherUser = activeChat.firstUser === loggedUser?.username ? activeChat.secondUser : activeChat.firstUser;
+    async function deleteChat(
+        e: React.ChangeEvent<HTMLSelectElement>
+    ): Promise<void> {
+        e.preventDefault();
+        const otherUser =
+            activeChat.firstUser === loggedUser?.username
+                ? activeChat.secondUser
+                : activeChat.firstUser;
 
-		try {
-			const res = await fetch(`${SERVER_API}/chats/${otherUser}`, {
-				method: "DELETE",
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
+        try {
+            const res = await fetch(`${SERVER_API}/chats/${otherUser}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
 
-			const resBody = (await res.json()) as ResponseBody;
+            const resBody = (await res.json()) as ResponseBody;
 
-			if (res.status === 200) {
-				console.log(resBody);
+            if (res.status === 200) {
+                console.log(resBody);
 
-				// Aggiorna la lista delle chat
-				const chats = await fetch(`${SERVER_API}/chats`);
-				const resBody2 = (await chats.json()) as ResponseBody;
-				if (res.status === 200) {
-					setChatList(resBody2.value as Chat[]);
-					setActiveChat(resBody2.value[0]);
-				} else {
-					setMessage("Impossibile recuperare le chat: " + resBody.message);
-				}
-			} else {
-				setMessage("Impossibile eliminare la chat: " + resBody.message);
-			}
-		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
-		}
-	}
+                // Aggiorna la lista delle chat
+                const chats = await fetch(`${SERVER_API}/chats`);
+                const resBody2 = (await chats.json()) as ResponseBody;
+                if (res.status === 200) {
+                    setChatList(resBody2.value as Chat[]);
+                    setActiveChat(resBody2.value[0]);
+                } else {
+                    setMessage(
+                        "Impossibile recuperare le chat: " + resBody.message
+                    );
+                }
+            } else {
+                setMessage("Impossibile eliminare la chat: " + resBody.message);
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
+        }
+    }
 
-	return (
-		<>
+    return (
+        <>
             <div className="chat-background">
                 <div className="chat-page-container">
                     <div className="chat-list-container">
-                        <button className="create-chat-button" onClick={(): void => setAddingChat(true)}>
+                        <button
+                            className="create-chat-button"
+                            onClick={(): void => setAddingChat(true)}
+                        >
                             Crea una nuova chat
                         </button>
                         {addingChat && (
@@ -179,12 +195,16 @@ function MessageHub(): React.JSX.Element {
                                 </div>
                                 <button
                                     className="chat-select-button"
-                                    onClick={(): void => setActiveChat(chat)}>
+                                    onClick={(): void => setActiveChat(chat)}
+                                >
                                     Chat
                                 </button>
                             </div>
                         ))}
-                        <button className="delete-chat-button" onClick={(): void => setDeletingChat(true)}>
+                        <button
+                            className="delete-chat-button"
+                            onClick={(): void => setDeletingChat(true)}
+                        >
                             Elimina una chat
                         </button>
                         {deletingChat && (
@@ -226,10 +246,19 @@ function MessageHub(): React.JSX.Element {
 										<div className="message-text">{message.text}</div>
                                         <div className="message-info">
                                             <span>from {message.username}</span>
-                                            <span>at {message.createdAt ? 
-                                                new Date(message.createdAt).toLocaleTimeString("it-IT", 
-                                                    { hour: '2-digit', minute: '2-digit' })
-                                                : "N/A"}
+                                            <span>
+                                                at{" "}
+                                                {message.createdAt
+                                                    ? new Date(
+                                                          message.createdAt
+                                                      ).toLocaleTimeString(
+                                                          "it-IT",
+                                                          {
+                                                              hour: "2-digit",
+                                                              minute: "2-digit",
+                                                          }
+                                                      )
+                                                    : "N/A"}
                                             </span>
                                         </div>
                                     </div>
@@ -244,7 +273,8 @@ function MessageHub(): React.JSX.Element {
                             <button
                                 className="send-button"
                                 onClick={handleSendMessage}
-                                disabled={!input}>
+                                disabled={!input}
+                            >
                                 Invia
                             </button>
                         </div>
@@ -252,8 +282,8 @@ function MessageHub(): React.JSX.Element {
                 </div>
             </div>
             {message && <div>{message}</div>}
-		</>
-	);
+        </>
+    );
 }
 
 export default MessageHub;
