@@ -725,7 +725,7 @@ export default function Header(): React.JSX.Element {
 						title="Time Machine"
 						style={{ ...buttonStyle, width: "45px" }}
 						onClick={(): void => setShowTimeMachine(!showTimeMachine)}>
-						<i className="fas fa-hourglass" style={{ marginRight: "5px" }}></i>
+						<i className="fas fa-hourglass"></i>
 						{/* Icona della clessidra */}
 					</button>
 
