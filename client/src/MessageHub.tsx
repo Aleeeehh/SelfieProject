@@ -150,7 +150,7 @@ function MessageHub(): React.JSX.Element {
 	return (
 		<>
             <div className="chat-background">
-                <div className="page-container">
+                <div className="chat-page-container">
                     <div className="chat-list-container">
                         <button className="create-chat-button" onClick={(): void => setAddingChat(true)}>
                             Crea una nuova chat
@@ -164,7 +164,7 @@ function MessageHub(): React.JSX.Element {
                                     list={[]}
                                 />
                                 <button
-									className="close-button"
+									className="chat-close-button"
 									onClick={(): void => setAddingChat(false)}>
                                     Chiudi
                                 </button>
@@ -196,7 +196,7 @@ function MessageHub(): React.JSX.Element {
                                     list={[]}
                                 />
                                 <button
-									className="close-button" 
+									className="chat-close-button" 
 									onClick={(): void => setDeletingChat(false)}>
                                     Chiudi
                                 </button>
@@ -212,12 +212,12 @@ function MessageHub(): React.JSX.Element {
                                     ? activeChat.secondUser
                                     : activeChat.firstUser)}
                         </div>
-                        <div className="message-list">
+                        <div className="chat-message-list">
                             {activeChat &&
                                 activeChat.messageList &&
                                 activeChat.messageList.map((message) => (
                                     <div
-										className={`message ${
+										className={`chat-message ${
 											message.username === loggedUser?.username
 												? "message-sent"
 												: "message-received"
@@ -235,7 +235,7 @@ function MessageHub(): React.JSX.Element {
                                     </div>
                                 ))}
                         </div>
-                        <div className="input-container">
+                        <div className="chat-input-container">
                             <input
                                 className="message-input"
                                 value={input}
