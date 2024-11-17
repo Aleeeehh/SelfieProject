@@ -1,96 +1,106 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import { login } from "./AuthContext";
 
 export default function Login(): React.JSX.Element {
-	const [username, setUsername] = React.useState("");
-	const [password, setPassword] = React.useState("");
-	const [clearPswd, setClearPswd] = React.useState(false);
-	const [message, setMessage] = React.useState("");
-	const [errorMessage, setErrorMessage] = React.useState("");
+    const [username, setUsername] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [clearPswd, setClearPswd] = React.useState(false);
+    const [message, setMessage] = React.useState("");
+    const [errorMessage, setErrorMessage] = React.useState("");
 
-	const nav = useNavigate();
-	const { login, isLoggedIn } = useAuth();
+    const nav = useNavigate();
 
-	React.useEffect(() => {
-		if (isLoggedIn) {
-			nav("/");
-		}
-	}, [isLoggedIn, nav]);
+    const isLoggedIn = localStorage.getItem("loggedUserId") !== null;
 
-	async function handleLogin(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
-		try {
-			const success = await login(username, password);
-			if (success) {
-				setMessage("Utente authenticato");
-				nav("/");
-			} else {
-				setErrorMessage("Credenziali errate");
-			}
-		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
-		}
-	}
+    React.useEffect(() => {
+        if (isLoggedIn) {
+            nav("/");
+        }
+    }, [nav]);
 
-	return (
-		<div className="login-body">
-			<div className="login-background">
-				<div className="login-container">
-					<div className="login-avatar">
-						<img src="/images/avatar.png" alt="Avatar" />
-					</div>
-					<div className="login-header">
-						{message && <div>{message}</div>}
-						<h2>Bentornato in SELFIE!</h2>
-						<p>Accedi per continuare la tua esperienza</p>
-					</div>
-					<form className="login-form">
-						
-						<div>
-							<label>Username</label>
-							<input
-								type="text"
-								name="username"
-								value={username}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-									setUsername(e.target.value);
-								}}
-							/>
-						</div>
+    async function handleLogin(
+        e: React.MouseEvent<HTMLButtonElement>
+    ): Promise<void> {
+        e.preventDefault();
+        try {
+            const success = await login(username, password);
+            if (success) {
+                setMessage("Utente authenticato");
+                nav("/");
+            } else {
+                setErrorMessage("Credenziali errate");
+            }
+        } catch (e) {
+            setMessage("Impossibile raggiungere il server");
+        }
+    }
 
-						<div>
-							<label>Password</label>
-							<input
-								type={clearPswd ? "text" : "password"}
-								name="password"
-								value={password}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-									setPassword(e.target.value)
-								}
-							/>
-						</div>
+    return (
+        <div className="login-body">
+            <div className="login-background">
+                <div className="login-container">
+                    <div className="login-avatar">
+                        <img src="/images/avatar.png" alt="Avatar" />
+                    </div>
+                    <div className="login-header">
+                        {message && <div>{message}</div>}
+                        <h2>Bentornato in SELFIE!</h2>
+                        <p>Accedi per continuare la tua esperienza</p>
+                    </div>
+                    <form className="login-form">
+                        <div>
+                            <label>Username</label>
+                            <input
+                                type="text"
+                                name="username"
+                                value={username}
+                                onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>
+                                ): void => {
+                                    setUsername(e.target.value);
+                                }}
+                            />
+                        </div>
 
-						<div style={{alignItems: "center", flexDirection: "row"}}>
-							Nascondi: 
-							<i
-								className={`bi ${clearPswd ? "bi-eye" : "bi-eye-slash"}`}
-								onClick={(): void => setClearPswd(!clearPswd)}
-								style={{ cursor: "pointer", marginLeft: "8px" }}
-							></i>
-						</div>
+                        <div>
+                            <label>Password</label>
+                            <input
+                                type={clearPswd ? "text" : "password"}
+                                name="password"
+                                value={password}
+                                onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>
+                                ): void => setPassword(e.target.value)}
+                            />
+                        </div>
 
-						<p className="error-message">{errorMessage}</p>
-						
-						<button onClick={handleLogin}>Login</button>
-					</form>
-					<p className="login-message">
-						Non hai un account? <a href="/register">Clicca qui</a>
-					</p>
-				</div>
-			</div>
-		</div>
-	);
+                        <div
+                            style={{
+                                alignItems: "center",
+                                flexDirection: "row",
+                            }}
+                        >
+                            Nascondi:
+                            <i
+                                className={`bi ${
+                                    clearPswd ? "bi-eye" : "bi-eye-slash"
+                                }`}
+                                onClick={(): void => setClearPswd(!clearPswd)}
+                                style={{ cursor: "pointer", marginLeft: "8px" }}
+                            ></i>
+                        </div>
+
+                        <p className="error-message">{errorMessage}</p>
+
+                        <button onClick={handleLogin}>Login</button>
+                    </form>
+                    <p className="login-message">
+                        Non hai un account? <a href="/register">Clicca qui</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
 }

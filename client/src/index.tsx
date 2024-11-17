@@ -5,15 +5,12 @@ import { createRoot } from "react-dom/client";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import App from "./App";
 import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./AuthContext";
 
 // Use createRoot instead of ReactDOM.render
 createRoot(document.getElementById("root")!).render(
-	<StrictMode>
-		<BrowserRouter>
-			<AuthProvider>
-				<App />
-			</AuthProvider>
-		</BrowserRouter>
-	</StrictMode>
+    <StrictMode>
+        <BrowserRouter>
+            <App />
+        </BrowserRouter>
+    </StrictMode>
 );

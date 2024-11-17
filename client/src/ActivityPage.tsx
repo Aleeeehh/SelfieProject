@@ -23,40 +23,21 @@ import SearchForm from "./SearchForm";
 
 //TODO: aggiungere un bottone per uscire dalla creazione di una nota
 const dummyActivity: Activity = {
-    id: "6735dd4a516cf3e8d510ae08",
-    owner: "6735dc1c5d397ea3c3e2b616",
-    title: "testtitle",
-    description: "test",
-    createdAt: new Date("2024-11-14T11:21:46.325Z"),
-    updatedAt: new Date("2024-11-14T11:21:46.325Z"),
-    deadline: new Date("2024-11-11T00:00:00.000Z"),
+    id: "",
+    owner: "",
+    title: "",
+    description: "",
+    createdAt: new Date(""),
+    updatedAt: new Date(""),
+    deadline: new Date(""),
     completed: false,
-    accessList: ["fv2"],
+    accessList: [],
     next: null,
     status: ActivityStatus.ACTIVABLE,
     milestone: false,
     advancementType: AdvancementType.TRANSLATION,
     parent: null,
-    // start: new Date("2024-11-10T00:00:00.000Z"),
-    children: [
-        {
-            id: "6735e7226c68b78ecea68fd6",
-            title: "testtitle",
-            description: "test",
-            deadline: new Date("2024-11-11T00:00:00.000Z"),
-            completed: false,
-            owner: "6735dc1c5d397ea3c3e2b616",
-            accessList: ["fv2"],
-            projectId: "6735dc405d397ea3c3e2b63b",
-            // start: new Date("2024-11-10T00:00:00.000Z"),
-            milestone: null,
-            advancementType: null,
-            parent: "6735dd4a516cf3e8d510ae08",
-            next: null,
-            status: ActivityStatus.ACTIVABLE,
-            children: [],
-        },
-    ],
+    children: [],
 };
 
 export default function ActivityPage(): React.JSX.Element {
@@ -65,6 +46,17 @@ export default function ActivityPage(): React.JSX.Element {
     const [activity, setActivity] = React.useState<Activity>(dummyActivity);
     const [project, setProject] = React.useState<Project | null>(null);
     const [isEditing, setIsEditing] = React.useState(false);
+    const [isUser, setIsUser] = React.useState(false);
+    const [isOwner, setIsOwner] = React.useState(false);
+
+    // handle share activity
+    // const [shareActivity, setShareActivity] = React.useState(false);
+    // const [shareList, setShareList] = React.useState([] as string[]); // username list
+
+    const loggedUser = {
+        username: localStorage.getItem("loggedUserName"),
+        id: localStorage.getItem("loggedUserId"),
+    };
 
     const nav = useNavigate();
 
@@ -74,7 +66,26 @@ export default function ActivityPage(): React.JSX.Element {
             .then((data) => {
                 if (data.status === ResponseStatus.GOOD) {
                     setActivity(data.value as Activity);
+
                     console.log("Attività: ", data.value);
+
+                    // then check if the user is in the access list
+                    setIsUser(
+                        loggedUser.username
+                            ? (data.value as Activity).accessList.includes(
+                                  loggedUser.username
+                              )
+                            : false
+                    );
+
+                    // then check if the user is the owner
+                    setIsOwner(
+                        loggedUser
+                            ? (data.value as Activity).owner === loggedUser.id
+                            : false
+                    );
+
+                    console.log(data.value, loggedUser);
                 } else {
                     console.log(
                         data.message || "Errore nel caricamento dell'attività"
@@ -230,6 +241,11 @@ export default function ActivityPage(): React.JSX.Element {
     ): void {
         e.preventDefault();
 
+        if (!isOwner) {
+            setMessage("Non sei il proprietario dell'attività");
+            return;
+        }
+
         fetch(`${SERVER_API}/activity/${activity.id}`, {
             method: "DELETE",
         })
@@ -267,6 +283,51 @@ export default function ActivityPage(): React.JSX.Element {
         }
     }, [activity.projectId]);
 
+    // share activity handlers
+    // function handleAddUserToShareList(
+    //     e: React.ChangeEvent<HTMLSelectElement>
+    // ): void {
+    //     e.preventDefault();
+    //     // only one user at a time
+    //     const username = e.target.value;
+    //     if (!activity.accessList.includes(username)) {
+    //         setShareList([username]);
+    //     }
+    // }
+
+    // async function handleShareActivity(
+    //     e: React.MouseEvent<HTMLButtonElement>
+    // ): Promise<void> {
+    //     e.preventDefault();
+    //
+    //     fetch(`${SERVER_API}/activity/${activity.id}/share`, {
+    //         method: "POST",
+    //         headers: { "Content-Type": "application/json" },
+    //         body: JSON.stringify({
+    //             userList: shareList,
+    //             activityId: activity.id,
+    //         }),
+    //     })
+    //         .then((res) => res.json())
+    //         .then((data) => {
+    //             if (data.status === ResponseStatus.GOOD) {
+    //                 alert("Attività condivisa correttamente");
+    //                 setShareActivity(false);
+    //                 setShareList([]);
+    //             } else {
+    //                 console.log(
+    //                     data.message || "Errore durante la condivisione"
+    //                 );
+    //                 setMessage(
+    //                     data.message || "Errore durante la condivisione"
+    //                 );
+    //             }
+    //         });
+
+    // TODO: ADD NOTIFICATION IN BACKEND!!
+    // TODO: ADD EVENT IN BACKEND!!
+    // }
+
     return (
         <>
             <div className="activity-background">
@@ -275,9 +336,72 @@ export default function ActivityPage(): React.JSX.Element {
                         <div className="activity-container">
                             <div id="title-1" className="activity-page-title">
                                 Visualizza attività
-                                <a href="/activities" className="activity-close-link">
+                                <a
+                                    href="/activities"
+                                    className="activity-close-link"
+                                >
                                     X
                                 </a>
+                                {/* isOwner && (
+                                    <>
+                                        <label htmlFor="allDayEvent">
+                                            <button
+                                                name="addNotification"
+                                                onClick={(): void =>
+                                                    setShareActivity(
+                                                        !shareActivity
+                                                    )
+                                                }
+                                                style={{
+                                                    marginLeft: "5px",
+                                                    marginRight: "3px",
+                                                    marginTop: "3px",
+                                                }}
+                                            >
+                                                Condividi
+                                            </button>
+                                        </label>
+                                        {shareActivity && (
+                                            <div
+                                                id="send-invite"
+                                                className="send-invite-container"
+                                                style={{
+                                                    display: "flex",
+                                                    flexDirection: "column",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                }}
+                                            >
+                                                <div>
+                                                    Scegli l'utente con il quale
+                                                    condividere l'attività
+                                                </div>
+
+                                                <SearchForm
+                                                    onItemClick={
+                                                        handleAddUserToShareList
+                                                    }
+                                                    list={shareList}
+                                                />
+                                                <button
+                                                    onClick={
+                                                        handleShareActivity
+                                                    }
+                                                    className="btn btn-primary send-invite-button"
+                                                    style={{
+                                                        backgroundColor:
+                                                            "bisque",
+                                                        color: "black",
+                                                        border: "0",
+                                                        marginBottom: "10px",
+                                                    }}
+                                                >
+                                                    Condividi
+                                                </button>
+                                            </div>
+                                        )}{" "}
+                                    </>
+                                )*/}
                             </div>
 
                             {/* render title */}
@@ -292,20 +416,6 @@ export default function ActivityPage(): React.JSX.Element {
                                 <div>{activity.description}</div>
                             </div>
 
-                            {/* render project */}
-                            {project && activity.projectId && (
-                                <div className="activity-project">
-                                    <div>
-                                        Questa attività fa parte di un progetto:{" "}
-                                        <a
-                                            href={`/projects/${activity.projectId}`}
-                                        >
-                                            {project.title}
-                                        </a>
-                                    </div>
-                                </div>
-                            )}
-
                             {/* render completed */}
                             <div className="activity-completed">
                                 <div>
@@ -313,46 +423,27 @@ export default function ActivityPage(): React.JSX.Element {
                                 </div>
                             </div>
 
-                            {/* render status */}
-                            <div className="activity-status">
-                                <div>
-                                    Status: <b>{activity.status}</b>
-                                </div>
-                            </div>
-
-                            {/* render milestone */}
-                            <div className="activity-milestone">
-                                <div>
-                                    Milestone?{" "}
-                                    {activity.milestone ? "Si" : "No"}
-                                </div>
-                            </div>
-
-                            {/* render advancement type */}
-                            <div className="activity-advancementType">
-                                <div>
-                                    Tipo di avanzamento:{" "}
-                                    {activity.advancementType}
-                                </div>
-                            </div>
-
                             {/* render dates */}
                             <div className="activity-dates">
                                 <div>
                                     Da completare entro:{" "}
-                                    {new Date(activity.deadline).toLocaleString("it-IT", {
-                                        day: "2-digit",
-                                        month: "2-digit",
-                                        year: "numeric",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                    })}
+                                    {new Date(activity.deadline).toLocaleString(
+                                        "it-IT",
+                                        {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                        }
+                                    )}
                                 </div>
                             </div>
 
                             {/* render access list */}
                             <div className="activity-participants">
-                                <label>Utenti partecipanti all'attività
+                                <label>
+                                    Utenti partecipanti all'attività
                                     <div className="activity-users-container">
                                         {activity.accessList.length > 0 ? (
                                             activity.accessList.map((u) => (
@@ -367,68 +458,139 @@ export default function ActivityPage(): React.JSX.Element {
                                 </label>
                             </div>
 
-                            {/* parent */}
-                            <div className="activity-parent">
-                                <div>
-                                    Attività padre:{" "}
-                                    <a
-                                        href={
-                                            activity.parent
-                                                ? "/activities/" + activity.parent
-                                                : ""
-                                        }
-                                    >
-                                        <div>{activity.parent || "Nessuno"}</div>
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* next */}
-                            <div className="activity-next">
-                                <div>
-                                    Prossima attività:{" "}
-                                    <a
-                                        href={
-                                            activity.next
-                                                ? "/activities/" + activity.next
-                                                : ""
-                                        }
-                                    >
-                                        <div>{activity.next || "Nessuno"}</div>
-                                    </a>
-                                </div>
-                            </div>
-
-                            {/* render children list */}
-                            <div className="activity-children">
-                                <label>Sotto-attività
-                                    <div className="activity-children-container">
-                                        {activity.children &&
-                                        (activity.children.length ? (
-                                            activity.children.map((a) => (
-                                                <a href={"/activities/" + a.id}>
-                                                    <div>{a.title}</div>
-                                                </a>
-                                            ))
-                                        ) : (
-                                            <div>Nessuna sotto attività</div>
-                                        ))}
+                            {/* render project */}
+                            {project && activity.projectId && (
+                                <>
+                                    <div className="activity-project">
+                                        <div>
+                                            Questa attività fa parte di un
+                                            progetto:{" "}
+                                            <a
+                                                href={`/projects/${activity.projectId}`}
+                                            >
+                                                {project.title}
+                                            </a>
+                                        </div>
                                     </div>
-                                </label>
-                            </div>
-                            
-                                <button
-                                    className="activity-edit-button"
-                                    onClick={(
-                                        e: React.MouseEvent<HTMLButtonElement>
-                                    ): void => {
-                                        e.preventDefault();
-                                        setIsEditing(true);
-                                        document.getElementById("title-1")?.scrollIntoView({ behavior: "smooth" });
-                                    }}
-                                >
-                                    Modifica
-                                </button>
+
+                                    {/* render status */}
+                                    <div className="activity-status">
+                                        <div>
+                                            Status: <b>{activity.status}</b>
+                                        </div>
+                                    </div>
+
+                                    {/* render milestone */}
+                                    <div className="activity-milestone">
+                                        <div>
+                                            Milestone?{" "}
+                                            {activity.milestone ? "Si" : "No"}
+                                        </div>
+                                    </div>
+
+                                    {/* render advancement type */}
+                                    <div className="activity-advancementType">
+                                        <div>
+                                            Tipo di avanzamento:{" "}
+                                            {activity.advancementType}
+                                        </div>
+                                    </div>
+
+                                    {/* parent */}
+                                    <div className="activity-parent">
+                                        <div>
+                                            Attività padre:{" "}
+                                            <a
+                                                href={
+                                                    activity.parent
+                                                        ? "/activities/" +
+                                                          activity.parent
+                                                        : ""
+                                                }
+                                            >
+                                                <div>
+                                                    {activity.parent ||
+                                                        "Nessuno"}
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    {/* next */}
+                                    <div className="activity-next">
+                                        <div>
+                                            Prossima attività:{" "}
+                                            <a
+                                                href={
+                                                    activity.next
+                                                        ? "/activities/" +
+                                                          activity.next
+                                                        : ""
+                                                }
+                                            >
+                                                <div>
+                                                    {activity.next || "Nessuno"}
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    {/* render children list */}
+                                    <div className="activity-children">
+                                        <label>
+                                            Sotto-attività
+                                            <div className="activity-children-container">
+                                                {activity.children &&
+                                                    (activity.children
+                                                        .length ? (
+                                                        activity.children.map(
+                                                            (a) => (
+                                                                <a
+                                                                    href={
+                                                                        "/activities/" +
+                                                                        a.id
+                                                                    }
+                                                                >
+                                                                    <div>
+                                                                        {
+                                                                            a.title
+                                                                        }
+                                                                    </div>
+                                                                </a>
+                                                            )
+                                                        )
+                                                    ) : (
+                                                        <div>
+                                                            Nessuna sotto
+                                                            attività
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        </label>
+                                    </div>
+                                </>
+                            )}
+
+                            <button
+                                className="activity-edit-button"
+                                onClick={(
+                                    e: React.MouseEvent<HTMLButtonElement>
+                                ): void => {
+                                    e.preventDefault();
+                                    if (isUser || isOwner) setIsEditing(true);
+                                    else
+                                        setMessage(
+                                            "Non hai i permessi per modificare"
+                                        );
+                                    document
+                                        .getElementById("title-1")
+                                        ?.scrollIntoView({
+                                            behavior: "smooth",
+                                        });
+                                }}
+                            >
+                                Modifica
+                            </button>
                         </div>
                     </>
                 ) : (
@@ -437,11 +599,13 @@ export default function ActivityPage(): React.JSX.Element {
                             {/* Render updating activity*/}
                             <div id="title-2" className="activity-page-title">
                                 Modifica attività
-                                <a href="/activities" className="activity-close-link">
+                                <a
+                                    href="/activities"
+                                    className="activity-close-link"
+                                >
                                     X
                                 </a>
                             </div>
-
                             {/* render title */}
                             <label className="activity-title">
                                 Titolo
@@ -450,9 +614,9 @@ export default function ActivityPage(): React.JSX.Element {
                                     name="title"
                                     value={activity.title}
                                     onChange={handleTextChange}
+                                    disabled={!isUser}
                                 />
                             </label>
-
                             {/* render description */}
                             <label className="activity-description">
                                 Descrizione
@@ -461,81 +625,12 @@ export default function ActivityPage(): React.JSX.Element {
                                     name="description"
                                     value={activity.description}
                                     onChange={handleTextChange}
+                                    disabled={!isUser}
                                 />
                             </label>
-                            
-                            {/* render project */}
-                            {project && activity.projectId && (
-                                <div className="activity-project">
-                                    <div>
-                                        Questa attività fa parte di un progetto:{" "}
-                                        <a
-                                            href={`/projects/${activity.projectId}`}
-                                        >
-                                            {project.title}
-                                        </a>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* render completed */}
-                            <label className="activity-completed">
-                                Completa?
-                                <input
-                                    type="checkbox"
-                                    name="completed"
-                                    checked={activity.completed}
-                                    onChange={handleCheckboxChange}
-                                />
-                            </label>
-
-                            {/* render status */}
-                            <div className="activity-status">
-                                <div>
-                                    Status: <b>{activity.status}</b>
-                                </div>
-                            </div>
-
-                            {/* render advancement type */}
-                            <div className="activity-advancementType">
-                                <div>
-                                    Tipo di avanzamento:{" "}
-                                    <select
-                                        style={{ backgroundColor: "white" }}
-                                        className="btn border"
-                                        name="advancementType"
-                                        onChange={(
-                                            e: React.ChangeEvent<HTMLSelectElement>
-                                        ): void => {
-                                            setActivity({
-                                                ...activity,
-                                                advancementType: e.target
-                                                    .value as AdvancementType,
-                                            });
-                                        }}
-                                        value={
-                                            activity.advancementType || undefined
-                                        }
-                                    >
-                                        <option
-                                            key={AdvancementType.TRANSLATION}
-                                            value={AdvancementType.TRANSLATION}
-                                        >
-                                            {AdvancementType.TRANSLATION}
-                                        </option>
-                                        <option
-                                            key={AdvancementType.CONTRACTION}
-                                            value={AdvancementType.CONTRACTION}
-                                        >
-                                            {AdvancementType.CONTRACTION}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-
                             {/* render dates */}
-                            <label 
-                                htmlFor="endTime" 
+                            <label
+                                htmlFor="endTime"
                                 className="activity-vertical"
                                 style={{
                                     display: "flex",
@@ -550,11 +645,12 @@ export default function ActivityPage(): React.JSX.Element {
                                 }}
                             >
                                 Scadenza
-                                <div style={{
-                                    display: "flex",
-                                    flexFlow: "wrap",
-                                    alignItems: "center",
-                                    gap: "0.5em",
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        flexFlow: "wrap",
+                                        alignItems: "center",
+                                        gap: "0.5em",
                                     }}
                                 >
                                     <div>
@@ -562,160 +658,386 @@ export default function ActivityPage(): React.JSX.Element {
                                             className="btn border"
                                             name="endTime"
                                             selected={activity.deadline}
-                                            onChange={(date: Date | null): void => {
+                                            onChange={(
+                                                date: Date | null
+                                            ): void => {
                                                 if (date) {
                                                     // Aggiorna la data mantenendo l'orario attuale
-                                                    const newDate = new Date(activity.deadline);
+                                                    const newDate = new Date(
+                                                        activity.deadline
+                                                    );
                                                     newDate.setFullYear(
                                                         date.getFullYear(),
                                                         date.getMonth(),
                                                         date.getDate()
                                                     );
-                                                    setActivity({ ...activity, deadline: newDate });
+                                                    setActivity({
+                                                        ...activity,
+                                                        deadline: newDate,
+                                                    });
                                                 }
                                             }}
+                                            disabled={!isUser}
                                         />
                                     </div>
                                     <div>
                                         <input
-                                            style={{ backgroundColor: "white" }}
+                                            style={{
+                                                backgroundColor: "white",
+                                            }}
+                                            disabled={!isUser}
                                             className="btn border"
                                             type="time"
-                                            value={`${new Date(activity.deadline)
+                                            value={`${new Date(
+                                                activity.deadline
+                                            )
                                                 .getHours()
                                                 .toString()
-                                                .padStart(2, "0")}:${new Date(activity.deadline)
+                                                .padStart(2, "0")}:${new Date(
+                                                activity.deadline
+                                            )
                                                 .getMinutes()
                                                 .toString()
                                                 .padStart(2, "0")}`}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-                                                const [hours, minutes] = e.target.value.split(":");
-                                                const newDate = new Date(activity.deadline);
-                                                newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-                                                setActivity({ ...activity, deadline: newDate });
+                                            onChange={(
+                                                e: React.ChangeEvent<HTMLInputElement>
+                                            ): void => {
+                                                const [hours, minutes] =
+                                                    e.target.value.split(":");
+                                                const newDate = new Date(
+                                                    activity.deadline
+                                                );
+                                                newDate.setHours(
+                                                    Number(hours),
+                                                    Number(minutes)
+                                                ); // Aggiorna l'orario
+                                                setActivity({
+                                                    ...activity,
+                                                    deadline: newDate,
+                                                });
                                             }}
                                         />
                                     </div>
                                 </div>
                             </label>
-
+                            {/* render completed */}
+                            <label className="activity-completed">
+                                Completa?
+                                <input
+                                    type="checkbox"
+                                    name="completed"
+                                    checked={activity.completed}
+                                    onChange={handleCheckboxChange}
+                                    disabled={!isUser} // only user can change completed
+                                />
+                            </label>
                             {/* render access list */}
                             <div className="activity-participants">
                                 <label>
-                                Utenti partecipanti al progetto
+                                    Utenti partecipanti all'attività
+                                    {isOwner && (
                                         <SearchForm
                                             onItemClick={addUser}
                                             list={activity.accessList}
                                         />
+                                    )}
                                     <div className="activity-users-container">
                                         {activity.accessList.length > 0 ? (
                                             activity.accessList.map((u) => (
                                                 <div className="activity-user-box">
                                                     {u}
+                                                    {isOwner && (
                                                         <button
                                                             style={{
-                                                                marginLeft: "0.5em",
+                                                                marginLeft:
+                                                                    "0.5em",
                                                                 padding: "0",
-                                                                backgroundColor: "#d64545",
+                                                                backgroundColor:
+                                                                    "#d64545",
                                                             }}
                                                             className="activity-user-delete"
                                                             onClick={(
                                                                 e: React.MouseEvent<HTMLButtonElement>
-                                                            ): void => deleteUser(e, u)}
+                                                            ): void =>
+                                                                deleteUser(e, u)
+                                                            }
                                                         >
                                                             X
                                                         </button>
+                                                    )}
                                                 </div>
                                             ))
                                         ) : (
-                                                <div>Nessun partecipante</div>
+                                            <div>Nessun partecipante</div>
                                         )}
                                     </div>
                                 </label>
                             </div>
-
-                            {/* parent*/}
-                            <div className="activity-parent">
-                                <div>
-                                    Attività padre: {activity.parent || "Nessuna"}{" "}
-                                    (Non modificabile)
-                                </div>
-                            </div>
-
-                            {/* next */}
-                            <div className="activity-next">
-                                <div>
-                                    Prossima attività:{" "}
-                                    {activity.next || "Nessuna"}
-                                <select
-                                    style={{ backgroundColor: "white" }}
-                                    className="btn border"
-                                    name="next"
-                                    onChange={(
-                                        e: React.ChangeEvent<HTMLSelectElement>
-                                    ): void => {
-                                        setActivity({
-                                            ...activity,
-                                            next: e.target.value,
-                                        });
-                                    }}
-                                >
-                                    <option value="">Nessuna</option>
-                                    {project &&
-                                        getPossibleNextList(
-                                            project.activityList
-                                        ).map((act) => (
-                                            <option
-                                                key={act.title}
-                                                value={act.id}
+                            {/* render project inputs */}
+                            {/* render project */}
+                            {project && activity.projectId && (
+                                <>
+                                    <div className="activity-project">
+                                        <div>
+                                            Questa attività fa parte di un
+                                            progetto:{" "}
+                                            <a
+                                                href={`/projects/${activity.projectId}`}
                                             >
-                                                {act.title}
-                                            </option>
-                                        ))}
-                                </select>
-                                </div>
-                            </div>
-
-                            {/* render children list */}
-                            <div className="activity-children">
-                                <label>Sotto-attività
-                                    <div className="activity-children-container">
-                                        {activity.children &&
-                                            activity.children.map((a) => (
-                                                <a href={"/activities/" + a.id}>
-                                                    <div>{a.title}</div>
-                                                </a>
-                                        ))}
+                                                {project.title}
+                                            </a>
+                                        </div>
                                     </div>
-                                </label>
-                            </div>
-                            
-                            <button 
+
+                                    {/* render status */}
+                                    <div className="activity-status">
+                                        <div>
+                                            Status: <b>{activity.status}</b>
+                                        </div>
+                                    </div>
+
+                                    {/* render advancement type */}
+                                    <div className="activity-advancementType">
+                                        <div>
+                                            Tipo di avanzamento:{" "}
+                                            <select
+                                                style={{
+                                                    backgroundColor: "white",
+                                                }}
+                                                className="btn border"
+                                                name="advancementType"
+                                                onChange={(
+                                                    e: React.ChangeEvent<HTMLSelectElement>
+                                                ): void => {
+                                                    setActivity({
+                                                        ...activity,
+                                                        advancementType: e
+                                                            .target
+                                                            .value as AdvancementType,
+                                                    });
+                                                }}
+                                                value={
+                                                    activity.advancementType ||
+                                                    undefined
+                                                }
+                                            >
+                                                <option
+                                                    key={
+                                                        AdvancementType.TRANSLATION
+                                                    }
+                                                    value={
+                                                        AdvancementType.TRANSLATION
+                                                    }
+                                                >
+                                                    {
+                                                        AdvancementType.TRANSLATION
+                                                    }
+                                                </option>
+                                                <option
+                                                    key={
+                                                        AdvancementType.CONTRACTION
+                                                    }
+                                                    value={
+                                                        AdvancementType.CONTRACTION
+                                                    }
+                                                >
+                                                    {
+                                                        AdvancementType.CONTRACTION
+                                                    }
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {/* parent*/}
+                                    <div className="activity-parent">
+                                        <div>
+                                            Attività padre:{" "}
+                                            {activity.parent || "Nessuna"} (Non
+                                            modificabile)
+                                        </div>
+                                    </div>
+
+                                    {/* next */}
+                                    <div className="activity-next">
+                                        <div>
+                                            Prossima attività:{" "}
+                                            {activity.next || "Nessuna"}
+                                            {isOwner && (
+                                                <select
+                                                    style={{
+                                                        backgroundColor:
+                                                            "white",
+                                                    }}
+                                                    className="btn border"
+                                                    name="next"
+                                                    onChange={(
+                                                        e: React.ChangeEvent<HTMLSelectElement>
+                                                    ): void => {
+                                                        setActivity({
+                                                            ...activity,
+                                                            next: e.target
+                                                                .value,
+                                                        });
+                                                    }}
+                                                >
+                                                    <option value="">
+                                                        Nessuna
+                                                    </option>
+                                                    {project &&
+                                                        getPossibleNextList(
+                                                            project.activityList
+                                                        ).map((act) => (
+                                                            <option
+                                                                key={act.title}
+                                                                value={act.id}
+                                                            >
+                                                                {act.title}
+                                                            </option>
+                                                        ))}
+                                                </select>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* render children list */}
+                                    <div className="activity-children">
+                                        <label>
+                                            Sotto-attività
+                                            <div className="activity-children-container">
+                                                {activity.children &&
+                                                    (activity.children
+                                                        .length ? (
+                                                        activity.children.map(
+                                                            (a) => (
+                                                                <a
+                                                                    href={
+                                                                        "/activities/" +
+                                                                        a.id
+                                                                    }
+                                                                >
+                                                                    <div>
+                                                                        {
+                                                                            a.title
+                                                                        }
+                                                                    </div>
+                                                                </a>
+                                                            )
+                                                        )
+                                                    ) : (
+                                                        <div>
+                                                            Nessuna
+                                                            sotto-attività
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                            {isOwner && !activity.parent && (
+                                                <a
+                                                    href={`/activity/new?projectId=${activity.projectId}&parent=${activity.id}`}
+                                                >
+                                                    <button>
+                                                        Aggiungi sotto-attività
+                                                    </button>
+                                                </a>
+                                            )}
+                                        </label>
+                                    </div>
+
+                                    {/* render completed */}
+                                    <label className="activity-completed">
+                                        Milestone?
+                                        <input
+                                            type="checkbox"
+                                            name="milestone"
+                                            checked={
+                                                activity.milestone || false
+                                            }
+                                            onChange={handleCheckboxChange}
+                                            disabled={!isOwner} // only owner can change milestone
+                                        />
+                                    </label>
+
+                                    {/* Segna come attiva */}
+                                    <label className="activity-completed">
+                                        Completa?
+                                        <input
+                                            type="checkbox"
+                                            name="completed"
+                                            checked={activity.completed}
+                                            onChange={handleCheckboxChange}
+                                            disabled={!isUser} // only user can change completed
+                                        />
+                                    </label>
+
+                                    {/* Segna come  */}
+                                    <label className="activity-completed">
+                                        Abbandonata?
+                                        <input
+                                            type="checkbox"
+                                            name="abandoned"
+                                            checked={
+                                                activity.abandoned || false
+                                            }
+                                            onChange={handleCheckboxChange}
+                                            disabled={!isUser} // only user can change abandoned
+                                        />
+                                    </label>
+
+                                    {/* Segna come attiva (SOLO OWNER) */}
+                                    {isOwner &&
+                                        activity.status ===
+                                            ActivityStatus.COMPLETED && (
+                                            <label className="activity-completed">
+                                                Riattiva:
+                                                <input
+                                                    type="checkbox"
+                                                    name="reactivated"
+                                                    checked={
+                                                        activity.reactivated ||
+                                                        false
+                                                    }
+                                                    onChange={
+                                                        handleCheckboxChange
+                                                    }
+                                                />
+                                            </label>
+                                        )}
+                                </>
+                            )}
+                            <button
                                 onClick={(
                                     e: React.MouseEvent<HTMLButtonElement>
                                 ): void => {
                                     e.preventDefault();
                                     handleUpdateActivity(e);
-                                    document.getElementById("title-2")?.scrollIntoView({ behavior: "smooth" });
+                                    document
+                                        .getElementById("title-2")
+                                        ?.scrollIntoView({
+                                            behavior: "smooth",
+                                        });
                                 }}
                             >
                                 Termina modifiche
                             </button>
-                            <button 
+                            <button
                                 onClick={(
                                     e: React.MouseEvent<HTMLButtonElement>
                                 ): void => {
                                     e.preventDefault();
                                     handleAbortChanges(e);
-                                    document.getElementById("title-2")?.scrollIntoView({ behavior: "smooth" });
+                                    document
+                                        .getElementById("title-2")
+                                        ?.scrollIntoView({
+                                            behavior: "smooth",
+                                        });
                                 }}
-                                style={{backgroundColor: "red"}}
+                                style={{ backgroundColor: "red" }}
                             >
                                 Annulla Modifiche
                             </button>
-                            <button 
+                            <button
                                 onClick={handleDeleteActivity}
-                                style={{backgroundColor: "red"}}
+                                style={{ backgroundColor: "red" }}
                             >
                                 Elimina Attività
                             </button>
