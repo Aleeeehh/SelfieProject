@@ -553,6 +553,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 			//salvo il risultato in una variabile
 			const activities = dataActivities.value;
+			console.log("Queste sono le attività:", activities);
 
 			//aggiungo subito nel calendario, le attività che hanno come owner l'utente corrente
 			//(in quanto le ha create lui, o sono destinate solo a lui)
@@ -2278,6 +2279,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 
 
+		//crea struttura dati per il body della POST dell'evento
+		const newEvent = {
+			idEventoNotificaCondiviso,
+			owner,
+			title: "Scadenza " + title,
+			startTime: startTime.toISOString(),
+			endTime: endTime.toISOString(),
+			untilDate: null,
+			isInfinite: false,
+			frequency: "once",
+			location,
+			repetitions: 1,
+		};
+
 
 		const newActivity = {
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
@@ -2285,6 +2300,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			title,
 			deadline: endTime,
 			description,
+			accessListAccepted: [owner],
 			owner: owner,
 			accessList: [...new Set([...accessList, owner])],
 			completed: false,
@@ -2301,6 +2317,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				idEventoNotificaCondiviso,
 				title,
 				deadline: endTime.toISOString(),
+				accessListAccepted: [owner],
 				description,
 				owner: owner,
 				accessList: [...new Set([...accessList, owner])],
@@ -2339,26 +2356,68 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
 		if (addNotification) {
 			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'attività ", title);
-			accessListt.forEach(async (receiver) => {
-				const res3 = await fetch(`${SERVER_API}/notifications`, {
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message: message,
+					mode: "activity",
+					receiver: owner, // Cambia il receiver per ogni membro della accessList
+					type: "activity",
+					data: {
+						date: notificationDate, // data prima notifica
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+						repeatedNotification: repeatedNotification, // se è true, la notifica si ripete
+						repeatTime: repeatTime, // ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+						firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
+					},
+				}),
+			});
+			console.log("Notifica creata per: " + owner, "Risposta:", res3);
+		}
+
+
+
+		//invia ad ogni utente della accessListt una richiesta di accettazione dell'attività (una notifica)
+		for (const receiver of accessListt) {
+
+
+			const newNotification = {
+				message: message,
+				mode: "activity",
+				receiver: receiver,
+				type: "activity",
+				data: {
+					date: notificationDate,
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+					firstNotificationTime: notificationTime,
+					activity: newActivity,
+					event: newEvent,
+				},
+			};
+
+			if (receiver !== owner) {
+				console.log("Questo è il receiver:", receiver);
+				const res4 = await fetch(`${SERVER_API}/notifications`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({
-						message: message,
+						message: "Hai ricevuto un attività condivisa",
 						mode: "activity",
 						receiver: receiver, // Cambia il receiver per ogni membro della accessList
-						type: "activity",
+						type: "shareActivity",
 						data: {
-							date: notificationDate, // data prima notifica
+							date: currentDate, // data prima notifica
 							idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
-							repeatedNotification: repeatedNotification, // se è true, la notifica si ripete
-							repeatTime: repeatTime, // ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
 							firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
+							activity: newActivity, //attività condivisa
+							event: newEvent, //evento scadenza dell'attività condivisa
+							notification: addNotification ? newNotification : null,
 						},
 					}),
 				});
-				console.log("Notifica creata per:", receiver, "Risposta:", res3);
-			});
+				console.log("Notifica creata per:", receiver, "Risposta:", res4);
+			}
 		}
 
 

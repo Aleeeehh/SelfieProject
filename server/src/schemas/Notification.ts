@@ -5,6 +5,8 @@ export enum NotificationType {
 	EVENT = "event",
 	MESSAGE = "message",
 	ACTIVITY = "activity",
+	SHAREACTIVITY = "shareActivity",
+	SHAREEVENT = "shareEvent",
 }
 
 const notificationSchema = new mongoose.Schema(

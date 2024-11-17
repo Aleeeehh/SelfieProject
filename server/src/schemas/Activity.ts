@@ -15,8 +15,28 @@ const activitySchema = new mongoose.Schema(
 		completed: { type: Boolean, default: false, required: true },
 		completedAt: { type: Date },
 		//tags: { type: [String], required: true },
-		owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-		accessList: { type: [mongoose.Schema.Types.ObjectId], ref: "User" },
+		owner: {
+			type: mongoose.Schema.Types.Mixed, // Modificato per accettare sia ObjectId che String
+			ref: "User",
+			required: true,
+			validate: {
+				validator: function (value: any) {
+					return (
+						typeof value === 'string' ||
+						mongoose.Types.ObjectId.isValid(value)
+					);
+				},
+				message: (props: any) => `${props.value} non è un tipo valido! Deve essere una String o un ObjectId.`,
+			},
+		},
+		accessList: {
+			type: [mongoose.Schema.Types.Mixed], // Modificato per accettare array di String o ObjectId
+			ref: "User"
+		},
+		accessListAccepted: {
+			type: [mongoose.Schema.Types.Mixed], // Modificato per accettare array di String o ObjectId
+			required: false,
+		},
 		idEventoNotificaCondiviso: { type: String },
 
 		// project related fields

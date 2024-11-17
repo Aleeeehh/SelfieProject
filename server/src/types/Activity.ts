@@ -11,6 +11,7 @@ type Activity = {
 	completedAt?: Date;
 	owner: string;
 	idEventoNotificaCondiviso?: string;
+	accessListAccepted?: string[] | null;
 	//tags: string[];
 	createdAt?: Date;
 	updatedAt?: Date;

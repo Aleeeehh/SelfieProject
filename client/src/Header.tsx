@@ -31,8 +31,8 @@ export default function Header(): React.JSX.Element {
 	const { isLoggedIn } = useAuth();
 
 	/* const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-        setCurrentDate(event.target.value);
-    };*/
+		setCurrentDate(event.target.value);
+	};*/
 
 	function playNotificationSound(): void {
 		const ring = new Audio("public/images/Notification.mp3"); // Assicurati che il percorso sia corretto
@@ -81,40 +81,40 @@ export default function Header(): React.JSX.Element {
 			// console.log(response); // Log del messaggio di risposta
 
 			/*
-             const res2 = await fetch(`${SERVER_API}/notifications`);
-             const data2 = await res2.json();
-             const notifications = data2.value;
-             console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
-             console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
-             console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
-             console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
-             console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
-             console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
-             console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			 const res2 = await fetch(`${SERVER_API}/notifications`);
+			 const data2 = await res2.json();
+			 const notifications = data2.value;
+			 console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			 console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			 console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			 console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			 console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			 console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			 console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
     
-             for (const notification of notifications) {
-                 if (notification.isInfiniteEvent === false && notification.read === true) {
-                     console.log("NOTIFICA DA ELIMINARE:", notification);
-                     {
-                         const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
-                             method: "POST",
-                             headers: { "Content-Type": "application/json" },
-                             body: JSON.stringify({ notification_id: notification.id, idEventoNotificaCondiviso: notification.data.idEventoNotificaCondiviso }), // Assicurati di usare il campo corretto
-                         });
-                         console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+			 for (const notification of notifications) {
+				 if (notification.isInfiniteEvent === false && notification.read === true) {
+					 console.log("NOTIFICA DA ELIMINARE:", notification);
+					 {
+						 const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+							 method: "POST",
+							 headers: { "Content-Type": "application/json" },
+							 body: JSON.stringify({ notification_id: notification.id, idEventoNotificaCondiviso: notification.data.idEventoNotificaCondiviso }), // Assicurati di usare il campo corretto
+						 });
+						 console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
     
-                         if (!res3.ok) {
-                             const errorData = await res3.json();
-                             console.error("Errore durante l'eliminazione della notifica:", errorData);
-                         } else {
-                             console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
-                         }
-                     }
-                 }
+						 if (!res3.ok) {
+							 const errorData = await res3.json();
+							 console.error("Errore durante l'eliminazione della notifica:", errorData);
+						 } else {
+							 console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+						 }
+					 }
+				 }
     
-             }
+			 }
     
-              */
+			  */
 		} catch (error) {
 			console.error("Errore durante la pulizia delle notifiche:", error);
 		}
@@ -206,6 +206,7 @@ export default function Header(): React.JSX.Element {
 				idEventoNotificaCondiviso: idEventoNotificaCondiviso1,
 				title: title1,
 				deadline: deadline1, //TOLGO TOISOTRING
+				accessListAccepted: [owner1],
 				description: description1,
 				owner: owner1,
 				accessList: accessList1,
@@ -214,6 +215,41 @@ export default function Header(): React.JSX.Element {
 		console.log("Attività creata:", res2);
 
 		//aggiungi la notifica dell'attività come notifica sul calendario
+		if (notification.data.notification) {
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(notification.data.notification),
+			});
+			console.log("Notifica creata:", res3);
+		}
+
+		//metti la notifica come letta
+		handleReadNotification(notification.id);
+	}
+
+	async function handleAddSharedActivity(notification: Notification): Promise<void> {
+		console.log("NOTIFICA DI ATTIVITÀ CONDIVISA:", notification);
+		//aggiungi il receiver alla accessListAccepted dell'attività
+		const res = await fetch(`${SERVER_API}/activity/${notification.data.activity.idEventoNotificaCondiviso}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ accessListAcceptedUser: notification.receiver }),
+		});
+		console.log("AccessListAccepted aggiornato:", res);
+
+		const newEvent = notification.data.event;
+		newEvent.owner = notification.receiver;
+
+		//aggiungi al calendario l'evento scadenza dell'attività condivisa
+		const response = await fetch(`${SERVER_API}/events`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(newEvent),
+		});
+		console.log("Evento scadenza aggiunto:", response);
+
+		//aggiungi la notifica dell'attività condivisa come notifica sul calendario
 		if (notification.data.notification) {
 			const res3 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
@@ -251,7 +287,7 @@ export default function Header(): React.JSX.Element {
 		console.log("START TIME DELL'EVENTO DA CREARE:", startTime);
 		console.log("END TIME DELL'EVENTO DA CREARE:", endTime);
 
-		//crea l'attività come evento sul calendario
+		//crea l'evento scadenza come evento sul calendario
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -429,6 +465,10 @@ export default function Header(): React.JSX.Element {
 				return true;
 			}
 
+			if (notification && notification.type === "shareActivity" && notification.read === false) {
+				return true;
+			}
+
 			// Restituisci false se non è di tipo "event" o "activity"
 			return false;
 		});
@@ -510,9 +550,9 @@ export default function Header(): React.JSX.Element {
 			setUser(currentUser.value.username);
 
 			/*
-                        console.log("ID USER ATTUALE:", user); // Usa currentUser.value.id direttamente
-                        console.log("Questo è il currentUser.value:", currentUser.value);
-                        */
+						console.log("ID USER ATTUALE:", user); // Usa currentUser.value.id direttamente
+						console.log("Questo è il currentUser.value:", currentUser.value);
+						*/
 		};
 
 		fetchData(); // Chiama la funzione asincrona
@@ -696,9 +736,9 @@ export default function Header(): React.JSX.Element {
 										value={
 											currentDate
 												? currentDate
-														.toTimeString()
-														.split(" ")[0]
-														.slice(0, 5)
+													.toTimeString()
+													.split(" ")[0]
+													.slice(0, 5)
 												: ""
 										} // Imposta l'orario attuale come valore predefinito
 										onChange={(event): void => {
@@ -986,9 +1026,9 @@ export default function Header(): React.JSX.Element {
 												(currentDate.getTime() >= eventDate.getTime() ||
 													(currentDate.getDate() >= eventDate.getDate() &&
 														currentDate.getMonth() >=
-															eventDate.getMonth() &&
+														eventDate.getMonth() &&
 														currentDate.getFullYear() >=
-															eventDate.getFullYear()))
+														eventDate.getFullYear()))
 											) {
 												return (
 													<div key={index}>
@@ -1291,7 +1331,106 @@ export default function Header(): React.JSX.Element {
 													</div>
 												);
 											}
+										} else if (
+											notification.type === "shareActivity" &&
+											notification.receiver === user &&
+											notification.read === false &&
+											doNotDisturb === false
+										) {
+											const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+											if (eventDate < currentDate) {
+												return (
+													<div key={index}>
+														Hai ricevuto un invito per un'{" "}
+														<span
+															style={{
+																color: "orange",
+																fontWeight: "bold",
+															}}>
+															attività condivisa
+														</span>
+														!
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	// Controlla se notification.id è definito
+																	handleAddSharedActivity(notification);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-check"
+																style={{
+																	color: "green",
+																	fontSize: "20px",
+																}}></i>{" "}
+															{/* Icona di tick */}
+														</button>
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	// Controlla se notification.id è definito
+																	handleReadNotification(
+																		notification.id
+																	);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-times"
+																style={{
+																	color: "red",
+																	fontSize: "20px",
+																}}></i>{" "}
+															{/* Icona di elimazione */}
+														</button>
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	// Controlla se notification.id è definito
+																	handleSnoozeNotification(
+																		notification.id
+																	);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-arrows-alt-h"
+																style={{
+																	color: "lightblue",
+																	fontSize: "20px",
+																}}></i>{" "}
+															{/* Icona di elimazione */}
+														</button>
+													</div>
+												);
+											}
 										}
+
 
 										return null;
 									})
