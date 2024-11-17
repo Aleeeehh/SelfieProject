@@ -344,18 +344,18 @@ export default function ProjectPage(): React.JSX.Element {
                     </div>
                     {isOwner && (
                         <>
-                            (isEditing ? (
-                            <button
-                                style={{ backgroundColor: "green" }}
-                                onClick={handleUpdateProject}
-                            >
-                                Salva progetto
-                            </button>
+                            {isEditing ? (
+                                <button
+                                    style={{ backgroundColor: "green" }}
+                                    onClick={handleUpdateProject}
+                                >
+                                    Salva progetto
+                                </button>
                             ) : (
-                            <button onClick={toggleEdit}>
-                                Modifica progetto
-                            </button>
-                            )
+                                <button onClick={toggleEdit}>
+                                    Modifica progetto
+                                </button>
+                            )}
                             {/* if is owner, can delete project (not new project) */}
                             <button
                                 style={{ backgroundColor: "red" }}
@@ -363,7 +363,6 @@ export default function ProjectPage(): React.JSX.Element {
                             >
                                 Cancella Progetto
                             </button>
-                            )
                         </>
                     )}
                 </div>

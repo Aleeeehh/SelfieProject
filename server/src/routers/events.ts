@@ -4,8 +4,8 @@ import { Event } from "../types/Event.js";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import EventSchema from "../schemas/Event.js";
-import multer from 'multer';
-import ical from 'ical';
+import multer from "multer";
+import ical from "ical";
 import { validDateString } from "../lib.js";
 
 const router: Router = Router();
@@ -34,7 +34,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                        currentDate.getMilliseconds() &&
+                            currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfWeek.includes(currentDayOfWeek)
                     ) {
                         // create a event with start and end times updated
@@ -42,8 +42,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                            (entry.startTime.getMilliseconds() -
-                                entry.endTime.getMilliseconds())
+                                (entry.startTime.getMilliseconds() -
+                                    entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -56,7 +56,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                        currentDate.getMilliseconds() &&
+                            currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfMonth.includes(currentDayOfMonth)
                     ) {
                         // create a event with start and end times updated
@@ -64,8 +64,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                            (entry.startTime.getMilliseconds() -
-                                entry.endTime.getMilliseconds())
+                                (entry.startTime.getMilliseconds() -
+                                    entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -80,8 +80,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                            (entry.startTime.getMilliseconds() -
-                                entry.endTime.getMilliseconds())
+                                (entry.startTime.getMilliseconds() -
+                                    entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -123,7 +123,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                        currentDate.getMilliseconds() &&
+                            currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfWeek.includes(currentDayOfWeek)
                     ) {
                         // create a event with start and end times updated
@@ -131,8 +131,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                            (entry.startTime.getMilliseconds() -
-                                entry.endTime.getMilliseconds())
+                                (entry.startTime.getMilliseconds() -
+                                    entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -144,7 +144,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                        currentDate.getMilliseconds() &&
+                            currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfMonth.includes(currentDayOfMonth)
                     ) {
                         // create a event with start and end times updated
@@ -152,8 +152,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                            (entry.startTime.getMilliseconds() -
-                                entry.endTime.getMilliseconds())
+                                (entry.startTime.getMilliseconds() -
+                                    entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -170,8 +170,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                            (entry.startTime.getMilliseconds() -
-                                entry.endTime.getMilliseconds())
+                                (entry.startTime.getMilliseconds() -
+                                    entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -285,11 +285,11 @@ router.get("/owner", async (req: Request, res: Response) => {
         const foundDBEvents = await EventSchema.find({
             $or: [
                 { owner: ownerId }, // Condizione 1: owner è uguale a ownerId
-                { accessListAccepted: ownerId } // Condizione 2: owner è contenuto in accessListAccepted
-            ]
+                { accessListAccepted: ownerId }, // Condizione 2: owner è contenuto in accessListAccepted
+            ],
         }).lean();
 
-        console.log("Eventi trovati:", foundDBEvents);
+        // console.log("Eventi trovati:", foundDBEvents);
 
         if (foundDBEvents.length === 0) {
             const resBody: ResponseBody = {
@@ -324,7 +324,7 @@ router.get("/owner", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
     //gestore per le richieste POST a questa route /events
-    console.log("Sono entrato nella POST degli eventi")
+    console.log("Sono entrato nella POST degli eventi");
     try {
         //Validazione dell'input
         const {
@@ -339,7 +339,7 @@ router.post("/", async (req: Request, res: Response) => {
             isInfinite,
             idEventoNotificaCondiviso,
             accessList,
-            accessListAccepted
+            accessListAccepted,
         } = req.body as Event;
 
         console.log("Owner passato come parametro:", owner);
@@ -348,7 +348,6 @@ router.post("/", async (req: Request, res: Response) => {
         console.log("Owner passato come parametro:", owner);
         console.log("Owner passato come parametro:", owner);
         console.log("Owner passato come parametro:", owner);
-
 
         if (new Date(startTime) > new Date(endTime)) {
             return res.status(400).json({
@@ -366,10 +365,14 @@ router.post("/", async (req: Request, res: Response) => {
         //console.log("normalizedStartTime: ", normalizedStartTime);
         //console.log("normalizedEndTime: ", normalizedEndTime);
 
-        if (normalizedStartTime.getTime() != normalizedEndTime.getTime() && (repetitions > 1 || frequency !== "once")) {
+        if (
+            normalizedStartTime.getTime() != normalizedEndTime.getTime() &&
+            (repetitions > 1 || frequency !== "once")
+        ) {
             return res.status(400).json({
                 status: ResponseStatus.BAD,
-                message: "L'evento deve avere data di inizio e di fine nello stesso giorno, se si vuole ripeterlo!",
+                message:
+                    "L'evento deve avere data di inizio e di fine nello stesso giorno, se si vuole ripeterlo!",
             });
         }
 
@@ -422,8 +425,6 @@ router.post("/", async (req: Request, res: Response) => {
             };
             await EventSchema.create(event);
             //   console.log("Inserted event: ", event);
-
-
         }
 
         if (untilDate == null && !isInfinite) {
@@ -433,7 +434,6 @@ router.post("/", async (req: Request, res: Response) => {
 
                 //caso in cui la frequenza dell'evento sia giornaliera
                 for (let i = 0; i < repetitions; i++) {
-
                     const startTime = new Date(
                         startTimeDate.getTime() + i * 24 * 60 * 60 * 1000
                     );
@@ -442,14 +442,15 @@ router.post("/", async (req: Request, res: Response) => {
                     );
                     //console.log("endTime ad iterazione" + i + endTime);
 
-                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                    if (
+                        startTime.getHours() !== startTimePrecedente.getHours()
+                    ) {
                         startTime.setHours(startTimePrecedente.getHours());
                     }
 
                     if (endTime.getHours() !== endTimePrecedente.getHours()) {
                         endTime.setHours(endTimePrecedente.getHours());
                     }
-
 
                     const event: Event = {
                         id: new mongoose.Types.ObjectId().toString(), // Genera un ID unico per ogni evento
@@ -488,7 +489,9 @@ router.post("/", async (req: Request, res: Response) => {
                     startTime.setUTCMonth(startTime.getUTCMonth() + i);
                     endTime.setUTCMonth(endTime.getUTCMonth() + i);
 
-                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                    if (
+                        startTime.getHours() !== startTimePrecedente.getHours()
+                    ) {
                         startTime.setHours(startTimePrecedente.getHours());
                     }
 
@@ -539,7 +542,9 @@ router.post("/", async (req: Request, res: Response) => {
                     const startTime = new Date(startTimeDate);
                     const endTime = new Date(endTimeDate);
 
-                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                    if (
+                        startTime.getHours() !== startTimePrecedente.getHours()
+                    ) {
                         startTime.setHours(startTimePrecedente.getHours());
                     }
 
@@ -583,7 +588,9 @@ router.post("/", async (req: Request, res: Response) => {
                     const startTime = new Date(startTimeDate);
                     const endTime = new Date(endTimeDate);
 
-                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                    if (
+                        startTime.getHours() !== startTimePrecedente.getHours()
+                    ) {
                         startTime.setHours(startTimePrecedente.getHours());
                     }
 
@@ -681,7 +688,6 @@ router.post("/", async (req: Request, res: Response) => {
                 // console.log("questa è la untilDate: ", untilDate)
                 // console.log("questa è la endTimePrecedente: ", endTimePrecedente)
                 while (untilDateDate > normalizedEndTimePrecedente) {
-
                     const startTime = new Date(
                         startTimeDate.getTime() + i * 24 * 60 * 60 * 1000
                     );
@@ -690,7 +696,9 @@ router.post("/", async (req: Request, res: Response) => {
                     );
                     //console.log("endTime ad iterazione" + i + endTime);
 
-                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                    if (
+                        startTime.getHours() !== startTimePrecedente.getHours()
+                    ) {
                         startTime.setHours(startTimePrecedente.getHours());
                     }
 
@@ -746,7 +754,9 @@ router.post("/", async (req: Request, res: Response) => {
                     startTime.setUTCMonth(startTime.getUTCMonth() + i);
                     endTime.setUTCMonth(endTime.getUTCMonth() + i);
 
-                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                    if (
+                        startTime.getHours() !== startTimePrecedente.getHours()
+                    ) {
                         startTime.setHours(startTimePrecedente.getHours());
                     }
 
@@ -789,7 +799,9 @@ router.post("/", async (req: Request, res: Response) => {
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                     normalizedEndTimePrecedente = new Date(endTime);
-                    normalizedEndTimePrecedente.setMonth(normalizedEndTimePrecedente.getMonth() + 1);
+                    normalizedEndTimePrecedente.setMonth(
+                        normalizedEndTimePrecedente.getMonth() + 1
+                    );
                     normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
 
                     i++;
@@ -811,7 +823,9 @@ router.post("/", async (req: Request, res: Response) => {
                     const startTime = new Date(startTimeDate);
                     const endTime = new Date(endTimeDate);
 
-                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                    if (
+                        startTime.getHours() !== startTimePrecedente.getHours()
+                    ) {
                         startTime.setHours(startTimePrecedente.getHours());
                     }
 
@@ -847,7 +861,9 @@ router.post("/", async (req: Request, res: Response) => {
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                     normalizedEndTimePrecedente = new Date(endTime);
-                    normalizedEndTimePrecedente.setDate(normalizedEndTimePrecedente.getDate() + 7);
+                    normalizedEndTimePrecedente.setDate(
+                        normalizedEndTimePrecedente.getDate() + 7
+                    );
                     //  console.log("untilDateDate: ", untilDateDate);
                     // console.log("normalizedEndTimePrecedente: ", normalizedEndTimePrecedente);
                     normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
@@ -868,7 +884,9 @@ router.post("/", async (req: Request, res: Response) => {
                     const startTime = new Date(startTimeDate);
                     const endTime = new Date(endTimeDate);
 
-                    if (startTime.getHours() !== startTimePrecedente.getHours()) {
+                    if (
+                        startTime.getHours() !== startTimePrecedente.getHours()
+                    ) {
                         startTime.setHours(startTimePrecedente.getHours());
                     }
 
@@ -915,7 +933,9 @@ router.post("/", async (req: Request, res: Response) => {
                     var startTimePrecedente = new Date(startTime);
                     var endTimePrecedente = new Date(endTime);
                     normalizedEndTimePrecedente = new Date(endTime);
-                    normalizedEndTimePrecedente.setFullYear(normalizedEndTimePrecedente.getFullYear() + 1);
+                    normalizedEndTimePrecedente.setFullYear(
+                        normalizedEndTimePrecedente.getFullYear() + 1
+                    );
                     normalizedEndTimePrecedente.setHours(0, 0, 0, 0);
 
                     i++;
@@ -945,7 +965,6 @@ router.post("/", async (req: Request, res: Response) => {
                 await EventSchema.create(event);
                 // console.log("Inserted event: ", event);
             }
-
         }
 
         const resBody: ResponseBody = {
@@ -1051,15 +1070,19 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
         const allEvents = await EventSchema.find({
             $or: [
                 { owner: owner }, // Condizione 1: owner è uguale a ownerId
-                { accessListAccepted: owner } // Condizione 2: owner è contenuto in accessListAccepted
-            ]
-        }).lean();// .lean() per ottenere oggetti JavaScript semplici
+                { accessListAccepted: owner }, // Condizione 2: owner è contenuto in accessListAccepted
+            ],
+        }).lean(); // .lean() per ottenere oggetti JavaScript semplici
 
         // Filtra gli eventi per il giorno selezionato
         const filteredEvents = allEvents.filter((event) => {
             const eventStartDate = new Date(event.startTime);
             const eventEndDate = new Date(event.endTime);
-            const currentDate = new Date(selectedYear, selectedMonth, selectedDay);
+            const currentDate = new Date(
+                selectedYear,
+                selectedMonth,
+                selectedDay
+            );
 
             // Normalizza le date per confrontare solo giorno, mese e anno
             const normalizeDate: (date: Date) => Date = (date: Date) =>
@@ -1070,42 +1093,43 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
             const normalizedCurrentDate = normalizeDate(currentDate);
 
             // Controlla se l'evento è nel giorno selezionato
-            const isSameDayEvent = (
+            const isSameDayEvent =
                 normalizedCurrentDate >= normalizedEventStartDate &&
-                normalizedCurrentDate <= normalizedEventEndDate
-            );
+                normalizedCurrentDate <= normalizedEventEndDate;
 
             // Controlla se l'evento è giornaliero e infinito
-            const isDailyInfiniteEvent = (
+            const isDailyInfiniteEvent =
                 event.frequency === "day" &&
                 event.isInfinite === true &&
-                normalizedEventStartDate <= normalizedCurrentDate
-            );
+                normalizedEventStartDate <= normalizedCurrentDate;
 
-            const isMonthlyInfiniteEvent = (
+            const isMonthlyInfiniteEvent =
                 event.frequency === "month" &&
                 event.isInfinite === true &&
                 normalizedEventStartDate <= normalizedCurrentDate &&
-                eventStartDate.getDate() === currentDate.getDate()  //controlla se è lo stesso giorno del mese
-            );
+                eventStartDate.getDate() === currentDate.getDate(); //controlla se è lo stesso giorno del mese
 
-            const isWeeklyInfiniteEvent = (
+            const isWeeklyInfiniteEvent =
                 event.frequency === "week" &&
                 event.isInfinite === true &&
                 normalizedEventStartDate <= normalizedCurrentDate &&
-                eventStartDate.getDay() === currentDate.getDay()  //controlla se è lo stesso giorno della settimana
-            );
+                eventStartDate.getDay() === currentDate.getDay(); //controlla se è lo stesso giorno della settimana
 
-            const isYearlyInfiniteEvent = (
+            const isYearlyInfiniteEvent =
                 event.frequency === "year" &&
                 event.isInfinite === true &&
                 normalizedEventStartDate <= normalizedCurrentDate &&
                 eventStartDate.getDate() === currentDate.getDate() && //controlla se è lo stesso giorno del mese
-                eventStartDate.getMonth() === currentDate.getMonth()  //controlla se è lo stesso mese
-            );
+                eventStartDate.getMonth() === currentDate.getMonth(); //controlla se è lo stesso mese
 
             // Includi l'evento se è nello stesso giorno o se è giornaliero e infinito
-            return isSameDayEvent || isDailyInfiniteEvent || isMonthlyInfiniteEvent || isWeeklyInfiniteEvent || isYearlyInfiniteEvent;
+            return (
+                isSameDayEvent ||
+                isDailyInfiniteEvent ||
+                isMonthlyInfiniteEvent ||
+                isWeeklyInfiniteEvent ||
+                isYearlyInfiniteEvent
+            );
         });
 
         const resBody = {
@@ -1126,17 +1150,23 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
 
 router.put("/:id", async (req: Request, res: Response) => {
     const idEventoNotificaCondiviso = req.params.id as string;
-    const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as string[] | undefined; // username list
-
+    const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as
+        | string[]
+        | undefined; // username list
 
     try {
         // TODO: validate param
         // TODO: validate body fields
 
-        const foundEvents = await EventSchema.find({ idEventoNotificaCondiviso: idEventoNotificaCondiviso });
+        const foundEvents = await EventSchema.find({
+            idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+        });
         if (foundEvents.length === 0) {
             const resBody: ResponseBody = {
-                message: "Event with id " + idEventoNotificaCondiviso + " not found!",
+                message:
+                    "Event with id " +
+                    idEventoNotificaCondiviso +
+                    " not found!",
                 status: ResponseStatus.BAD,
             };
 
@@ -1147,12 +1177,23 @@ router.put("/:id", async (req: Request, res: Response) => {
         if (inputAccessListAcceptedUser) {
             // Itera su tutti gli eventi trovati e aggiorna accessListAccepted
             for (const foundEvent of foundEvents) {
-                updatedAccessListAccepted = foundEvent.accessListAccepted?.concat(inputAccessListAcceptedUser);
+                updatedAccessListAccepted =
+                    foundEvent.accessListAccepted?.concat(
+                        inputAccessListAcceptedUser
+                    );
 
-                console.log("Updating event: ", foundEvent, " to ", updatedAccessListAccepted);
+                console.log(
+                    "Updating event: ",
+                    foundEvent,
+                    " to ",
+                    updatedAccessListAccepted
+                );
 
                 await EventSchema.findOneAndUpdate(
-                    { idEventoNotificaCondiviso: foundEvent.idEventoNotificaCondiviso }, // Usa _id per trovare l'evento specifico
+                    {
+                        idEventoNotificaCondiviso:
+                            foundEvent.idEventoNotificaCondiviso,
+                    }, // Usa _id per trovare l'evento specifico
                     { accessListAccepted: updatedAccessListAccepted }
                 );
             }
@@ -1236,73 +1277,75 @@ router.get("/ical", async (req: Request, res: Response) => {
     }
     console.log("icalEvents:", icalEvents);
 
-    const icalString = `BEGIN:VCALENDAR
+    const icalString =
+        `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//Your Organization//Your Product//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
-` + Object.keys(icalEvents).map(key => {
-        const e = icalEvents[key];
-        return `BEGIN:VEVENT
+` +
+        Object.keys(icalEvents)
+            .map((key) => {
+                const e = icalEvents[key];
+                return `BEGIN:VEVENT
 UID:${e.uid}
 SUMMARY:${e.summary}
 DESCRIPTION:${e.description}
 LOCATION:${e.location}
-DTSTART:${e.start.toISOString().replace(/-|:|\.\d+/g, '')}
-DTEND:${e.end.toISOString().replace(/-|:|\.\d+/g, '')}
+DTSTART:${e.start.toISOString().replace(/-|:|\.\d+/g, "")}
+DTEND:${e.end.toISOString().replace(/-|:|\.\d+/g, "")}
 END:VEVENT`;
-    }).join('\n') + '\nEND:VCALENDAR';
-
-
-
-
+            })
+            .join("\n") +
+        "\nEND:VCALENDAR";
 
     res.set("Content-Type", "text/calendar");
     res.set("Content-Disposition", 'attachment; filename="calendar.ics"');
     res.send(icalString);
 });
 
-router.post("/importCalendar", upload.single('calendarFile'), async (req: Request, res: Response) => {
-    const icalString = req.file?.buffer.toString(); // Ottieni il contenuto del file come stringa
-    const owner = req.body.owner;
+router.post(
+    "/importCalendar",
+    upload.single("calendarFile"),
+    async (req: Request, res: Response) => {
+        const icalString = req.file?.buffer.toString(); // Ottieni il contenuto del file come stringa
+        const owner = req.body.owner;
 
-    if (!icalString) {
-        return res.status(400).send("Nessun file iCalendar fornito");
-    }
-
-    console.log("icalString:", icalString);
-
-
-    const parsedEvents = ical.parseICS(icalString); // Usa ical per analizzare il file
-
-    // Itera sugli eventi e salvali nel database
-    for (const key in parsedEvents) {
-        const event = parsedEvents[key];
-        console.log("event:", event);
-        if (event.type === 'VEVENT') {
-            const groupId = new mongoose.Types.ObjectId().toString();
-            const newEvent = new EventSchema({
-                uid: event.uid,
-                title: event.summary,
-                owner: owner,
-                description: event.description || '',
-                location: event.location || '',
-                groupId: groupId,
-                frequency: "once",
-                repetitions: 1,
-                startTime: event.start,
-                endTime: event.end,
-                // Aggiungi altri campi se necessario
-            });
-            await EventSchema.create(newEvent);
+        if (!icalString) {
+            return res.status(400).send("Nessun file iCalendar fornito");
         }
 
-        //await newEvent.save(); // Salva l'evento nel database
+        console.log("icalString:", icalString);
+
+        const parsedEvents = ical.parseICS(icalString); // Usa ical per analizzare il file
+
+        // Itera sugli eventi e salvali nel database
+        for (const key in parsedEvents) {
+            const event = parsedEvents[key];
+            console.log("event:", event);
+            if (event.type === "VEVENT") {
+                const groupId = new mongoose.Types.ObjectId().toString();
+                const newEvent = new EventSchema({
+                    uid: event.uid,
+                    title: event.summary,
+                    owner: owner,
+                    description: event.description || "",
+                    location: event.location || "",
+                    groupId: groupId,
+                    frequency: "once",
+                    repetitions: 1,
+                    startTime: event.start,
+                    endTime: event.end,
+                    // Aggiungi altri campi se necessario
+                });
+                await EventSchema.create(newEvent);
+            }
+
+            //await newEvent.save(); // Salva l'evento nel database
+        }
+
+        res.status(200).send("Calendario importato con successo");
     }
-
-
-    res.status(200).send("Calendario importato con successo");
-
-});
+);
 
 export default router;

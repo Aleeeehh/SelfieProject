@@ -39,8 +39,10 @@ export const login = async (
 
             console.log(resBody);
 
-            localStorage.setItem("loggedUserId", String(resBody.value._id));
-            localStorage.setItem("loggedUserName", String(resBody.value.name));
+            const id = resBody.value?._id;
+            const username = resBody.value?.username;
+            localStorage.setItem("loggedUserId", id);
+            localStorage.setItem("loggedUserName", username);
 
             return true;
         } else {

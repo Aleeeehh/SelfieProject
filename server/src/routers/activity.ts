@@ -221,9 +221,9 @@ router.get("/owner", async (req: Request, res: Response) => {
         console.log("SUBITO PRIMA DELLA FIND:", ownerId);
         console.log("SUBITO PRIMA DELLA FIND:", ownerId);
 
-		const foundDBActivities = await ActivitySchema.find({
-			accessListAccepted: ownerId, // Cerca in accessListAcceptedUser invece che per owner
-		}).lean();
+        const foundDBActivities = await ActivitySchema.find({
+            accessListAccepted: ownerId, // Cerca in accessListAcceptedUser invece che per owner
+        }).lean();
 
         console.log("SUBITO DOPO DELLA FIND:", ownerId);
         console.log("SUBITO DOPO DELLA FIND:", ownerId);
@@ -448,17 +448,21 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 router.post("/", async (req: Request, res: Response) => {
-	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-	try {
-		// TODO: validate note input
-		// TODO: validate body fields
-		const title = req.body.title as string | undefined;
-		const description = req.body.description as string | undefined;
-		const accessList = (req.body.accessList as string[]) || []; // username list
-		const deadline = req.body.deadline as string | undefined;
-		const owner = req.body.owner || (req.user?.id as string) || undefined; // TODO: l'owner può non essere l'utente loggato?
-		const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as string | undefined;
-		const accessListAccepted = req.body.accessListAccepted as string[] | undefined;
+    console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+    try {
+        // TODO: validate note input
+        // TODO: validate body fields
+        const title = req.body.title as string | undefined;
+        const description = req.body.description as string | undefined;
+        const accessList = (req.body.accessList as string[]) || []; // username list
+        const deadline = req.body.deadline as string | undefined;
+        const owner = req.body.owner || (req.user?.id as string) || undefined; // TODO: l'owner può non essere l'utente loggato?
+        const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as
+            | string
+            | undefined;
+        const accessListAccepted = req.body.accessListAccepted as
+            | string[]
+            | undefined;
 
         // Leo - Progetti - BGN
         const projectId = req.body.projectId as string | undefined;
@@ -765,18 +769,19 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
     const activityId = req.params.id as string;
 
+    console.log("PUT ACTIVITY", activityId, req.body);
 
-	console.log("PUT ACTIVITY", activityId, req.body);
-
-	try {
-		// TODO: validate param
-		// TODO: validate body fields
-		const inputTitle = req.body.title as string | undefined;
-		const inputDescription = req.body.description as string | undefined;
-		const inputDeadline = req.body.deadline as string | undefined;
-		const inputCompleted = req.body.completed as boolean | undefined;
-		const inputAccessList = req.body.accessList as string[] | undefined; // username list
-		const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as string[] | undefined; // username list
+    try {
+        // TODO: validate param
+        // TODO: validate body fields
+        const inputTitle = req.body.title as string | undefined;
+        const inputDescription = req.body.description as string | undefined;
+        const inputDeadline = req.body.deadline as string | undefined;
+        const inputCompleted = req.body.completed as boolean | undefined;
+        const inputAccessList = req.body.accessList as string[] | undefined; // username list
+        const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as
+            | string[]
+            | undefined; // username list
 
         // Leo - Progetti - BGN
         // cannot change projectId
@@ -793,28 +798,33 @@ router.put("/:id", async (req: Request, res: Response) => {
         const inputReactivated = req.body.reactivated as boolean | undefined;
         // Leo - Progetti - END
 
-		if (
-			!inputTitle &&
-			!inputDescription &&
-			!inputDeadline &&
-			!inputCompleted &&
-			!inputAccessList &&
-			!inputAccessListAcceptedUser &&
-			!inputActive &&
-			!inputAbandoned &&
-			!inputReactivated
-		) {
-			console.log(
-				"Invalid body: 'title', 'description', 'deadline', 'completed', 'accessList', 'accessListAccepted', 'active', 'abandoned' or 'reactivated' required, nothing to update"
-			);
-			return res.status(400).json({
-				status: ResponseStatus.BAD,
-				message:
-					"Invalid body: 'title', 'description', 'deadline', 'completed', 'accessList', 'accessListAccepted', 'active', 'abandoned' or 'reactivated' required, nothing to update",
-			});
-		}
+        if (
+            !inputTitle &&
+            !inputDescription &&
+            !inputDeadline &&
+            !inputCompleted &&
+            !inputAccessList &&
+            !inputAccessListAcceptedUser &&
+            !inputActive &&
+            !inputAbandoned &&
+            !inputReactivated
+        ) {
+            console.log(
+                "Invalid body: 'title', 'description', 'deadline', 'completed', 'accessList', 'accessListAccepted', 'active', 'abandoned' or 'reactivated' required, nothing to update"
+            );
+            return res.status(400).json({
+                status: ResponseStatus.BAD,
+                message:
+                    "Invalid body: 'title', 'description', 'deadline', 'completed', 'accessList', 'accessListAccepted', 'active', 'abandoned' or 'reactivated' required, nothing to update",
+            });
+        }
 
-		const foundActivity = await ActivitySchema.findOne({ idEventoNotificaCondiviso: activityId }).lean();
+        const foundActivity = await ActivitySchema.findOne({
+            $or: [
+                { idEventoNotificaCondiviso: activityId },
+                { _id: new Types.ObjectId(activityId) },
+            ],
+        }).lean();
 
         if (!foundActivity) {
             console.log("Activity with id " + activityId + " not found!");
@@ -846,14 +856,17 @@ router.put("/:id", async (req: Request, res: Response) => {
             }
         }
 
-		let updatedAccessListAccepted: string[] | undefined;
-		if (inputAccessListAcceptedUser) {
-			updatedAccessListAccepted = foundActivity.accessListAccepted?.concat(inputAccessListAcceptedUser);
-		}
+        let updatedAccessListAccepted: string[] | undefined;
+        if (inputAccessListAcceptedUser) {
+            updatedAccessListAccepted =
+                foundActivity.accessListAccepted?.concat(
+                    inputAccessListAcceptedUser
+                );
+        }
 
-		const updatedCompleted: boolean | undefined = inputCompleted
-			? !!inputCompleted
-			: foundActivity.completed;
+        const updatedCompleted: boolean | undefined = inputCompleted
+            ? !!inputCompleted
+            : foundActivity.completed;
 
         const updatedDeadline: Date | undefined = inputDeadline
             ? new Date(inputDeadline)
@@ -980,18 +993,20 @@ router.put("/:id", async (req: Request, res: Response) => {
 
         // Leo - Progetti - END
 
-		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
+        console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
 
-		const updatedActivity: Activity = {
-			owner: foundActivity.owner.toString(),
-			title: inputTitle || foundActivity.title,
-			description: inputDescription || foundActivity.description,
-			accessList: foundActivity.accessList,
-			deadline: updatedDeadline || foundActivity.deadline,
-			completed: updatedCompleted,
-			completedAt: inputCompleted ? new Date() : undefined,
-			accessListAccepted: updatedAccessListAccepted || foundActivity.accessListAccepted,
-			idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso || undefined,
+        const updatedActivity: Activity = {
+            owner: foundActivity.owner.toString(),
+            title: inputTitle || foundActivity.title,
+            description: inputDescription || foundActivity.description,
+            accessList: foundActivity.accessList,
+            deadline: updatedDeadline || foundActivity.deadline,
+            completed: updatedCompleted,
+            completedAt: inputCompleted ? new Date() : undefined,
+            accessListAccepted:
+                updatedAccessListAccepted || foundActivity.accessListAccepted,
+            idEventoNotificaCondiviso:
+                foundActivity.idEventoNotificaCondiviso || undefined,
 
             // Leo - Progetti - BGN
             projectId: foundActivity.projectId || null,
@@ -1024,11 +1039,14 @@ router.put("/:id", async (req: Request, res: Response) => {
             updatedActivity
         );
 
-		const result = await ActivitySchema.findOneAndUpdate(
-			{ idEventoNotificaCondiviso: updatedActivity.idEventoNotificaCondiviso }, // Filtro per idEventoNotificaCondiviso
-			updatedActivity,
-			{ new: true } // Opzione per restituire il documento aggiornato
-		);
+        const result = await ActivitySchema.findOneAndUpdate(
+            {
+                idEventoNotificaCondiviso:
+                    updatedActivity.idEventoNotificaCondiviso,
+            }, // Filtro per idEventoNotificaCondiviso
+            updatedActivity,
+            { new: true } // Opzione per restituire il documento aggiornato
+        );
 
         if (projectId && inputNext) {
             // set prev next to null, and update to new next
