@@ -263,6 +263,32 @@ export default function Header(): React.JSX.Element {
 		handleReadNotification(notification.id);
 	}
 
+	async function handleAddSharedEvent(notification: Notification): Promise<void> {
+		console.log("NOTIFICA DI EVENTO CONDIVISO:", notification);
+
+		//aggiungi il receiver alla accessListAccepted dell'evento
+		const res = await fetch(`${SERVER_API}/events/${notification.data.event.idEventoNotificaCondiviso}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ accessListAcceptedUser: notification.receiver }),
+		});
+		console.log("AccessListAccepted aggiornato:", res);
+
+
+
+		//aggiungi la notifica dell'evento condiviso come notifica sul calendario
+		if (notification.data.notification) {
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(notification.data.notification),
+			});
+			console.log("Notifica creata:", res3);
+
+		}
+		handleReadNotification(notification.id);
+	}
+
 	async function handleAddEvent(notification: Notification): Promise<void> {
 		console.log(
 			"EVENTO DELLA NOTIFICA DA AGGIUNGERE ALLA LISTA DEGLI EVENTI:",
@@ -283,11 +309,10 @@ export default function Header(): React.JSX.Element {
 		const frequency = notification.data.event.frequency;
 		const untilDate = notification.data.event.untilDate;
 		const repetitions = notification.data.event.repetitions;
-
 		console.log("START TIME DELL'EVENTO DA CREARE:", startTime);
 		console.log("END TIME DELL'EVENTO DA CREARE:", endTime);
 
-		//crea l'evento scadenza come evento sul calendario
+		//crea l'evento sul calendario
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -298,6 +323,8 @@ export default function Header(): React.JSX.Element {
 				startTime: startTime, //TOLGO TOISOTRING
 				endTime: endTime, //TOLGO TOISOTRING
 				untilDate: untilDate,
+				accessList: [owner],
+				accessListAccepted: [owner],
 				isInfinite: isInfinite,
 				frequency: frequency,
 				location,
@@ -466,6 +493,10 @@ export default function Header(): React.JSX.Element {
 			}
 
 			if (notification && notification.type === "shareActivity" && notification.read === false) {
+				return true;
+			}
+
+			if (notification && notification.type === "shareEvent" && notification.read === false) {
 				return true;
 			}
 
@@ -1429,6 +1460,107 @@ export default function Header(): React.JSX.Element {
 													</div>
 												);
 											}
+										}
+
+										else if (
+											notification.type === "shareEvent" &&
+											notification.receiver === user &&
+											notification.read === false &&
+											doNotDisturb === false
+										) {
+											const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+											if (eventDate < currentDate) {
+												return (
+													<div key={index}>
+														Hai ricevuto un invito per un{" "}
+														<span
+															style={{
+																color: "bisque",
+																fontWeight: "bold",
+															}}>
+															evento condiviso
+														</span>
+														!
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	// Controlla se notification.id è definito
+																	handleAddSharedEvent(notification);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-check"
+																style={{
+																	color: "green",
+																	fontSize: "20px",
+																}}></i>{" "}
+															{/* Icona di tick */}
+														</button>
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	// Controlla se notification.id è definito
+																	handleReadNotification(
+																		notification.id
+																	);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-times"
+																style={{
+																	color: "red",
+																	fontSize: "20px",
+																}}></i>{" "}
+															{/* Icona di elimazione */}
+														</button>
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	// Controlla se notification.id è definito
+																	handleSnoozeNotification(
+																		notification.id
+																	);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-arrows-alt-h"
+																style={{
+																	color: "lightblue",
+																	fontSize: "20px",
+																}}></i>{" "}
+															{/* Icona di elimazione */}
+														</button>
+													</div>
+												);
+											}
+
 										}
 
 

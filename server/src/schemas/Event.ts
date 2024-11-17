@@ -10,7 +10,28 @@ const RecurrenceSchema = new mongoose.Schema({
 
 const eventSchema = new mongoose.Schema(
 	{
-		owner: { type: String, ref: "User", required: true },
+		owner: {
+			type: mongoose.Schema.Types.Mixed, // Modificato per accettare sia ObjectId che String
+			ref: "User",
+			required: true,
+			validate: {
+				validator: function (value: any) {
+					return (
+						typeof value === 'string' ||
+						mongoose.Types.ObjectId.isValid(value)
+					);
+				},
+				message: (props: any) => `${props.value} non è un tipo valido! Deve essere una String o un ObjectId.`,
+			},
+		},
+		accessList: {
+			type: [mongoose.Schema.Types.Mixed], // Modificato per accettare array di String o ObjectId
+			ref: "User"
+		},
+		accessListAccepted: {
+			type: [mongoose.Schema.Types.Mixed], // Modificato per accettare array di String o ObjectId
+			required: false,
+		},
 		startTime: { type: Date, required: true }, //impostarlo a tipo mixed/generico?
 		endTime: { type: Date, required: true },
 		repetitions: { type: Number, required: true },

@@ -282,7 +282,14 @@ router.get("/owner", async (req: Request, res: Response) => {
             });
         }
 
-        const foundDBEvents = await EventSchema.find({ owner: ownerId }).lean();
+        const foundDBEvents = await EventSchema.find({
+            $or: [
+                { owner: ownerId }, // Condizione 1: owner è uguale a ownerId
+                { accessListAccepted: ownerId } // Condizione 2: owner è contenuto in accessListAccepted
+            ]
+        }).lean();
+
+        console.log("Eventi trovati:", foundDBEvents);
 
         if (foundDBEvents.length === 0) {
             const resBody: ResponseBody = {
@@ -330,7 +337,9 @@ router.post("/", async (req: Request, res: Response) => {
             location,
             repetitions,
             isInfinite,
-            idEventoNotificaCondiviso
+            idEventoNotificaCondiviso,
+            accessList,
+            accessListAccepted
         } = req.body as Event;
 
         console.log("Owner passato come parametro:", owner);
@@ -403,6 +412,8 @@ router.post("/", async (req: Request, res: Response) => {
                 location,
                 frequency,
                 isInfinite,
+                accessList,
+                accessListAccepted,
                 repetitions,
                 owner,
                 recurring: true,
@@ -449,6 +460,8 @@ router.post("/", async (req: Request, res: Response) => {
                         endTime, // Aggiungi un giorno
                         repetitions,
                         frequency,
+                        accessList,
+                        accessListAccepted,
                         location,
                         isInfinite,
                         owner,
@@ -503,6 +516,8 @@ router.post("/", async (req: Request, res: Response) => {
                         repetitions,
                         isInfinite,
                         frequency,
+                        accessList,
+                        accessListAccepted,
                         location,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
@@ -545,6 +560,8 @@ router.post("/", async (req: Request, res: Response) => {
                         repetitions,
                         frequency,
                         isInfinite,
+                        accessList,
+                        accessListAccepted,
                         location,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
@@ -599,6 +616,8 @@ router.post("/", async (req: Request, res: Response) => {
                         frequency,
                         isInfinite,
                         location,
+                        accessList,
+                        accessListAccepted,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
@@ -626,6 +645,8 @@ router.post("/", async (req: Request, res: Response) => {
                     repetitions,
                     owner,
                     recurring: false, //assumo evento non ricorrente
+                    accessList,
+                    accessListAccepted,
                     createdAt: now,
                     updatedAt: now,
                 };
@@ -688,6 +709,8 @@ router.post("/", async (req: Request, res: Response) => {
                         frequency,
                         isInfinite,
                         untilDate,
+                        accessList,
+                        accessListAccepted,
                         location,
                         owner,
                         recurring: true,
@@ -748,6 +771,8 @@ router.post("/", async (req: Request, res: Response) => {
                         startTime,
                         endTime,
                         repetitions,
+                        accessList,
+                        accessListAccepted,
                         untilDate,
                         frequency,
                         idEventoNotificaCondiviso,
@@ -806,6 +831,8 @@ router.post("/", async (req: Request, res: Response) => {
                         repetitions,
                         idEventoNotificaCondiviso,
                         frequency,
+                        accessList,
+                        accessListAccepted,
                         isInfinite,
                         untilDate,
                         location,
@@ -874,6 +901,8 @@ router.post("/", async (req: Request, res: Response) => {
                         frequency,
                         isInfinite,
                         untilDate,
+                        accessList,
+                        accessListAccepted,
                         location,
                         owner,
                         recurring: true, // Imposta ricorrente se repetitions > 1
@@ -904,6 +933,8 @@ router.post("/", async (req: Request, res: Response) => {
                     location,
                     idEventoNotificaCondiviso,
                     frequency,
+                    accessList,
+                    accessListAccepted,
                     isInfinite,
                     repetitions,
                     owner,
@@ -1017,7 +1048,12 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
 
     try {
         // Trova tutti gli eventi
-        const allEvents = await EventSchema.find({ owner: owner }).lean(); // .lean() per ottenere oggetti JavaScript semplici
+        const allEvents = await EventSchema.find({
+            $or: [
+                { owner: owner }, // Condizione 1: owner è uguale a ownerId
+                { accessListAccepted: owner } // Condizione 2: owner è contenuto in accessListAccepted
+            ]
+        }).lean();// .lean() per ottenere oggetti JavaScript semplici
 
         // Filtra gli eventi per il giorno selezionato
         const filteredEvents = allEvents.filter((event) => {
@@ -1089,33 +1125,43 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
 });
 
 router.put("/:id", async (req: Request, res: Response) => {
-    const eventId = req.params.id as string;
-    const updatedEvent = req.body as Event;
+    const idEventoNotificaCondiviso = req.params.id as string;
+    const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as string[] | undefined; // username list
+
 
     try {
         // TODO: validate param
         // TODO: validate body fields
 
-        const foundEvent = await EventSchema.findById(eventId);
-
-        if (!foundEvent) {
+        const foundEvents = await EventSchema.find({ idEventoNotificaCondiviso: idEventoNotificaCondiviso });
+        if (foundEvents.length === 0) {
             const resBody: ResponseBody = {
-                message: "Event with id " + eventId + " not found!",
+                message: "Event with id " + idEventoNotificaCondiviso + " not found!",
                 status: ResponseStatus.BAD,
             };
 
             return res.status(400).json(resBody);
         }
 
-        console.log("Updating event: ", foundEvent, " to ", updatedEvent);
+        let updatedAccessListAccepted: string[] | undefined;
+        if (inputAccessListAcceptedUser) {
+            // Itera su tutti gli eventi trovati e aggiorna accessListAccepted
+            for (const foundEvent of foundEvents) {
+                updatedAccessListAccepted = foundEvent.accessListAccepted?.concat(inputAccessListAcceptedUser);
 
-        await EventSchema.findByIdAndUpdate(eventId, updatedEvent);
+                console.log("Updating event: ", foundEvent, " to ", updatedAccessListAccepted);
 
+                await EventSchema.findOneAndUpdate(
+                    { idEventoNotificaCondiviso: foundEvent.idEventoNotificaCondiviso }, // Usa _id per trovare l'evento specifico
+                    { accessListAccepted: updatedAccessListAccepted }
+                );
+            }
+        }
         // TODO: filter the fields of the found event
         const resBody: ResponseBody = {
             message: "Event updated in database",
             status: ResponseStatus.GOOD,
-            value: updatedEvent,
+            value: foundEvents,
         };
 
         return res.json(resBody);

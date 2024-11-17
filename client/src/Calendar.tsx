@@ -84,6 +84,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const [sendInviteActivity, setSendInviteActivity] = React.useState(false);
 	const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
 	const [addNotification, setAddNotification] = React.useState(false);
+	const [shareEvent, setShareEvent] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
 		const now = new Date();
 		return now;
@@ -522,6 +523,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			//console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
+			console.log("Eventi trovati:", data.value);
 			//console.log("Eventi trovati:", data);
 
 			if (data.status === ResponseStatus.GOOD) {
@@ -949,6 +951,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setTitle("");
 		setCreateNonDisturbare(!createNonDisturbare);
 		setFrequency(Frequency.ONCE);
+		setShareEvent(false);
 	}
 
 	function toggleCreate(): void {
@@ -1739,8 +1742,18 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	}
 
+	async function handleAddUserEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+		console.log("Utente ", users[0], " aggiunto all'access list dell'evento");
+		setAccessList([...accessList, users[0]]);
+	}
+
 	function toggleShareActivity(): void {
 		setShareActivity(!shareActivity);
+	}
+
+	function toggleShareEvent(): void {
+		setShareEvent(!shareEvent);
 	}
 
 
@@ -2071,6 +2084,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 				title,
 				startTime: startTime.toISOString(),
 				endTime: endTime.toISOString(),
+				accessList: [...new Set([...accessList, owner])],
+				accessListAccepted: [owner],
 				untilDate: untilDate,
 				isInfinite,
 				frequency: frequency,
@@ -2078,6 +2093,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 				repetitions,
 			}),
 		});
+
+
 
 		const notificationDate = new Date(startTime);
 		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
@@ -2103,9 +2120,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 
 		if (addNotification) {
-
-
-
 			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
 			const res2 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
@@ -2129,10 +2143,69 @@ export default function Calendar(): React.JSX.Element { // prova push
 				}),
 			});
 
+
+
 			const data2 = await res2.json();
 
 			console.log("NOTIFICA AGGIUNTA:", data2);
 		}
+
+
+		const newEvent = {
+			owner: owner,
+			title: title,
+			startTime: startTime.toISOString(),
+			endTime: endTime.toISOString(),
+			location: location,
+			accessList: [...new Set([...accessList, owner])],
+			accessListAccepted: [owner],
+			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+			isInfinite: isInfinite,
+			frequency: frequency,
+			untilDate: untilDate,
+			repetitions: repetitions,
+		}
+
+		//per ogni utente della accessList, invia una notifica per accettare l'invito
+		for (const receiver of accessList) {
+			const newNotification = {
+				message: message,
+				mode: "event",
+				receiver: receiver,
+				type: "event",
+				data: {
+					date: notificationDate, //data prima notifica
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+					frequencyEvent: frequency,
+					isInfiniteEvent: isInfinite,
+					repetitionsEvent: repetitions,
+					untilDateEvent: untilDate,
+				},
+			}
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message: message,
+					mode: "event",
+					receiver: receiver,
+					type: "shareEvent",
+					data: {
+						date: currentDate,
+						event: newEvent,
+						notification: newNotification,
+
+					},
+				}),
+			});
+
+			console.log("NOTIFICA CONDIVISA:", res3);
+		}
+
+
 
 		if (!res.ok) {
 			const errorData = await res.json();
@@ -2151,7 +2224,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setAddNotification(false);
 		setNotificationTime(0);
 		setNotificationRepeatTime(0);
-
+		setShareEvent(false);
 		//ripristina l'orario dopo nel pannelo createEvent, dopo aver creato un evento
 		const now = new Date();
 		const startT = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
@@ -2740,9 +2813,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 								const date = new Date(year, meseCorrente - 1);
 								console.log(getDaysInMonth(date));
 								*/
-								}}>
+								}
+								}>
 								{"<<"}
-							</button>
+							</button >
 							<time style={{ fontSize: "2rem", color: "black" }}>
 								{" "}
 								{Mesi[meseCorrente]}
@@ -2765,7 +2839,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 								}}>
 								{">>"}
 							</button>
-						</div>
+						</div >
 						<div className="day-of-week">
 							<div>Dom</div>
 							<div>Lun</div>
@@ -2847,7 +2921,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 						</div>
 
-					</div>
+					</div >
 					{createEvent && (
 						<div className="create-event-container col-2">
 							<button
@@ -3173,203 +3247,24 @@ export default function Calendar(): React.JSX.Element { // prova push
 									</div>
 								)}
 
-								<button
-									className="btn btn-primary"
-									style={{
-										backgroundColor: "bisque",
-										color: "white",
-										border: "0",
-									}}
-									onClick={handleCreateEvent}>
-									Crea
-								</button>
-							</form>
-						</div>
-
-					)}
-
-					{createActivity && (
-						<div className="create-event-container col-2">
-							<button
-								className="btn btn-primary"
-								style={{ backgroundColor: "bisque", color: "white", border: "0" }}
-								onClick={toggleCreateActivity}>
-								Chiudi
-							</button>
-							<form>
-								{addTitle && (
-									<label htmlFor="title">
-										Title
-										<input
-											className="btn border"
-											type="text"
-											name="title"
-											value={title}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-												setTitle(e.target.value)
-											}
-										/>
-									</label>
-								)}
-								<label htmlFor="description">
-									Descrizione
-									<input
-										className="btn border"
-										type="text"
-										name="title"
-										value={description}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-											setDescription(e.target.value)
-										}
-									/>
-								</label>
-								<label htmlFor="endTime">
-									Scadenza
-									<div>
-										<DatePicker
-											className="btn border"
-											name="endTime"
-											selected={endTime}
-											onChange={(date: Date | null): void => {
-												if (date) {
-													// Aggiorna la data mantenendo l'orario attuale
-													const newDate = new Date(endTime);
-													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-													setEndTime(newDate);
-												}
-											}}
-										/>
-									</div>
-
-									<div>
-										<input
-											className="btn border"
-											type="time"
-											value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-												const [hours, minutes] = e.target.value.split(':');
-												const newDate = new Date(endTime);
-												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-												setEndTime(newDate); // Imposta il nuovo oggetto Date
-											}}
-											onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-												if (e.key === 'Backspace') {
-													e.preventDefault(); // Impedisce l'input del tasto backspace
-												}
-											}}
-										/>
-									</div>
-
-								</label>
-
 								<label htmlFor="allDayEvent">
 									<input
 										type="checkbox"
 
-										onClick={toggleAddNotification}
+										onClick={toggleShareEvent}
 										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 									/>
-									Aggiungi notifica
+									Condividi evento
 
 								</label>
 
-								{addNotification && (
-									<label htmlFor="notificationTime">
-										Quanto tempo prima mandare la notifica
-										<select
-											id="notificationTimeSelect"
-											className="btn border"
-											onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-												setNotificationTime(Number(e.target.value));
-												if (Number(e.target.value) > 0) {
-													setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-												}
-												else if (Number(e.target.value) == 0) {
-													setNotificationRepeat(false);
-												}
-											}}
-											style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
-										>
-											<option value="0">All'ora d'inizio</option>
-											<option value="5">5 minuti prima</option>
-											<option value="10">10 minuti prima</option>
-											<option value="15">15 minuti prima</option>
-											<option value="30">30 minuti prima</option>
-											<option value="60">1 ora prima</option>
-											<option value="120">2 ore prima</option>
-											<option value="1440">Un giorno prima</option>
-											<option value="2880">2 giorni prima</option>
-										</select>
-									</label>
-								)}
-
-								{notificationRepeat && (
-									<label htmlFor="notificationRepeatTime">
-										Quanto tempo ripetere la notifica
-										<select
-											className="btn border"
-											name="notificationRepeatTime"
-											onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-												setNotificationRepeatTime(Number(e.target.value));
-											}}
-										>
-											{getValidRepeatOptions(notificationTime).map(option => (
-												<option key={option} value={option}>
-													{option === 0
-														? "Mai"
-														: option >= 60
-															? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-															: `Ogni ${option} minuti`}
-												</option>
-											))}
-										</select>
-									</label>
-								)}
-
-								<label htmlFor="allDayEvent">
-									<input
-										type="checkbox"
-										name="addNotification"
-										onClick={toggleSendInviteActivity}
-										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-									/>
-									Invia attività ad utente
-
-								</label>
-
-								{sendInviteActivity && (
+								{shareEvent && (
 									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-										<div>Scegli l'utente al quale inviare la notifica</div>
+										<div>Scegli l'utente con il quale condividere l'evento</div>
 										{users.length > 0}
 										<SearchForm onItemClick={handleSelectUser} list={users} />
 										<button
-											onClick={handleSendInviteActivity}
-											className="btn btn-primary send-invite-button"
-											style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
-										>
-											Invia Invito
-										</button>
-									</div>
-								)}
-
-								<label htmlFor="allDayEvent">
-									<input
-										type="checkbox"
-										name="addNotification"
-										onClick={toggleShareActivity}
-										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-									/>
-									Condividi attività
-
-								</label>
-
-								{shareActivity && (
-									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-										<div>Scegli l'utente con il quale condividere l'attività</div>
-										{users.length > 0}
-										<SearchForm onItemClick={handleSelectUser} list={users} />
-										<button
-											onClick={handleAddUserActivity}
+											onClick={handleAddUserEvent}
 											className="btn btn-primary send-invite-button"
 											style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
 										>
@@ -3385,444 +3280,659 @@ export default function Calendar(): React.JSX.Element { // prova push
 										color: "white",
 										border: "0",
 									}}
-									onClick={handleCreateActivity}>
+									onClick={handleCreateEvent}>
 									Crea
 								</button>
-
-
-
-
-
 							</form>
 						</div>
 
 					)}
 
-					{createNonDisturbare && (
-						<div className="create-event-container col-2">
-							<button
-								className="btn btn-primary"
-								style={{ backgroundColor: "bisque", color: "white", border: "0" }}
-								onClick={toggleCreateNonDisturbare}>
-								Chiudi
-							</button>
-							<form>
-
-								<label htmlFor="allDayEvent">
-									<input
-										type="checkbox"
-										name="allDayEvent"
-										onClick={toggleAllDayEvent}
-										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-									/>
-									Tutto il giorno
-
-								</label>
-
-								<label htmlFor="allDayEvent">
-									<input
-										type="checkbox"
-										name="repeatEvent"
-										onClick={toggleRepeatEvent}
-										style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-									/>
-									Ripeti
-
-								</label>
-								{repeatEvent && (
-									<>
-										<div className="flex" style={{ marginRight: "10px" }}>
-											Ripeti l'evento
-											<label htmlFor="repeatEvent">
-												<select
-													className="btn border"
-													name="repetitionType"
-													onChange={toggleSelectFrequency}
-													style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-												>
-													<option value="Once">Una volta</option>
-													<option value="Daily">Ogni giorno</option>
-													<option value="Weekly">Ogni settimana</option>
-													<option value="Monthly">Ogni mese </option>
-													<option value="Yearly">Ogni anno</option>
-												</select>
-
-											</label>
-										</div>
-
-
-
-										{until && (
-											<div>
-												<div>
-													<div className="flex" style={{ marginRight: "10px" }}>
-														Fino a
-														<select className="btn border" onChange={toggleSelectUntil} defaultValue="Data">
-															<option value="Data">Data</option>
-															<option value="Ripetizioni">Ripetizioni</option>
-															<option value="Infinito">Infinito </option>
-														</select>
-													</div>
-
-													{selectedValue === "Data" && (
-														<DatePicker
-															className="btn border"
-															name="finoAData"
-															selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
-															onChange={(date: Date | null): void => {
-																if (date) {
-																	date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
-																	setUntilDate(date); // Aggiorna lo stato con la nuova data
-																}
-															}}
-															placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
-														/>
-													)}
-
-
-
-													{selectedValue === "Ripetizioni" && (
-														<div>
-															<input className="btn border" type="number" min="1"
-																onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-																	setRepetitions(Number(e.target.value));
-																	//setIsUntilDate(false);
-																	setUntilDate(null); // Aggiorna lo stato con la nuova data
-
-																	if (repetitions < 1 || isNaN(repetitions)) {
-																		setRepetitions(1);
-																	}
-																	console.log("Numero ripetizione dell'evento: ", repetitions);
-																}}>
-															</input>
-														</div>
-													)}
-
-
-												</div>
-											</div>
-										)}
-									</>
-								)}
-
-								<label htmlFor="startTime">
-									Data Inizio
-									<div>
-										<DatePicker
-											className="btn border"
-											name="startTime"
-											selected={startTime}
-											onChange={(date: Date | null): void => {
-												if (date) {
-													// Aggiorna la data mantenendo l'orario attuale
-													const newDate = new Date(startTime);
-													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-													setStartTime(newDate);
-												}
-											}}
-										/>
-									</div>
-									{!allDayEvent && (
-										<>
-											<div>
-												<input
-													className="btn border"
-													type="time"
-													value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
-													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-														const [hours, minutes] = e.target.value.split(':');
-														if (hours && minutes) { // Controlla se hours e minutes sono definiti
-															const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-															newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
-															setStartTime(newDate); // Imposta il nuovo oggetto Date
-														}
-													}}
-													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-														if (e.key === 'Backspace') {
-															e.preventDefault(); // Impedisce l'input del tasto backspace
-														}
-													}}
-												/>
-											</div>
-										</>
-									)}
-								</label>
-								<label htmlFor="endTime">
-									Data Fine
-									<div>
-										<DatePicker
-											className="btn border"
-											name="endTime"
-											selected={endTime}
-											onChange={(date: Date | null): void => {
-												if (date) {
-													// Aggiorna la data mantenendo l'orario attuale
-													const newDate = new Date(endTime);
-													newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-													setEndTime(newDate);
-												}
-											}}
-										/>
-									</div>
-									{!allDayEvent && (
-										<>
-											<div>
-												<input
-													className="btn border"
-													type="time"
-													value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
-													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-														const [hours, minutes] = e.target.value.split(':');
-														if (hours && minutes) { // Controlla se hours e minutes sono definiti
-															const newDate = new Date(endTime);
-															newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-															setEndTime(newDate); // Imposta il nuovo oggetto Date
-														}
-													}}
-													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-														if (e.key === 'Backspace') {
-															e.preventDefault(); // Impedisce l'input del tasto backspace
-														}
-													}}
-												/>
-											</div>
-										</>
-									)}
-								</label>
-
+					{
+						createActivity && (
+							<div className="create-event-container col-2">
 								<button
 									className="btn btn-primary"
-									style={{
-										backgroundColor: "bisque",
-										color: "white",
-										border: "0",
-									}}
-									onClick={handleCreateNonDisturbare}>
-									Crea
+									style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+									onClick={toggleCreateActivity}>
+									Chiudi
 								</button>
-							</form>
-						</div>
+								<form>
+									{addTitle && (
+										<label htmlFor="title">
+											Title
+											<input
+												className="btn border"
+												type="text"
+												name="title"
+												value={title}
+												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+													setTitle(e.target.value)
+												}
+											/>
+										</label>
+									)}
+									<label htmlFor="description">
+										Descrizione
+										<input
+											className="btn border"
+											type="text"
+											name="title"
+											value={description}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+												setDescription(e.target.value)
+											}
+										/>
+									</label>
+									<label htmlFor="endTime">
+										Scadenza
+										<div>
+											<DatePicker
+												className="btn border"
+												name="endTime"
+												selected={endTime}
+												onChange={(date: Date | null): void => {
+													if (date) {
+														// Aggiorna la data mantenendo l'orario attuale
+														const newDate = new Date(endTime);
+														newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+														setEndTime(newDate);
+													}
+												}}
+											/>
+										</div>
 
-					)}
+										<div>
+											<input
+												className="btn border"
+												type="time"
+												value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
+												onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+													const [hours, minutes] = e.target.value.split(':');
+													const newDate = new Date(endTime);
+													newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+													setEndTime(newDate); // Imposta il nuovo oggetto Date
+												}}
+												onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+													if (e.key === 'Backspace') {
+														e.preventDefault(); // Impedisce l'input del tasto backspace
+													}
+												}}
+											/>
+										</div>
 
-					{activitiesMode && todayActivitiesMode && (
-						<>
-							<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
-								{activitiesCheScadonoOggi.length > 0 ? (
-									activitiesCheScadonoOggi.map((activity, index) => (
-										<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
-											<h4>{activity.title}</h4>
-											<p>Scadenza: {new Date(activity.deadline).toLocaleString()}</p>
-											<p>Descrizione: {activity.description}</p>
-											<span style={{ color: "black", marginBottom: "10px" }}>
-												Completata:
-												<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
-													{activity.completed ? " Si" : " No"}
+									</label>
+
+									<label htmlFor="allDayEvent">
+										<input
+											type="checkbox"
+
+											onClick={toggleAddNotification}
+											style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+										/>
+										Aggiungi notifica
+
+									</label>
+
+									{addNotification && (
+										<label htmlFor="notificationTime">
+											Quanto tempo prima mandare la notifica
+											<select
+												id="notificationTimeSelect"
+												className="btn border"
+												onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+													setNotificationTime(Number(e.target.value));
+													if (Number(e.target.value) > 0) {
+														setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+													}
+													else if (Number(e.target.value) == 0) {
+														setNotificationRepeat(false);
+													}
+												}}
+												style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+											>
+												<option value="0">All'ora d'inizio</option>
+												<option value="5">5 minuti prima</option>
+												<option value="10">10 minuti prima</option>
+												<option value="15">15 minuti prima</option>
+												<option value="30">30 minuti prima</option>
+												<option value="60">1 ora prima</option>
+												<option value="120">2 ore prima</option>
+												<option value="1440">Un giorno prima</option>
+												<option value="2880">2 giorni prima</option>
+											</select>
+										</label>
+									)}
+
+									{notificationRepeat && (
+										<label htmlFor="notificationRepeatTime">
+											Quanto tempo ripetere la notifica
+											<select
+												className="btn border"
+												name="notificationRepeatTime"
+												onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+													setNotificationRepeatTime(Number(e.target.value));
+												}}
+											>
+												{getValidRepeatOptions(notificationTime).map(option => (
+													<option key={option} value={option}>
+														{option === 0
+															? "Mai"
+															: option >= 60
+																? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+																: `Ogni ${option} minuti`}
+													</option>
+												))}
+											</select>
+										</label>
+									)}
+
+									<label htmlFor="allDayEvent">
+										<input
+											type="checkbox"
+											name="addNotification"
+											onClick={toggleSendInviteActivity}
+											style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+										/>
+										Invia attività ad utente
+
+									</label>
+
+									{sendInviteActivity && (
+										<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+											<div>Scegli l'utente al quale inviare la notifica</div>
+											{users.length > 0}
+											<SearchForm onItemClick={handleSelectUser} list={users} />
+											<button
+												onClick={handleSendInviteActivity}
+												className="btn btn-primary send-invite-button"
+												style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
+											>
+												Invia Invito
+											</button>
+										</div>
+									)}
+
+									<label htmlFor="allDayEvent">
+										<input
+											type="checkbox"
+											name="addNotification"
+											onClick={toggleShareActivity}
+											style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+										/>
+										Condividi attività
+
+									</label>
+
+									{shareActivity && (
+										<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+											<div>Scegli l'utente con il quale condividere l'attività</div>
+											{users.length > 0}
+											<SearchForm onItemClick={handleSelectUser} list={users} />
+											<button
+												onClick={handleAddUserActivity}
+												className="btn btn-primary send-invite-button"
+												style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
+											>
+												Condividi
+											</button>
+										</div>
+									)}
+
+									<button
+										className="btn btn-primary"
+										style={{
+											backgroundColor: "bisque",
+											color: "white",
+											border: "0",
+										}}
+										onClick={handleCreateActivity}>
+										Crea
+									</button>
+
+
+
+
+
+								</form>
+							</div>
+
+						)
+					}
+
+					{
+						createNonDisturbare && (
+							<div className="create-event-container col-2">
+								<button
+									className="btn btn-primary"
+									style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+									onClick={toggleCreateNonDisturbare}>
+									Chiudi
+								</button>
+								<form>
+
+									<label htmlFor="allDayEvent">
+										<input
+											type="checkbox"
+											name="allDayEvent"
+											onClick={toggleAllDayEvent}
+											style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+										/>
+										Tutto il giorno
+
+									</label>
+
+									<label htmlFor="allDayEvent">
+										<input
+											type="checkbox"
+											name="repeatEvent"
+											onClick={toggleRepeatEvent}
+											style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+										/>
+										Ripeti
+
+									</label>
+									{repeatEvent && (
+										<>
+											<div className="flex" style={{ marginRight: "10px" }}>
+												Ripeti l'evento
+												<label htmlFor="repeatEvent">
+													<select
+														className="btn border"
+														name="repetitionType"
+														onChange={toggleSelectFrequency}
+														style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+													>
+														<option value="Once">Una volta</option>
+														<option value="Daily">Ogni giorno</option>
+														<option value="Weekly">Ogni settimana</option>
+														<option value="Monthly">Ogni mese </option>
+														<option value="Yearly">Ogni anno</option>
+													</select>
+
+												</label>
+											</div>
+
+
+
+											{until && (
+												<div>
+													<div>
+														<div className="flex" style={{ marginRight: "10px" }}>
+															Fino a
+															<select className="btn border" onChange={toggleSelectUntil} defaultValue="Data">
+																<option value="Data">Data</option>
+																<option value="Ripetizioni">Ripetizioni</option>
+																<option value="Infinito">Infinito </option>
+															</select>
+														</div>
+
+														{selectedValue === "Data" && (
+															<DatePicker
+																className="btn border"
+																name="finoAData"
+																selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
+																onChange={(date: Date | null): void => {
+																	if (date) {
+																		date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
+																		setUntilDate(date); // Aggiorna lo stato con la nuova data
+																	}
+																}}
+																placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
+															/>
+														)}
+
+
+
+														{selectedValue === "Ripetizioni" && (
+															<div>
+																<input className="btn border" type="number" min="1"
+																	onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+																		setRepetitions(Number(e.target.value));
+																		//setIsUntilDate(false);
+																		setUntilDate(null); // Aggiorna lo stato con la nuova data
+
+																		if (repetitions < 1 || isNaN(repetitions)) {
+																			setRepetitions(1);
+																		}
+																		console.log("Numero ripetizione dell'evento: ", repetitions);
+																	}}>
+																</input>
+															</div>
+														)}
+
+
+													</div>
+												</div>
+											)}
+										</>
+									)}
+
+									<label htmlFor="startTime">
+										Data Inizio
+										<div>
+											<DatePicker
+												className="btn border"
+												name="startTime"
+												selected={startTime}
+												onChange={(date: Date | null): void => {
+													if (date) {
+														// Aggiorna la data mantenendo l'orario attuale
+														const newDate = new Date(startTime);
+														newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+														setStartTime(newDate);
+													}
+												}}
+											/>
+										</div>
+										{!allDayEvent && (
+											<>
+												<div>
+													<input
+														className="btn border"
+														type="time"
+														value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
+														onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+															const [hours, minutes] = e.target.value.split(':');
+															if (hours && minutes) { // Controlla se hours e minutes sono definiti
+																const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
+																newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+																setStartTime(newDate); // Imposta il nuovo oggetto Date
+															}
+														}}
+														onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+															if (e.key === 'Backspace') {
+																e.preventDefault(); // Impedisce l'input del tasto backspace
+															}
+														}}
+													/>
+												</div>
+											</>
+										)}
+									</label>
+									<label htmlFor="endTime">
+										Data Fine
+										<div>
+											<DatePicker
+												className="btn border"
+												name="endTime"
+												selected={endTime}
+												onChange={(date: Date | null): void => {
+													if (date) {
+														// Aggiorna la data mantenendo l'orario attuale
+														const newDate = new Date(endTime);
+														newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+														setEndTime(newDate);
+													}
+												}}
+											/>
+										</div>
+										{!allDayEvent && (
+											<>
+												<div>
+													<input
+														className="btn border"
+														type="time"
+														value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
+														onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+															const [hours, minutes] = e.target.value.split(':');
+															if (hours && minutes) { // Controlla se hours e minutes sono definiti
+																const newDate = new Date(endTime);
+																newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+																setEndTime(newDate); // Imposta il nuovo oggetto Date
+															}
+														}}
+														onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+															if (e.key === 'Backspace') {
+																e.preventDefault(); // Impedisce l'input del tasto backspace
+															}
+														}}
+													/>
+												</div>
+											</>
+										)}
+									</label>
+
+									<button
+										className="btn btn-primary"
+										style={{
+											backgroundColor: "bisque",
+											color: "white",
+											border: "0",
+										}}
+										onClick={handleCreateNonDisturbare}>
+										Crea
+									</button>
+								</form>
+							</div>
+
+						)
+					}
+
+					{
+						activitiesMode && todayActivitiesMode && (
+							<>
+								<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
+									{activitiesCheScadonoOggi.length > 0 ? (
+										activitiesCheScadonoOggi.map((activity, index) => (
+											<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
+												<h4>{activity.title}</h4>
+												<p>Scadenza: {new Date(activity.deadline).toLocaleString()}</p>
+												<p>Descrizione: {activity.description}</p>
+												<span style={{ color: "black", marginBottom: "10px" }}>
+													Completata:
+													<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
+														{activity.completed ? " Si" : " No"}
+													</span>
+
+
+													{new Date(activity.deadline) < currentDate && !activity.completed && (
+														<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
+													)}
+
 												</span>
+												<br />
+												<button onClick={async (): Promise<void> => {
+													await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
+													// Dopo l'eliminazione, aggiorna la lista delle attività
+													setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
+												}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+													<i style={{ color: "black" }} className="bi bi-trash"> </i>
+												</button>
 
+												<button onClick={async (): Promise<void> => {
+													await handleCompleteActivity(activity._id); //completo l'attività corrente
+												}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+													<i style={{ color: "black" }} className="bi bi-check"> </i>
+												</button>
+
+											</div>
+
+										))
+									) : (
+										<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold" }}>Non ci sono attività in scadenza oggi.</p>
+									)}
+								</div>
+							</>
+
+						)
+					}
+
+					{
+						activitiesMode && allActivitiesMode && (
+							<>
+								<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
+									{activityList.length > 0 ? (
+										activityList.map((activity, index) => (
+											<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
+												<h4>{activity.title}</h4>
+												<p>Scadenza: {new Date(activity.deadline).toLocaleString()}</p>
+												<p>Descrizione: {activity.description}</p>
+												<span style={{ color: "black", marginBottom: "10px" }}>
+													Completata:
+													<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
+														{activity.completed ? " Si" : " No"}
+													</span>
+												</span>
 
 												{new Date(activity.deadline) < currentDate && !activity.completed && (
 													<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
 												)}
 
-											</span>
-											<br />
-											<button onClick={async (): Promise<void> => {
-												await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
-												// Dopo l'eliminazione, aggiorna la lista delle attività
-												setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
-											}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-												<i style={{ color: "black" }} className="bi bi-trash"> </i>
-											</button>
+												<br />
+												<button onClick={async (): Promise<void> => {
+													await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
+													// Dopo l'eliminazione, aggiorna la lista delle attività
+													setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
+												}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+													<i style={{ color: "black" }} className="bi bi-trash"> </i>
+												</button>
 
-											<button onClick={async (): Promise<void> => {
-												await handleCompleteActivity(activity._id); //completo l'attività corrente
-											}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-												<i style={{ color: "black" }} className="bi bi-check"> </i>
-											</button>
+												<button onClick={async (): Promise<void> => {
+													await handleCompleteActivity(activity._id); //completo l'attività corrente
+												}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+													<i style={{ color: "black" }} className="bi bi-check"> </i>
+												</button>
 
-										</div>
-
-									))
-								) : (
-									<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold" }}>Non ci sono attività in scadenza oggi.</p>
-								)}
-							</div>
-						</>
-
-					)}
-
-					{activitiesMode && allActivitiesMode && (
-						<>
-							<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
-								{activityList.length > 0 ? (
-									activityList.map((activity, index) => (
-										<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
-											<h4>{activity.title}</h4>
-											<p>Scadenza: {new Date(activity.deadline).toLocaleString()}</p>
-											<p>Descrizione: {activity.description}</p>
-											<span style={{ color: "black", marginBottom: "10px" }}>
-												Completata:
-												<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
-													{activity.completed ? " Si" : " No"}
-												</span>
-											</span>
-
-											{new Date(activity.deadline) < currentDate && !activity.completed && (
-												<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
-											)}
-
-											<br />
-											<button onClick={async (): Promise<void> => {
-												await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
-												// Dopo l'eliminazione, aggiorna la lista delle attività
-												setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
-											}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-												<i style={{ color: "black" }} className="bi bi-trash"> </i>
-											</button>
-
-											<button onClick={async (): Promise<void> => {
-												await handleCompleteActivity(activity._id); //completo l'attività corrente
-											}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-												<i style={{ color: "black" }} className="bi bi-check"> </i>
-											</button>
-
-										</div>
-
-									))
-								) : (
-									<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold", }}>Non ci sono attività in scadenza.</p>
-								)}
-							</div>
-						</>
-
-					)}
-
-
-					{eventsMode && (
-						<div className="orario col-5" >
-
-
-							<div style={{ position: "relative", marginLeft: "10%" }}>
-								{eventPositions.map((event, index) => (
-									// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
-									!event.type ? (
-
-										<div
-											key={index} // Assicurati di fornire una chiave unica per ogni elemento
-											className="evento red"
-											style={{
-												top: `${event.top}px`, // Imposta la posizione verticale
-												height: `${event.height}px`, // Imposta l'altezza dell'evento
-												width: `calc(95%/${event.width})`,
-												position: "absolute", // Assicurati che sia posizionato correttamente
-												color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
-												borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
-												backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
-												marginLeft: `${event.marginLeft}%`,
-												cursor: "default", // Imposta il cursore di default per l'intero evento
-											}}
-										>
-											<div style={{ color: "red" }}>
-												<Link
-													to={`/pomodoro?duration=${
-														// Funzione per calcolare la durata dell'evento e scriverlo come query param
-														((startTime, endTime): number => {
-															const start = new Date(startTime);
-															const end = new Date(endTime);
-															const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-															return totMin;
-														})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-														}&id=${event.event._id}`} // Passa l'id dell'evento
-													style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-												>
-													{event.name}
-												</Link>
 											</div>
-											<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
-												{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-												<i className="bi bi-trash"
-													style={{
-														bottom: "2px", // Posiziona l'icona a 10px dal fondo
-														right: "50%",  // Posiziona l'icona a 10px dal lato destro
-														fontSize: "1.5rem",
-														margin: 0,
-														padding: 0,
-														color: "red",
-														cursor: "pointer"
-													}}
-												></i>
-											</div>
-										</div>
 
+										))
 									) : (
-										<div
-											className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
-											style={{
-												top: `${event.top}px`, // Imposta la posizione verticale
-												height: `${event.height}px`, // Imposta l'altezza dell'evento
-												width: `calc(95%/${event.width})`,
-												position: "absolute", // Assicurati che sia posizionato correttamente
-												color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
-												borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-												backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
-												marginLeft: `${event.marginLeft}%`,
-												cursor: "default",
-											}}
-										>
-											{event.name}
-											<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
-												{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-												<i className="bi bi-trash"
-													style={{
-														bottom: "2px", // Posiziona l'icona a 10px dal fondo
-														right: "50%",  // Posiziona l'icona a 10px dal lato destro
-														fontSize: "1.5rem",
-														margin: 0,
-														padding: 0,
-														color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-														cursor: "pointer"
-													}}
-												></i>
+										<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold", }}>Non ci sono attività in scadenza.</p>
+									)}
+								</div>
+							</>
+
+						)
+					}
+
+
+					{
+						eventsMode && (
+							<div className="orario col-5" >
+
+
+								<div style={{ position: "relative", marginLeft: "10%" }}>
+									{eventPositions.map((event, index) => (
+										// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+										!event.type ? (
+
+											<div
+												key={index} // Assicurati di fornire una chiave unica per ogni elemento
+												className="evento red"
+												style={{
+													top: `${event.top}px`, // Imposta la posizione verticale
+													height: `${event.height}px`, // Imposta l'altezza dell'evento
+													width: `calc(95%/${event.width})`,
+													position: "absolute", // Assicurati che sia posizionato correttamente
+													color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
+													borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
+													backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
+													marginLeft: `${event.marginLeft}%`,
+													cursor: "default", // Imposta il cursore di default per l'intero evento
+												}}
+											>
+												<div style={{ color: "red" }}>
+													<Link
+														to={`/pomodoro?duration=${
+															// Funzione per calcolare la durata dell'evento e scriverlo come query param
+															((startTime, endTime): number => {
+																const start = new Date(startTime);
+																const end = new Date(endTime);
+																const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																return totMin;
+															})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+															}&id=${event.event._id}`} // Passa l'id dell'evento
+														style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+													>
+														{event.name}
+													</Link>
+												</div>
+												<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
+													{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+													<i className="bi bi-trash"
+														style={{
+															bottom: "2px", // Posiziona l'icona a 10px dal fondo
+															right: "50%",  // Posiziona l'icona a 10px dal lato destro
+															fontSize: "1.5rem",
+															margin: 0,
+															padding: 0,
+															color: "red",
+															cursor: "pointer"
+														}}
+													></i>
+												</div>
 											</div>
 
-										</div>
+										) : (
+											<div
+												className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
+												style={{
+													top: `${event.top}px`, // Imposta la posizione verticale
+													height: `${event.height}px`, // Imposta l'altezza dell'evento
+													width: `calc(95%/${event.width})`,
+													position: "absolute", // Assicurati che sia posizionato correttamente
+													color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
+													borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
+													backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
+													marginLeft: `${event.marginLeft}%`,
+													cursor: "default",
+												}}
+											>
+												{event.name}
+												<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
+													{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+													<i className="bi bi-trash"
+														style={{
+															bottom: "2px", // Posiziona l'icona a 10px dal fondo
+															right: "50%",  // Posiziona l'icona a 10px dal lato destro
+															fontSize: "1.5rem",
+															margin: 0,
+															padding: 0,
+															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
+															cursor: "pointer"
+														}}
+													></i>
+												</div>
+
+											</div>
+
+										)
 
 									)
 
-								)
+									)}
+								</div >
 
-								)}
+
+								<time>00:00</time>
+								<time>01:00</time>
+								<time>02:00</time>
+								<time>03:00</time>
+								<time>04:00</time>
+								<time>05:00</time>
+								<time>06:00</time>
+								<time>07:00</time>
+								<time>08:00</time>
+								<time>09:00</time>
+								<time>10:00</time>
+								<time>11:00</time>
+								<time>12:00</time>
+								<time>13:00</time>
+								<time>14:00</time>
+								<time>15:00</time>
+								<time>16:00</time>
+								<time>17:00</time>
+								<time>18:00</time>
+								<time>19:00</time>
+								<time>20:00</time>
+								<time>21:00</time>
+								<time>22:00</time>
+								<time>23:00</time>
+
 							</div >
-
-
-							<time>00:00</time>
-							<time>01:00</time>
-							<time>02:00</time>
-							<time>03:00</time>
-							<time>04:00</time>
-							<time>05:00</time>
-							<time>06:00</time>
-							<time>07:00</time>
-							<time>08:00</time>
-							<time>09:00</time>
-							<time>10:00</time>
-							<time>11:00</time>
-							<time>12:00</time>
-							<time>13:00</time>
-							<time>14:00</time>
-							<time>15:00</time>
-							<time>16:00</time>
-							<time>17:00</time>
-							<time>18:00</time>
-							<time>19:00</time>
-							<time>20:00</time>
-							<time>21:00</time>
-							<time>22:00</time>
-							<time>23:00</time>
-
-						</div >
-					)}
+						)
+					}
 				</div >
 			)
 			}

@@ -10,6 +10,8 @@ export type Frequency = "once" | "day" | "week" | "month" | "year";
 export type Event = {
 	id: string;
 	idEventoNotificaCondiviso?: string | null;
+	accessList?: string[] | null;
+	accessListAccepted?: string[] | null;
 	groupId: string;
 	owner: string;
 	title: string;
