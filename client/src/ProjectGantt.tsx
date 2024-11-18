@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ActivityStatus } from "./types/Activity";
 // import { useNavigate, useParams } from "react-router-dom";
 // import { SERVER_API } from "./params/params";
 // import { ResponseStatus } from "./types/ResponseStatus";
@@ -11,6 +12,7 @@ type Task = {
 	start: string;
 	deadline: string;
 	accessList: string[];
+	status: ActivityStatus | null;
 	children?: Task[];
 };
 
@@ -22,12 +24,15 @@ const dummyData: Task[] = [
 		start: "2024-11-01",
 		deadline: "2024-11-07",
 		accessList: ["fv1"],
+		status: ActivityStatus.COMPLETED,
 		children: [
 			{
 				id: 4,
 				title: "Sub task 1-1",
 				start: "2024-11-01",
 				deadline: "2024-11-07",
+				status: ActivityStatus.COMPLETED,
+
 				accessList: ["fv1"],
 			},
 		],
@@ -38,6 +43,7 @@ const dummyData: Task[] = [
 		start: "2024-11-08",
 		deadline: "2024-11-14",
 		accessList: ["fv1", "fv2"],
+		status: ActivityStatus.ACTIVE,
 	},
 	{
 		id: 3,
@@ -45,6 +51,8 @@ const dummyData: Task[] = [
 		start: "2024-11-15",
 		deadline: "2024-11-21",
 		accessList: ["fv1", "fv3", "fvPM"],
+		status: ActivityStatus.NOT_ACTIVABLE,
+
 		children: [
 			{
 				id: 4,
@@ -52,6 +60,7 @@ const dummyData: Task[] = [
 				start: "2024-11-15",
 				deadline: "2024-11-18",
 				accessList: ["fv1"],
+				status: ActivityStatus.NOT_ACTIVABLE,
 			},
 			{
 				id: 4,
@@ -59,6 +68,34 @@ const dummyData: Task[] = [
 				start: "2024-11-20",
 				deadline: "2024-11-21",
 				accessList: ["fv3"],
+				status: ActivityStatus.NOT_ACTIVABLE,
+			},
+		],
+	},
+	{
+		id: 4,
+		title: "Task 4",
+		start: "2024-11-30",
+		deadline: "2024-12-21",
+		accessList: ["fv1", "fv3", "fvPM"],
+		status: ActivityStatus.NOT_ACTIVABLE,
+
+		children: [
+			{
+				id: 4,
+				title: "Sub task 4-1",
+				start: "2024-11-30",
+				deadline: "2024-12-10",
+				accessList: ["fv1"],
+				status: ActivityStatus.NOT_ACTIVABLE,
+			},
+			{
+				id: 4,
+				title: "Sub task 4-1",
+				start: "2024-12-10",
+				deadline: "2024-12-21",
+				accessList: ["fv3"],
+				status: ActivityStatus.NOT_ACTIVABLE,
 			},
 		],
 	},
@@ -231,13 +268,13 @@ const GanttDiagram = (): React.JSX.Element => {
 																	  ).getTime() < Date.now()
 																		? {
 																				backgroundColor:
-																					"red",
+																					"darkred",
 																		  }
 																		: {
 																				backgroundColor:
-																					"yellow",
+																					"orange",
 																		  }
-																	: {}
+																	: { backgroundColor: "green" }
 															}></div>
 													) : (
 														<div className="gantt-empty-cell"></div>
@@ -284,13 +321,16 @@ const GanttDiagram = (): React.JSX.Element => {
 																				  Date.now()
 																					? {
 																							backgroundColor:
-																								"red",
+																								"darkred",
 																					  }
 																					: {
 																							backgroundColor:
-																								"yellow",
+																								"orange",
 																					  }
-																				: {}
+																				: {
+																						backgroundColor:
+																							"green",
+																				  }
 																		}></div>
 																) : (
 																	<div className="gantt-empty-cell"></div>
