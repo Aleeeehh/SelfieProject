@@ -34,7 +34,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfWeek.includes(currentDayOfWeek)
                     ) {
                         // create a event with start and end times updated
@@ -42,8 +42,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -56,7 +56,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfMonth.includes(currentDayOfMonth)
                     ) {
                         // create a event with start and end times updated
@@ -64,8 +64,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -80,8 +80,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -123,7 +123,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfWeek.includes(currentDayOfWeek)
                     ) {
                         // create a event with start and end times updated
@@ -131,8 +131,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -144,7 +144,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfMonth.includes(currentDayOfMonth)
                     ) {
                         // create a event with start and end times updated
@@ -152,8 +152,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -170,8 +170,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -1161,6 +1161,9 @@ router.put("/:id", async (req: Request, res: Response) => {
         const foundEvents = await EventSchema.find({
             idEventoNotificaCondiviso: idEventoNotificaCondiviso,
         });
+
+        console.log("foundEvents:", foundEvents);
+
         if (foundEvents.length === 0) {
             const resBody: ResponseBody = {
                 message:

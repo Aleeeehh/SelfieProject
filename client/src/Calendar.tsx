@@ -2196,7 +2196,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 					data: {
 						date: currentDate,
 						event: newEvent,
-						notification: newNotification,
+						notification: addNotification ? newNotification : null,
 
 					},
 				}),
