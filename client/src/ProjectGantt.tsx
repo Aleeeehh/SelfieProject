@@ -1,35 +1,66 @@
 import React, { useState } from "react";
+// import { useNavigate, useParams } from "react-router-dom";
+// import { SERVER_API } from "./params/params";
+// import { ResponseStatus } from "./types/ResponseStatus";
+// import type Project from "./types/Project";
+// import type Activity from "./types/Activity";
 
 type Task = {
 	id: number;
-	name: string;
-	startDate: string;
-	endDate: string;
-	users: string[];
+	title: string;
+	start: string;
+	deadline: string;
+	accessList: string[];
+	children?: Task[];
 };
 
-const dummyProject = { name: "Dummy Project" };
-const dummyData = [
+const dummyProject = { title: "Dummy Project" };
+const dummyData: Task[] = [
 	{
 		id: 1,
-		name: "Task 1",
-		startDate: "2024-11-01",
-		endDate: "2024-11-07",
-		users: ["fv1"],
+		title: "Task 1",
+		start: "2024-11-01",
+		deadline: "2024-11-07",
+		accessList: ["fv1"],
+		children: [
+			{
+				id: 4,
+				title: "Sub task 1-1",
+				start: "2024-11-01",
+				deadline: "2024-11-07",
+				accessList: ["fv1"],
+			},
+		],
 	},
 	{
 		id: 2,
-		name: "Task 2",
-		startDate: "2024-11-08",
-		endDate: "2024-11-14",
-		users: ["fv1", "fv2"],
+		title: "Task 2",
+		start: "2024-11-08",
+		deadline: "2024-11-14",
+		accessList: ["fv1", "fv2"],
 	},
 	{
 		id: 3,
-		name: "Task 3",
-		startDate: "2024-11-15",
-		endDate: "2024-11-21",
-		users: ["fv1", "fv3", "fvPM"],
+		title: "Task 3",
+		start: "2024-11-15",
+		deadline: "2024-11-21",
+		accessList: ["fv1", "fv3", "fvPM"],
+		children: [
+			{
+				id: 4,
+				title: "Sub task 3-1",
+				start: "2024-11-15",
+				deadline: "2024-11-18",
+				accessList: ["fv1"],
+			},
+			{
+				id: 4,
+				title: "Sub task 3-1",
+				start: "2024-11-20",
+				deadline: "2024-11-21",
+				accessList: ["fv3"],
+			},
+		],
 	},
 	// Add more tasks here...
 ];
@@ -39,9 +70,15 @@ const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
 const GanttDiagram = (): React.JSX.Element => {
+	// const { id } = useParams();
 	const [start, setStart] = useState<Date>(new Date());
 	const [end, setEnd] = useState<Date>(new Date(start.getTime() + THIRTY_DAYS));
 	const [days, setDays] = useState<number[]>([]);
+	// const [project, setProject] = useState<Project | null>(dummyData);
+	const [project, _] = useState<Task[]>(dummyData);
+	const [message, __] = useState("");
+
+	// const nav = useNavigate();
 
 	const getDays = (): void => {
 		const days = [];
@@ -53,15 +90,14 @@ const GanttDiagram = (): React.JSX.Element => {
 			days.push(currDate.getTime());
 		}
 
-		console.log("Days: " + days);
-		console.log(days.length);
 		setDays(days);
+		// refreshProject();
 	};
 
-	const getTaskDays = (task: Task): number[] => {
-		const startDate = new Date(task.startDate);
+	/* const getTaskDays = (task: Activity): number[] => {
+		const startDate = new Date(task.start || Date.now());
 		startDate.setHours(0, 0, 0, 0);
-		const endDate = new Date(task.endDate);
+		const endDate = new Date(task.deadline);
 		endDate.setHours(0, 0, 0, 0);
 
 		const taskDays = [];
@@ -69,13 +105,30 @@ const GanttDiagram = (): React.JSX.Element => {
 			taskDays.push(startDate.getTime() + i * ONE_DAY);
 		}
 
-		console.log("Task " + task.name + " days: " + taskDays);
+		console.log(taskDays);
 		return taskDays;
-	};
+	};*/
+
+	/* async function refreshProject(): Promise<void> {
+		fetch(`${SERVER_API}/projects/${id}`)
+			.then((res) => res.json())
+			.then((data) => {
+				if (data.status === ResponseStatus.GOOD) {
+					setProject(data.value as Project);
+					console.log(data.value);
+				} else {
+					console.log(data.message || "Errore nel caricamento del progetto");
+					nav("/projects");
+				}
+			})
+			.catch(() => {
+				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
+				nav("/projects");
+			});
+	}*/
 
 	React.useEffect(() => {
-		getDays();
-
 		const startZero = new Date(start.getTime());
 		startZero.setHours(0, 0, 0, 0);
 		setStart(startZero);
@@ -83,6 +136,8 @@ const GanttDiagram = (): React.JSX.Element => {
 		const endZero = new Date(end.getTime());
 		endZero.setHours(0, 0, 0, 0);
 		setEnd(endZero);
+
+		getDays();
 	}, []);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -103,10 +158,8 @@ const GanttDiagram = (): React.JSX.Element => {
 	return (
 		<div className="gantt-background">
 			<div className="gantt-container">
-				<h2 className="gantt-title">
-					Diagramma di Gantt - Progetto: {dummyProject.name}
-				</h2>
-				
+				<h2 className="gantt-title">Diagramma di Gantt - Progetto: {dummyProject.title}</h2>
+
 				<div className="gantt-date-input-container">
 					<input
 						type="date"
@@ -122,7 +175,9 @@ const GanttDiagram = (): React.JSX.Element => {
 						onChange={handleChange}
 						className="gantt-date-input"
 					/>
-					<button onClick={getDays} className="gantt-update-button">Aggiorna</button>
+					<button onClick={getDays} className="gantt-update-button">
+						Aggiorna
+					</button>
 				</div>
 
 				<div className="gantt-table-container">
@@ -130,38 +185,128 @@ const GanttDiagram = (): React.JSX.Element => {
 						<thead className="gantt-table-header">
 							<tr>
 								<th className="gantt-table-head-cell">Task</th>
+								<th className="gantt-table-head-cell">Sub Task</th>
 								<th className="gantt-table-head-cell">Partecipanti</th>
 								{days.map((day, index) => (
-									<th key={index} className="gantt-table-head-cell">
+									<th
+										key={index}
+										className="gantt-table-head-cell"
+										style={
+											Date.now() <= day && Date.now() + ONE_DAY >= day
+												? { backgroundColor: "blueviolet" }
+												: {}
+										}>
 										{new Date(day).toISOString().split("T")[0]}
 									</th>
 								))}
 							</tr>
 						</thead>
 						<tbody>
-							{dummyData.map((task, index) => (
-								<tr key={index} className="table-row">
-									<td className="gantt-task-cell">{task.name}</td>
-									<td className="gantt-participants-cell">
-										{task.users.map((u, i) => (
-											<div key={i} className="gantt-participant">{u}</div>
-										))}
-									</td>
-									{days.map((day, dayIndex) => (
-										<td key={dayIndex} className="day-cell">
-											{getTaskDays(task).includes(day) ? (
-												<div className="gantt-task-bar"></div>
-											) : (
-												<div className="gantt-empty-cell"></div>
-											)}
-										</td>
-									))}
-								</tr>
-							))}
+							{project &&
+								project.map((task) => (
+									<>
+										<tr key={"row -" + task?.id} className="table-row">
+											<td className="gantt-task-cell">{task.title}</td>
+											<td></td>
+											<td className="gantt-participants-cell">
+												{task.accessList.map((u, i) => (
+													<div key={i} className="gantt-participant">
+														{u}
+													</div>
+												))}
+											</td>
+											{days.map((day, dayIndex) => (
+												<td key={dayIndex} className="day-cell">
+													{new Date(task.start || Date.now()).getTime() <=
+														day &&
+													day <=
+														new Date(task.deadline).getTime() +
+															ONE_DAY ? (
+														<div
+															className="gantt-task-bar"
+															style={
+																day < Date.now()
+																	? new Date(
+																			task.deadline
+																	  ).getTime() < Date.now()
+																		? {
+																				backgroundColor:
+																					"red",
+																		  }
+																		: {
+																				backgroundColor:
+																					"yellow",
+																		  }
+																	: {}
+															}></div>
+													) : (
+														<div className="gantt-empty-cell"></div>
+													)}
+												</td>
+											))}
+										</tr>
+										{task.children &&
+											task.children.map((child) => (
+												<tr
+													key={"row -" + task?.id + child?.id}
+													className="table-row">
+													<td></td>
+													<td className="gantt-task-cell">
+														{child.title}
+													</td>
+													<td className="gantt-participants-cell">
+														{child.accessList.map((u, i) => (
+															<div
+																key={i}
+																className="gantt-participant">
+																{u}
+															</div>
+														))}
+													</td>
+													{days.map((day, dayIndex) => (
+														<td key={dayIndex} className="day-cell">
+															{
+																/* getTaskDays(child).includes(day) */
+																new Date(child.start!).getTime() <=
+																	day &&
+																day <=
+																	new Date(
+																		child.deadline
+																	).getTime() +
+																		ONE_DAY ? (
+																	<div
+																		className="gantt-task-bar"
+																		style={
+																			day < Date.now()
+																				? new Date(
+																						task.deadline
+																				  ).getTime() <
+																				  Date.now()
+																					? {
+																							backgroundColor:
+																								"red",
+																					  }
+																					: {
+																							backgroundColor:
+																								"yellow",
+																					  }
+																				: {}
+																		}></div>
+																) : (
+																	<div className="gantt-empty-cell"></div>
+																)
+															}
+														</td>
+													))}
+												</tr>
+											))}
+									</>
+								))}
 						</tbody>
 					</table>
 				</div>
 			</div>
+			{message && <div>{message}</div>}
 		</div>
 	);
 };

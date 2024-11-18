@@ -472,21 +472,23 @@
 .gantt-day-cell {
 	text-align: center;
 	padding: 10px;
+    height: 80px;
 }
 
 .gantt-task-bar {
 	background-color: #4a4a8c;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
+	/* width: 20px;
+	height: 20px;*/
+    width: 100%;
+    height: 70px;
 	margin: auto;
+
 }
 
 .gantt-empty-cell {
-	background-color: #e0e0e0;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
+	/* background-color: #e0e0e0; */
+	width: 100%;
+	height: 90px;
 	margin: auto;
 }
 
