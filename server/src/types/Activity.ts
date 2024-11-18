@@ -20,7 +20,7 @@ type Activity = {
 	// parameters added for project management
 	projectId: Types.ObjectId | string | null;
 	status?: ActivityStatus | null;
-	// start: Date | null;
+	start: Date | null;
 	milestone: boolean | null;
 	advancementType: AdvancementType | null;
 	// note?: Note | null; // Nota descrittiva del progetto

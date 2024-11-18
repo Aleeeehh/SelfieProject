@@ -27,10 +27,10 @@ export function checkAuthentication(req: Request, res: Response, next: NextFunct
 	}
 }
 
-router.use((req: Request, _: Response, next: NextFunction) => {
-	console.log("Requested path: ", req.method, req.path);
-	next();
-});
+// router.use((req: Request, _: Response, next: NextFunction) => {
+// 	console.log("Requested path: ", req.method, req.path);
+// 	next();
+// });
 
 router.use("/users", usersRouter);
 

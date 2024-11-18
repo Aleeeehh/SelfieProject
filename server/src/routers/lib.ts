@@ -68,6 +68,10 @@ export async function getActivityList(
 			next: foundActivity.next || null,
 			status: await getActivityStatus(),
 			children: await getActivityList(projectId, foundActivity._id),
+			start: foundActivity.start || null,
+			active: foundActivity.active,
+			abandoned: foundActivity.abandoned,
+			reactivated: foundActivity.reactivated,
 		};
 
 		activityList.push(newActivity);
@@ -106,6 +110,10 @@ export async function getActivityFromActivityId(id: string): Promise<Activity | 
 		next: document.next || null,
 		status: await getActivityStatus(),
 		children: await getActivityList(document.projectId || undefined, document._id),
+		start: document.start || null,
+		active: document.active,
+		abandoned: document.abandoned,
+		reactivated: document.reactivated,
 	};
 
 	return newActivity;
