@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { type Types } from "mongoose";
 import { AdvancementType } from "../types/Activity.ts";
 
 // "status" è un parametro derivato parzialmente: gli unici parametri
@@ -16,23 +16,17 @@ const activitySchema = new mongoose.Schema(
 		completedAt: { type: Date },
 		//tags: { type: [String], required: true },
 		owner: {
-			type: mongoose.Schema.Types.Mixed, // Modificato per accettare sia ObjectId che String
+			type: mongoose.Schema.Types.ObjectId, // Modificato per accettare sia ObjectId che String
 			ref: "User",
 			required: true,
-			validate: {
-				validator: function (value: any) {
-					return typeof value === "string" || mongoose.Types.ObjectId.isValid(value);
-				},
-				message: (props: any) =>
-					`${props.value} non è un tipo valido! Deve essere una String o un ObjectId.`,
-			},
 		},
 		accessList: {
-			type: [mongoose.Schema.Types.Mixed], // Modificato per accettare array di String o ObjectId
+			type: [mongoose.Schema.Types.ObjectId],
 			ref: "User",
 		},
 		accessListAccepted: {
-			type: [mongoose.Schema.Types.Mixed], // Modificato per accettare array di String o ObjectId
+			type: [mongoose.Schema.Types.ObjectId],
+			ref: "User",
 			required: false,
 		},
 		idEventoNotificaCondiviso: { type: String },
@@ -58,30 +52,24 @@ const activitySchema = new mongoose.Schema(
 );
 
 activitySchema.pre("save", function (next) {
-    if (this.projectId && (this.active == null || this.active === undefined)) {
-        next(new Error("'active' is required when projectId is defined"));
-    }
-    next();
+	if (this.projectId && (this.active == null || this.active === undefined)) {
+		next(new Error("'active' is required when projectId is defined"));
+	}
+	next();
 });
 
 activitySchema.pre("save", function (next) {
-    if (
-        this.projectId &&
-        (this.abandoned == null || this.abandoned === undefined)
-    ) {
-        next(new Error("'abandoned' is required when projectId is defined"));
-    }
-    next();
+	if (this.projectId && (this.abandoned == null || this.abandoned === undefined)) {
+		next(new Error("'abandoned' is required when projectId is defined"));
+	}
+	next();
 });
 
 activitySchema.pre("save", function (next) {
-    if (
-        this.projectId &&
-        (this.reactivated == null || this.reactivated === undefined)
-    ) {
-        next(new Error("'reactivated' is required when projectId is defined"));
-    }
-    next();
+	if (this.projectId && (this.reactivated == null || this.reactivated === undefined)) {
+		next(new Error("'reactivated' is required when projectId is defined"));
+	}
+	next();
 });
 
 activitySchema.pre("save", function (next) {
@@ -91,5 +79,26 @@ activitySchema.pre("save", function (next) {
 	next();
 });
 
-
 export const ActivitySchema = mongoose.model("Activity", activitySchema);
+
+export type ActivityDBSchema = {
+	_id: Types.ObjectId;
+	title: string;
+	description: string;
+	deadline: Date;
+	completed: boolean;
+	completedAt: Date | null;
+	owner: string;
+	accessList: string[];
+	accessListAccepted: string[];
+	idEventoNotificaCondiviso: string;
+	start: Date | null;
+	projectId: string | null;
+	milestone: boolean | null;
+	advancementType: AdvancementType | null;
+	parent: string | null;
+	next: string | null;
+	active: boolean | null;
+	abandoned: boolean | null;
+	reactivated: boolean | null;
+};

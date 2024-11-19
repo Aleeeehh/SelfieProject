@@ -20,3 +20,10 @@ const projectSchema = new mongoose.Schema(
 );
 
 export const ProjectSchema = mongoose.model("Project", projectSchema);
+
+export type ProjectDBSchema = {
+    title: string,
+    description: string,
+    owner: mongoose.Types.ObjectId,
+    accessList: mongoose.Types.ObjectId[],
+}
