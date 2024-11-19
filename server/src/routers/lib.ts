@@ -30,6 +30,7 @@ export async function getIdListFromUsernameList(usernames: string[]): Promise<Ty
 }
 
 // if parentID === undefined, then get the activity list for the project
+// sorts the activity list by start date
 export async function getActivityList(
 	projectId: Types.ObjectId | undefined,
 	parentId: Types.ObjectId | undefined
@@ -76,6 +77,13 @@ export async function getActivityList(
 
 		activityList.push(newActivity);
 	}
+
+	activityList.sort((a, b) => {
+		if (a.start && b.start) {
+			return a.start.getTime() - b.start.getTime();
+		}
+		return a.deadline.getTime() - b.deadline.getTime();
+	});
 
 	return activityList;
 }

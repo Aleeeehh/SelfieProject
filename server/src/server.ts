@@ -11,6 +11,7 @@ import {
 	createDummyPomodoros,
 	createDummyUsers,
 	createCurrentDate,
+	createDummyProject,
 } from "./schemas/populateDB.js";
 import passport from "passport";
 import * as passportStrategy from "passport-local";
@@ -140,7 +141,8 @@ mongoose
 	//.then(() => createDummyEvents())
 	.then(() => createDummyNotes())
 	.then(() => createDummyPomodoros())
-	.then(() => createCurrentDate());
+	.then(() => createCurrentDate())
+	.then(() => createDummyProject());
 
 mongoose.set("sanitizeFilter", true); // sanitize from NoSQLi
 mongoose.set("strictQuery", true); // only schema fields are saved in database!!!
