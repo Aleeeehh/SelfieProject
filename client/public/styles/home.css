@@ -53,6 +53,7 @@
 .home-select {
 	padding: 0.2em;
     border-radius: 8px;
+    width: 40px;
     color: black;
     font-weight: bold;
     font-size: 1em;
