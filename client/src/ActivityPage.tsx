@@ -61,7 +61,7 @@ export default function ActivityPage(): React.JSX.Element {
 	const nav = useNavigate();
 
 	function refreshActivity(): void {
-		fetch(`${SERVER_API}/activity/${id}`)
+		fetch(`${SERVER_API}/activities/${id}`)
 			.then((res) => res.json())
 			.then((data) => {
 				if (data.status === ResponseStatus.GOOD) {
@@ -182,7 +182,7 @@ export default function ActivityPage(): React.JSX.Element {
 
 		console.log("Updating activity: ", JSON.stringify(activity));
 
-		fetch(`${SERVER_API}/activity/${activity.id}`, {
+		fetch(`${SERVER_API}/activities/${activity.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -226,7 +226,7 @@ export default function ActivityPage(): React.JSX.Element {
 			return;
 		}
 
-		fetch(`${SERVER_API}/activity/${activity.id}`, {
+		fetch(`${SERVER_API}/activities/${activity.id}`, {
 			method: "DELETE",
 		})
 			.then((res) => res.json())
@@ -278,7 +278,7 @@ export default function ActivityPage(): React.JSX.Element {
 	// ): Promise<void> {
 	//     e.preventDefault();
 	//
-	//     fetch(`${SERVER_API}/activity/${activity.id}/share`, {
+	//     fetch(`${SERVER_API}/activities/${activity.id}/share`, {
 	//         method: "POST",
 	//         headers: { "Content-Type": "application/json" },
 	//         body: JSON.stringify({
@@ -581,7 +581,7 @@ export default function ActivityPage(): React.JSX.Element {
 										borderRadius: "8px",
 										backgroundColor: "#fdfdfd",
 									}}>
-									Scadenza
+									Inizio
 									<div
 										style={{
 											display: "flex",
@@ -796,7 +796,7 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 
 									{/* render start date */}
-									<label
+									{/* <label
 										htmlFor="start"
 										className="activity-vertical"
 										style={{
@@ -834,7 +834,7 @@ export default function ActivityPage(): React.JSX.Element {
 												}}
 											/>
 										</div>
-									</label>
+									</label> */}
 
 									{/* render advancement type */}
 									<div className="activity-advancementType">
@@ -883,30 +883,40 @@ export default function ActivityPage(): React.JSX.Element {
 										<div>
 											Prossima attività: {activity.next || "Nessuna"}
 											{isOwner && (
-												<select
-													style={{
-														backgroundColor: "white",
-													}}
-													className="btn border"
-													name="next"
-													onChange={(
-														e: React.ChangeEvent<HTMLSelectElement>
-													): void => {
-														setActivity({
-															...activity,
-															next: e.target.value,
-														});
-													}}>
-													<option value="">Nessuna</option>
-													{project &&
-														getPossibleNextList(
-															project.activityList
-														).map((act) => (
-															<option key={act.title} value={act.id}>
-																{act.title}
-															</option>
-														))}
-												</select>
+												<>
+													<select
+														style={{
+															backgroundColor: "white",
+														}}
+														className="btn border"
+														name="next"
+														onChange={(
+															e: React.ChangeEvent<HTMLSelectElement>
+														): void => {
+															setActivity({
+																...activity,
+																next: e.target.value,
+															});
+														}}>
+														<option value="">Nessuna</option>
+														{project &&
+															getPossibleNextList(
+																project.activityList
+															).map((act) => (
+																<option
+																	key={act.title}
+																	value={act.id}>
+																	{act.title}
+																</option>
+															))}
+													</select>
+													<a
+														href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}&next=${activity.next}`}>
+														<button>
+															Aggiungi attività successiva
+														</button>
+													</a>
+												</>
 											)}
 										</div>
 									</div>
@@ -929,7 +939,7 @@ export default function ActivityPage(): React.JSX.Element {
 											</div>
 											{isOwner && !activity.parent && (
 												<a
-													href={`/activity/new?projectId=${activity.projectId}&parent=${activity.id}`}>
+													href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}`}>
 													<button>Aggiungi sotto-attività</button>
 												</a>
 											)}

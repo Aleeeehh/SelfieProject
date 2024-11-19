@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { ActivityStatus } from "./types/Activity";
-// import { useNavigate, useParams } from "react-router-dom";
-// import { SERVER_API } from "./params/params";
-// import { ResponseStatus } from "./types/ResponseStatus";
-// import type Project from "./types/Project";
-// import type Activity from "./types/Activity";
+// import Activity, { ActivityStatus } from "./types/Activity";
+import { useNavigate, useParams } from "react-router-dom";
+import { SERVER_API } from "./params/params";
+import { ResponseStatus } from "./types/ResponseStatus";
+import type Project from "./types/Project";
 
-type Task = {
+/* type Task = {
 	id: number;
 	title: string;
 	start: string;
@@ -16,7 +15,6 @@ type Task = {
 	children?: Task[];
 };
 
-const dummyProject = { title: "Dummy Project" };
 const dummyData: Task[] = [
 	{
 		id: 1,
@@ -100,22 +98,21 @@ const dummyData: Task[] = [
 		],
 	},
 	// Add more tasks here...
-];
+];*/
 
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 // const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
 const GanttDiagram = (): React.JSX.Element => {
-	// const { id } = useParams();
+	const { id } = useParams();
 	const [start, setStart] = useState<Date>(new Date());
 	const [end, setEnd] = useState<Date>(new Date(start.getTime() + THIRTY_DAYS));
 	const [days, setDays] = useState<number[]>([]);
-	// const [project, setProject] = useState<Project | null>(dummyData);
-	const [project, _] = useState<Task[]>(dummyData);
-	const [message, __] = useState("");
+	const [project, setProject] = useState<Project | null>(null);
+	const [message, setMessage] = useState("");
 
-	// const nav = useNavigate();
+	const nav = useNavigate();
 
 	const getDays = (): void => {
 		const days = [];
@@ -146,7 +143,7 @@ const GanttDiagram = (): React.JSX.Element => {
 		return taskDays;
 	};*/
 
-	/* async function refreshProject(): Promise<void> {
+	async function refreshProject(): Promise<void> {
 		fetch(`${SERVER_API}/projects/${id}`)
 			.then((res) => res.json())
 			.then((data) => {
@@ -163,7 +160,7 @@ const GanttDiagram = (): React.JSX.Element => {
 				console.log("Impossibile raggiungere il server");
 				nav("/projects");
 			});
-	}*/
+	}
 
 	React.useEffect(() => {
 		const startZero = new Date(start.getTime());
@@ -175,6 +172,7 @@ const GanttDiagram = (): React.JSX.Element => {
 		setEnd(endZero);
 
 		getDays();
+		refreshProject();
 	}, []);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -195,7 +193,7 @@ const GanttDiagram = (): React.JSX.Element => {
 	return (
 		<div className="gantt-background">
 			<div className="gantt-container">
-				<h2 className="gantt-title">Diagramma di Gantt - Progetto: {dummyProject.title}</h2>
+				<h2 className="gantt-title">Diagramma di Gantt - Progetto: {project?.title}</h2>
 
 				<div className="gantt-date-input-container">
 					<input
@@ -240,7 +238,7 @@ const GanttDiagram = (): React.JSX.Element => {
 						</thead>
 						<tbody>
 							{project &&
-								project.map((task) => (
+								project.activityList.map((task) => (
 									<>
 										<tr key={"row -" + task?.id} className="table-row">
 											<td className="gantt-task-cell">{task.title}</td>
