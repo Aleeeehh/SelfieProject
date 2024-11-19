@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom"
 import { Event } from "./types/Event";
 import SearchForm from "./SearchForm";
+import SearchFormResource from "./SearchFormResource";
 //import mongoose from "mongoose";
 
 
@@ -3306,9 +3307,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 								{shareEvent && (
 									<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-										<div>Scegli l'utente con il quale condividere l'evento</div>
+										<div>Scegli l'utente o la risorsa con il quale condividere l'evento</div>
 										{users.length > 0}
-										<SearchForm onItemClick={handleSelectUser} list={users} />
+										<SearchFormResource onItemClick={handleSelectUser} list={users} />
 										<button
 											onClick={handleAddUserEvent}
 											className="btn btn-primary send-invite-button"

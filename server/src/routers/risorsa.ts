@@ -12,8 +12,9 @@ router.get("/", async (req, res) => {
     const { name } = req.query; // Prendi il parametro 'name' dalla query
 
     try {
-        const risorsa = await RisorsaSchema.find({ name }); // Usa il parametro 'name' per la ricerca
-        res.json({ "Risorsa aggiunta al database": risorsa });
+        const risorse = await RisorsaSchema.find({ name }); // Usa il parametro 'name' per la ricerca
+        console.log("Risorse trovate:", risorse);
+        res.json({ risorse });
     } catch (error) {
         res.status(500).json({ message: "error" });
     }
