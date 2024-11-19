@@ -917,6 +917,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setTitle("");
 		setCreateEvent(!createEvent);
 		setFrequency(Frequency.ONCE);
+		setShareEvent(false);
 	}
 
 	function toggleCreateNonDisturbare(): void {
@@ -2193,43 +2194,70 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repetitions: repetitions,
 		}
 
+		//ottieni gli usernames di tutti gli utenti
+		const resUsernames = await fetch(`${SERVER_API}/users/allUsernames`, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		const dataUsernames = await resUsernames.json();
+		const usernames = dataUsernames.value;
+
+		const risorse = accessList.filter(receiver => !usernames.includes(receiver));
+
+		console.log("Queste sono le risorse:", risorse);
+
+		//per ogni risorsa, crea un evento risorsa se non è già allocata per quell'orario
+
+		for (const risorsa of risorse) {
+			//crea un evento risorsa sul calendario, metti un nuovo campo che dice che è una risorsa.
+			//crea evento risorsa con la post degli eventi, setta isRisorsa a true.
+		}
+
+
+
+		console.log("Questi sono i nomi degli utenti:", usernames);
 		//per ogni utente della accessList, invia una notifica per accettare l'invito
 		for (const receiver of accessList) {
-			const newNotification = {
-				message: message,
-				mode: "event",
-				receiver: receiver,
-				type: "event",
-				data: {
-					date: notificationDate, //data prima notifica
-					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
-					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
-					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
-					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
-					frequencyEvent: frequency,
-					isInfiniteEvent: isInfinite,
-					repetitionsEvent: repetitions,
-					untilDateEvent: untilDate,
-				},
-			}
-			const res3 = await fetch(`${SERVER_API}/notifications`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
+			if (usernames.includes(receiver)) {
+				console.log("Questo è il receiver:", receiver);
+				const newNotification = {
 					message: message,
 					mode: "event",
 					receiver: receiver,
-					type: "shareEvent",
+					type: "event",
 					data: {
-						date: currentDate,
-						event: newEvent,
-						notification: addNotification ? newNotification : null,
-
+						date: notificationDate, //data prima notifica
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+						frequencyEvent: frequency,
+						isInfiniteEvent: isInfinite,
+						repetitionsEvent: repetitions,
+						untilDateEvent: untilDate,
 					},
-				}),
-			});
+				}
+				const res3 = await fetch(`${SERVER_API}/notifications`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						message: message,
+						mode: "event",
+						receiver: receiver,
+						type: "shareEvent",
+						data: {
+							date: currentDate,
+							event: newEvent,
+							notification: addNotification ? newNotification : null,
 
-			console.log("NOTIFICA CONDIVISA:", res3);
+						},
+					}),
+				});
+
+				console.log("NOTIFICA CONDIVISA:", res3);
+			}
 		}
 
 
@@ -2261,7 +2289,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
-
+		setShareEvent(false);
+		setAccessList([]);
 		//chiamata alla route per ical
 		const res4 = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
 		const data4 = await res4.json();
@@ -2536,7 +2565,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setNotificationRepeatTime(0);
 		setSendInviteActivity(false);
 		setShareActivity(false);
-
+		setAccessList([]);
 		console.log("Questa è la lista delle attività:", activityList);
 	}
 

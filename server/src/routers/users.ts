@@ -28,26 +28,26 @@ router.get("/", async (req: Request, res: Response) => {
 
 /*
 router.get("/current", checkAuthentication, (req: Request, res: Response) => {
-	console.log(req.user);
-	if (req.user) {
-		// Se l'utente è autenticato, restituisci i dati dell'utente
-		return res.status(200).json({
-			status: ResponseStatus.GOOD,
-			value: {
-				id: req.user.id,
-				username: req.body.username, //?????
-				firstName: req.body.firstName, //?????
-				lastName: req.body.lastName, //?????
-				birthday: req.body.birthday, //?????
-			},
-		});
-	} else {
-		// Se l'utente non è autenticato, restituisci un errore
-		return res.status(401).json({
-			status: ResponseStatus.BAD,
-			message: "Utente non autenticato",
-		});
-	}
+    console.log(req.user);
+    if (req.user) {
+        // Se l'utente è autenticato, restituisci i dati dell'utente
+        return res.status(200).json({
+            status: ResponseStatus.GOOD,
+            value: {
+                id: req.user.id,
+                username: req.body.username, //?????
+                firstName: req.body.firstName, //?????
+                lastName: req.body.lastName, //?????
+                birthday: req.body.birthday, //?????
+            },
+        });
+    } else {
+        // Se l'utente non è autenticato, restituisci un errore
+        return res.status(401).json({
+            status: ResponseStatus.BAD,
+            message: "Utente non autenticato",
+        });
+    }
 });
 */
 
@@ -260,6 +260,7 @@ router.delete("/", checkAuthentication, async (req, res) => {
 
 const MAX_SEARCH_RESULTS = 10;
 
+
 router.post("/usernames", async (req: Request, res: Response) => {
     try {
         const input = req.body.username as string | undefined;
@@ -294,6 +295,32 @@ router.post("/usernames", async (req: Request, res: Response) => {
             if (a > b) return 1;
             return 0;
         });
+
+        const resBody: ResponseBody = {
+            message: "Users found",
+            status: ResponseStatus.GOOD,
+            value: users,
+        };
+
+        return res.json(resBody);
+    } catch (e) {
+        console.log(e);
+        const resBody: ResponseBody = {
+            message: "Error handling request",
+            status: ResponseStatus.BAD,
+        };
+
+        return res.status(500).json(resBody);
+    }
+});
+
+
+router.get("/allUsernames", async (req: Request, res: Response) => {
+    try {
+        // Se l'input è vuoto, restituisci tutti gli usernames
+        const foundUsers = await UserSchema.find().lean();
+        let users: string[] = foundUsers.map(user => user.username); // Estrai tutti gli usernames
+        users.sort((a, b) => a.localeCompare(b)); // Ordina gli usernames
 
         const resBody: ResponseBody = {
             message: "Users found",
