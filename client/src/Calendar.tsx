@@ -56,6 +56,7 @@ const Mesi = [
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
 	const [file, setFile] = React.useState<File | null>(null);
+	const [createRisorsa, setCreateRisorsa] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
 
 	//const [insertFile, setInsertFile] = React.useState(false);
@@ -883,6 +884,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		if (createNonDisturbare) {
 			setCreateNonDisturbare(false);
 		}
+		if (createRisorsa) {
+			setCreateRisorsa(false);
+		}
 		if (!createEvent) {
 			// Usa l'ora corrente o l'ora di startTime
 			const currentHours = startTime.getHours();
@@ -922,6 +926,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		if (createEvent) {
 			setCreateEvent(false);
 		}
+		if (createRisorsa) {
+			setCreateRisorsa(false);
+		}
 		if (!createNonDisturbare) {
 			// Usa l'ora corrente o l'ora di startTime
 			const currentHours = startTime.getHours();
@@ -954,6 +961,22 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setShareEvent(false);
 	}
 
+	function toggleCreateRisorsa(): void {
+		if (createActivity) {
+			setCreateActivity(false);
+		}
+
+		if (createEvent) {
+			setCreateEvent(false);
+		}
+		if (createNonDisturbare) {
+			setCreateNonDisturbare(false);
+		}
+		setTitle("");
+		setDescription("");
+		setCreateRisorsa(!createRisorsa);
+	}
+
 	function toggleCreate(): void {
 		setCreate(!create);
 	}
@@ -964,6 +987,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		if (createNonDisturbare) {
 			setCreateNonDisturbare(false);
+		}
+		if (createRisorsa) {
+			setCreateRisorsa(false);
 		}
 		if (!createActivity) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -2513,6 +2539,21 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("Questa è la lista delle attività:", activityList);
 	}
 
+	async function handleCreateRisorsa(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+
+		const response = await fetch(`${SERVER_API}/risorsa`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ name: title, description }),
+		});
+		console.log("Risposta:", response);
+		setCreateRisorsa(!createRisorsa);
+		setTitle("");
+		setDescription("");
+
+	}
+
 
 
 	//ottieni il giorno del mese per la visualizzazione weekly
@@ -2786,6 +2827,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
 									onClick={toggleCreateNonDisturbare}>
 									Non disturbare
+								</button>
+								<button className="btn"
+									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+									onClick={toggleCreateRisorsa}>
+									Risorsa
 								</button>
 							</div>)}
 
@@ -3701,6 +3747,58 @@ export default function Calendar(): React.JSX.Element { // prova push
 											border: "0",
 										}}
 										onClick={handleCreateNonDisturbare}>
+										Crea
+									</button>
+								</form>
+							</div>
+
+						)
+					}
+
+					{
+						createRisorsa && (
+							<div className="create-event-container col-2">
+								<button
+									className="btn btn-primary"
+									style={{ backgroundColor: "bisque", color: "white", border: "0" }}
+									onClick={toggleCreateRisorsa}>
+									Chiudi
+								</button>
+								<form>
+
+									<label htmlFor="title">
+										Nome
+										<input
+											className="btn border"
+											type="text"
+											name="title"
+											value={title}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+												setTitle(e.target.value)
+											}
+										/>
+									</label>
+
+									<label htmlFor="description">
+										Descrizione
+										<input
+											className="btn border"
+											type="text"
+											name="title"
+											value={description}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+												setDescription(e.target.value)
+											}
+										/>
+									</label>
+									<button
+										className="btn btn-primary"
+										style={{
+											backgroundColor: "bisque",
+											color: "white",
+											border: "0",
+										}}
+										onClick={handleCreateRisorsa}>
 										Crea
 									</button>
 								</form>
