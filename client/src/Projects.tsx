@@ -4,123 +4,101 @@ import type { ResponseBody } from "./types/ResponseBody";
 import type Project from "./types/Project";
 import { useNavigate } from "react-router-dom";
 import { ResponseStatus } from "./types/ResponseStatus";
+import ProjectList from "./ProjectList";
+import GanttDiagram from "./ProjectGantt";
 
-const PREVIEW_CHARS = 200;
+enum View {
+	LIST = "list",
+	GANTT = "gantt",
+}
+
 export default function Projects(): React.JSX.Element {
-    const [message, setMessage] = React.useState("");
-    const [projects, setProjects] = React.useState([] as Project[]);
+	const [message, setMessage] = React.useState("");
+	const [projects, setProjects] = React.useState([] as Project[]);
+	const [view, setView] = React.useState<View>(View.LIST);
+	const [filter, setFilter] = React.useState(""); // username utente filtro
 
-    const userId = localStorage.getItem("loggedUserId");
+	const nav = useNavigate();
 
-    const nav = useNavigate();
+	function getAllUsers(): string[] {
+		const users: string[] = [];
+		projects.forEach((project) => {
+			project.accessList.forEach((user) => {
+				if (!users.includes(user)) {
+					users.push(user);
+				}
+			});
+		});
+		return users;
+	}
 
-    // On page load, get the events for the user
-    React.useEffect(() => {
-        (async (): Promise<void> => {
-            try {
-                const res = await fetch(`${SERVER_API}/projects`);
-                if (res.status !== 200) {
-                    nav("/login");
-                }
+	// On page load, get the events for the user
+	React.useEffect(() => {
+		(async (): Promise<void> => {
+			try {
+				const res = await fetch(`${SERVER_API}/projects`);
+				if (res.status !== 200) {
+					nav("/login");
+				}
 
-                const resBody = (await res.json()) as ResponseBody;
+				const resBody = (await res.json()) as ResponseBody;
 
-                if (resBody.status === ResponseStatus.GOOD) {
-                    setProjects(resBody.value);
-                } else {
-                }
-            } catch (e) {
-                setMessage("Impossibile raggiungere il server");
-            }
-        })();
-    }, []);
+				if (resBody.status === ResponseStatus.GOOD) {
+					setProjects(resBody.value);
+				} else {
+				}
+			} catch (e) {
+				setMessage("Impossibile raggiungere il server");
+			}
+		})();
+	}, []);
 
-    async function handleDelete(
-        e: React.MouseEvent<HTMLButtonElement>,
-        id: string | undefined
-    ): Promise<void> {
-        e.preventDefault();
-
-        if (!id) {
-            setMessage(
-                "Errore nel cancellamento del progetto: id non trovato. Errore del server?"
-            );
-            return;
-        }
-
-        try {
-            const res = await fetch(`${SERVER_API}/projects/${id}`, {
-                method: "DELETE",
-            });
-            const resBody = (await res.json()) as ResponseBody;
-            console.log(resBody);
-            if (res.status === 200) {
-                const newProjects = projects.filter(
-                    (project) => project.id !== id
-                );
-                setProjects(newProjects);
-            } else {
-                setMessage(
-                    resBody.message || "Errore nel cancellamento del progetto"
-                );
-            }
-        } catch (e) {
-            setMessage("Impossibile raggiungere il server");
-        }
-    }
-
-    //TODO: mettere una funzione di sorting dei progetti
-
-    return (
-        <>
-            {message && <div>{message}</div>}
-            <div className="projects-container">
-                <a href={`/projects/new`} style={{ marginTop: "1em" }}>
-                    <button>Crea nuovo progetto</button>
-                </a>
-                <div className="projects-list">
-                    {projects.map((project) => (
-                        <div className="card-project">
-                            <div className="card-project-title">
-                                <h3>{project.title}</h3>
-                            </div>
-                            <div className="card-project-description">
-                                <p>
-                                    {project.description.length > PREVIEW_CHARS
-                                        ? project.description.substring(
-                                              0,
-                                              PREVIEW_CHARS
-                                          ) + "..."
-                                        : project.description}
-                                </p>
-                            </div>
-                            <div className="card-project-buttons">
-                                <button
-                                    onClick={(): void =>
-                                        window.location.assign(
-                                            `/projects/${project.id}`
-                                        )
-                                    }
-                                >
-                                    Visualizza
-                                </button>
-                                {project.owner === userId && (
-                                    <button
-                                        style={{ backgroundColor: "#ff6b6b" }}
-                                        onClick={async (
-                                            e: React.MouseEvent<HTMLButtonElement>
-                                        ): Promise<void> =>
-                                            handleDelete(e, project.id)
-                                        }
-                                    >
-                                        Cancella
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </>
-    );
+	return (
+		<div className="projects-container">
+			{message && <div>{message}</div>}
+			<a href={`/projects/new`} className="projects-filter">
+				<button>Crea nuovo progetto</button>
+			</a>
+			<div
+				style={{
+					display: "flex",
+					flexDirection: "row",
+					justifyContent: "space-around",
+					alignItems: "center",
+				}}>
+				<div className="filter">
+					<div style={{ color: "black" }}>Seleziona la vista:</div>
+					<select onChange={(e): void => setView(e.target.value as View)} value={view}>
+						<option value={View.LIST}>List</option>
+						<option value={View.GANTT}>Gantt</option>
+					</select>
+				</div>
+				{/* Filter for user */}
+				<div className="filter">
+					<div>Filtra per utente: </div>
+					<select value={filter} onChange={(e): void => setFilter(e.target.value)}>
+						<option value="">Tutti</option>
+						{getAllUsers().map((user) => (
+							<option value={user}>{user}</option>
+						))}
+					</select>
+				</div>
+			</div>
+			{view === View.LIST ? (
+				<ProjectList
+					projects={projects.filter((project) => {
+						if (!filter) return true;
+						else return project.accessList.includes(filter);
+					})}
+				/>
+			) : (
+				<GanttDiagram
+					projects={projects.filter((project) => {
+						if (!filter) return true;
+						else return project.accessList.includes(filter);
+					})}
+				/>
+			)}
+		</div>
+	);
 }

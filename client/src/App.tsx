@@ -14,7 +14,6 @@ import Profile from "./Profile";
 import Register from "./Register";
 import MessageHub from "./MessageHub";
 import ProjectPage from "./ProjectPage";
-import GanttDiagram from "./ProjectGantt";
 import ActivityPage from "./ActivityPage";
 import Activities from "./Activities";
 import CreateProjectForm from "./CreateProjectForm";
@@ -41,7 +40,6 @@ function App(): React.JSX.Element {
 						<Route path="projects" element={<Projects />} />
 						<Route path="projects/new" element={<CreateProjectForm />} />
 						<Route path="projects/:id" element={<ProjectPage />} />
-						<Route path="projects/:id/gantt" element={<GanttDiagram />} />
 						<Route path="activities" element={<Activities />} />
 						<Route path="activities/new" element={<CreateActivityForm />} />
 						<Route path="activities/:id" element={<ActivityPage />} />
