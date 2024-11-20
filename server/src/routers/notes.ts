@@ -347,6 +347,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const inputAccessList = req.body.accessList as string[] | undefined; // list of usernames
 		const inputPrivacyStr = req.body.privacy as string | undefined;
 		const inputItemList = req.body.toDoList as ListItem[] | undefined;
+		const inputDeletedItems = req.body.deletedItems as string[] | undefined; // id list
 
 		if (
 			!inputTitle &&
@@ -354,16 +355,17 @@ router.put("/:id", async (req: Request, res: Response) => {
 			!inputTags &&
 			!inputAccessList &&
 			!inputPrivacyStr &&
-			!inputItemList
+			!inputItemList &&
+			!inputDeletedItems
 		) {
 			console.log(
-				"Invalid body: 'title', 'text', 'tags', 'accessList', 'toDoList' or 'privacy' required, nothing to update"
+				"Invalid body: 'title', 'text', 'tags', 'accessList', 'toDoList', 'deletedItems' or 'privacy' required, nothing to update"
 			);
 
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
 				message:
-					"Invalid body: 'title', 'text', 'tags', 'accessList', 'toDoList' or 'privacy' required, nothing to update",
+					"Invalid body: 'title', 'text', 'tags', 'accessList', 'toDoList', 'deletedItems' or 'privacy' required, nothing to update",
 			});
 		}
 
@@ -495,6 +497,31 @@ router.put("/:id", async (req: Request, res: Response) => {
 			}
 		}
 
+		// validate deletedList
+		const itemsToDelete: Types.ObjectId[] = [];
+		if (inputDeletedItems)
+			for (const item of inputDeletedItems) {
+				if (!Types.ObjectId.isValid(item)) {
+					console.log("Invalid item id: " + item);
+					continue;
+				}
+
+				const foundItem = await NoteItemSchema.findById(item).lean();
+				if (!foundItem) {
+					console.log("Item with id " + item + " not found!");
+					continue;
+				}
+
+				if (foundItem.noteId.toString() !== noteId) {
+					console.log(
+						"Item with id " + item + " does not belong to note with id " + noteId
+					);
+					continue;
+				}
+
+				itemsToDelete.push(new Types.ObjectId(item));
+			}
+
 		const updatedNote: Note = {
 			owner: foundNote.owner,
 			title: inputTitle || foundNote.title,
@@ -514,6 +541,14 @@ router.put("/:id", async (req: Request, res: Response) => {
 		}));
 
 		console.log("Updated access list: ", list);
+
+		// remove items from list
+		const result = await NoteItemSchema.deleteMany({
+			noteId: noteId,
+			_id: itemsToDelete,
+		});
+
+		console.log("Deleted items from todo: ", result.deletedCount);
 
 		// to return usernames and not ids
 		updatedNote.accessList = await getUsernameListFromIdList(updatedAccessList);

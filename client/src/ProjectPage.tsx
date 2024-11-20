@@ -199,9 +199,6 @@ export default function ProjectPage(): React.JSX.Element {
 					) : (
 						<div className="note-description">{project.description}</div>
 					)}
-					<a href={`/projects/${id}/gantt`}>
-						<div>Vai al GANTT del Progetto</div>
-					</a>
 					{/* render access list */}
 					<label>
 						Utenti partecipanti al progetto

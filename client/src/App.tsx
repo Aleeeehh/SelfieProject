@@ -18,6 +18,7 @@ import ActivityPage from "./ActivityPage";
 import Activities from "./Activities";
 import CreateProjectForm from "./CreateProjectForm";
 import CreateActivityForm from "./CreateActivityForm";
+import CreateNoteForm from "./CreateNoteForm";
 //import "bootstrap/dist/css/bootstrap.min.css";
 
 function App(): React.JSX.Element {
@@ -36,6 +37,7 @@ function App(): React.JSX.Element {
 						{/* Route notes/new creates the new page for note*/}
 						<Route path="chat" element={<MessageHub />} />
 						<Route path="notes" element={<Notes />} />
+						<Route path="notes/new" element={<CreateNoteForm />} />
 						<Route path="notes/:id" element={<NotePage />} />
 						<Route path="projects" element={<Projects />} />
 						<Route path="projects/new" element={<CreateProjectForm />} />

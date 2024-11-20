@@ -122,7 +122,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 		console.log("Creating activity: ", JSON.stringify(activity));
 
-		fetch(`${SERVER_API}/activity/${activity.id}`, {
+		fetch(`${SERVER_API}/activities/${activity.id}`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({

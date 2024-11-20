@@ -7,6 +7,7 @@ export enum NotificationType {
 	ACTIVITY = "activity",
 	SHAREACTIVITY = "shareActivity",
 	SHAREEVENT = "shareEvent",
+	PROJECT = "Progetto",
 }
 
 const notificationSchema = new mongoose.Schema(

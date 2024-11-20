@@ -194,12 +194,16 @@ export default function ActivityPage(): React.JSX.Element {
 				completedAt: activity.completedAt,
 				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
 				projectId: activity.projectId,
-				start: activity.start?.toISOString().split("T")[0] || undefined,
+				start:
+					new Date(activity.start || Date.now()).toISOString().split("T")[0] || undefined,
 				milestone: activity.milestone,
 				parent: activity.parent,
 				prev: activity.prev,
 				next: activity.next,
 				advancementType: activity.advancementType,
+				active: activity.active,
+				abandoned: activity.abandoned,
+				reactivated: activity.reactivated,
 			}),
 		})
 			.then((res) => res.json())
@@ -305,6 +309,67 @@ export default function ActivityPage(): React.JSX.Element {
 	// TODO: ADD NOTIFICATION IN BACKEND!!
 	// TODO: ADD EVENT IN BACKEND!!
 	// }
+
+	function findParentActivity(): Activity | undefined {
+		if (!project) return undefined;
+
+		if (!activity.parent) return undefined;
+
+		for (const act of project?.activityList) {
+			const title = findActivity(act, activity.parent);
+			console.log(title);
+			if (title) return title;
+		}
+
+		return undefined;
+	}
+
+	function findNextActivity(): Activity | undefined {
+		if (!project) return undefined;
+
+		if (!activity.next) return undefined;
+
+		for (const act of project?.activityList) {
+			const title = findActivity(act, activity.next);
+			if (title) return title;
+		}
+
+		return undefined;
+	}
+
+	function findActivity(input: Activity, id: string): Activity | undefined {
+		if (input.id === id) return input;
+
+		if (input.children)
+			for (const child of input.children) {
+				const title = findActivity(child, id);
+				if (title) return title;
+			}
+
+		return undefined;
+	}
+
+	function findPreviousActivity(): Activity | undefined {
+		if (!project) return undefined;
+
+		for (const act of project?.activityList) {
+			const title = findPrevActivity(act, activity.id || "");
+			if (title) return title;
+		}
+		return undefined;
+	}
+
+	function findPrevActivity(input: Activity, id: string): Activity | undefined {
+		if (input.next === id) return input;
+
+		if (input.children)
+			for (const child of input.children) {
+				const found = findPrevActivity(child, id);
+				if (found) return found;
+			}
+
+		return undefined;
+	}
 
 	return (
 		<>
@@ -468,32 +533,51 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 
 									{/* parent */}
-									<div className="activity-parent">
+									<div
+										className="activity-parent"
+										key={"activity-next" + activity.parent}>
 										<div>
 											Attività padre:{" "}
-											<a
-												href={
-													activity.parent
-														? "/activities/" + activity.parent
-														: ""
-												}>
-												<div>{activity.parent || "Nessuno"}</div>
-											</a>
+											{findParentActivity() ? (
+												<a href={"/activities/" + findParentActivity()?.id}>
+													<div>{findParentActivity()?.title}</div>
+												</a>
+											) : (
+												<div>Nessuna</div>
+											)}
+										</div>
+									</div>
+
+									{/* prev */}
+									<div
+										className="activity-next"
+										key={"activity-prev" + activity.next}>
+										<div>
+											Attività precedente:{" "}
+											{findPreviousActivity() ? (
+												<a
+													href={
+														"/activities/" + findPreviousActivity()?.id
+													}>
+													<div>{findPreviousActivity()?.title}</div>
+												</a>
+											) : (
+												<div>Nessuna</div>
+											)}
 										</div>
 									</div>
 
 									{/* next */}
 									<div className="activity-next">
-										<div>
+										<div key={"activity-next" + activity.next}>
 											Prossima attività:{" "}
-											<a
-												href={
-													activity.next
-														? "/activities/" + activity.next
-														: ""
-												}>
-												<div>{activity.next || "Nessuno"}</div>
-											</a>
+											{findNextActivity() ? (
+												<a href={"/activities/" + findNextActivity()?.id}>
+													<div>{findNextActivity()?.title}</div>
+												</a>
+											) : (
+												<div>Nessuna</div>
+											)}
 										</div>
 									</div>
 
@@ -960,11 +1044,11 @@ export default function ActivityPage(): React.JSX.Element {
 
 									{/* Segna come attiva */}
 									<label className="activity-completed">
-										Completa?
+										Attiva?
 										<input
 											type="checkbox"
-											name="completed"
-											checked={activity.completed}
+											name="active"
+											checked={activity.active || false}
 											onChange={handleCheckboxChange}
 											disabled={!isUser} // only user can change completed
 										/>

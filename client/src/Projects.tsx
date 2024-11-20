@@ -84,21 +84,22 @@ export default function Projects(): React.JSX.Element {
 					</select>
 				</div>
 			</div>
-			{view === View.LIST ? (
-				<ProjectList
-					projects={projects.filter((project) => {
-						if (!filter) return true;
-						else return project.accessList.includes(filter);
-					})}
-				/>
-			) : (
-				<GanttDiagram
-					projects={projects.filter((project) => {
-						if (!filter) return true;
-						else return project.accessList.includes(filter);
-					})}
-				/>
-			)}
+			{projects &&
+				(view === View.LIST ? (
+					<ProjectList
+						projects={projects.filter((project) => {
+							if (!filter) return true;
+							else return project.accessList.includes(filter);
+						})}
+					/>
+				) : (
+					<GanttDiagram
+						projects={projects.filter((project) => {
+							if (!filter) return true;
+							else return project.accessList.includes(filter);
+						})}
+					/>
+				))}
 		</div>
 	);
 }

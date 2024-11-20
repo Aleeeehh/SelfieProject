@@ -18,8 +18,9 @@ export default function Mp3Player(): React.JSX.Element {
 		<div className="playercontainer">
 			<select
 				onChange={(e): void => handleMp3Select(e.target.value)}
-				className="mp3dropdown">
-				<option value="">Select a track</option>
+				className="mp3dropdown"
+				value={selectedMp3 || undefined}>
+				<option value="">-</option>
 				{mp3Files.map((mp3, index) => (
 					<option key={"mp3-" + index + "-" + mp3.label} value={mp3.value}>
 						{mp3.label}

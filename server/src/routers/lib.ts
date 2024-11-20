@@ -4,6 +4,9 @@ import type Activity from "../types/Activity.ts";
 import { ActivitySchema } from "../schemas/Activity.ts";
 import { ActivityStatus, type AdvancementType } from "../types/Activity.ts";
 
+// 10 days
+const MAX_TIME_BEFORE_ABANDON = 10 * 24 * 60 * 60 * 1000;
+
 export async function getUsernameListFromIdList(list: Types.ObjectId[]): Promise<string[]> {
 	const accessList = [];
 	for (const access of list) {
@@ -67,13 +70,15 @@ export async function getActivityList(
 			parent: foundActivity.parent || null,
 			// prev: foundActivity.prev || undefined,
 			next: foundActivity.next || null,
-			status: await getActivityStatus(),
+			status: null,
 			children: await getActivityList(projectId, foundActivity._id),
 			start: foundActivity.start || null,
 			active: foundActivity.active,
 			abandoned: foundActivity.abandoned,
 			reactivated: foundActivity.reactivated,
 		};
+
+		newActivity.status = await getStatusForActivity(newActivity);
 
 		activityList.push(newActivity);
 	}
@@ -88,13 +93,7 @@ export async function getActivityList(
 	return activityList;
 }
 
-export async function getActivityStatus(): Promise<ActivityStatus> {
-	// TODO: implement function
-	console.log("getActivityStatus() not implemented yet");
-	return ActivityStatus.ACTIVE;
-}
-
-export async function getActivityFromActivityId(id: string): Promise<Activity | null> {
+/* export async function getActivityFromActivityId(id: string): Promise<Activity | null> {
 	const document = await ActivitySchema.findById(id).lean();
 
 	if (!document) {
@@ -125,4 +124,64 @@ export async function getActivityFromActivityId(id: string): Promise<Activity | 
 	};
 
 	return newActivity;
+}*/
+
+export async function getStatusForActivity(activity: Activity): Promise<ActivityStatus> {
+	// if prev activity is completed, the current is activable
+	const prevActivities = await ActivitySchema.find({
+		next: activity.id,
+	}).lean();
+
+	// console.log("Attività precedenti:", prevActivities);
+
+	if (prevActivities.length > 0) {
+		for (const prevActivity of prevActivities) {
+			if (!prevActivity.completed) {
+				return ActivityStatus.NOT_ACTIVABLE;
+			}
+		}
+	}
+
+	// activity is reactivated (only if activable)
+	if (activity.reactivated) {
+		// check if late
+		if (activity.deadline.getTime() < new Date().getTime()) {
+			return ActivityStatus.LATE;
+		}
+
+		// if activated but very late or marked as abandoned, return abandoned
+		if (
+			activity.abandoned ||
+			activity.deadline.getTime() < new Date().getTime() + MAX_TIME_BEFORE_ABANDON
+		) {
+			return ActivityStatus.ABANDONED;
+		}
+
+		return ActivityStatus.REACTIVATED;
+	}
+
+	// activity is completed (only if activable)
+	if (activity.completed) {
+		return ActivityStatus.COMPLETED;
+	}
+
+	if (activity.active) {
+		// check if late
+		if (activity.deadline.getTime() < new Date().getTime()) {
+			return ActivityStatus.LATE;
+		}
+
+		// if activated but very late or marked as abandoned, return abandoned
+		if (
+			activity.abandoned ||
+			activity.deadline.getTime() < new Date().getTime() + MAX_TIME_BEFORE_ABANDON
+		) {
+			return ActivityStatus.ABANDONED;
+		}
+
+		// if not abandoned or late, return activated
+		return ActivityStatus.ACTIVE;
+	}
+
+	return ActivityStatus.ACTIVABLE;
 }

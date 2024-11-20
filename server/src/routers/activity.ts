@@ -9,75 +9,19 @@ import { ActivitySchema } from "../schemas/Activity.js";
 import type Activity from "../types/Activity.js";
 import { validDateString } from "../lib.ts";
 import { ProjectSchema } from "../schemas/Project.ts";
-import { AdvancementType, ActivityStatus } from "../types/Activity.js";
-import { getActivityList, getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.ts";
+import { AdvancementType } from "../types/Activity.js";
+import {
+	getActivityList,
+	getIdListFromUsernameList,
+	getStatusForActivity,
+	getUsernameListFromIdList,
+} from "./lib.ts";
 // import { validDateString } from "../lib.js";
 
 const router: Router = Router();
 
 // max positive integer
 const DEFAULT_GET_NUMBER = Number.MAX_SAFE_INTEGER;
-
-// 10 days
-const MAX_TIME_BEFORE_ABANDON = 10 * 24 * 60 * 60 * 1000;
-
-// Returns only statuses: ACTIVABLE, NOT_ACTIVABLE, LATE
-async function getStatusForActivity(activity: Activity): Promise<ActivityStatus> {
-	// if prev activity is completed, the current is activable
-	const prevActivities = await ActivitySchema.find({
-		next: activity.id,
-	}).lean();
-	if (prevActivities.length > 0) {
-		for (const prevActivity of prevActivities) {
-			if (!prevActivity.completed) {
-				return ActivityStatus.NOT_ACTIVABLE;
-			}
-		}
-	}
-
-	// activity is reactivated (only if activable)
-	if (activity.reactivated) {
-		// check if late
-		if (activity.deadline.getTime() < new Date().getTime()) {
-			return ActivityStatus.LATE;
-		}
-
-		// if activated but very late or marked as abandoned, return abandoned
-		if (
-			activity.abandoned ||
-			activity.deadline.getTime() < new Date().getTime() + MAX_TIME_BEFORE_ABANDON
-		) {
-			return ActivityStatus.ABANDONED;
-		}
-
-		return ActivityStatus.REACTIVATED;
-	}
-
-	// activity is completed (only if activable)
-	if (activity.completed) {
-		return ActivityStatus.COMPLETED;
-	}
-
-	if (activity.active) {
-		// check if late
-		if (activity.deadline.getTime() < new Date().getTime()) {
-			return ActivityStatus.LATE;
-		}
-
-		// if activated but very late or marked as abandoned, return abandoned
-		if (
-			activity.abandoned ||
-			activity.deadline.getTime() < new Date().getTime() + MAX_TIME_BEFORE_ABANDON
-		) {
-			return ActivityStatus.ABANDONED;
-		}
-
-		// if not abandoned or late, return activated
-		return ActivityStatus.ACTIVE;
-	}
-
-	return ActivityStatus.ACTIVABLE;
-}
 
 // Returns the activity list for the current user; defaults to first ten items
 router.get("/", async (req: Request, res: Response) => {
@@ -111,7 +55,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 		const foundActivities = await ActivitySchema.find(filter).lean();
 
-		console.log("Found activities: ", foundActivities);
+		// console.log("Found activities: ", foundActivities);
 
 		const activities = [];
 
@@ -382,6 +326,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 			}
 		}
 
+		console.log(activity);
 		// TODO: filter the fields of the found note
 		const resBody: ResponseBody = {
 			status: ResponseStatus.GOOD,
@@ -890,7 +835,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 			? inputAdvancementType
 			: (foundActivity.advancementType as AdvancementType | undefined);
 
-		if (projectId && (inputActive || inputAbandoned || inputReactivated)) {
+		if (!projectId && (inputActive || inputAbandoned || inputReactivated)) {
 			const resBody: ResponseBody = {
 				status: ResponseStatus.BAD,
 				message: "Cannot change active, abandoned or reactivated for non-project activity",
@@ -950,16 +895,6 @@ router.put("/:id", async (req: Request, res: Response) => {
 		console.log("Updating activity: ", foundActivity, " to ", updatedActivity);
 
 		const result = await ActivitySchema.findByIdAndUpdate(activityId, updatedActivity);
-
-		const resultAle = await ActivitySchema.findOneAndUpdate(
-			{
-				idEventoNotificaCondiviso: updatedActivity.idEventoNotificaCondiviso,
-			}, // Filtro per idEventoNotificaCondiviso
-			updatedActivity,
-			{ new: true } // Opzione per restituire il documento aggiornato
-		);
-
-		console.log(resultAle);
 
 		if (projectId && inputNext) {
 			// set prev next to null, and update to new next

@@ -22,18 +22,18 @@ const baseNote: Note = {
 
 //TODO: aggiungere un bottone per uscire dalla creazione di una nota
 
-const NEW = "new";
-
 export default function NotePage(): React.JSX.Element {
 	const { id } = useParams();
 	const [note, setNote] = React.useState(baseNote as Note);
 	const [tag, setTag] = React.useState("");
 	const [message, setMessage] = React.useState("");
-	const [isEditing, setIsEditing] = React.useState(id === NEW);
+	const [isEditing, setIsEditing] = React.useState(false);
 	const [isPreview, setIsPreview] = React.useState(false);
+	const [deletedItems, setDeletedItems] = React.useState([] as string[]); // id list
+	const [count, setCount] = React.useState(0);
 	const nav = useNavigate();
 
-	function updateNote(): void {
+	function refreshNote(): void {
 		fetch(`${SERVER_API}/notes/${id}`)
 			.then((res) => res.json())
 			.then((data) => {
@@ -51,7 +51,7 @@ export default function NotePage(): React.JSX.Element {
 	}
 	// On page load, get the note for the user
 	React.useEffect(() => {
-		if (id !== NEW) updateNote();
+		refreshNote();
 	}, []);
 
 	function handleTextChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
@@ -61,78 +61,34 @@ export default function NotePage(): React.JSX.Element {
 	function handlePrivacyChange(e: React.ChangeEvent<HTMLSelectElement>): void {
 		e.preventDefault();
 
-		console.log("Updating privacy to:", e.target.value);
-		fetch(`${SERVER_API}/notes/${id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				privacy: e.target.value,
-			}),
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.status === ResponseStatus.GOOD) {
-					updateNote();
-				}
-			})
-			.catch((e) => {
-				setMessage(e || "Impossibile raggiungere il server");
-			});
+		setNote({ ...note, privacy: e.target.value as Privacy });
 	}
 
-	async function handleCreateNote(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+	async function handleUpdateNote(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
+		// TODO: validate inputs (not empty, max length)
 		try {
-			const res = await fetch(`${SERVER_API}/notes`, {
-				method: "POST",
-				body: JSON.stringify(note),
+			const res = await fetch(`${SERVER_API}/notes/${id}`, {
+				method: "PUT",
+				body: JSON.stringify({ ...note, deletedItems }),
 				headers: { "Content-Type": "application/json" },
 			});
 
+			console.log(res);
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				const newNoteId: string = resBody.value;
-				alert("Nota creata correttamente!");
-
-				// redirect to update page of the created note
-				nav(`/notes/${newNoteId}`);
+				alert("Nota aggiornata correttamente!");
+				refreshNote();
+				setIsEditing(false);
 			} else {
-				setMessage(resBody.message || "Errore nel caricamento della nota");
+				setMessage("Errore nell'aggiornamento della nota");
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
 		}
 	}
-
-	function updateNoteTitleAndText(e: React.MouseEvent<HTMLButtonElement>): void {
-		e.preventDefault();
-
-		fetch(`${SERVER_API}/notes/${id}`, {
-			method: "PUT",
-			body: JSON.stringify({
-				title: note.title,
-				text: note.text,
-			}),
-			headers: { "Content-Type": "application/json" },
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.status === ResponseStatus.GOOD) {
-					updateNote();
-				} else {
-					nav("/notes");
-				}
-			})
-			.catch(() => {
-				setMessage("Impossibile raggiungere il server");
-				nav("/notes");
-			});
-	}
-
 	async function handleDeleteNote(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
@@ -158,60 +114,12 @@ export default function NotePage(): React.JSX.Element {
 
 	function addTag(e: React.MouseEvent<HTMLElement>): void {
 		e.preventDefault();
-		const tags = note.tags.concat(tag);
-		fetch(`${SERVER_API}/notes/${id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				tags,
-			}),
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.status === ResponseStatus.GOOD) {
-					updateNote();
-				} else {
-					nav("/notes");
-				}
-			})
-			.catch(() => {
-				setMessage("Impossibile raggiungere il server");
-				nav("/notes");
-			});
+		if (!note.tags.includes(tag)) setNote({ ...note, tags: [...note.tags, tag] });
 	}
 
 	function deleteTag(e: React.MouseEvent<HTMLElement>, tag: string): void {
 		e.preventDefault();
-		const tags = note.tags.filter((t) => t !== tag);
-		fetch(`${SERVER_API}/notes/${id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				tags,
-			}),
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.status === ResponseStatus.GOOD) {
-					updateNote();
-				} else {
-					nav("/notes");
-				}
-			})
-			.catch(() => {
-				setMessage("Impossibile raggiungere il server");
-				nav("/notes");
-			});
-	}
-
-	function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
-		e.preventDefault();
-		setIsEditing(!isEditing);
-		setIsPreview(false);
+		setNote({ ...note, tags: note.tags.filter((t) => t !== tag) });
 	}
 
 	function togglePreview(): void {
@@ -221,142 +129,66 @@ export default function NotePage(): React.JSX.Element {
 	function addUser(e: React.ChangeEvent<HTMLSelectElement>, user: string): void {
 		e.preventDefault();
 
-		const newAccessList = [...note.accessList, user];
-
-		fetch(`${SERVER_API}/notes/${id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				accessList: newAccessList,
-			}),
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.status === ResponseStatus.GOOD) {
-					updateNote();
-				}
-			})
-			.catch((e) => {
-				setMessage(e || "Impossibile raggiungere il server");
-			});
+		if (!note.accessList.includes(user))
+			setNote({ ...note, accessList: [...note.accessList, user] });
 	}
 
 	function RemoveUser(e: React.MouseEvent<HTMLButtonElement>, user: string): void {
 		e.preventDefault();
-
-		const newAccessList = note.accessList.filter((u) => u !== user);
-
-		fetch(`${SERVER_API}/notes/${id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				accessList: newAccessList,
-			}),
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.status === ResponseStatus.GOOD) {
-					updateNote();
-				}
-			})
-			.catch((e) => {
-				setMessage(e || "Impossibile raggiungere il server");
-			});
+		setNote({ ...note, accessList: note.accessList.filter((u) => u !== user) });
 	}
 
 	function handleAddItem(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
-		fetch(`${SERVER_API}/lists/`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				noteId: note.id,
-				text: "Nuovo item",
-				completed: false,
-				endDate: undefined,
-			}),
-		})
-			.then((res) => res.json())
-			.then((res) => {
-				console.log(res);
-				if (res.status === ResponseStatus.GOOD) {
-					updateNote();
-				}
-			})
-			.catch((e) => {
-				console.log(e);
-				setMessage(e || "Impossibile raggiungere il server");
-			});
+		setNote({
+			...note,
+			toDoList: [
+				...note.toDoList,
+				{ text: "Nuova nota", completed: false, id: count.toString() },
+			],
+		});
+		setCount(count + 1);
 	}
 
 	function handleRemoveItem(e: React.MouseEvent<HTMLButtonElement>, item: ListItem): void {
 		e.preventDefault();
-		fetch(`${SERVER_API}/lists/${item.id}`, {
-			method: "DELETE",
-		})
-			.then((res) => res.json())
-			.then((res) => {
-				console.log(res);
-				if (res.status === ResponseStatus.GOOD) {
-					updateNote();
-				}
-			})
-			.catch((e) => {
-				console.log(e);
-				setMessage(e || "Impossibile raggiungere il server");
-			});
+
+		setNote({
+			...note,
+			toDoList: note.toDoList.filter((i) => i !== item),
+		});
+
+		if (item.id) setDeletedItems((deletedItems) => [...deletedItems, item.id!]);
 	}
 
-	function handleUpdateTextItem(e: React.MouseEvent<HTMLButtonElement>, item: ListItem): void {
+	function handleUpdateTextItem(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
 		e.preventDefault();
 
-		fetch(`${SERVER_API}/lists/${item.id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ text: item.text }),
-		})
-			.then((res) => res.json())
-			.then((res) => {
-				console.log(res);
-				if (res.status === ResponseStatus.GOOD) {
-					updateNote();
-				}
-			})
-			.catch((e) => {
-				console.log(e);
-				setMessage(e || "Impossibile raggiungere il server");
-			});
+		setNote({
+			...note,
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, text: e.target.value } : i
+			),
+		});
 	}
 
 	function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
 		e.preventDefault();
+		setNote({
+			...note,
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, completed: !i.completed } : i
+			),
+		});
+	}
 
-		fetch(`${SERVER_API}/lists/${item.id}`, {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ completed: e.target.checked }),
-		})
-			.then((res) => res.json())
-			.then((res) => {
-				console.log(res);
-				if (res.status === ResponseStatus.GOOD) {
-					updateNote();
-				}
-			})
-			.catch((e) => {
-				console.log(e);
-				setMessage(e || "Impossibile raggiungere il server");
-			});
+	function handleAbortChanges(e: React.MouseEvent<HTMLButtonElement>): void {
+		e.preventDefault();
+
+		refreshNote();
+
+		setIsEditing(false);
+		setIsPreview(false);
 	}
 
 	return (
@@ -364,7 +196,7 @@ export default function NotePage(): React.JSX.Element {
 			<div className="note-background">
 				<div className="note-container">
 					<div className="note-page-title">
-						{id === NEW ? "Crea una nuova nota" : "Modifica nota"}
+						Modifica nota
 						<a href="/notes" className="note-close-link">
 							X
 						</a>
@@ -400,9 +232,6 @@ export default function NotePage(): React.JSX.Element {
 									/>
 								</label>
 							)}
-							<button onClick={updateNoteTitleAndText}>
-								Aggiorna Titolo e Testo
-							</button>
 						</>
 					) : (
 						<>
@@ -430,28 +259,9 @@ export default function NotePage(): React.JSX.Element {
 												onChange={(
 													e: React.ChangeEvent<HTMLInputElement>
 												): void => {
-													setNote((prevNote) => {
-														return {
-															...prevNote,
-															toDoList: prevNote.toDoList.map((i) => {
-																if (i.id === l.id) {
-																	return {
-																		...i,
-																		text: e.target.value,
-																	};
-																}
-																return i;
-															}),
-														};
-													});
+													handleUpdateTextItem(e, l);
 												}}
 											/>
-											<button
-												onClick={(
-													e: React.MouseEvent<HTMLButtonElement>
-												): void => handleUpdateTextItem(e, l)}>
-												Aggiorna Nome
-											</button>
 										</>
 									) : (
 										<div>{l.text}</div>
@@ -571,18 +381,18 @@ export default function NotePage(): React.JSX.Element {
 							</>
 						)}
 					</label>
+					{message && <div>{message}</div>}
 
-					{id !== NEW && (
-						<button onClick={toggleEdit}>
-							{isEditing ? "Termina modifiche" : "Modifica nota"}
-						</button>
+					{isEditing ? (
+						<>
+							<button onClick={handleUpdateNote}>Aggiorna Nota</button>
+							<button onClick={handleAbortChanges}>Annulla Modifiche</button>
+						</>
+					) : (
+						<button onClick={(): void => setIsEditing(true)}>Modifica nota</button>
 					)}
 
-					{id === NEW ? (
-						<button style={{ backgroundColor: "blue" }} onClick={handleCreateNote}>
-							Crea Nota
-						</button>
-					) : !isEditing ? (
+					{!isEditing ? (
 						<button style={{ backgroundColor: "red" }} onClick={handleDeleteNote}>
 							Cancella Nota
 						</button>
@@ -591,8 +401,6 @@ export default function NotePage(): React.JSX.Element {
 					)}
 				</div>
 			</div>
-
-			{message && <div>{message}</div>}
 		</>
 	);
 }

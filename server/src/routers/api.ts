@@ -41,7 +41,7 @@ router.use("/notes", notesRouter);
 router.use("/pomodoro", pomodoroRouter);
 router.use("/notifications", notificationRouter);
 router.use("/chats", chatsRouter);
-router.use("/activity", activityRouter);
+router.use("/activities", activityRouter);
 router.use("/currentDate", currentDateRouter);
 router.use("/projects", projectsRouter);
 router.use("/lists", listsRouter);

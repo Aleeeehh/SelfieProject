@@ -57,7 +57,7 @@ export default function ActivityForm({
 		// create the new activity here (inside the component)
 		console.log("Creating activity: ", JSON.stringify(activity));
 
-		const res = await fetch(`${SERVER_API}/activity`, {
+		const res = await fetch(`${SERVER_API}/activities`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -88,7 +88,7 @@ export default function ActivityForm({
 
 		// update the activity here (inside the component)
 
-		const res = await fetch(`${SERVER_API}/activity/${activity.id}`, {
+		const res = await fetch(`${SERVER_API}/activities/${activity.id}`, {
 			method: "PUT",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({

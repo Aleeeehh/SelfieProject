@@ -374,7 +374,7 @@ export async function createDummyProject() {
 		const modulo3Test: Activity = {
 			title: "Test Modulo 3",
 			description: "Test Modulo 3",
-			start: new Date("2024-05-01"),
+			start: new Date("2024-05-26"),
 			deadline: new Date("2024-05-31"),
 			accessList: [userFV3Id],
 			owner: userFV1Id,
