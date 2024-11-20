@@ -2068,6 +2068,30 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return;
 		}
 
+		//ottieni gli usernames di tutti gli utenti
+		const resUsernames = await fetch(`${SERVER_API}/users/allUsernames`, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		const dataUsernames = await resUsernames.json();
+		const usernames = dataUsernames.value;
+
+		const risorse = accessList.filter(receiver => !usernames.includes(receiver));
+
+		//controlla che la risorsa aggiunta sia disponibile per l'orario selezionato
+		for (const risorsa of risorse) {
+			const resRisorsa = await fetch(`${SERVER_API}/risorsa/checkResourceAvailability`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ risorsa, startTime, endTime }),
+			});
+			const dataRisorsa = await resRisorsa.json();
+			console.log("Risorsa disponibile:", dataRisorsa);
+		}
+
+
 		if (startTime > endTime) {
 			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
 			return;
@@ -2194,25 +2218,34 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repetitions: repetitions,
 		}
 
-		//ottieni gli usernames di tutti gli utenti
-		const resUsernames = await fetch(`${SERVER_API}/users/allUsernames`, {
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
-		const dataUsernames = await resUsernames.json();
-		const usernames = dataUsernames.value;
 
-		const risorse = accessList.filter(receiver => !usernames.includes(receiver));
 
 		console.log("Queste sono le risorse:", risorse);
 
 		//per ogni risorsa, crea un evento risorsa se non è già allocata per quell'orario
 
 		for (const risorsa of risorse) {
-			//crea un evento risorsa sul calendario, metti un nuovo campo che dice che è una risorsa.
-			//crea evento risorsa con la post degli eventi, setta isRisorsa a true.
+			console.log(risorsa);
+			const res = await fetch(`${SERVER_API}/events`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					idEventoNotificaCondiviso, //lo inserisco?
+					isRisorsa: true,
+					owner,
+					title: risorsa + " occupata",
+					startTime: startTime.toISOString(),
+					endTime: endTime.toISOString(),
+					accessList: usernames,
+					accessListAccepted: usernames,
+					untilDate: untilDate,
+					isInfinite,
+					frequency: frequency,
+					location,
+					repetitions,
+				}),
+			});
+			console.log("Evento risorsa creato:", res);
 		}
 
 
@@ -3994,15 +4027,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 										) : (
 											<div
-												className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
+												className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : event.event.isRisorsa ? "brown" : "blue"}`}
 												style={{
 													top: `${event.top}px`, // Imposta la posizione verticale
 													height: `${event.height}px`, // Imposta l'altezza dell'evento
 													width: `calc(95%/${event.width})`,
 													position: "absolute", // Assicurati che sia posizionato correttamente
-													color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
-													borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-													backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
+													color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
+													borderColor: event.event.title === "Non disturbare" ? "white" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
+													backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (event.event.isRisorsa ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(139, 69, 19, 0.2)" : "rgba(139, 69, 19, 0.5)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)")),
 													marginLeft: `${event.marginLeft}%`,
 													cursor: "default",
 												}}
@@ -4017,7 +4050,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 															fontSize: "1.5rem",
 															margin: 0,
 															padding: 0,
-															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
+															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
 															cursor: "pointer"
 														}}
 													></i>

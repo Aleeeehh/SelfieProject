@@ -1,5 +1,6 @@
 import React from "react";
 import { SERVER_API } from "./params/params";
+//import { set } from "date-fns";
 //import { ResponseBody } from "./types/ResponseBody";
 // import UserResult from "./types/UserResult";
 
@@ -41,10 +42,12 @@ export default function SearchFormResource({
             }),
         });
 
-        //acquisisci le risorse:
+        //acquisisci le risorse: (adesso le acquisisce tutt)
         const res2 = await fetch(`${SERVER_API}/risorsa?name=${e.target.value}`);
         const data = (await res2.json())
         const risorse = data.risorse;
+
+        //per ogni risorsa
 
         const nomiRisorse: string[] = [];
         for (const risorsa of risorse) {
@@ -65,6 +68,7 @@ export default function SearchFormResource({
         ];
 
         //console.log(display);
+
         setSearchResults(combinedResults);
     }
 

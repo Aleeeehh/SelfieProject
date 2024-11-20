@@ -9,6 +9,7 @@ export type Event = {
 	owner: string;
 	title: string;
 	startTime: Date;
+	isRisorsa?: boolean | null;
 	endTime: Date;
 	frequency: Frequency;
 	isInfinite: boolean;

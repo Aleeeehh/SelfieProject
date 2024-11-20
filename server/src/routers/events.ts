@@ -340,14 +340,15 @@ router.post("/", async (req: Request, res: Response) => {
             idEventoNotificaCondiviso,
             accessList,
             accessListAccepted,
+            isRisorsa,
         } = req.body as Event;
 
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
+        console.log("isRisorsa passato come parametro:", isRisorsa);
+        console.log("isRisorsa passato come parametro:", isRisorsa);
+
+        console.log("isRisorsa passato come parametro:", isRisorsa);
+
+        console.log("isRisorsa passato come parametro:", isRisorsa);
 
         if (new Date(startTime) > new Date(endTime)) {
             return res.status(400).json({
@@ -419,6 +420,7 @@ router.post("/", async (req: Request, res: Response) => {
                 accessListAccepted,
                 repetitions,
                 owner,
+                isRisorsa,
                 recurring: true,
                 createdAt: now,
                 updatedAt: now,
@@ -465,6 +467,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         isInfinite,
+                        isRisorsa,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
@@ -523,6 +526,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -569,6 +573,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -625,6 +630,7 @@ router.post("/", async (req: Request, res: Response) => {
                         location,
                         accessList,
                         accessListAccepted,
+                        isRisorsa,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
@@ -651,6 +657,7 @@ router.post("/", async (req: Request, res: Response) => {
                     isInfinite,
                     repetitions,
                     owner,
+                    isRisorsa,
                     recurring: false, //assumo evento non ricorrente
                     accessList,
                     accessListAccepted,
@@ -721,6 +728,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: true,
                         createdAt: now,
                         updatedAt: now,
@@ -789,6 +797,7 @@ router.post("/", async (req: Request, res: Response) => {
                         isInfinite,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: true, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -851,6 +860,7 @@ router.post("/", async (req: Request, res: Response) => {
                         untilDate,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -923,6 +933,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: true, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -958,6 +969,7 @@ router.post("/", async (req: Request, res: Response) => {
                     isInfinite,
                     repetitions,
                     owner,
+                    isRisorsa,
                     recurring: false, //assumo evento non ricorrente
                     createdAt: now,
                     updatedAt: now,
