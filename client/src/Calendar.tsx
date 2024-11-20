@@ -56,9 +56,11 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
+	const [showRisorse, setShowRisorse] = React.useState(true);
 	const [messageRisorsa, setMessageRisorsa] = React.useState("");
 	const [file, setFile] = React.useState<File | null>(null);
 	const [createRisorsa, setCreateRisorsa] = React.useState(false);
+	const [isAdmin, setIsAdmin] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
 
 	//const [insertFile, setInsertFile] = React.useState(false);
@@ -129,6 +131,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
+
 				const res2 = await fetch(`${SERVER_API}/notifications`);
 				const notifications = await res2.json();
 				console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
@@ -758,6 +761,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 				const owner = currentUser.value.username;
 				console.log("Questo è l'ownerr:", owner);
+				if (owner === "fvPM") { //se l'utente è il PM, allora è admin per le risorse
+					setIsAdmin(true);
+				}
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
 				console.log("Eventi trovati:", data);
@@ -858,6 +864,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	function toggleAddNotification(): void {
 		setAddNotification(!addNotification);
+	}
+
+	function toggleShowRisorse(): void {
+		setShowRisorse(!showRisorse);
 	}
 
 	function toggleTodayActivitiesMode(): void {
@@ -1768,6 +1778,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 	}
 
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		//controlla se users[0] è già contenuta nella accessList
+		if (accessList.includes(users[0])) {
+			setMessageRisorsa("Utente già presente nell'access list");
+			return;
+		}
+		else {
+			setMessageRisorsa("");
+		}
 		e.preventDefault();
 		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
 		setAccessList([...accessList, users[0]]);
@@ -1779,6 +1797,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("Risorsa/utente ", users[0], " da aggiungere all'access list dell'evento");
 		const risorsa = users[0];
 
+		//controlla se users[0] è già contenuta nella accessList
+		if (accessList.includes(users[0])) {
+			setMessageRisorsa("Utente/risorsa già presente nell'access list");
+			return;
+		}
+		else {
+			setMessageRisorsa("");
+		}
+
 		//controlla che la risorsa aggiunta sia disponibile per l'orario selezionato
 		const resRisorsa = await fetch(`${SERVER_API}/risorsa/checkResourceAvailability`, {
 			method: "POST",
@@ -1787,7 +1814,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		});
 		const dataRisorsa = await resRisorsa.json();
 		if (!dataRisorsa.isAvailable) {
-			alert("La risorsa non è disponibile per l'orario selezionato");
 			setMessageRisorsa("Risorsa non disponibile!");
 			return;
 		}
@@ -3079,6 +3105,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 								</label>
 							</div>
 
+							<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "black", border: "0", marginLeft: "20px" }}
+								onClick={toggleShowRisorse}>Visualizza risorse
+							</button>
+
+
 
 						</div>
 
@@ -4078,7 +4109,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 												</div>
 											</div>
 
-										) : (
+										) : ((!event.event.isRisorsa || (event.event.isRisorsa && showRisorse)) && (
 											<div
 												className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : event.event.isRisorsa ? "brown" : "blue"}`}
 												style={{
@@ -4096,20 +4127,23 @@ export default function Calendar(): React.JSX.Element { // prova push
 												{event.name}
 												<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
 													{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-													<i className="bi bi-trash"
-														style={{
-															bottom: "2px", // Posiziona l'icona a 10px dal fondo
-															right: "50%",  // Posiziona l'icona a 10px dal lato destro
-															fontSize: "1.5rem",
-															margin: 0,
-															padding: 0,
-															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
-															cursor: "pointer"
-														}}
-													></i>
+													{(!event.event.isRisorsa || (event.event.isRisorsa && isAdmin)) && (
+														<i className="bi bi-trash"
+															style={{
+																bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																fontSize: "1.5rem",
+																margin: 0,
+																padding: 0,
+																color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
+																cursor: "pointer"
+															}}
+														></i>
+													)}
 												</div>
 
 											</div>
+										)
 
 										)
 

@@ -22,6 +22,7 @@ export async function createDummyUsers() {
                 lastName: "testLName",
                 birthday: new Date(),
                 address: "via falsa 1234",
+                admin: false,
             },
             {
                 id: "",
@@ -31,6 +32,7 @@ export async function createDummyUsers() {
                 lastName: "testLName",
                 birthday: new Date(),
                 address: "via falsa 1234",
+                admin: false,
             },
             {
                 id: "",
@@ -40,6 +42,7 @@ export async function createDummyUsers() {
                 lastName: "testLName",
                 birthday: new Date(),
                 address: "via falsa 1234",
+                admin: false,
             },
             {
                 id: "",
@@ -49,6 +52,7 @@ export async function createDummyUsers() {
                 lastName: "testLName",
                 birthday: new Date(),
                 address: "via falsa 1234",
+                admin: false,
             },
             {
                 id: "",
@@ -58,6 +62,7 @@ export async function createDummyUsers() {
                 lastName: "testLName",
                 birthday: new Date(),
                 address: "via falsa 1234",
+                admin: true,
             },
         ];
         for (const user of dummyUsers) {
