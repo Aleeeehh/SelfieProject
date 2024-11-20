@@ -38,17 +38,29 @@ router.post("/checkResourceAvailability", async (req, res) => {
     //    const startDateValue = new Date(startTime);
     //    const endDateValue = new Date(endTime);
     let isAvailable = true;
+    const startDateDate = new Date(startTime);
+    const endDateDate = new Date(endTime)
 
     const eventiRisorsaAllocati = await EventSchema.find({ //trova eventi in cui è convolta la risorsa
         name: risorsa + " occupata", isRisorsa: true
     });
     //filtra con un for, per ogni evento trovato, se l'orario coincide con l'orario di inizio o di fine dell'evento
-
-    console.log("Eventi con la risorsa allocata:", eventiRisorsaAllocati);
-
-
-    if (eventiRisorsaAllocati.length > 0) {
-        isAvailable = false;
+    for (const evento of eventiRisorsaAllocati) {
+        console.log("Entro nel for")
+        console.log(" startTime evento da inserire:", startTime);
+        console.log(" endTime evento da inserire:", endTime);
+        console.log(" startTime evento trovato:", evento.startTime);
+        console.log(" endTime evento trovato:", evento.endTime);
+        if (startDateDate < evento.endTime && endDateDate > evento.startTime) {
+            console.log("TROVATO EVENTO CHE UTILIZZA GIA LA RISORSA NELLO STESSO PERIODO");
+            console.log("TROVATO EVENTO CHE UTILIZZA GIA LA RISORSA NELLO STESSO PERIODO");
+            console.log("TROVATO EVENTO CHE UTILIZZA GIA LA RISORSA NELLO STESSO PERIODO");
+            console.log("TROVATO EVENTO CHE UTILIZZA GIA LA RISORSA NELLO STESSO PERIODO");
+            console.log("TROVATO EVENTO CHE UTILIZZA GIA LA RISORSA NELLO STESSO PERIODO");
+            console.log("TROVATO EVENTO CHE UTILIZZA GIA LA RISORSA NELLO STESSO PERIODO");
+            isAvailable = false;
+            return res.json({ isAvailable });
+        }
     }
 
     res.json({ isAvailable });

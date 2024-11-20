@@ -56,6 +56,7 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
+	const [messageRisorsa, setMessageRisorsa] = React.useState("");
 	const [file, setFile] = React.useState<File | null>(null);
 	const [createRisorsa, setCreateRisorsa] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
@@ -961,6 +962,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setCreateNonDisturbare(!createNonDisturbare);
 		setFrequency(Frequency.ONCE);
 		setShareEvent(false);
+		setUsers([]);
+		setAccessList([]);
+		setMessageRisorsa("");
 	}
 
 	function toggleCreateRisorsa(): void {
@@ -1772,7 +1776,38 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function handleAddUserEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
-		console.log("Utente ", users[0], " aggiunto all'access list dell'evento");
+		console.log("Risorsa/utente ", users[0], " da aggiungere all'access list dell'evento");
+		const risorsa = users[0];
+
+		//controlla che la risorsa aggiunta sia disponibile per l'orario selezionato
+		const resRisorsa = await fetch(`${SERVER_API}/risorsa/checkResourceAvailability`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ risorsa, startTime, endTime }),
+		});
+		const dataRisorsa = await resRisorsa.json();
+		if (!dataRisorsa.isAvailable) {
+			alert("La risorsa non è disponibile per l'orario selezionato");
+			setMessageRisorsa("Risorsa non disponibile!");
+			return;
+		}
+		else {
+			setMessageRisorsa("");
+		}
+
+		console.log("La risorsa è disponibile?", dataRisorsa);
+		console.log("La risorsa è disponibile?", dataRisorsa);
+
+		console.log("La risorsa è disponibile?", dataRisorsa);
+
+		console.log("La risorsa è disponibile?", dataRisorsa);
+		console.log("La risorsa è disponibile?", dataRisorsa);
+
+		console.log("La risorsa è disponibile?", dataRisorsa);
+
+		console.log("La risorsa è disponibile?", dataRisorsa);
+
+
 		setAccessList([...accessList, users[0]]);
 	}
 
@@ -2088,7 +2123,21 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({ risorsa, startTime, endTime }),
 			});
 			const dataRisorsa = await resRisorsa.json();
-			console.log("Risorsa disponibile:", dataRisorsa);
+
+			console.log("La risorsa è disponibile?", dataRisorsa);
+			console.log("La risorsa è disponibile?", dataRisorsa);
+
+			console.log("La risorsa è disponibile?", dataRisorsa);
+
+			console.log("La risorsa è disponibile?", dataRisorsa);
+			console.log("La risorsa è disponibile?", dataRisorsa);
+
+			console.log("La risorsa è disponibile?", dataRisorsa);
+
+			console.log("La risorsa è disponibile?", dataRisorsa);
+
+
+
 		}
 
 
@@ -2324,6 +2373,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setFrequency(Frequency.ONCE);
 		setShareEvent(false);
 		setAccessList([]);
+		setUsers([]);
+		setMessageRisorsa("");
 		//chiamata alla route per ical
 		const res4 = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
 		const data4 = await res4.json();
@@ -2599,6 +2650,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setSendInviteActivity(false);
 		setShareActivity(false);
 		setAccessList([]);
+		setUsers([]);
 		console.log("Questa è la lista delle attività:", activityList);
 	}
 
@@ -3372,6 +3424,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 										<div>Scegli l'utente o la risorsa con il quale condividere l'evento</div>
 										{users.length > 0}
 										<SearchFormResource onItemClick={handleSelectUser} list={users} />
+										{messageRisorsa && <div style={{ color: "red", fontWeight: "bold" }}>{messageRisorsa}</div>}
 										<button
 											onClick={handleAddUserEvent}
 											className="btn btn-primary send-invite-button"

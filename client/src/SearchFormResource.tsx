@@ -89,7 +89,7 @@ export default function SearchFormResource({
             <input
                 className="search-form-input"
                 type="text"
-                placeholder="Cerca utente"
+                placeholder="Cerca utente/risorsa"
                 value={search}
                 onChange={handleChange}
             />
