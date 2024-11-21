@@ -15,6 +15,7 @@ export type Event = {
 	groupId: string;
 	owner: string;
 	title: string;
+	isRisorsa?: boolean | null;
 	startTime: Date;
 	frequency: Frequency;
 	endTime: Date;
