@@ -67,6 +67,7 @@ export default function SearchForm({
                 placeholder="Cerca utente"
                 value={search}
                 onChange={handleChange}
+                style={{ margin: "0" }}
             />
             {searchResults.length > 0 && (
                 <select

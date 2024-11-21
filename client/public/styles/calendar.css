@@ -1,31 +1,373 @@
-.calendar-container {
-	display: flex;
-	flex-wrap: wrap;
-	flex-direction: row;
+/*ANDRE*/
+.calendar-background {
+	background-image: url('/images/background.png');
+	/*background-color: white;*/
+    background-size: cover;
+    background-repeat: repeat;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.calendar {
-	margin: 2vw;
+.whole-calendar-container {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 2em;
 }
 
-.create-event-container {
+.nome-data-container {
+	color: black;
+	font-weight: bold;
+	font-size: 2.9vw;
 	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.data-orario {
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	flex-direction: column;
 }
 
-.create-event-container>form {
+.orario {
+	margin-left: auto;
+	margin-right: auto;
+	display: flex;
+	flex-direction: column;
+	max-height: 500px;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	width: 95%;
+	font-size: 11.3px;
+	scrollbar-width: none; /* Nasconde la scrollbar per Firefox */
+	-ms-overflow-style: none; /* Nasconde la scrollbar per IE e Edge */
+}
+
+.orario::-webkit-scrollbar {
+	display: none;
+	/* Nasconde la scrollbar per chrome e safari */
+}
+
+.day-week-month {
+	display: flex;
+	gap: 0.5em;
+}
+
+.calendar-header-button {
+	border: none;
+    padding: 0.2em 0.6em;
+    border-radius: 8px;
+    background-color: #4a90e2;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+	height: 35px;
+
+}
+
+.calendar-header {
+	width: 75%;
+	height: auto;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+    justify-content: space-evenly; /* Distribuisco i pulsanti in modo uniforme */
+    padding: 0.5em 1em;
+    gap: 0.5em;
+	border-radius: 12px;
+	background-color: rgba(255, 255, 255, 0.9);
+	margin-top: 1em;
+}
+
+.header-visualizza label {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	/*gap: 0.5em;*/
+}
+
+.calendar-top-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 60%;
+	gap: 1em;
+	border-radius: 12px;
+	background-color: rgba(255, 255, 255, 0.9);
+	padding: 1em 0.5em;
+}
+
+.download-import {
+	display: flex;
+	gap: 0.5em;
+	flex-direction: row;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+/*
+.addEvent {
+	display: flex;
+	justify-content: center;
+	background-color: bisque;
+	color: black;
+	border: 0;
+	min-width: 100px;
+	font-size: 1em;
+	border-radius: 10px;
+	cursor: pointer;
+	padding: 10px;
+	align-items: center;
+}*/
+
+.choice-create-buttons {
+	display: flex;
+	flex-direction: row;
+	gap: 0.5em;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.choice-create-buttons button {
+	background-color: bisque;
+	color: black;
+	border: 0;
+	margin: 3px;
+}
+
+.choice-create {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+}
+
+.creation-event-container {
+	display: flex;
+	flex-direction: column;
+	width: 80%;
+}
+
+.creation-event-container > form {
 	display: flex;
 	flex-direction: column;
 	justify-content: space-around;
 }
 
-.month-indicator {
-	color: #ff0000;
-	/* Keeping the theme consistent */
+.day-of-week,
+.date-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	color: gray;
+	margin-top: 0.5em;
 	text-align: center;
-	font-weight: 500;
 }
 
+.calendar-event-dot {
+	position: absolute;
+	bottom: 3px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: gray;
+}
+
+.calendar-day-view-container,
+.activities-view-container {
+	display: flex;
+	flex-direction: column;
+	width: 70%;
+	background-color: rgba(255, 255, 255, 0.9);
+	border-radius: 12px;
+	padding: 1em 0.5em;
+	margin-bottom: 1em;
+}
+
+.nome-data-week {
+	color: black;
+	font-weight: bold;
+	flex: 1;
+	width: 185px;
+}
+
+.month-indicator {
+	text-align: center;
+	font-weight: 500;
+	font-size: 2em;
+}
+
+.caledar-week-view-container {
+	background-color: rgba(255, 255, 255, 0.9);
+	border-radius: 12px;
+	padding: 1em 0.5em;
+	margin: 2em 0;
+}
+
+.calendar-month-view-container,
+.calendar-week-view-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	flex-wrap: wrap;
+	width: 90%;
+	overflow-x: auto; /* Abilita lo scroll orizzontale */
+	gap: 0.5em;
+	background-color: rgba(255, 255, 255, 0.9);
+	border-radius: 12px;
+	padding: 1em 0.5em;
+	margin-bottom: 1em;
+	box-sizing: border-box; /* Include padding e bordi nelle dimensioni */
+}
+
+.calendar {
+	display: flex;
+	flex-direction: column;
+}
+
+.calendar-arrows {
+	background-color: bisque;
+	color: black;
+	border: 0;
+	width: 45px;
+	font-size: 16px;
+	border-radius: 10px;
+}
+
+.week-columns-container {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.day-of-week > * {
+	font-size: 0.85em;
+	color: gray;
+	font-weight: 500;
+	letter-spacing: 0.1em;
+	font-variant: small-caps;
+	text-align: center;
+}
+
+.fixed-width > * {
+	width: 180px;
+}
+
+.date-cell {
+	background-color: white;
+	border: 1px solid #ccc;
+	display: flex;
+	justify-content: flex-end;
+	align-items: flex-start;
+	height: 100px;
+	box-sizing: border-box;
+	padding: 5px;
+	width: 180px;
+}
+
+.empty-cell {
+	background-color: transparent;
+	border: none;
+}
+
+.activities-button-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+	align-items: center;
+	justify-content: center;
+	margin-top: 10px;
+}
+
+@media screen and (max-width: 310px) {
+	.day-week-month {
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.header-visualizza label {
+		flex-direction: column;
+		justify-content: center;
+	}
+}
+
+@media screen and (max-width: 420px) {
+	.date-grid,
+	.nome-data-container,
+	.evento {
+		font-size: 10px;
+	}
+	
+	.day-of-week {
+		font-size: 12px;
+	}
+
+	.month-indicator {
+		font-size: 1em;
+	}
+
+	.calendar-event-dot {
+		width: 4px;
+		height: 4px;
+	}
+
+	.nome-data-week {
+		width: 60vw;
+		font-size: 15px;
+	}
+
+	.week-columns-container {
+		flex-direction: column;
+	}
+
+}
+
+
+
+
+/*ALE*/
+
+/*
+.calendar-container {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+}*/
+/*
+.calendar {
+	margin: 2vw;
+}*/
+/*
+.create-event-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.create-event-container > form {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
+}*/
+/*
+.month-indicator {
+	color: #ff0000;
+	text-align: center;
+	font-weight: 500;
+}*/
+/*
 .day-of-week,
 .date-grid {
 	display: grid;
@@ -36,21 +378,21 @@
 .day-of-week {
 	margin-top: 1.25em;
 }
-
+*//*
 .day-of-week>* {
 	font-size: 0.85em;
-	/* Slightly larger for readability */
+	/* Slightly larger for readability 
 	color: gray;
-	/* Contrast color for headers */
+	/* Contrast color for headers 
 	font-weight: 500;
 	letter-spacing: 0.1em;
 	font-variant: small-caps;
 	text-align: center;
-}
-
+}*/
+/*
 .date-grid {
 	margin-top: 0.5em;
-}
+}*/
 
 
 .date-grid button {
@@ -95,7 +437,7 @@ button.btn:focus {
 	display: flex;
 	align-items: center;
 }
-
+/*
 .addEvent {
 	width: 10%;
 	margin: 1vw;
@@ -103,12 +445,12 @@ button.btn:focus {
 	justify-content: center;
 	margin-left: 6vw;
 
-}
+}*/
 
 .border {
 	border: 2px solid black;
 }
-
+/*
 .nome-data-container {
 	color: black;
 	font-weight: bold;
@@ -116,17 +458,18 @@ button.btn:focus {
 	margin-left: 58vw;
 	display: flex;
 	align-items: center;
-}
-
+}*/
+/*
 .nome-data-week {
 	color: black;
 	font-weight: bold;
 	font-size: 2.5vw;
 	flex: 1;
-}
+	width: calc (100vw / 8);
+}*/
 
 
-
+/*
 .orario {
 	margin-left: auto;
 	margin-right: auto;
@@ -136,30 +479,30 @@ button.btn:focus {
 	overflow-y: auto;
 	overflow-x: hidden;
 	width: 100%;
-}
-
+}*/
+/*
 .orario {
 	overflow-y: scroll;
-	/* Assicurati che lo scroll sia abilitato */
-}
+	/* Assicurati che lo scroll sia abilitato
+}*/
 
-/* Nascondi la scrollbar per WebKit (Chrome, Safari) */
+/* Nascondi la scrollbar per WebKit (Chrome, Safari) 
 .orario::-webkit-scrollbar {
 	display: none;
-	/* Nasconde la scrollbar */
+	/* Nasconde la scrollbar 
 }
-
-/* Nascondi la scrollbar per Firefox */
+/*
+/* Nascondi la scrollbar per Firefox
 .orario {
 	scrollbar-width: none;
-	/* Nasconde la scrollbar */
-}
-
-/* Nascondi la scrollbar per Internet Explorer e Edge */
+	/* Nasconde la scrollbar 
+}*/
+/*
+/* Nascondi la scrollbar per Internet Explorer e Edge 
 .orario {
 	-ms-overflow-style: none;
-	/* Nasconde la scrollbar */
-}
+	/* Nasconde la scrollbar 
+}*/
 
 .evento {
 	position: absolute;
@@ -254,24 +597,18 @@ button.btn:focus {
 	font-size: 0.8rem;
 	/* Rendi i bottoni più piccoli */
 }
-
+/*
 .date-cell {
 	background-color: white;
-	/* Colore di sfondo delle celle */
 	border: 1px solid #ccc;
-	/* Bordo delle celle */
 	display: flex;
 	justify-content: flex-end;
-	/* Allinea il contenuto a destra */
 	align-items: flex-start;
-	/* Allinea il contenuto in alto */
 	height: 100px;
-	/* Aumenta l'altezza delle celle */
 	box-sizing: border-box;
-	/* Assicura che il bordo sia incluso nelle dimensioni */
 	padding: 5px;
-	/* Aggiungi padding per distanziare il contenuto dai bordi */
-}
+	width: 180px;
+}*/
 
 .empty-cell {
 	background-color: transparent;
