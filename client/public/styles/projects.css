@@ -472,21 +472,23 @@
 .gantt-day-cell {
 	text-align: center;
 	padding: 10px;
+    height: 40px;
 }
 
 .gantt-task-bar {
 	background-color: #4a4a8c;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
+	/* width: 20px;
+	height: 20px;*/
+    width: 100%;
+    height: 40px;
 	margin: auto;
+
 }
 
 .gantt-empty-cell {
-	background-color: #e0e0e0;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
+	/* background-color: #e0e0e0; */
+	width: 100%;
+	height: 40px;
 	margin: auto;
 }
 
@@ -494,4 +496,17 @@
     .gantt-date-input-container {
         flex-direction: column;
     }
+}
+
+.filter {
+    margin: 1em auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	background-color: white;
+    width: 250px;
+    margin: 1em;
+    border-radius: 10px;
+    overflow: hidden;
 }

@@ -30,6 +30,7 @@ export async function getIdListFromUsernameList(usernames: string[]): Promise<Ty
 }
 
 // if parentID === undefined, then get the activity list for the project
+// sorts the activity list by start date
 export async function getActivityList(
 	projectId: Types.ObjectId | undefined,
 	parentId: Types.ObjectId | undefined
@@ -68,10 +69,21 @@ export async function getActivityList(
 			next: foundActivity.next || null,
 			status: await getActivityStatus(),
 			children: await getActivityList(projectId, foundActivity._id),
+			start: foundActivity.start || null,
+			active: foundActivity.active,
+			abandoned: foundActivity.abandoned,
+			reactivated: foundActivity.reactivated,
 		};
 
 		activityList.push(newActivity);
 	}
+
+	activityList.sort((a, b) => {
+		if (a.start && b.start) {
+			return a.start.getTime() - b.start.getTime();
+		}
+		return a.deadline.getTime() - b.deadline.getTime();
+	});
 
 	return activityList;
 }
@@ -106,6 +118,10 @@ export async function getActivityFromActivityId(id: string): Promise<Activity | 
 		next: document.next || null,
 		status: await getActivityStatus(),
 		children: await getActivityList(document.projectId || undefined, document._id),
+		start: document.start || null,
+		active: document.active,
+		abandoned: document.abandoned,
+		reactivated: document.reactivated,
 	};
 
 	return newActivity;
