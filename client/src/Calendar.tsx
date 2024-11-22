@@ -11,7 +11,6 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom"
 import { Event } from "./types/Event";
 import SearchForm from "./SearchForm";
-import SearchFormResource from "./SearchFormResource";
 //import mongoose from "mongoose";
 
 
@@ -56,11 +55,7 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
-	const [showRisorse, setShowRisorse] = React.useState(true);
-	const [messageRisorsa, setMessageRisorsa] = React.useState("");
 	const [file, setFile] = React.useState<File | null>(null);
-	const [createRisorsa, setCreateRisorsa] = React.useState(false);
-	const [isAdmin, setIsAdmin] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
 
 	//const [insertFile, setInsertFile] = React.useState(false);
@@ -134,7 +129,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-
 				const res2 = await fetch(`${SERVER_API}/notifications`);
 				const notifications = await res2.json();
 				console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
@@ -764,9 +758,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 				const owner = currentUser.value.username;
 				console.log("Questo è l'ownerr:", owner);
-				if (owner === "fvPM") { //se l'utente è il PM, allora è admin per le risorse
-					setIsAdmin(true);
-				}
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
 				console.log("Eventi trovati:", data);
@@ -869,10 +860,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setAddNotification(!addNotification);
 	}
 
-	function toggleShowRisorse(): void {
-		setShowRisorse(!showRisorse);
-	}
-
 	function toggleTodayActivitiesMode(): void {
 		if (!todayActivitiesMode) {
 			setTodayActivitiesMode(true);
@@ -898,9 +885,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		if (createNonDisturbare) {
 			setCreateNonDisturbare(false);
-		}
-		if (createRisorsa) {
-			setCreateRisorsa(false);
 		}
 		if (!createEvent) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -931,7 +915,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setTitle("");
 		setCreateEvent(!createEvent);
 		setFrequency(Frequency.ONCE);
-		setShareEvent(false);
 	}
 
 	function toggleCreateNonDisturbare(): void {
@@ -941,9 +924,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		if (createEvent) {
 			setCreateEvent(false);
-		}
-		if (createRisorsa) {
-			setCreateRisorsa(false);
 		}
 		if (!createNonDisturbare) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -975,25 +955,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setCreateNonDisturbare(!createNonDisturbare);
 		setFrequency(Frequency.ONCE);
 		setShareEvent(false);
-		setUsers([]);
-		setAccessList([]);
-		setMessageRisorsa("");
-	}
-
-	function toggleCreateRisorsa(): void {
-		if (createActivity) {
-			setCreateActivity(false);
-		}
-
-		if (createEvent) {
-			setCreateEvent(false);
-		}
-		if (createNonDisturbare) {
-			setCreateNonDisturbare(false);
-		}
-		setTitle("");
-		setDescription("");
-		setCreateRisorsa(!createRisorsa);
 	}
 
 	function toggleCreate(): void {
@@ -1006,9 +967,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		if (createNonDisturbare) {
 			setCreateNonDisturbare(false);
-		}
-		if (createRisorsa) {
-			setCreateRisorsa(false);
 		}
 		if (!createActivity) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -1781,14 +1739,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 	}
 
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		//controlla se users[0] è già contenuta nella accessList
-		if (accessList.includes(users[0])) {
-			setMessageRisorsa("Utente già presente nell'access list");
-			return;
-		}
-		else {
-			setMessageRisorsa("");
-		}
 		e.preventDefault();
 		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
 		setAccessList([...accessList, users[0]]);
@@ -1797,46 +1747,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function handleAddUserEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
-		console.log("Risorsa/utente ", users[0], " da aggiungere all'access list dell'evento");
-		const risorsa = users[0];
-
-		//controlla se users[0] è già contenuta nella accessList
-		if (accessList.includes(users[0])) {
-			setMessageRisorsa("Utente/risorsa già presente nell'access list");
-			return;
-		}
-		else {
-			setMessageRisorsa("");
-		}
-
-		//controlla che la risorsa aggiunta sia disponibile per l'orario selezionato
-		const resRisorsa = await fetch(`${SERVER_API}/risorsa/checkResourceAvailability`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ risorsa, startTime, endTime }),
-		});
-		const dataRisorsa = await resRisorsa.json();
-		if (!dataRisorsa.isAvailable) {
-			setMessageRisorsa("Risorsa non disponibile!");
-			return;
-		}
-		else {
-			setMessageRisorsa("");
-		}
-
-		console.log("La risorsa è disponibile?", dataRisorsa);
-		console.log("La risorsa è disponibile?", dataRisorsa);
-
-		console.log("La risorsa è disponibile?", dataRisorsa);
-
-		console.log("La risorsa è disponibile?", dataRisorsa);
-		console.log("La risorsa è disponibile?", dataRisorsa);
-
-		console.log("La risorsa è disponibile?", dataRisorsa);
-
-		console.log("La risorsa è disponibile?", dataRisorsa);
-
-
+		console.log("Utente ", users[0], " aggiunto all'access list dell'evento");
 		setAccessList([...accessList, users[0]]);
 	}
 
@@ -2132,44 +2043,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return;
 		}
 
-		//ottieni gli usernames di tutti gli utenti
-		const resUsernames = await fetch(`${SERVER_API}/users/allUsernames`, {
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
-		const dataUsernames = await resUsernames.json();
-		const usernames = dataUsernames.value;
-
-		const risorse = accessList.filter(receiver => !usernames.includes(receiver));
-
-		//controlla che la risorsa aggiunta sia disponibile per l'orario selezionato
-		for (const risorsa of risorse) {
-			const resRisorsa = await fetch(`${SERVER_API}/risorsa/checkResourceAvailability`, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ risorsa, startTime, endTime }),
-			});
-			const dataRisorsa = await resRisorsa.json();
-
-			console.log("La risorsa è disponibile?", dataRisorsa);
-			console.log("La risorsa è disponibile?", dataRisorsa);
-
-			console.log("La risorsa è disponibile?", dataRisorsa);
-
-			console.log("La risorsa è disponibile?", dataRisorsa);
-			console.log("La risorsa è disponibile?", dataRisorsa);
-
-			console.log("La risorsa è disponibile?", dataRisorsa);
-
-			console.log("La risorsa è disponibile?", dataRisorsa);
-
-
-
-		}
-
-
 		if (startTime > endTime) {
 			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
 			return;
@@ -2296,79 +2169,43 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repetitions: repetitions,
 		}
 
-
-
-		console.log("Queste sono le risorse:", risorse);
-
-		//per ogni risorsa, crea un evento risorsa se non è già allocata per quell'orario
-
-		for (const risorsa of risorse) {
-			console.log(risorsa);
-			const res = await fetch(`${SERVER_API}/events`, {
+		//per ogni utente della accessList, invia una notifica per accettare l'invito
+		for (const receiver of accessList) {
+			const newNotification = {
+				message: message,
+				mode: "event",
+				receiver: receiver,
+				type: "event",
+				data: {
+					date: notificationDate, //data prima notifica
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+					frequencyEvent: frequency,
+					isInfiniteEvent: isInfinite,
+					repetitionsEvent: repetitions,
+					untilDateEvent: untilDate,
+				},
+			}
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					idEventoNotificaCondiviso, //lo inserisco?
-					isRisorsa: true,
-					owner,
-					title: risorsa + " occupata",
-					startTime: startTime.toISOString(),
-					endTime: endTime.toISOString(),
-					accessList: usernames,
-					accessListAccepted: usernames,
-					untilDate: untilDate,
-					isInfinite,
-					frequency: frequency,
-					location,
-					repetitions,
-				}),
-			});
-			console.log("Evento risorsa creato:", res);
-		}
-
-
-
-		console.log("Questi sono i nomi degli utenti:", usernames);
-		//per ogni utente della accessList, invia una notifica per accettare l'invito
-		for (const receiver of accessList) {
-			if (usernames.includes(receiver)) {
-				console.log("Questo è il receiver:", receiver);
-				const newNotification = {
 					message: message,
 					mode: "event",
 					receiver: receiver,
-					type: "event",
+					type: "shareEvent",
 					data: {
-						date: notificationDate, //data prima notifica
-						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
-						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
-						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
-						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
-						frequencyEvent: frequency,
-						isInfiniteEvent: isInfinite,
-						repetitionsEvent: repetitions,
-						untilDateEvent: untilDate,
+						date: currentDate,
+						event: newEvent,
+						notification: newNotification,
+
 					},
-				}
-				const res3 = await fetch(`${SERVER_API}/notifications`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						message: message,
-						mode: "event",
-						receiver: receiver,
-						type: "shareEvent",
-						data: {
-							date: currentDate,
-							event: newEvent,
-							notification: addNotification ? newNotification : null,
+				}),
+			});
 
-						},
-					}),
-				});
-
-				console.log("NOTIFICA CONDIVISA:", res3);
-			}
+			console.log("NOTIFICA CONDIVISA:", res3);
 		}
 
 
@@ -2400,10 +2237,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
-		setShareEvent(false);
-		setAccessList([]);
-		setUsers([]);
-		setMessageRisorsa("");
+
 		//chiamata alla route per ical
 		const res4 = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
 		const data4 = await res4.json();
@@ -2678,24 +2512,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setNotificationRepeatTime(0);
 		setSendInviteActivity(false);
 		setShareActivity(false);
-		setAccessList([]);
-		setUsers([]);
+
 		console.log("Questa è la lista delle attività:", activityList);
-	}
-
-	async function handleCreateRisorsa(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
-
-		const response = await fetch(`${SERVER_API}/risorsa`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ name: title, description }),
-		});
-		console.log("Risposta:", response);
-		setCreateRisorsa(!createRisorsa);
-		setTitle("");
-		setDescription("");
-
 	}
 
 
@@ -2844,245 +2662,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 	return (
 		<>
 			{message && <div>{message}</div>}
-			{day && eventsMode && (
-				<div>
-					<div style={{ display: "flex", justifyContent: "center" }}>
-						<button
-							className="btn btn-primary"
-							style={{
-								backgroundColor: "bisque",
-								color: "white",
-								border: "0",
-								marginLeft: "15px",
-							}}
-							onClick={dayMode}>
-							Day
-						</button>
-						<button
-							className="btn btn-primary"
-							style={{
-								backgroundColor: "bisque",
-								color: "white",
-								border: "0",
-								marginLeft: "15px",
-							}}
-							onClick={weekMode}>
-							Week
-						</button>
-						<button
-							className="btn btn-primary"
-							style={{
-								backgroundColor: "bisque",
-								color: "white",
-								border: "0",
-								marginLeft: "15px",
-							}}
-							onClick={monthMode}>
-							Month
-						</button>
-					</div>
-				</div>
-			)}
-
-			{activeButton === 0 && (
-				<div className="calendar-container row" style={{ marginTop: "2vw" }}>
-					<div className="nome-data-container ">
-						<div>
-							{day} {Mesi[meseCorrente]}
-							{year}
-							<button
-								className="year-button "
-								onClick={(): void => {
-									setEventPositions([]); // Svuota l'array delle posizioni
-									setYear(year - 1); // Decrementa l'anno
-								}}>
-								-
-							</button>
-							<button className="year-button" onClick={(): void => {
-								setEventPositions([]); // Svuota l'array delle posizioni
-								setYear(year + 1); // Decrementa l'anno
-							}}>
-								+
-							</button>
-							{activitiesMode && (
-								<div>
-									<button className="btn btn-primary"
-										onClick={toggleTodayActivitiesMode}
-										style={{
-											backgroundColor: "bisque",
-											color: "white",
-											border: "0",
-											marginLeft: "15px",
-										}}>
-										Mostra attività che scadono questo giorno
-									</button>
-
-									<button className="btn btn-primary"
-										onClick={toggleAllActivitiesMode}
-										style={{
-											backgroundColor: "bisque",
-											color: "white",
-											border: "0",
-											marginLeft: "15px",
-										}}>
-										Mostra tutte le attività
-									</button>
-								</div>
-							)}
-						</div>
-					</div>
-					<div className="calendar col-4">
-						<div
-							style={{
-								display: "flex",
-								justifyContent: "center",
-								alignItems: "center",
-								marginRight: "5vw",
-							}}>
-							<button
-								className="btn addEvent"
-								style={{
-									backgroundColor: "bisque",
-									color: "black",
-									border: "0",
-									minWidth: "100px",
-									fontSize: "3rem",
-									borderRadius: "30%", // Rende il bottone tondo
-									padding: "10px", // Aggiungi padding per aumentare la dimensione del bottone
-									width: "50px", // Imposta una larghezza fissa
-									height: "70px", // Imposta un'altezza fissa
-									display: "flex", // Usa flexbox per centrare il contenuto
-									alignItems: "center", // Centra verticalmente
-									justifyContent: "center", // Centra orizzontalmente
-								}}
-								onClick={toggleCreate}>
-
-								+
-							</button>
-
-							{create && (<div>
-								<button className="btn"
-									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
-									onClick={toggleCreateEvent}>
-									Evento
-								</button>
-								<button className="btn"
-									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
-									onClick={toggleCreateActivity}>
-									Attività
-								</button>
-								<button className="btn"
-									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
-									onClick={toggleCreateNonDisturbare}>
-									Non disturbare
-								</button>
-								<button className="btn"
-									style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
-									onClick={toggleCreateRisorsa}>
-									Risorsa
-								</button>
-							</div>)}
-
-
-						</div>
-						<div
-							className="month-indicator"
-							style={{
-								display: "flex",
-								justifyContent: "center",
-								alignItems: "center",
-							}}>
-							<button
-								className="btn btn-primary"
-								style={{
-									backgroundColor: "bisque",
-									color: "black",
-									border: "0",
-									width: "50px",
-									marginRight: "10px",
-								}}
-								onClick={(): void => {
-									mesePrecedente(); /*
-								console.log(Mesi[meseCorrente - 1]);
-								const date = new Date(year, meseCorrente - 1);
-								console.log(getDaysInMonth(date));
-								*/
-								}
-								}>
-								{"<<"}
-							</button >
-							<time style={{ fontSize: "2rem", color: "black" }}>
-								{" "}
-								{Mesi[meseCorrente]}
-							</time>
-							<button
-								className="btn btn-primary"
-								style={{
-									backgroundColor: "bisque",
-									color: "black",
-									border: "0",
-									width: "50px",
-									marginLeft: "10px",
-								}}
-								onClick={(): void => {
-									meseSuccessivo(); /*
-								console.log(Mesi[meseCorrente + 1]);
-								const date = new Date(year, meseCorrente + 1);
-								console.log(getDaysInMonth(date));
-								*/
-								}}>
-								{">>"}
-							</button>
-						</div >
-						<div className="day-of-week">
-							<div>Dom</div>
-							<div>Lun</div>
-							<div>Mar</div>
-							<div>Mer</div>
-							<div>Gio</div>
-							<div>Ven</div>
-							<div>Sab</div>
-						</div>
-						<div className="date-grid" key={renderKey}>
-							{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
-							{((): JSX.Element[] => {
-								return Array.from({
-									length: getDay(startOfMonth(new Date(year, meseCorrente))),
-								}).map((_, index) => <div key={index}></div>);
-							})()}
-							{/* Genera i bottoni per i giorni del mese */}
-							{Array.from({
-								length: getDaysInMonth(new Date(year, meseCorrente)),
-							}).map((_, day) => (
-								<div key={day + 1} style={{ position: 'relative' }}> {/* Imposta position: relative */}
-									<button onClick={handleDateClick}>{day + 1}</button>
-									{hasEventsForDay(day + 1) && ( //true se ci sono eventi
-										<span style={{
-											position: 'absolute', // Posiziona il pallino in modo assoluto
-											bottom: '3px', // Posiziona il pallino sotto il bottone
-											left: '32%', // Centra orizzontalmente
-											transform: 'translateX(-50%)', // Centra il pallino
-											width: '8px',
-											height: '8px',
-											borderRadius: '50%',
-											backgroundColor: 'lightgray', // Colore del pallino
-										}} />
-									)}
-								</div>
-							))}
-						</div>
-
-						<div style={{ marginTop: "10px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-							<label htmlFor="eventType" style={{ fontWeight: "bold", marginRight: "10px" }}>Visualizza:</label>
-							<select className="btn" id="eventType" style={{
-								padding: "10px",
-								borderRadius: "5px",
-								border: "0",
-								backgroundColor: "bisque",
-								fontSize: "1rem",
-								cursor: "pointer",
-								transition: "border-color 0.3s",
-							}} onChange={handleSelectMode} value={selectedMode}
+			<div className="calendar-background">
+				<div className="whole-calendar-container">
+					<div className="calendar-header">
+						<div className="header-visualizza">
+							<label
+								htmlFor="eventType"
+								style={{ margin: "0" }}
 							>
 								Visualizza:
 								<select className="btn" id="eventType"
@@ -3184,13 +2770,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 									Scegli file
 								</label>
 							</div>
-
-							<button className="btn btn-primary" style={{ backgroundColor: "bisque", color: "black", border: "0", marginLeft: "20px" }}
-								onClick={toggleShowRisorse}>Visualizza risorse
-							</button>
-
-
-
 						</div>
 
 						<div className="choice-create-buttons"
@@ -3930,123 +3509,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 													</div>
 												</>
 											)}
-										</select>
-									</label>
-								)}
-
-									{notificationRepeat && (
-										<label htmlFor="notificationRepeatTime">
-											Quanto tempo ripetere la notifica
-											<select
-												className="btn border"
-												name="notificationRepeatTime"
-												onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-													setNotificationRepeatTime(Number(e.target.value));
-												}}
-											>
-												{getValidRepeatOptions(notificationTime).map(option => (
-													<option key={option} value={option}>
-														{option === 0
-															? "Mai"
-															: option >= 60
-																? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-																: `Ogni ${option} minuti`}
-													</option>
-												))}
-											</select>
-										</label>
-									)}
-
-									<label htmlFor="allDayEvent">
-										<input
-											type="checkbox"
-
-											onClick={toggleSendInviteEvent}
-											style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-										/>
-										Invia evento ad utente
-
-									</label>
-
-									{sendInviteEvent && (
-										<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-											<div>Scegli l'utente al quale inviare la notifica</div>
-											{users.length > 0}
-											<SearchForm onItemClick={handleSelectUser} list={users} />
-											<button
-												onClick={handleSendInviteEvent}
-												className="btn btn-primary send-invite-button"
-												style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
-											>
-												Invia Invito
-											</button>
-										</div>
-									)}
-
-									<label htmlFor="allDayEvent">
-										<input
-											type="checkbox"
-
-											onClick={toggleShareEvent}
-											style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-										/>
-										Condividi evento
-
-									</label>
-
-									{shareEvent && (
-										<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-											<div>Scegli l'utente o la risorsa con il quale condividere l'evento</div>
-											{users.length > 0}
-											<SearchFormResource onItemClick={handleSelectUser} list={users} />
-											{messageRisorsa && <div style={{ color: "red", fontWeight: "bold" }}>{messageRisorsa}</div>}
-											<button
-												onClick={handleAddUserEvent}
-												className="btn btn-primary send-invite-button"
-												style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
-											>
-												Condividi
-											</button>
-										</div>
-									)}
-
-									<button
-										className="btn btn-primary"
-										style={{
-											backgroundColor: "bisque",
-											color: "white",
-											border: "0",
-										}}
-										onClick={handleCreateEvent}>
-										Crea
-									</button>
-								</form>
-						</div>
-
-					)}
-
-						{
-							createActivity && (
-								<div className="create-event-container col-2">
-									<button
-										className="btn btn-primary"
-										style={{ backgroundColor: "bisque", color: "white", border: "0" }}
-										onClick={toggleCreateActivity}>
-										Chiudi
-									</button>
-									<form>
-										{addTitle && (
-										<label htmlFor="title">
-											Title
-											<input
-												className="btn border"
-												type="text"
-												name="title"
-												value={title}
-												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-													setTitle(e.target.value)
-												}
-											/>
 										</label>
 										<label htmlFor="endTime">
 											Data Fine
@@ -4091,523 +3553,88 @@ export default function Calendar(): React.JSX.Element { // prova push
 											)}
 										</label>
 
-									<label htmlFor="startTime">
-										Data Inizio
-										<div>
-											<DatePicker
-												className="btn border"
-												name="startTime"
-												selected={startTime}
-												onChange={(date: Date | null): void => {
-													if (date) {
-														// Aggiorna la data mantenendo l'orario attuale
-														const newDate = new Date(startTime);
-														newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-														setStartTime(newDate);
-													}
-												}}
-											/>
-										</div>
-										{!allDayEvent && (
-											<>
-												<div>
-													<input
-														className="btn border"
-														type="time"
-														value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
-														onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-															const [hours, minutes] = e.target.value.split(':');
-															if (hours && minutes) { // Controlla se hours e minutes sono definiti
-																const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-																newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
-																setStartTime(newDate); // Imposta il nuovo oggetto Date
-															}
-														}}
-														onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-															if (e.key === 'Backspace') {
-																e.preventDefault(); // Impedisce l'input del tasto backspace
-															}
-														}}
-													/>
-												</div>
-											</>
-										)}
-									</label>
-									<label htmlFor="endTime">
-										Data Fine
-										<div>
-											<DatePicker
-												className="btn border"
-												name="endTime"
-												selected={endTime}
-												onChange={(date: Date | null): void => {
-													if (date) {
-														// Aggiorna la data mantenendo l'orario attuale
-														const newDate = new Date(endTime);
-														newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-														setEndTime(newDate);
-													}
-												}}
-											/>
-										</div>
-										{!allDayEvent && (
-											<>
-												<div>
-													<input
-														className="btn border"
-														type="time"
-														value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
-														onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-															const [hours, minutes] = e.target.value.split(':');
-															if (hours && minutes) { // Controlla se hours e minutes sono definiti
-																const newDate = new Date(endTime);
-																newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-																setEndTime(newDate); // Imposta il nuovo oggetto Date
-															}
-														}}
-														onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-															if (e.key === 'Backspace') {
-																e.preventDefault(); // Impedisce l'input del tasto backspace
-															}
-														}}
-													/>
-												</div>
-											</>
-										)}
-									</label>
-
-									<button
-										className="btn btn-primary"
-										style={{
-											backgroundColor: "bisque",
-											color: "white",
-											border: "0",
-										}}
-										onClick={handleCreateNonDisturbare}>
-										Crea
-									</button>
-								</form>
-								</div>
-
-							)
-						}
-
-						{
-							createRisorsa && (
-								<div className="create-event-container col-2">
-									<button
-										className="btn btn-primary"
-										style={{ backgroundColor: "bisque", color: "white", border: "0" }}
-										onClick={toggleCreateRisorsa}>
-										Chiudi
-									</button>
-									<form>
-
-										<label htmlFor="title">
-											Nome
-											<input
-												className="btn border"
-												type="text"
-												name="title"
-												value={title}
-												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-													setTitle(e.target.value)
-												}
-											/>
-										</label>
-
-										<label htmlFor="description">
-											Descrizione
-											<input
-												className="btn border"
-												type="text"
-												name="title"
-												value={description}
-												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-													setDescription(e.target.value)
-												}
-											/>
-										</label>
 										<button
 											className="btn btn-primary"
 											style={{
 												backgroundColor: "bisque",
-												color: "white",
+												color: "black",
 												border: "0",
 											}}
-											onClick={handleCreateRisorsa}>
+											onClick={handleCreateNonDisturbare}>
 											Crea
 										</button>
 									</form>
 								</div>
-
-							)
-						}
-
-						{
-							activitiesMode && todayActivitiesMode && (
-								<>
-									<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
-										{activitiesCheScadonoOggi.length > 0 ? (
-											activitiesCheScadonoOggi.map((activity, index) => (
-												<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
-													<h4>{activity.title}</h4>
-													<p>Scadenza: {new Date(activity.deadline).toLocaleString()}</p>
-													<p>Descrizione: {activity.description}</p>
-													<span style={{ color: "black", marginBottom: "10px" }}>
-														Completata:
-														<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
-															{activity.completed ? " Si" : " No"}
-														</span>
-
-
-														{new Date(activity.deadline) < currentDate && !activity.completed && (
-															<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
-														)}
-
-													</span>
-													<br />
-													<button onClick={async (): Promise<void> => {
-														await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
-														// Dopo l'eliminazione, aggiorna la lista delle attività
-														setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
-													}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-														<i style={{ color: "black" }} className="bi bi-trash"> </i>
-													</button>
-
-													<button onClick={async (): Promise<void> => {
-														await handleCompleteActivity(activity._id); //completo l'attività corrente
-													}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-														<i style={{ color: "black" }} className="bi bi-check"> </i>
-													</button>
-
-												</div>
-
-											))
-										) : (
-											<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold" }}>Non ci sono attività in scadenza oggi.</p>
-										)}
-									</div>
-								</>
-
-							)
-						}
-
-						{
-							activitiesMode && allActivitiesMode && (
-								<>
-									<div className="orario col-5" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
-										{activityList.length > 0 ? (
-											activityList.map((activity, index) => (
-												<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
-													<h4>{activity.title}</h4>
-													<p>Scadenza: {new Date(activity.deadline).toLocaleString()}</p>
-													<p>Descrizione: {activity.description}</p>
-													<span style={{ color: "black", marginBottom: "10px" }}>
-														Completata:
-														<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
-															{activity.completed ? " Si" : " No"}
-														</span>
-													</span>
-
-													{new Date(activity.deadline) < currentDate && !activity.completed && (
-														<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
-													)}
-
-													<br />
-													<button onClick={async (): Promise<void> => {
-														await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
-														// Dopo l'eliminazione, aggiorna la lista delle attività
-														setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
-													}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-														<i style={{ color: "black" }} className="bi bi-trash"> </i>
-													</button>
-
-													<button onClick={async (): Promise<void> => {
-														await handleCompleteActivity(activity._id); //completo l'attività corrente
-													}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-														<i style={{ color: "black" }} className="bi bi-check"> </i>
-													</button>
-
-												</div>
-
-											))
-										) : (
-											<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold", }}>Non ci sono attività in scadenza.</p>
-										)}
-									</div>
-								</>
-
-							)
-						}
-
-
-						{
-							eventsMode && (
-								<div className="orario col-5" >
-
-
-									<div style={{ position: "relative", marginLeft: "10%" }}>
-										{eventPositions.map((event, index) => (
-											// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
-											!event.type ? (
-
-												<div
-													key={index} // Assicurati di fornire una chiave unica per ogni elemento
-													className="evento red"
-													style={{
-														top: `${event.top}px`, // Imposta la posizione verticale
-														height: `${event.height}px`, // Imposta l'altezza dell'evento
-														width: `calc(95%/${event.width})`,
-														position: "absolute", // Assicurati che sia posizionato correttamente
-														color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
-														borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
-														backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
-														marginLeft: `${event.marginLeft}%`,
-														cursor: "default", // Imposta il cursore di default per l'intero evento
-													}}
-												>
-													<div style={{ color: "red" }}>
-														<Link
-															to={`/pomodoro?duration=${
-																// Funzione per calcolare la durata dell'evento e scriverlo come query param
-																((startTime, endTime): number => {
-																	const start = new Date(startTime);
-																	const end = new Date(endTime);
-																	const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-																	return totMin;
-																})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-																}&id=${event.event._id}`} // Passa l'id dell'evento
-															style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-														>
-															{event.name}
-														</Link>
-													</div>
-													<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
-														{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-														<i className="bi bi-trash"
-															style={{
-																bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																fontSize: "1.5rem",
-																margin: 0,
-																padding: 0,
-																color: "red",
-																cursor: "pointer"
-															}}
-														></i>
-													</div>
-												</div>
-
-											) : ((!event.event.isRisorsa || (event.event.isRisorsa && showRisorse)) && (
-												<div
-													className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : event.event.isRisorsa ? "brown" : "blue"}`}
-													style={{
-														top: `${event.top}px`, // Imposta la posizione verticale
-														height: `${event.height}px`, // Imposta l'altezza dell'evento
-														width: `calc(95%/${event.width})`,
-														position: "absolute", // Assicurati che sia posizionato correttamente
-														color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
-														borderColor: event.event.title === "Non disturbare" ? "white" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
-														backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (event.event.isRisorsa ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(139, 69, 19, 0.2)" : "rgba(139, 69, 19, 0.5)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)")),
-														marginLeft: `${event.marginLeft}%`,
-														cursor: "default",
-													}}
-												>
-													{event.name}
-													<div className="position-relative" onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}>
-														{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-														{(!event.event.isRisorsa || (event.event.isRisorsa && isAdmin)) && (
-															<i className="bi bi-trash"
-																style={{
-																	bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																	right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																	fontSize: "1.5rem",
-																	margin: 0,
-																	padding: 0,
-																	color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
-																	cursor: "pointer"
-																}}
-															></i>
-														)}
-													</div>
-
-												</div>
-											)
-
-											)
-
-										)
-
-										)}
-									</div >
-
-
-									<time>00:00</time>
-									<time>01:00</time>
-									<time>02:00</time>
-									<time>03:00</time>
-									<time>04:00</time>
-									<time>05:00</time>
-									<time>06:00</time>
-									<time>07:00</time>
-									<time>08:00</time>
-									<time>09:00</time>
-									<time>10:00</time>
-									<time>11:00</time>
-									<time>12:00</time>
-									<time>13:00</time>
-									<time>14:00</time>
-									<time>15:00</time>
-									<time>16:00</time>
-									<time>17:00</time>
-									<time>18:00</time>
-									<time>19:00</time>
-									<time>20:00</time>
-									<time>21:00</time>
-									<time>22:00</time>
-									<time>23:00</time>
-
-								</div >
-							)
-						}
-					</div >
-					)
-			}
-
-					{
-						activeButton === 1 && (
-							<div>
-								<div
-									className="nome-data-week"
-									style={{ display: "flex", justifyContent: "center", marginTop: "2vw" }}>
-									<button
-										className="btn btn-primary"
-										style={{
-											backgroundColor: "bisque",
-											color: "black",
-											border: "0",
-											width: "50px",
-											marginRight: "10px",
-										}}
-										onClick={prevWeek}>
-										{"<<"}
-									</button>
-									<div>
-										{Mesi[meseCorrente]} {year}{" "}
-									</div>
-									<button
-										className="btn btn-primary"
-										style={{
-											backgroundColor: "bisque",
-											color: "black",
-											border: "0",
-											width: "50px",
-											marginLeft: "10px",
-										}}
-										onClick={nextWeek}>
-										{">>"}
-									</button>
-								</div>
-
-								<div className="row" style={{ display: "flex", justifyContent: "center" }}>
-									<div className="col-12">
-										{((): JSX.Element | null => {
-											//const dayOfWeek = getDay(new Date(year, meseCorrente, day));
-											//console.log(dayOfWeek);
-											return null;
-										})()}
-										<div
-											style={{
-												display: "flex",
-												justifyContent: "space-between",
-												maxWidth: "95%",
-												marginLeft: "auto",
-												marginRight: "auto",
-												marginTop: "1vw",
-											}}>
-											<div className="nome-data-week">
-												<div
-													style={{
-														backgroundColor: "bisque",
-														color: "black",
-														border: "0",
-													}}
-													onClick={handleCreateNonDisturbare}>
-													Crea
-												</button>
-											</form>
-										</div>
 							)}
-									</div>
-								</div>
+						</div>
+					</div>
 
-								{activitiesMode && (
-									<>
-										<div className="activities-view-container">
-											<div className="calendar">
-												<div
-													className="month-indicator"
-													style={{
-														display: "flex",
-														justifyContent: "center",
-														alignItems: "center",
-														gap: "0.5em",
-													}}
-												>
-													<button
-														className="calendar-arrows"
-														onClick={(): void => {
-															mesePrecedente(); /*
+					{activitiesMode && (
+						<>
+							<div className="activities-view-container">
+								<div className="calendar">
+									<div
+										className="month-indicator"
+										style={{
+											display: "flex",
+											justifyContent: "center",
+											alignItems: "center",
+											gap: "0.5em",
+										}}
+									>
+										<button
+											className="calendar-arrows"
+											onClick={(): void => {
+												mesePrecedente(); /*
 												console.log(Mesi[meseCorrente - 1]);
 												const date = new Date(year, meseCorrente - 1);
 												console.log(getDaysInMonth(date));
 												*/
-														}}
-													>
-														{"<<"}
-													</button >
-													<time>
-														{" "}
-														{Mesi[meseCorrente]}
-													</time>
-													<button
-														className="calendar-arrows"
-														onClick={(): void => {
-															meseSuccessivo(); /*
+											}}
+										>
+											{"<<"}
+										</button >
+										<time>
+											{" "}
+											{Mesi[meseCorrente]}
+										</time>
+										<button
+											className="calendar-arrows"
+											onClick={(): void => {
+												meseSuccessivo(); /*
 												console.log(Mesi[meseCorrente + 1]);
 												const date = new Date(year, meseCorrente + 1);
 												console.log(getDaysInMonth(date));
 												*/
-														}}
-													>
-														{">>"}
-													</button>
-												</div >
-												<div className="day-of-week">
-													<div>Dom</div>
-													<div>Lun</div>
-													<div>Mar</div>
-													<div>Mer</div>
-													<div>Gio</div>
-													<div>Ven</div>
-													<div>Sab</div>
-												</div>
-												<div className="date-grid" key={renderKey}>
-													{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
-													{((): JSX.Element[] => {
-														return Array.from({
-															length: getDay(startOfMonth(new Date(year, meseCorrente))),
-														}).map((_, index) => <div key={index}></div>);
-													})()}
-													{/* Genera i bottoni per i giorni del mese */}
-													{Array.from({
-														length: getDaysInMonth(new Date(year, meseCorrente)),
-													}).map((_, day) => (
-														<div key={day + 1} style={{ position: 'relative' }}>
-															<button onClick={handleDateClick}>{day + 1}</button>
-															{hasEventsForDay(day + 1) && ( //true se ci sono eventi
-																<span className="calendar-event-dot"
+											}}
+										>
+											{">>"}
+										</button>
+									</div >
+									<div className="day-of-week">
+										<div>Dom</div>
+										<div>Lun</div>
+										<div>Mar</div>
+										<div>Mer</div>
+										<div>Gio</div>
+										<div>Ven</div>
+										<div>Sab</div>
+									</div>
+									<div className="date-grid" key={renderKey}>
+										{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
+										{((): JSX.Element[] => {
+											return Array.from({
+												length: getDay(startOfMonth(new Date(year, meseCorrente))),
+											}).map((_, index) => <div key={index}></div>);
+										})()}
+										{/* Genera i bottoni per i giorni del mese */}
+										{Array.from({
+											length: getDaysInMonth(new Date(year, meseCorrente)),
+										}).map((_, day) => (
+											<div key={day + 1} style={{ position: 'relative' }}>
+												<button onClick={handleDateClick}>{day + 1}</button>
+												{hasEventsForDay(day + 1) && ( //true se ci sono eventi
+													<span className="calendar-event-dot"
 														/*style={{
 														position: 'absolute', // Posiziona il pallino in modo assoluto
 														bottom: '3px', // Posiziona il pallino sotto il bottone
@@ -4618,287 +3645,287 @@ export default function Calendar(): React.JSX.Element { // prova push
 														borderRadius: '50%',
 														backgroundColor: 'lightgray', // Colore del pallino
 													}} *//>
-															)}
-														</div>
-													))}
-												</div>
+												)}
 											</div>
+										))}
+									</div>
+								</div>
 
-											{todayActivitiesMode && (
-												<>
-													<div className="data-orario">
-														<div
-															className="nome-data-container"
-															style={{ flexDirection: "column" }}
+								{todayActivitiesMode && (
+									<>
+										<div className="data-orario">
+											<div
+												className="nome-data-container"
+												style={{ flexDirection: "column" }}
+											>
+												<div>
+													{day} {Mesi[meseCorrente]}
+													{year}
+													<button
+														className="year-button "
+														onClick={(): void => {
+															setEventPositions([]); // Svuota l'array delle posizioni
+															setYear(year - 1); // Decrementa l'anno
+														}}>
+														-
+													</button>
+													<button className="year-button" onClick={(): void => {
+														setEventPositions([]); // Svuota l'array delle posizioni
+														setYear(year + 1); // Decrementa l'anno
+													}}>
+														+
+													</button>
+												</div>
+												{activitiesMode && (
+													<div className="activities-button-container">
+														<button className="btn btn-primary"
+															onClick={toggleTodayActivitiesMode}
+															style={{
+																backgroundColor: "bisque",
+																color: "black",
+																border: "0",
+															}}
 														>
-															<div>
-																{day} {Mesi[meseCorrente]}
-																{year}
-																<button
-																	className="year-button "
-																	onClick={(): void => {
-																		setEventPositions([]); // Svuota l'array delle posizioni
-																		setYear(year - 1); // Decrementa l'anno
-																	}}>
-																	-
-																</button>
-																<button className="year-button" onClick={(): void => {
-																	setEventPositions([]); // Svuota l'array delle posizioni
-																	setYear(year + 1); // Decrementa l'anno
-																}}>
-																	+
-																</button>
-															</div>
-															{activitiesMode && (
-																<div className="activities-button-container">
-																	<button className="btn btn-primary"
-																		onClick={toggleTodayActivitiesMode}
-																		style={{
-																			backgroundColor: "bisque",
-																			color: "black",
-																			border: "0",
-																		}}
-																	>
-																		Mostra attività che scadono questo giorno
-																	</button>
+															Mostra attività che scadono questo giorno
+														</button>
 
-																	<button className="btn btn-primary"
-																		onClick={toggleAllActivitiesMode}
-																		style={{
-																			backgroundColor: "bisque",
-																			color: "black",
-																			border: "0",
-																		}}
-																	>
-																		Mostra tutte le attività
-																	</button>
-																</div>
-															)}
-														</div>
-														<div className="orario" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
-															{activitiesCheScadonoOggi.length > 0 ? (
-																activitiesCheScadonoOggi.map((activity, index) => (
-																	<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
-																		<h4>{activity.title}</h4>
-																		<p>Scadenza: {new Date(activity.deadline).toLocaleString("it-IT", {
-																			day: "2-digit",
-																			month: "2-digit",
-																			year: "numeric",
-																			hour: "2-digit",
-																			minute: "2-digit",
-																		})}
-																		</p>
-																		<p>Descrizione: {activity.description}</p>
-																		<span style={{ color: "black", marginBottom: "10px" }}>
-																			Completata:
-																			<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
-																				{activity.completed ? " Si" : " No"}
-																			</span>
-
-
-																			{new Date(activity.deadline) < currentDate && !activity.completed && (
-																				<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
-																			)}
-
-																		</span>
-																		<br />
-																		<button onClick={async (): Promise<void> => {
-																			await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
-																			// Dopo l'eliminazione, aggiorna la lista delle attività
-																			setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
-																		}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-																			<i style={{ color: "black" }} className="bi bi-trash"> </i>
-																		</button>
-
-																		<button onClick={async (): Promise<void> => {
-																			await handleCompleteActivity(activity._id); //completo l'attività corrente
-																		}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-																			<i style={{ color: "black" }} className="bi bi-check"> </i>
-																		</button>
-
-																	</div>
-
-																))
-															) : (
-																<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold" }}>Non ci sono attività in scadenza oggi.</p>
-															)}
-														</div>
-													</div>
-												</>
-											)}
-
-											{allActivitiesMode && (
-												<>
-													<div className="data-orario">
-														<div
-															className="nome-data-container"
-															style={{ flexDirection: "column" }}
+														<button className="btn btn-primary"
+															onClick={toggleAllActivitiesMode}
+															style={{
+																backgroundColor: "bisque",
+																color: "black",
+																border: "0",
+															}}
 														>
-															<div>
-																{day} {Mesi[meseCorrente]}
-																{year}
-																<button
-																	className="year-button "
-																	onClick={(): void => {
-																		setEventPositions([]); // Svuota l'array delle posizioni
-																		setYear(year - 1); // Decrementa l'anno
-																	}}>
-																	-
-																</button>
-																<button className="year-button" onClick={(): void => {
-																	setEventPositions([]); // Svuota l'array delle posizioni
-																	setYear(year + 1); // Decrementa l'anno
-																}}>
-																	+
-																</button>
-															</div>
-															{activitiesMode && (
-																<div className="activities-button-container">
-																	<button className="btn btn-primary"
-																		onClick={toggleTodayActivitiesMode}
-																		style={{
-																			backgroundColor: "bisque",
-																			color: "black",
-																			border: "0",
-																		}}
-																	>
-																		Mostra attività che scadono questo giorno
-																	</button>
-
-																	<button className="btn btn-primary"
-																		onClick={toggleAllActivitiesMode}
-																		style={{
-																			backgroundColor: "bisque",
-																			color: "black",
-																			border: "0",
-																		}}
-																	>
-																		Mostra tutte le attività
-																	</button>
-																</div>
-															)}
-														</div>
-														<div className="orario" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
-															{activityList.length > 0 ? (
-																activityList.map((activity, index) => (
-																	<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
-																		<h4>{activity.title}</h4>
-																		<p>Scadenza: {new Date(activity.deadline).toLocaleString("it-IT", {
-																			day: "2-digit",
-																			month: "2-digit",
-																			year: "numeric",
-																			hour: "2-digit",
-																			minute: "2-digit",
-																		})}
-																		</p>
-																		<p>Descrizione: {activity.description}</p>
-																		<span style={{ color: "black", marginBottom: "10px" }}>
-																			Completata:
-																			<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
-																				{activity.completed ? " Si" : " No"}
-																			</span>
-																		</span>
-
-																		{new Date(activity.deadline) < currentDate && !activity.completed && (
-																			<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
-																		)}
-
-																		<br />
-																		<button onClick={async (): Promise<void> => {
-																			await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
-																			// Dopo l'eliminazione, aggiorna la lista delle attività
-																			setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
-																		}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-																			<i style={{ color: "black" }} className="bi bi-trash"> </i>
-																		</button>
-
-																		<button onClick={async (): Promise<void> => {
-																			await handleCompleteActivity(activity._id); //completo l'attività corrente
-																		}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-																			<i style={{ color: "black" }} className="bi bi-check"> </i>
-																		</button>
-
-																	</div>
-
-																))
-															) : (
-																<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold", }}>Non ci sono attività in scadenza.</p>
-															)}
-														</div>
+															Mostra tutte le attività
+														</button>
 													</div>
-												</>
-											)}
+												)}
+											</div>
+											<div className="orario" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
+												{activitiesCheScadonoOggi.length > 0 ? (
+													activitiesCheScadonoOggi.map((activity, index) => (
+														<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
+															<h4>{activity.title}</h4>
+															<p>Scadenza: {new Date(activity.deadline).toLocaleString("it-IT", {
+																day: "2-digit",
+																month: "2-digit",
+																year: "numeric",
+																hour: "2-digit",
+																minute: "2-digit",
+															})}
+															</p>
+															<p>Descrizione: {activity.description}</p>
+															<span style={{ color: "black", marginBottom: "10px" }}>
+																Completata:
+																<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
+																	{activity.completed ? " Si" : " No"}
+																</span>
+
+
+																{new Date(activity.deadline) < currentDate && !activity.completed && (
+																	<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
+																)}
+
+															</span>
+															<br />
+															<button onClick={async (): Promise<void> => {
+																await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
+																// Dopo l'eliminazione, aggiorna la lista delle attività
+																setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
+															}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+																<i style={{ color: "black" }} className="bi bi-trash"> </i>
+															</button>
+
+															<button onClick={async (): Promise<void> => {
+																await handleCompleteActivity(activity._id); //completo l'attività corrente
+															}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+																<i style={{ color: "black" }} className="bi bi-check"> </i>
+															</button>
+
+														</div>
+
+													))
+												) : (
+													<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold" }}>Non ci sono attività in scadenza oggi.</p>
+												)}
+											</div>
 										</div>
 									</>
 								)}
 
-								{eventsMode && (
+								{allActivitiesMode && (
 									<>
-										{activeButton === 0 && (
-											<div className="calendar-day-view-container">
-												<div className="calendar">
-													<div
-														className="month-indicator"
-														style={{
-															display: "flex",
-															justifyContent: "center",
-															alignItems: "center",
-															gap: "0.5em",
-														}}
-													>
-														<button
-															className="calendar-arrows"
-															onClick={(): void => {
-																mesePrecedente(); /*
+										<div className="data-orario">
+											<div
+												className="nome-data-container"
+												style={{ flexDirection: "column" }}
+											>
+												<div>
+													{day} {Mesi[meseCorrente]}
+													{year}
+													<button
+														className="year-button "
+														onClick={(): void => {
+															setEventPositions([]); // Svuota l'array delle posizioni
+															setYear(year - 1); // Decrementa l'anno
+														}}>
+														-
+													</button>
+													<button className="year-button" onClick={(): void => {
+														setEventPositions([]); // Svuota l'array delle posizioni
+														setYear(year + 1); // Decrementa l'anno
+													}}>
+														+
+													</button>
+												</div>
+												{activitiesMode && (
+													<div className="activities-button-container">
+														<button className="btn btn-primary"
+															onClick={toggleTodayActivitiesMode}
+															style={{
+																backgroundColor: "bisque",
+																color: "black",
+																border: "0",
+															}}
+														>
+															Mostra attività che scadono questo giorno
+														</button>
+
+														<button className="btn btn-primary"
+															onClick={toggleAllActivitiesMode}
+															style={{
+																backgroundColor: "bisque",
+																color: "black",
+																border: "0",
+															}}
+														>
+															Mostra tutte le attività
+														</button>
+													</div>
+												)}
+											</div>
+											<div className="orario" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
+												{activityList.length > 0 ? (
+													activityList.map((activity, index) => (
+														<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
+															<h4>{activity.title}</h4>
+															<p>Scadenza: {new Date(activity.deadline).toLocaleString("it-IT", {
+																day: "2-digit",
+																month: "2-digit",
+																year: "numeric",
+																hour: "2-digit",
+																minute: "2-digit",
+															})}
+															</p>
+															<p>Descrizione: {activity.description}</p>
+															<span style={{ color: "black", marginBottom: "10px" }}>
+																Completata:
+																<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
+																	{activity.completed ? " Si" : " No"}
+																</span>
+															</span>
+
+															{new Date(activity.deadline) < currentDate && !activity.completed && (
+																<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
+															)}
+
+															<br />
+															<button onClick={async (): Promise<void> => {
+																await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
+																// Dopo l'eliminazione, aggiorna la lista delle attività
+																setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
+															}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+																<i style={{ color: "black" }} className="bi bi-trash"> </i>
+															</button>
+
+															<button onClick={async (): Promise<void> => {
+																await handleCompleteActivity(activity._id); //completo l'attività corrente
+															}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
+																<i style={{ color: "black" }} className="bi bi-check"> </i>
+															</button>
+
+														</div>
+
+													))
+												) : (
+													<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold", }}>Non ci sono attività in scadenza.</p>
+												)}
+											</div>
+										</div>
+									</>
+								)}
+							</div>
+						</>
+					)}
+
+					{eventsMode && (
+						<>
+							{activeButton === 0 && (
+								<div className="calendar-day-view-container">
+									<div className="calendar">
+										<div
+											className="month-indicator"
+											style={{
+												display: "flex",
+												justifyContent: "center",
+												alignItems: "center",
+												gap: "0.5em",
+											}}
+										>
+											<button
+												className="calendar-arrows"
+												onClick={(): void => {
+													mesePrecedente(); /*
 													console.log(Mesi[meseCorrente - 1]);
 													const date = new Date(year, meseCorrente - 1);
 													console.log(getDaysInMonth(date));
 													*/
-															}}
-														>
-															{"<<"}
-														</button >
-														<time>
-															{" "}
-															{Mesi[meseCorrente]}
-														</time>
-														<button
-															className="calendar-arrows"
-															onClick={(): void => {
-																meseSuccessivo(); /*
+												}}
+											>
+												{"<<"}
+											</button >
+											<time>
+												{" "}
+												{Mesi[meseCorrente]}
+											</time>
+											<button
+												className="calendar-arrows"
+												onClick={(): void => {
+													meseSuccessivo(); /*
 													console.log(Mesi[meseCorrente + 1]);
 													const date = new Date(year, meseCorrente + 1);
 													console.log(getDaysInMonth(date));
 													*/
-															}}
-														>
-															{">>"}
-														</button>
-													</div >
-													<div className="day-of-week">
-														<div>Dom</div>
-														<div>Lun</div>
-														<div>Mar</div>
-														<div>Mer</div>
-														<div>Gio</div>
-														<div>Ven</div>
-														<div>Sab</div>
-													</div>
-													<div className="date-grid" key={renderKey}>
-														{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
-														{((): JSX.Element[] => {
-															return Array.from({
-																length: getDay(startOfMonth(new Date(year, meseCorrente))),
-															}).map((_, index) => <div key={index}></div>);
-														})()}
-														{/* Genera i bottoni per i giorni del mese */}
-														{Array.from({
-															length: getDaysInMonth(new Date(year, meseCorrente)),
-														}).map((_, day) => (
-															<div key={day + 1} style={{ position: 'relative' }}>
-																<button onClick={handleDateClick}>{day + 1}</button>
-																{hasEventsForDay(day + 1) && ( //true se ci sono eventi
-																	<span className="calendar-event-dot"
+												}}
+											>
+												{">>"}
+											</button>
+										</div >
+										<div className="day-of-week">
+											<div>Dom</div>
+											<div>Lun</div>
+											<div>Mar</div>
+											<div>Mer</div>
+											<div>Gio</div>
+											<div>Ven</div>
+											<div>Sab</div>
+										</div>
+										<div className="date-grid" key={renderKey}>
+											{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
+											{((): JSX.Element[] => {
+												return Array.from({
+													length: getDay(startOfMonth(new Date(year, meseCorrente))),
+												}).map((_, index) => <div key={index}></div>);
+											})()}
+											{/* Genera i bottoni per i giorni del mese */}
+											{Array.from({
+												length: getDaysInMonth(new Date(year, meseCorrente)),
+											}).map((_, day) => (
+												<div key={day + 1} style={{ position: 'relative' }}>
+													<button onClick={handleDateClick}>{day + 1}</button>
+													{hasEventsForDay(day + 1) && ( //true se ci sono eventi
+														<span className="calendar-event-dot"
 															/*style={{
 															position: 'absolute', // Posiziona il pallino in modo assoluto
 															bottom: '3px', // Posiziona il pallino sotto il bottone
@@ -4909,753 +3936,753 @@ export default function Calendar(): React.JSX.Element { // prova push
 															borderRadius: '50%',
 															backgroundColor: 'lightgray', // Colore del pallino
 														}} *//>
-																)}
-															</div>
-														))}
-													</div>
+													)}
 												</div>
+											))}
+										</div>
+									</div>
 
-												<div className="data-orario">
-													<div className="nome-data-container">
-														{day} {Mesi[meseCorrente]}
-														{year}
-														<button
-															className="year-button "
-															onClick={(): void => {
-																setEventPositions([]); // Svuota l'array delle posizioni
-																setYear(year - 1); // Decrementa l'anno
-															}}>
-															-
-														</button>
-														<button className="year-button" onClick={(): void => {
-															setEventPositions([]); // Svuota l'array delle posizioni
-															setYear(year + 1); // Decrementa l'anno
+									<div className="data-orario">
+										<div className="nome-data-container">
+											{day} {Mesi[meseCorrente]}
+											{year}
+											<button
+												className="year-button "
+												onClick={(): void => {
+													setEventPositions([]); // Svuota l'array delle posizioni
+													setYear(year - 1); // Decrementa l'anno
+												}}>
+												-
+											</button>
+											<button className="year-button" onClick={(): void => {
+												setEventPositions([]); // Svuota l'array delle posizioni
+												setYear(year + 1); // Decrementa l'anno
+											}}>
+												+
+											</button>
+											{activitiesMode && (
+												<div>
+													<button className="btn btn-primary"
+														onClick={toggleTodayActivitiesMode}
+														style={{
+															backgroundColor: "bisque",
+															color: "white",
+															border: "0",
+															marginLeft: "15px",
 														}}>
-															+
-														</button>
-														{activitiesMode && (
-															<div>
-																<button className="btn btn-primary"
-																	onClick={toggleTodayActivitiesMode}
-																	style={{
-																		backgroundColor: "bisque",
-																		color: "white",
-																		border: "0",
-																		marginLeft: "15px",
-																	}}>
-																	Mostra attività che scadono questo giorno
-																</button>
+														Mostra attività che scadono questo giorno
+													</button>
 
-																<button className="btn btn-primary"
-																	onClick={toggleAllActivitiesMode}
-																	style={{
-																		backgroundColor: "bisque",
-																		color: "white",
-																		border: "0",
-																		marginLeft: "15px",
-																	}}>
-																	Mostra tutte le attività
-																</button>
-															</div>
-														)}
-													</div>
-
-													<div className="orario" style={{ fontSize: "15.8px" }}>
-														<div style={{ position: "relative", marginLeft: "10%" }}>
-															{eventPositions.map((event, index) =>
-															// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
-															(!event.type ? (
-																<div
-																	key={index} // Assicurati di fornire una chiave unica per ogni elemento
-																	className="evento red"
-																	style={{
-																		top: `${event.top}px`, // Imposta la posizione verticale
-																		height: `${event.height}px`, // Imposta l'altezza dell'evento
-																		width: `calc(95%/${event.width})`,
-																		position: "absolute", // Assicurati che sia posizionato correttamente
-																		color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
-																		borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
-																		backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
-																		marginLeft: `${event.marginLeft}%`,
-																		cursor: "default", // Imposta il cursore di default per l'intero evento
-																	}}
-																>
-																	<div style={{ color: "red" }}>
-																		<Link
-																			to={`/pomodoro?duration=${
-																				// Funzione per calcolare la durata dell'evento e scriverlo come query param
-																				((startTime, endTime): number => {
-																					const start = new Date(startTime);
-																					const end = new Date(endTime);
-																					const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-																					return totMin;
-																				})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-																				}&id=${event.event._id}`} // Passa l'id dell'evento
-																			style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-																		>
-																			{event.name}
-																		</Link>
-																	</div>
-																	<div
-																		className="position-relative"
-																		onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
-																	>
-																		{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																		<i className="bi bi-trash"
-																			style={{
-																				bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																				right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																				fontSize: "1.5rem",
-																				margin: 0,
-																				padding: 0,
-																				color: "red",
-																				cursor: "pointer"
-																			}}
-																		></i>
-																	</div>
-																</div>
-
-															) : (
-																<div
-																	className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
-																	style={{
-																		top: `${event.top}px`, // Imposta la posizione verticale
-																		height: `${event.height}px`, // Imposta l'altezza dell'evento
-																		width: `calc(95%/${event.width})`,
-																		position: "absolute", // Assicurati che sia posizionato correttamente
-																		color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
-																		borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-																		backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
-																		marginLeft: `${event.marginLeft}%`,
-																		cursor: "default",
-																	}}
-																>
-																	{event.name}
-																	<div
-																		className="position-relative"
-																		onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
-																	>
-																		{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																		<i className="bi bi-trash"
-																			style={{
-																				bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																				right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																				fontSize: "1.5rem",
-																				margin: 0,
-																				padding: 0,
-																				color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-																				cursor: "pointer"
-																			}}
-																		></i>
-																	</div>
-																</div>
-															)
-															))}
-														</div >
-
-
-														<time>00:00</time>
-														<time>01:00</time>
-														<time>02:00</time>
-														<time>03:00</time>
-														<time>04:00</time>
-														<time>05:00</time>
-														<time>06:00</time>
-														<time>07:00</time>
-														<time>08:00</time>
-														<time>09:00</time>
-														<time>10:00</time>
-														<time>11:00</time>
-														<time>12:00</time>
-														<time>13:00</time>
-														<time>14:00</time>
-														<time>15:00</time>
-														<time>16:00</time>
-														<time>17:00</time>
-														<time>18:00</time>
-														<time>19:00</time>
-														<time>20:00</time>
-														<time>21:00</time>
-														<time>22:00</time>
-														<time>23:00</time>
-
-													</div>
+													<button className="btn btn-primary"
+														onClick={toggleAllActivitiesMode}
+														style={{
+															backgroundColor: "bisque",
+															color: "white",
+															border: "0",
+															marginLeft: "15px",
+														}}>
+														Mostra tutte le attività
+													</button>
 												</div>
-											</div>
-										)}
+											)}
+										</div>
 
-										{activeButton === 1 && (
-											<div className="calendar-week-view-container">
+										<div className="orario" style={{ fontSize: "15.8px" }}>
+											<div style={{ position: "relative", marginLeft: "10%" }}>
+												{eventPositions.map((event, index) =>
+												// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+												(!event.type ? (
+													<div
+														key={index} // Assicurati di fornire una chiave unica per ogni elemento
+														className="evento red"
+														style={{
+															top: `${event.top}px`, // Imposta la posizione verticale
+															height: `${event.height}px`, // Imposta l'altezza dell'evento
+															width: `calc(95%/${event.width})`,
+															position: "absolute", // Assicurati che sia posizionato correttamente
+															color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
+															borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
+															backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
+															marginLeft: `${event.marginLeft}%`,
+															cursor: "default", // Imposta il cursore di default per l'intero evento
+														}}
+													>
+														<div style={{ color: "red" }}>
+															<Link
+																to={`/pomodoro?duration=${
+																	// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																	((startTime, endTime): number => {
+																		const start = new Date(startTime);
+																		const end = new Date(endTime);
+																		const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																		return totMin;
+																	})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																	}&id=${event.event._id}`} // Passa l'id dell'evento
+																style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+															>
+																{event.name}
+															</Link>
+														</div>
+														<div
+															className="position-relative"
+															onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
+														>
+															{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+															<i className="bi bi-trash"
+																style={{
+																	bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																	right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																	fontSize: "1.5rem",
+																	margin: 0,
+																	padding: 0,
+																	color: "red",
+																	cursor: "pointer"
+																}}
+															></i>
+														</div>
+													</div>
+
+												) : (
+													<div
+														className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
+														style={{
+															top: `${event.top}px`, // Imposta la posizione verticale
+															height: `${event.height}px`, // Imposta l'altezza dell'evento
+															width: `calc(95%/${event.width})`,
+															position: "absolute", // Assicurati che sia posizionato correttamente
+															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
+															borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
+															backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
+															marginLeft: `${event.marginLeft}%`,
+															cursor: "default",
+														}}
+													>
+														{event.name}
+														<div
+															className="position-relative"
+															onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
+														>
+															{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+															<i className="bi bi-trash"
+																style={{
+																	bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																	right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																	fontSize: "1.5rem",
+																	margin: 0,
+																	padding: 0,
+																	color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
+																	cursor: "pointer"
+																}}
+															></i>
+														</div>
+													</div>
+												)
+												))}
+											</div >
+
+
+											<time>00:00</time>
+											<time>01:00</time>
+											<time>02:00</time>
+											<time>03:00</time>
+											<time>04:00</time>
+											<time>05:00</time>
+											<time>06:00</time>
+											<time>07:00</time>
+											<time>08:00</time>
+											<time>09:00</time>
+											<time>10:00</time>
+											<time>11:00</time>
+											<time>12:00</time>
+											<time>13:00</time>
+											<time>14:00</time>
+											<time>15:00</time>
+											<time>16:00</time>
+											<time>17:00</time>
+											<time>18:00</time>
+											<time>19:00</time>
+											<time>20:00</time>
+											<time>21:00</time>
+											<time>22:00</time>
+											<time>23:00</time>
+
+										</div>
+									</div>
+								</div>
+							)}
+
+							{activeButton === 1 && (
+								<div className="calendar-week-view-container">
+									<div
+										className="month-indicator"
+										style={{
+											display: "flex",
+											justifyContent: "center",
+											alignItems: "center",
+											gap: "0.5em",
+										}}
+									>
+										<button className="calendar-arrows" onClick={prevWeek}>
+											{"<<"}
+										</button>
+										<div>
+											{Mesi[meseCorrente]} {year}{" "}
+										</div>
+										<button className="calendar-arrows" onClick={nextWeek}>
+											{">>"}
+										</button>
+									</div>
+
+									<div>
+										{((): JSX.Element | null => {
+											//const dayOfWeek = getDay(new Date(year, meseCorrente, day));
+											//console.log(dayOfWeek);
+											return null;
+										})()}
+										<div
+											style={{
+												display: "flex",
+												justifyContent: "space-between",
+												marginLeft: "auto",
+												marginRight: "auto",
+											}}>
+											<div className="nome-data-week">
 												<div
-													className="month-indicator"
 													style={{
-														display: "flex",
-														justifyContent: "center",
-														alignItems: "center",
-														gap: "0.5em",
+														color: "gray",
+														width: "100%",
+														fontWeight: 500,
+														textAlign: "center",
+														fontSize: "1em",
+														letterSpacing: "0.1em",
+														fontVariant: "small-caps",
 													}}
 												>
-													<button className="calendar-arrows" onClick={prevWeek}>
-														{"<<"}
-													</button>
-													<div>
-														{Mesi[meseCorrente]} {year}{" "}
-													</div>
-													<button className="calendar-arrows" onClick={nextWeek}>
-														{">>"}
-													</button>
-												</div>
-
-												<div>
+													Dom{" "}
 													{((): JSX.Element | null => {
-														//const dayOfWeek = getDay(new Date(year, meseCorrente, day));
-														//console.log(dayOfWeek);
-														return null;
+														const currentDayOfWeek = getDay(new Date(year, meseCorrente, day));
+
+
+
+														return (
+															<>
+																{currentDayOfWeek === 5 && getAdjustedDay(day, -5, year, meseCorrente)}
+																{currentDayOfWeek === 4 && getAdjustedDay(day, -4, year, meseCorrente)}
+																{currentDayOfWeek === 3 && getAdjustedDay(day, -3, year, meseCorrente)}
+																{currentDayOfWeek === 2 && getAdjustedDay(day, -2, year, meseCorrente)}
+																{currentDayOfWeek === 1 && getAdjustedDay(day, -1, year, meseCorrente)}
+																{currentDayOfWeek === 0 && getAdjustedDay(day, 0, year, meseCorrente)}
+															</>
+														);
 													})()}
-													<div
-														style={{
-															display: "flex",
-															justifyContent: "space-between",
-															marginLeft: "auto",
-															marginRight: "auto",
-														}}>
-														<div className="nome-data-week">
-															<div
-																style={{
-																	color: "gray",
-																	width: "100%",
-																	fontWeight: 500,
-																	textAlign: "center",
-																	fontSize: "1em",
-																	letterSpacing: "0.1em",
-																	fontVariant: "small-caps",
-																}}
-															>
-																Dom{" "}
-																{((): JSX.Element | null => {
-																	const currentDayOfWeek = getDay(new Date(year, meseCorrente, day));
 
+												</div>
+												<div
+													className="orario"
+													style={{
+														width: "95%",
+														flex: "1",
+														position: "relative",
+														overflowY: "auto",
+													}}
+													onWheel={handleScroll}>
 
+													{renderWeekEvents(weekEvents, 0)}
 
-																	return (
-																		<>
-																			{currentDayOfWeek === 5 && getAdjustedDay(day, -5, year, meseCorrente)}
-																			{currentDayOfWeek === 4 && getAdjustedDay(day, -4, year, meseCorrente)}
-																			{currentDayOfWeek === 3 && getAdjustedDay(day, -3, year, meseCorrente)}
-																			{currentDayOfWeek === 2 && getAdjustedDay(day, -2, year, meseCorrente)}
-																			{currentDayOfWeek === 1 && getAdjustedDay(day, -1, year, meseCorrente)}
-																			{currentDayOfWeek === 0 && getAdjustedDay(day, 0, year, meseCorrente)}
-																		</>
-																	);
-																})()}
-
-															</div>
-															<div
-																className="orario"
-																style={{
-																	width: "95%",
-																	flex: "1",
-																	position: "relative",
-																	overflowY: "auto",
-																}}
-																onWheel={handleScroll}>
-
-																{renderWeekEvents(weekEvents, 0)}
-
-																{/*{renderMonthEvents(monthEvents, 12)}
+													{/*{renderMonthEvents(monthEvents, 12)}
 													RENDERIZZA GLI EVENTI DEL GIORNO 12+1 = 13*/}
 
 
 
-																<time>00:00</time>
-																<time>01:00</time>
-																<time>02:00</time>
-																<time>03:00</time>
-																<time>04:00</time>
-																<time>05:00</time>
-																<time>06:00</time>
-																<time>07:00</time>
-																<time>08:00</time>
-																<time>09:00</time>
-																<time>10:00</time>
-																<time>11:00</time>
-																<time>12:00</time>
-																<time>13:00</time>
-																<time>14:00</time>
-																<time>15:00</time>
-																<time>16:00</time>
-																<time>17:00</time>
-																<time>18:00</time>
-																<time>19:00</time>
-																<time>20:00</time>
-																<time>21:00</time>
-																<time>22:00</time>
-																<time>23:00</time>
+													<time>00:00</time>
+													<time>01:00</time>
+													<time>02:00</time>
+													<time>03:00</time>
+													<time>04:00</time>
+													<time>05:00</time>
+													<time>06:00</time>
+													<time>07:00</time>
+													<time>08:00</time>
+													<time>09:00</time>
+													<time>10:00</time>
+													<time>11:00</time>
+													<time>12:00</time>
+													<time>13:00</time>
+													<time>14:00</time>
+													<time>15:00</time>
+													<time>16:00</time>
+													<time>17:00</time>
+													<time>18:00</time>
+													<time>19:00</time>
+													<time>20:00</time>
+													<time>21:00</time>
+													<time>22:00</time>
+													<time>23:00</time>
 
-															</div>
-														</div>
-														<div className="nome-data-week">
-															<div
-																style={{
-																	color: "gray",
-																	width: "100%",
-																	fontWeight: 500,
-																	textAlign: "center",
-																	fontSize: "1em",
-																	letterSpacing: "0.1em",
-																	fontVariant: "small-caps",
-																}}
-															>
-																Lun{" "}
-
-
-																{getDay(new Date(year, meseCorrente, day)) === 6 &&
-																	getAdjustedDay(day, -5, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 5 &&
-																	getAdjustedDay(day, -4, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 4 &&
-																	getAdjustedDay(day, -3, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 3 &&
-																	getAdjustedDay(day, -2, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 2 &&
-																	getAdjustedDay(day, -1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 1 &&
-																	getAdjustedDay(day, 0, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 0 &&
-																	getAdjustedDay(day, 1, year, meseCorrente)}
-															</div>
-
-															<div
-																className="orario"
-																style={{
-																	width: "calc(100% - 10px)",
-																	flex: "1",
-																}}
-																onWheel={handleScroll}>
-
-																{renderWeekEvents(weekEvents, 1)}
-
-
-																<time>00:00</time>
-																<time>01:00</time>
-																<time>02:00</time>
-																<time>03:00</time>
-																<time>04:00</time>
-																<time>05:00</time>
-																<time>06:00</time>
-																<time>07:00</time>
-																<time>08:00</time>
-																<time>09:00</time>
-																<time>10:00</time>
-																<time>11:00</time>
-																<time>12:00</time>
-																<time>13:00</time>
-																<time>14:00</time>
-																<time>15:00</time>
-																<time>16:00</time>
-																<time>17:00</time>
-																<time>18:00</time>
-																<time>19:00</time>
-																<time>20:00</time>
-																<time>21:00</time>
-																<time>22:00</time>
-																<time>23:00</time>
-
-															</div>
-														</div>
-														<div className="nome-data-week">
-															<div
-																style={{
-																	color: "gray",
-																	width: "100%",
-																	fontWeight: 500,
-																	textAlign: "center",
-																	fontSize: "1em",
-																	letterSpacing: "0.1em",
-																	fontVariant: "small-caps",
-																}}
-															>
-																Mar{" "}
-																{getDay(new Date(year, meseCorrente, day)) === 6 &&
-																	getAdjustedDay(day, -4, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 5 &&
-																	getAdjustedDay(day, -3, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 4 &&
-																	getAdjustedDay(day, -2, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 3 &&
-																	getAdjustedDay(day, -1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 2 &&
-																	getAdjustedDay(day, 0, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 1 &&
-																	getAdjustedDay(day, 1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 0 &&
-																	getAdjustedDay(day, 2, year, meseCorrente)}
-															</div>
-															<div
-																className="orario"
-																style={{
-																	width: "calc(100% - 10px)",
-																	flex: "1",
-																}}
-																onWheel={handleScroll}>
-
-
-																{renderWeekEvents(weekEvents, 2)}
-																<time>00:00</time>
-																<time>01:00</time>
-																<time>02:00</time>
-																<time>03:00</time>
-																<time>04:00</time>
-																<time>05:00</time>
-																<time>06:00</time>
-																<time>07:00</time>
-																<time>08:00</time>
-																<time>09:00</time>
-																<time>10:00</time>
-																<time>11:00</time>
-																<time>12:00</time>
-																<time>13:00</time>
-																<time>14:00</time>
-																<time>15:00</time>
-																<time>16:00</time>
-																<time>17:00</time>
-																<time>18:00</time>
-																<time>19:00</time>
-																<time>20:00</time>
-																<time>21:00</time>
-																<time>22:00</time>
-																<time>23:00</time>
-
-															</div>
-														</div>
-														<div className="nome-data-week">
-															<div
-																style={{
-																	color: "gray",
-																	width: "100%",
-																	fontWeight: 500,
-																	textAlign: "center",
-																	fontSize: "1em",
-																	letterSpacing: "0.1em",
-																	fontVariant: "small-caps",
-																}}
-															>
-																Mer{" "}
-																{getDay(new Date(year, meseCorrente, day)) === 6 &&
-																	getAdjustedDay(day, -3, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 5 &&
-																	getAdjustedDay(day, -2, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 4 &&
-																	getAdjustedDay(day, -1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 3 &&
-																	getAdjustedDay(day, 0, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 2 &&
-																	getAdjustedDay(day, 1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 1 &&
-																	getAdjustedDay(day, 2, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 0 &&
-																	getAdjustedDay(day, 3, year, meseCorrente)}
-															</div>
-															<div
-																className="orario"
-																style={{
-																	width: "calc(100% - 10px)",
-																	flex: "1",
-																}}
-																onWheel={handleScroll}>
-
-																{renderWeekEvents(weekEvents, 3)}
-																<time>00:00</time>
-																<time>01:00</time>
-																<time>02:00</time>
-																<time>03:00</time>
-																<time>04:00</time>
-																<time>05:00</time>
-																<time>06:00</time>
-																<time>07:00</time>
-																<time>08:00</time>
-																<time>09:00</time>
-																<time>10:00</time>
-																<time>11:00</time>
-																<time>12:00</time>
-																<time>13:00</time>
-																<time>14:00</time>
-																<time>15:00</time>
-																<time>16:00</time>
-																<time>17:00</time>
-																<time>18:00</time>
-																<time>19:00</time>
-																<time>20:00</time>
-																<time>21:00</time>
-																<time>22:00</time>
-																<time>23:00</time>
-
-															</div>
-														</div>
-														<div className="nome-data-week">
-															<div
-																style={{
-																	color: "gray",
-																	width: "100%",
-																	fontWeight: 500,
-																	textAlign: "center",
-																	fontSize: "1em",
-																	letterSpacing: "0.1em",
-																	fontVariant: "small-caps",
-																}}
-															>
-																Gio{" "}
-																{getDay(new Date(year, meseCorrente, day)) === 6 &&
-																	getAdjustedDay(day, -2, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 5 &&
-																	getAdjustedDay(day, -1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 4 &&
-																	getAdjustedDay(day, 0, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 3 &&
-																	getAdjustedDay(day, 1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 2 &&
-																	getAdjustedDay(day, 2, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 1 &&
-																	getAdjustedDay(day, 3, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 0 &&
-																	getAdjustedDay(day, 4, year, meseCorrente)}
-															</div>
-															<div
-																className="orario"
-																style={{
-																	width: "calc(100% - 10px)",
-																	flex: "1",
-																}}
-																onWheel={handleScroll}>
-
-																{renderWeekEvents(weekEvents, 4)}
-																<time>00:00</time>
-																<time>01:00</time>
-																<time>02:00</time>
-																<time>03:00</time>
-																<time>04:00</time>
-																<time>05:00</time>
-																<time>06:00</time>
-																<time>07:00</time>
-																<time>08:00</time>
-																<time>09:00</time>
-																<time>10:00</time>
-																<time>11:00</time>
-																<time>12:00</time>
-																<time>13:00</time>
-																<time>14:00</time>
-																<time>15:00</time>
-																<time>16:00</time>
-																<time>17:00</time>
-																<time>18:00</time>
-																<time>19:00</time>
-																<time>20:00</time>
-																<time>21:00</time>
-																<time>22:00</time>
-																<time>23:00</time>
-
-															</div>
-														</div>
-														<div className="nome-data-week">
-															<div
-																style={{
-																	color: "gray",
-																	width: "100%",
-																	fontWeight: 500,
-																	textAlign: "center",
-																	fontSize: "1em",
-																	letterSpacing: "0.1em",
-																	fontVariant: "small-caps",
-																}}
-															>
-																Ven{" "}
-																{getDay(new Date(year, meseCorrente, day)) === 6 &&
-																	getAdjustedDay(day, -1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 5 &&
-																	getAdjustedDay(day, 0, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 4 &&
-																	getAdjustedDay(day, 1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 3 &&
-																	getAdjustedDay(day, 2, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 2 &&
-																	getAdjustedDay(day, 3, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 1 &&
-																	getAdjustedDay(day, 4, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 0 &&
-																	getAdjustedDay(day, 5, year, meseCorrente)}
-															</div>
-															<div
-																className="orario"
-																style={{
-																	width: "calc(100% - 10px)",
-																	flex: "1",
-																}}
-																onWheel={handleScroll}>
-
-																{renderWeekEvents(weekEvents, 5)}
-																<time>00:00</time>
-																<time>01:00</time>
-																<time>02:00</time>
-																<time>03:00</time>
-																<time>04:00</time>
-																<time>05:00</time>
-																<time>06:00</time>
-																<time>07:00</time>
-																<time>08:00</time>
-																<time>09:00</time>
-																<time>10:00</time>
-																<time>11:00</time>
-																<time>12:00</time>
-																<time>13:00</time>
-																<time>14:00</time>
-																<time>15:00</time>
-																<time>16:00</time>
-																<time>17:00</time>
-																<time>18:00</time>
-																<time>19:00</time>
-																<time>20:00</time>
-																<time>21:00</time>
-																<time>22:00</time>
-																<time>23:00</time>
-
-															</div>
-														</div>
-														<div className="nome-data-week">
-															<div
-																style={{
-																	color: "gray",
-																	width: "100%",
-																	fontWeight: 500,
-																	textAlign: "center",
-																	fontSize: "1em",
-																	letterSpacing: "0.1em",
-																	fontVariant: "small-caps",
-																}}
-															>
-																Sab{" "}
-																{getDay(new Date(year, meseCorrente, day)) === 6 &&
-																	getAdjustedDay(day, 0, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 5 &&
-																	getAdjustedDay(day, 1, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 4 &&
-																	getAdjustedDay(day, 2, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 3 &&
-																	getAdjustedDay(day, 3, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 2 &&
-																	getAdjustedDay(day, 4, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 1 &&
-																	getAdjustedDay(day, 5, year, meseCorrente)}
-																{getDay(new Date(year, meseCorrente, day)) === 0 &&
-																	getAdjustedDay(day, 6, year, meseCorrente)}
-															</div>
-															<div
-																className="orario"
-																style={{
-																	width: "calc(100% - 10px)",
-																	flex: "1",
-																}}
-																onWheel={handleScroll}>
-
-																{renderWeekEvents(weekEvents, 6)}
-																<time>00:00</time>
-																<time>01:00</time>
-																<time>02:00</time>
-																<time>03:00</time>
-																<time>04:00</time>
-																<time>05:00</time>
-																<time>06:00</time>
-																<time>07:00</time>
-																<time>08:00</time>
-																<time>09:00</time>
-																<time>10:00</time>
-																<time>11:00</time>
-																<time>12:00</time>
-																<time>13:00</time>
-																<time>14:00</time>
-																<time>15:00</time>
-																<time>16:00</time>
-																<time>17:00</time>
-																<time>18:00</time>
-																<time>19:00</time>
-																<time>20:00</time>
-																<time>21:00</time>
-																<time>22:00</time>
-																<time>23:00</time>
-
-															</div>
-														</div>
-													</div>
 												</div>
 											</div>
-										)}
-
-										{activeButton === 2 && (
-											<div className="calendar-month-view-container">
+											<div className="nome-data-week">
 												<div
-													className="month-indicator"
 													style={{
-														display: "flex",
-														justifyContent: "center",
-														alignItems: "center",
-														gap: "0.5em"
+														color: "gray",
+														width: "100%",
+														fontWeight: 500,
+														textAlign: "center",
+														fontSize: "1em",
+														letterSpacing: "0.1em",
+														fontVariant: "small-caps",
 													}}
 												>
-													<button className="calendar-arrows" onClick={mesePrecedente}>
-														{"<<"}
-													</button>
-													<div>
-														{Mesi[meseCorrente]} {year}{" "}
-													</div>
-													<button className="calendar-arrows" onClick={meseSuccessivo}>
-														{">>"}
-													</button>
-												</div>
-												<div className="calendar">
-													<div className="day-of-week fixed-width">
-														<div>Dom</div>
-														<div>Lun</div>
-														<div>Mar</div>
-														<div>Mer</div>
-														<div>Gio</div>
-														<div>Ven</div>
-														<div>Sab</div>
-													</div>
-													<div className="date-grid">
-														{/* Celle vuote per allineare il primo giorno del mese */}
-														{Array.from({
-															length: getDay(startOfMonth(new Date(year, meseCorrente))),
-														}).map((_, index) => (
-															<div key={index} className="date-cell empty-cell"></div>
-														))}
+													Lun{" "}
 
-														{/* Celle per i giorni del mese */}
-														{Array.from({
-															length: getDaysInMonth(new Date(year, meseCorrente)),
-														}).map((_, day) => (
-															<div
-																key={day + 1}
-																className="date-cell"
-																style={{ position: "relative", minHeight: "100px" }}
-															>
-																<div>{renderMonthEvents(monthEvents, day)}</div>
-																<button
-																	onClick={(e): void => {
-																		handleDateClick(day + 1);
-																		dayMode(e as React.MouseEvent<HTMLElement>);
-																	}}
-																>
-																	{day + 1}
-																</button>
-															</div>
-														))}
-													</div>
+
+													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+														getAdjustedDay(day, -5, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+														getAdjustedDay(day, -4, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+														getAdjustedDay(day, -3, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+														getAdjustedDay(day, -2, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+														getAdjustedDay(day, -1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+														getAdjustedDay(day, 0, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+														getAdjustedDay(day, 1, year, meseCorrente)}
+												</div>
+
+												<div
+													className="orario"
+													style={{
+														width: "calc(100% - 10px)",
+														flex: "1",
+													}}
+													onWheel={handleScroll}>
+
+													{renderWeekEvents(weekEvents, 1)}
+
+
+													<time>00:00</time>
+													<time>01:00</time>
+													<time>02:00</time>
+													<time>03:00</time>
+													<time>04:00</time>
+													<time>05:00</time>
+													<time>06:00</time>
+													<time>07:00</time>
+													<time>08:00</time>
+													<time>09:00</time>
+													<time>10:00</time>
+													<time>11:00</time>
+													<time>12:00</time>
+													<time>13:00</time>
+													<time>14:00</time>
+													<time>15:00</time>
+													<time>16:00</time>
+													<time>17:00</time>
+													<time>18:00</time>
+													<time>19:00</time>
+													<time>20:00</time>
+													<time>21:00</time>
+													<time>22:00</time>
+													<time>23:00</time>
+
 												</div>
 											</div>
-										)}
-									</>
-								)}
+											<div className="nome-data-week">
+												<div
+													style={{
+														color: "gray",
+														width: "100%",
+														fontWeight: 500,
+														textAlign: "center",
+														fontSize: "1em",
+														letterSpacing: "0.1em",
+														fontVariant: "small-caps",
+													}}
+												>
+													Mar{" "}
+													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+														getAdjustedDay(day, -4, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+														getAdjustedDay(day, -3, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+														getAdjustedDay(day, -2, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+														getAdjustedDay(day, -1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+														getAdjustedDay(day, 0, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+														getAdjustedDay(day, 1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+														getAdjustedDay(day, 2, year, meseCorrente)}
+												</div>
+												<div
+													className="orario"
+													style={{
+														width: "calc(100% - 10px)",
+														flex: "1",
+													}}
+													onWheel={handleScroll}>
 
-							</div>
+
+													{renderWeekEvents(weekEvents, 2)}
+													<time>00:00</time>
+													<time>01:00</time>
+													<time>02:00</time>
+													<time>03:00</time>
+													<time>04:00</time>
+													<time>05:00</time>
+													<time>06:00</time>
+													<time>07:00</time>
+													<time>08:00</time>
+													<time>09:00</time>
+													<time>10:00</time>
+													<time>11:00</time>
+													<time>12:00</time>
+													<time>13:00</time>
+													<time>14:00</time>
+													<time>15:00</time>
+													<time>16:00</time>
+													<time>17:00</time>
+													<time>18:00</time>
+													<time>19:00</time>
+													<time>20:00</time>
+													<time>21:00</time>
+													<time>22:00</time>
+													<time>23:00</time>
+
+												</div>
+											</div>
+											<div className="nome-data-week">
+												<div
+													style={{
+														color: "gray",
+														width: "100%",
+														fontWeight: 500,
+														textAlign: "center",
+														fontSize: "1em",
+														letterSpacing: "0.1em",
+														fontVariant: "small-caps",
+													}}
+												>
+													Mer{" "}
+													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+														getAdjustedDay(day, -3, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+														getAdjustedDay(day, -2, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+														getAdjustedDay(day, -1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+														getAdjustedDay(day, 0, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+														getAdjustedDay(day, 1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+														getAdjustedDay(day, 2, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+														getAdjustedDay(day, 3, year, meseCorrente)}
+												</div>
+												<div
+													className="orario"
+													style={{
+														width: "calc(100% - 10px)",
+														flex: "1",
+													}}
+													onWheel={handleScroll}>
+
+													{renderWeekEvents(weekEvents, 3)}
+													<time>00:00</time>
+													<time>01:00</time>
+													<time>02:00</time>
+													<time>03:00</time>
+													<time>04:00</time>
+													<time>05:00</time>
+													<time>06:00</time>
+													<time>07:00</time>
+													<time>08:00</time>
+													<time>09:00</time>
+													<time>10:00</time>
+													<time>11:00</time>
+													<time>12:00</time>
+													<time>13:00</time>
+													<time>14:00</time>
+													<time>15:00</time>
+													<time>16:00</time>
+													<time>17:00</time>
+													<time>18:00</time>
+													<time>19:00</time>
+													<time>20:00</time>
+													<time>21:00</time>
+													<time>22:00</time>
+													<time>23:00</time>
+
+												</div>
+											</div>
+											<div className="nome-data-week">
+												<div
+													style={{
+														color: "gray",
+														width: "100%",
+														fontWeight: 500,
+														textAlign: "center",
+														fontSize: "1em",
+														letterSpacing: "0.1em",
+														fontVariant: "small-caps",
+													}}
+												>
+													Gio{" "}
+													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+														getAdjustedDay(day, -2, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+														getAdjustedDay(day, -1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+														getAdjustedDay(day, 0, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+														getAdjustedDay(day, 1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+														getAdjustedDay(day, 2, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+														getAdjustedDay(day, 3, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+														getAdjustedDay(day, 4, year, meseCorrente)}
+												</div>
+												<div
+													className="orario"
+													style={{
+														width: "calc(100% - 10px)",
+														flex: "1",
+													}}
+													onWheel={handleScroll}>
+
+													{renderWeekEvents(weekEvents, 4)}
+													<time>00:00</time>
+													<time>01:00</time>
+													<time>02:00</time>
+													<time>03:00</time>
+													<time>04:00</time>
+													<time>05:00</time>
+													<time>06:00</time>
+													<time>07:00</time>
+													<time>08:00</time>
+													<time>09:00</time>
+													<time>10:00</time>
+													<time>11:00</time>
+													<time>12:00</time>
+													<time>13:00</time>
+													<time>14:00</time>
+													<time>15:00</time>
+													<time>16:00</time>
+													<time>17:00</time>
+													<time>18:00</time>
+													<time>19:00</time>
+													<time>20:00</time>
+													<time>21:00</time>
+													<time>22:00</time>
+													<time>23:00</time>
+
+												</div>
+											</div>
+											<div className="nome-data-week">
+												<div
+													style={{
+														color: "gray",
+														width: "100%",
+														fontWeight: 500,
+														textAlign: "center",
+														fontSize: "1em",
+														letterSpacing: "0.1em",
+														fontVariant: "small-caps",
+													}}
+												>
+													Ven{" "}
+													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+														getAdjustedDay(day, -1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+														getAdjustedDay(day, 0, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+														getAdjustedDay(day, 1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+														getAdjustedDay(day, 2, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+														getAdjustedDay(day, 3, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+														getAdjustedDay(day, 4, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+														getAdjustedDay(day, 5, year, meseCorrente)}
+												</div>
+												<div
+													className="orario"
+													style={{
+														width: "calc(100% - 10px)",
+														flex: "1",
+													}}
+													onWheel={handleScroll}>
+
+													{renderWeekEvents(weekEvents, 5)}
+													<time>00:00</time>
+													<time>01:00</time>
+													<time>02:00</time>
+													<time>03:00</time>
+													<time>04:00</time>
+													<time>05:00</time>
+													<time>06:00</time>
+													<time>07:00</time>
+													<time>08:00</time>
+													<time>09:00</time>
+													<time>10:00</time>
+													<time>11:00</time>
+													<time>12:00</time>
+													<time>13:00</time>
+													<time>14:00</time>
+													<time>15:00</time>
+													<time>16:00</time>
+													<time>17:00</time>
+													<time>18:00</time>
+													<time>19:00</time>
+													<time>20:00</time>
+													<time>21:00</time>
+													<time>22:00</time>
+													<time>23:00</time>
+
+												</div>
+											</div>
+											<div className="nome-data-week">
+												<div
+													style={{
+														color: "gray",
+														width: "100%",
+														fontWeight: 500,
+														textAlign: "center",
+														fontSize: "1em",
+														letterSpacing: "0.1em",
+														fontVariant: "small-caps",
+													}}
+												>
+													Sab{" "}
+													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+														getAdjustedDay(day, 0, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+														getAdjustedDay(day, 1, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+														getAdjustedDay(day, 2, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+														getAdjustedDay(day, 3, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+														getAdjustedDay(day, 4, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+														getAdjustedDay(day, 5, year, meseCorrente)}
+													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+														getAdjustedDay(day, 6, year, meseCorrente)}
+												</div>
+												<div
+													className="orario"
+													style={{
+														width: "calc(100% - 10px)",
+														flex: "1",
+													}}
+													onWheel={handleScroll}>
+
+													{renderWeekEvents(weekEvents, 6)}
+													<time>00:00</time>
+													<time>01:00</time>
+													<time>02:00</time>
+													<time>03:00</time>
+													<time>04:00</time>
+													<time>05:00</time>
+													<time>06:00</time>
+													<time>07:00</time>
+													<time>08:00</time>
+													<time>09:00</time>
+													<time>10:00</time>
+													<time>11:00</time>
+													<time>12:00</time>
+													<time>13:00</time>
+													<time>14:00</time>
+													<time>15:00</time>
+													<time>16:00</time>
+													<time>17:00</time>
+													<time>18:00</time>
+													<time>19:00</time>
+													<time>20:00</time>
+													<time>21:00</time>
+													<time>22:00</time>
+													<time>23:00</time>
+
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							)}
+
+							{activeButton === 2 && (
+								<div className="calendar-month-view-container">
+									<div
+										className="month-indicator"
+										style={{
+											display: "flex",
+											justifyContent: "center",
+											alignItems: "center",
+											gap: "0.5em"
+										}}
+									>
+										<button className="calendar-arrows" onClick={mesePrecedente}>
+											{"<<"}
+										</button>
+										<div>
+											{Mesi[meseCorrente]} {year}{" "}
+										</div>
+										<button className="calendar-arrows" onClick={meseSuccessivo}>
+											{">>"}
+										</button>
+									</div>
+									<div className="calendar">
+										<div className="day-of-week fixed-width">
+											<div>Dom</div>
+											<div>Lun</div>
+											<div>Mar</div>
+											<div>Mer</div>
+											<div>Gio</div>
+											<div>Ven</div>
+											<div>Sab</div>
+										</div>
+										<div className="date-grid">
+											{/* Celle vuote per allineare il primo giorno del mese */}
+											{Array.from({
+												length: getDay(startOfMonth(new Date(year, meseCorrente))),
+											}).map((_, index) => (
+												<div key={index} className="date-cell empty-cell"></div>
+											))}
+
+											{/* Celle per i giorni del mese */}
+											{Array.from({
+												length: getDaysInMonth(new Date(year, meseCorrente)),
+											}).map((_, day) => (
+												<div
+													key={day + 1}
+													className="date-cell"
+													style={{ position: "relative", minHeight: "100px" }}
+												>
+													<div>{renderMonthEvents(monthEvents, day)}</div>
+													<button
+														onClick={(e): void => {
+															handleDateClick(day + 1);
+															dayMode(e as React.MouseEvent<HTMLElement>);
+														}}
+													>
+														{day + 1}
+													</button>
+												</div>
+											))}
+										</div>
+									</div>
+								</div>
+							)}
+						</>
+					)}
+
+				</div>
 			</div>
 		</>
 	);
