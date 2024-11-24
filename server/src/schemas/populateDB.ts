@@ -13,6 +13,7 @@ import PomodoroSchema from "./Pomodoro.js";
 import { ProjectSchema, type ProjectDBSchema } from "./Project.ts";
 import UserSchema from "./User.js";
 import CurrentDateSchema from "./currentDate.js";
+import * as argon2 from "argon2";
 
 // insert fake users if they do not exist
 
@@ -26,7 +27,7 @@ export async function createDummyUsers() {
 			{
 				id: "",
 				username: "fv1",
-				password: "12345678",
+				password: await argon2.hash("12345678"),
 				firstName: "testFName",
 				lastName: "testLName",
 				birthday: new Date(),
@@ -35,7 +36,7 @@ export async function createDummyUsers() {
 			{
 				id: "",
 				username: "fv2",
-				password: "12345678",
+				password: await argon2.hash("12345678"),
 				firstName: "testFName",
 				lastName: "testLName",
 				birthday: new Date(),
@@ -44,7 +45,7 @@ export async function createDummyUsers() {
 			{
 				id: "",
 				username: "fv3",
-				password: "12345678",
+				password: await argon2.hash("12345678"),
 				firstName: "testFName",
 				lastName: "testLName",
 				birthday: new Date(),
@@ -53,7 +54,7 @@ export async function createDummyUsers() {
 			{
 				id: "",
 				username: "fv4",
-				password: "12345678",
+				password: await argon2.hash("12345678"),
 				firstName: "testFName",
 				lastName: "testLName",
 				birthday: new Date(),
@@ -62,7 +63,7 @@ export async function createDummyUsers() {
 			{
 				id: "",
 				username: "fvPM",
-				password: "12345678",
+				password: await argon2.hash("12345678"),
 				firstName: "testFName",
 				lastName: "testLName",
 				birthday: new Date(),

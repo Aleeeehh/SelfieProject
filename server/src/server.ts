@@ -17,6 +17,7 @@ import passport from "passport";
 import * as passportStrategy from "passport-local";
 import MongoStore from "connect-mongo";
 import UserSchema from "./schemas/User.js";
+import * as argon2 from "argon2";
 
 // Connect to database
 // const DB_USER = "";
@@ -87,7 +88,7 @@ passport.use(
 				}
 
 				// const validPassword = await argon2.verify(user.password, password);
-				const validPassword = user.password === password;
+				const validPassword = await argon2.verify(user.password, password);
 
 				if (!validPassword) {
 					console.log("Password not correct", password);
