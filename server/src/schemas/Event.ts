@@ -24,6 +24,7 @@ const eventSchema = new mongoose.Schema(
 				message: (props: any) => `${props.value} non è un tipo valido! Deve essere una String o un ObjectId.`,
 			},
 		},
+		isRisorsa: { type: Boolean, default: false, required: false },
 		accessList: {
 			type: [mongoose.Schema.Types.Mixed], // Modificato per accettare array di String o ObjectId
 			ref: "User"

@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema(
 		lastName: { type: String, required: true },
 		birthday: { type: Date, required: true },
 		address: { type: String, required: true },
+		admin: { type: Boolean, required: true, default: false },
 	},
 	{ timestamps: true }
 );

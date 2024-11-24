@@ -8,6 +8,7 @@ import { default as chatsRouter } from "./chats.js";
 import { default as activityRouter } from "./activity.js";
 import { default as currentDateRouter } from "./currentDate.js";
 import { default as listsRouter } from "./lists.ts";
+import { default as risorsaRouter } from "./risorsa.ts";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import { Request, Response, Router, NextFunction } from "express";
 
@@ -35,6 +36,7 @@ export function checkAuthentication(req: Request, res: Response, next: NextFunct
 router.use("/users", usersRouter);
 
 router.use(checkAuthentication);
+router.use("/risorsa", risorsaRouter);
 
 router.use("/events", eventsRouter);
 router.use("/notes", notesRouter);

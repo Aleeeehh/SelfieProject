@@ -34,7 +34,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfWeek.includes(currentDayOfWeek)
                     ) {
                         // create a event with start and end times updated
@@ -42,8 +42,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -56,7 +56,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfMonth.includes(currentDayOfMonth)
                     ) {
                         // create a event with start and end times updated
@@ -64,8 +64,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -80,8 +80,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -123,7 +123,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfWeek.includes(currentDayOfWeek)
                     ) {
                         // create a event with start and end times updated
@@ -131,8 +131,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -144,7 +144,7 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                     // Check if the current day matches one of the weekdays in the array
                     if (
                         from.getMilliseconds() >=
-                            currentDate.getMilliseconds() &&
+                        currentDate.getMilliseconds() &&
                         entry.recurrence.daysOfMonth.includes(currentDayOfMonth)
                     ) {
                         // create a event with start and end times updated
@@ -152,8 +152,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -170,8 +170,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
                         currentEvent.startTime = currentDate;
                         currentEvent.endTime = new Date(
                             currentEvent.startTime.getMilliseconds() -
-                                (entry.startTime.getMilliseconds() -
-                                    entry.endTime.getMilliseconds())
+                            (entry.startTime.getMilliseconds() -
+                                entry.endTime.getMilliseconds())
                         );
                         eventList.push(currentEvent);
                     }
@@ -340,14 +340,15 @@ router.post("/", async (req: Request, res: Response) => {
             idEventoNotificaCondiviso,
             accessList,
             accessListAccepted,
+            isRisorsa,
         } = req.body as Event;
 
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
-        console.log("Owner passato come parametro:", owner);
+        console.log("isRisorsa passato come parametro:", isRisorsa);
+        console.log("isRisorsa passato come parametro:", isRisorsa);
+
+        console.log("isRisorsa passato come parametro:", isRisorsa);
+
+        console.log("isRisorsa passato come parametro:", isRisorsa);
 
         if (new Date(startTime) > new Date(endTime)) {
             return res.status(400).json({
@@ -419,6 +420,7 @@ router.post("/", async (req: Request, res: Response) => {
                 accessListAccepted,
                 repetitions,
                 owner,
+                isRisorsa,
                 recurring: true,
                 createdAt: now,
                 updatedAt: now,
@@ -465,6 +467,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         isInfinite,
+                        isRisorsa,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
@@ -523,6 +526,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -569,6 +573,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -625,6 +630,7 @@ router.post("/", async (req: Request, res: Response) => {
                         location,
                         accessList,
                         accessListAccepted,
+                        isRisorsa,
                         owner,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
@@ -651,6 +657,7 @@ router.post("/", async (req: Request, res: Response) => {
                     isInfinite,
                     repetitions,
                     owner,
+                    isRisorsa,
                     recurring: false, //assumo evento non ricorrente
                     accessList,
                     accessListAccepted,
@@ -721,6 +728,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: true,
                         createdAt: now,
                         updatedAt: now,
@@ -789,6 +797,7 @@ router.post("/", async (req: Request, res: Response) => {
                         isInfinite,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: true, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -851,6 +860,7 @@ router.post("/", async (req: Request, res: Response) => {
                         untilDate,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: repetitions > 1, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -923,6 +933,7 @@ router.post("/", async (req: Request, res: Response) => {
                         accessListAccepted,
                         location,
                         owner,
+                        isRisorsa,
                         recurring: true, // Imposta ricorrente se repetitions > 1
                         createdAt: now,
                         updatedAt: now,
@@ -958,6 +969,7 @@ router.post("/", async (req: Request, res: Response) => {
                     isInfinite,
                     repetitions,
                     owner,
+                    isRisorsa,
                     recurring: false, //assumo evento non ricorrente
                     createdAt: now,
                     updatedAt: now,
@@ -1161,6 +1173,9 @@ router.put("/:id", async (req: Request, res: Response) => {
         const foundEvents = await EventSchema.find({
             idEventoNotificaCondiviso: idEventoNotificaCondiviso,
         });
+
+        console.log("foundEvents:", foundEvents);
+
         if (foundEvents.length === 0) {
             const resBody: ResponseBody = {
                 message:
@@ -1175,32 +1190,21 @@ router.put("/:id", async (req: Request, res: Response) => {
 
         let updatedAccessListAccepted: string[] | undefined;
         if (inputAccessListAcceptedUser) {
-            // Itera su tutti gli eventi trovati e aggiorna accessListAccepted
-            for (const foundEvent of foundEvents) {
-                updatedAccessListAccepted =
-                    foundEvent.accessListAccepted?.concat(
-                        inputAccessListAcceptedUser
-                    );
+            // Crea una lista aggiornata per accessListAccepted
+            updatedAccessListAccepted = foundEvents[0].accessListAccepted?.concat(inputAccessListAcceptedUser);
 
-                console.log(
-                    "Updating event: ",
-                    foundEvent,
-                    " to ",
-                    updatedAccessListAccepted
-                );
+            console.log("Updating events to ", updatedAccessListAccepted);
 
-                await EventSchema.findOneAndUpdate(
-                    {
-                        idEventoNotificaCondiviso:
-                            foundEvent.idEventoNotificaCondiviso,
-                    }, // Usa _id per trovare l'evento specifico
-                    { accessListAccepted: updatedAccessListAccepted }
-                );
-            }
+            // Aggiorna tutti gli eventi con lo stesso idEventoNotificaCondiviso
+            await EventSchema.updateMany(
+                { idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+                { accessListAccepted: updatedAccessListAccepted }
+            );
         }
+
         // TODO: filter the fields of the found event
         const resBody: ResponseBody = {
-            message: "Event updated in database",
+            message: "Events updated in database",
             status: ResponseStatus.GOOD,
             value: foundEvents,
         };
@@ -1216,6 +1220,70 @@ router.put("/:id", async (req: Request, res: Response) => {
         return res.status(500).json(resBody);
     }
 });
+
+/* IPOTETICA PUT ULTERIORE CON IDEVENTONOTIFICACONDIVISO
+
+router.put("/:id", async (req: Request, res: Response) => {
+    const idEventoNotificaCondiviso = req.params.id as string;
+    const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as
+        | string[]
+        | undefined; // username list
+
+    try {
+        // TODO: validate param
+        // TODO: validate body fields
+
+        const foundEvents = await EventSchema.find({
+            idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+        });
+
+        console.log("foundEvents:", foundEvents);
+
+        if (foundEvents.length === 0) {
+            const resBody: ResponseBody = {
+                message:
+                    "Event with id " +
+                    idEventoNotificaCondiviso +
+                    " not found!",
+                status: ResponseStatus.BAD,
+            };
+
+            return res.status(400).json(resBody);
+        }
+
+        let updatedAccessListAccepted: string[] | undefined;
+        if (inputAccessListAcceptedUser) {
+            // Crea una lista aggiornata per accessListAccepted
+            updatedAccessListAccepted = foundEvents[0].accessListAccepted?.concat(inputAccessListAcceptedUser);
+
+            console.log("Updating events to ", updatedAccessListAccepted);
+
+            // Aggiorna tutti gli eventi con lo stesso idEventoNotificaCondiviso
+            await EventSchema.updateMany(
+                { idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+                { accessListAccepted: updatedAccessListAccepted }
+            );
+        }
+
+        // TODO: filter the fields of the found event
+        const resBody: ResponseBody = {
+            message: "Events updated in database",
+            status: ResponseStatus.GOOD,
+            value: foundEvents,
+        };
+
+        return res.json(resBody);
+    } catch (e) {
+        console.log(e);
+        const resBody: ResponseBody = {
+            message: "Error handling request",
+            status: ResponseStatus.BAD,
+        };
+
+        return res.status(500).json(resBody);
+    }
+});
+*/
 
 router.delete("/:id", async (req: Request, res: Response) => {
     const eventId = req.params.id as string;

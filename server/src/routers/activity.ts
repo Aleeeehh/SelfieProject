@@ -69,7 +69,9 @@ router.get("/", async (req: Request, res: Response) => {
 				updatedAt: activity.updatedAt,
 				deadline: activity.deadline,
 				completed: activity.completed,
-				accessList: await getUsernameListFromIdList(activity.accessList),
+				accessList: await getUsernameListFromIdList(
+					activity.accessList
+				),
 				projectId: activity.projectId || null,
 				next: activity.next || null,
 				// status: activity.status as ActivityStatus | null,
@@ -93,9 +95,13 @@ router.get("/", async (req: Request, res: Response) => {
 			return a.deadline.getTime() - b.deadline.getTime();
 		});
 
-		sortedActivities.filter((_, index) => index >= from && index < from + count);
+		sortedActivities.filter(
+			(_, index) => index >= from && index < from + count
+		);
 
-		return res.status(200).json({ status: ResponseStatus.GOOD, value: sortedActivities });
+		return res
+			.status(200)
+			.json({ status: ResponseStatus.GOOD, value: sortedActivities });
 	} catch (e) {
 		console.log(e);
 		const resBody: ResponseBody = {
@@ -144,7 +150,10 @@ router.get("/owner", async (req: Request, res: Response) => {
 
 		if (foundDBActivities.length === 0) {
 			const resBody: ResponseBody = {
-				message: "L'attività con l'owner" + ownerId + " Non è stato trovato!",
+				message:
+					"L'attività con l'owner" +
+					ownerId +
+					" Non è stato trovato!",
 				status: ResponseStatus.BAD,
 			};
 
@@ -376,9 +385,12 @@ router.post("/", async (req: Request, res: Response) => {
 		if (!title || !description || !deadline || !owner) {
 			const resBody: ResponseBody = {
 				status: ResponseStatus.BAD,
-				message: "Missing required fields: 'title', 'description', 'deadline', 'owner'",
+				message:
+					"Missing required fields: 'title', 'description', 'deadline', 'owner'",
 			};
-			console.log("Missing required fields: 'title', 'description', 'deadline', 'owner'");
+			console.log(
+				"Missing required fields: 'title', 'description', 'deadline', 'owner'"
+			);
 			return res.status(400).json(resBody);
 		}
 
@@ -409,9 +421,12 @@ router.post("/", async (req: Request, res: Response) => {
 			if (project.owner.toString() !== owner) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
-					message: "You are not the owner of this project, cannot add activity",
+					message:
+						"You are not the owner of this project, cannot add activity",
 				};
-				console.log("You are not the owner of this project, cannot add activity");
+				console.log(
+					"You are not the owner of this project, cannot add activity"
+				);
 				return res.status(403).json(resBody);
 			}
 
@@ -546,7 +561,8 @@ router.post("/", async (req: Request, res: Response) => {
 				// should have the same parent
 				if (
 					(!foundNext.parent && parent) ||
-					(foundNext.parent && (!parent || foundNext.parent.toString() !== parent))
+					(foundNext.parent &&
+						(!parent || foundNext.parent.toString() !== parent))
 				) {
 					const resBody: ResponseBody = {
 						status: ResponseStatus.BAD,
@@ -579,6 +595,7 @@ router.post("/", async (req: Request, res: Response) => {
 			description,
 			deadline: deadlineDate,
 			accessList: (await getIdListFromUsernameList(accessList)).map((id) => id.toString()),
+			accessListAccepted: accessListAccepted,
 			completed: false,
 			completedAt: undefined,
 
@@ -690,12 +707,13 @@ router.put("/:id", async (req: Request, res: Response) => {
 			});
 		}
 
-		const foundActivity = await ActivitySchema.findOne({
-			$or: [
-				{ idEventoNotificaCondiviso: activityId },
-				{ _id: new Types.ObjectId(activityId) },
-			],
-		}).lean();
+		// Controlla se l'activityId è una stringa valida per ObjectId
+		const isValidObjectId = Types.ObjectId.isValid(activityId);
+		const query = isValidObjectId
+			? { $or: [{ _id: new Types.ObjectId(activityId) }, { idEventoNotificaCondiviso: activityId }] }
+			: { idEventoNotificaCondiviso: activityId };
+
+		const foundActivity = await ActivitySchema.findOne(query).lean();
 
 		if (!foundActivity) {
 			console.log("Activity with id " + activityId + " not found!");
@@ -727,13 +745,12 @@ router.put("/:id", async (req: Request, res: Response) => {
 			}
 		}
 
-		console.log("Access List: ", inputAccessList, updatedAccessList);
-
 		let updatedAccessListAccepted: string[] | undefined;
 		if (inputAccessListAcceptedUser) {
-			updatedAccessListAccepted = foundActivity.accessListAccepted?.concat(
-				inputAccessListAcceptedUser
-			);
+			updatedAccessListAccepted =
+				foundActivity.accessListAccepted?.concat(
+					inputAccessListAcceptedUser
+				);
 		}
 
 		const updatedCompleted: boolean | undefined = inputCompleted
@@ -795,7 +812,10 @@ router.put("/:id", async (req: Request, res: Response) => {
 			}
 
 			// should be of the same project
-			if (foundNext.projectId && foundNext.projectId.toString() !== projectId.toString()) {
+			if (
+				foundNext.projectId &&
+				foundNext.projectId.toString() !== projectId.toString()
+			) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
 					message: "Invalid next id: wrong project",
@@ -809,7 +829,8 @@ router.put("/:id", async (req: Request, res: Response) => {
 				(!foundNext.parent && foundActivity.parent) ||
 				(foundNext.parent &&
 					(!foundActivity.parent ||
-						foundNext.parent.toString() !== foundActivity.parent.toString()))
+						foundNext.parent.toString() !==
+						foundActivity.parent.toString()))
 			) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
@@ -838,13 +859,19 @@ router.put("/:id", async (req: Request, res: Response) => {
 		if (!projectId && (inputActive || inputAbandoned || inputReactivated)) {
 			const resBody: ResponseBody = {
 				status: ResponseStatus.BAD,
-				message: "Cannot change active, abandoned or reactivated for non-project activity",
+				message:
+					"Cannot change active, abandoned or reactivated for non-project activity",
 			};
-			console.log("Cannot change active, abandoned or reactivated for non-project activity");
+			console.log(
+				"Cannot change active, abandoned or reactivated for non-project activity"
+			);
 			return res.status(400).json(resBody);
 		}
 
-		if (inputReactivated && req.user?.id !== foundActivity.owner.toString()) {
+		if (
+			inputReactivated &&
+			req.user?.id !== foundActivity.owner.toString()
+		) {
 			const resBody: ResponseBody = {
 				status: ResponseStatus.BAD,
 				message: "Only the owner can change 'reactivate' activity",
@@ -978,7 +1005,10 @@ router.delete("/:id", async (req: Request, res: Response) => {
 				"Eliminato il riferimento 'next' per l'attività eliminata, attività precedente:",
 				foundPreviuos._id.toString()
 			);
-			await ActivitySchema.findByIdAndUpdate(foundPreviuos._id, foundPreviuos);
+			await ActivitySchema.findByIdAndUpdate(
+				foundPreviuos._id,
+				foundPreviuos
+			);
 		}
 
 		// Leo - Progetti - END

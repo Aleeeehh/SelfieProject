@@ -1,5 +1,6 @@
 import React from "react";
 import { SERVER_API } from "./params/params";
+//import { set } from "date-fns";
 //import { ResponseBody } from "./types/ResponseBody";
 // import UserResult from "./types/UserResult";
 
@@ -11,7 +12,7 @@ type SearchFormProps = {
     list: string[];
 };
 
-export default function SearchForm({
+export default function SearchFormResource({
     onItemClick,
     list,
 }: SearchFormProps): React.JSX.Element {
@@ -41,12 +42,34 @@ export default function SearchForm({
             }),
         });
 
+        //acquisisci le risorse: (adesso le acquisisce tutt)
+        const res2 = await fetch(`${SERVER_API}/risorsa?name=${e.target.value}`);
+        const data = (await res2.json())
+        const risorse = data.risorse;
+
+        //per ogni risorsa
+
+        const nomiRisorse: string[] = [];
+        for (const risorsa of risorse) {
+            nomiRisorse.push(`${risorsa.name} (Risorsa)`); // Modifica il nome come richiesto
+        }
+
+        console.log(nomiRisorse);
+        console.log(nomiRisorse);
+        console.log(nomiRisorse);
+
 
         const resBody = (await res.json())
-        const utenti = resBody.value;
+        const utenti: string[] = resBody.value;
+
+        const combinedResults = [
+            ...utenti.map((user) => user), // Mantieni gli utenti come sono
+            ...nomiRisorse, // Aggiungi le risorse modificate
+        ];
 
         //console.log(display);
-        setSearchResults(utenti);
+
+        setSearchResults(combinedResults);
     }
 
     function handleSelectChange(e: React.ChangeEvent<HTMLSelectElement>): void {
@@ -66,10 +89,9 @@ export default function SearchForm({
             <input
                 className="search-form-input"
                 type="text"
-                placeholder="Cerca utente"
+                placeholder="Cerca utente/risorsa"
                 value={search}
                 onChange={handleChange}
-                style={{ margin: "0" }}
             />
             {searchResults.length > 0 && (
                 <select
@@ -77,7 +99,7 @@ export default function SearchForm({
                     onChange={handleSelectChange}
                 >
                     <option value="">
-                        {selectedUsername ? selectedUsername : "Seleziona un utente"}
+                        {selectedUsername ? selectedUsername : "Seleziona un utente/risorsa"}
                     </option>
                     {searchResults
                         .filter((username) => !list.find((u) => u === username))

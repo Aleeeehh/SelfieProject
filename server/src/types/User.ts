@@ -8,6 +8,7 @@ type User = {
     address: String;
     createdAt?: Date;
     updatedAt?: Date;
+    admin?: Boolean;
 };
 
 export default User;

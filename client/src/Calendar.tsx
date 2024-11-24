@@ -2668,12 +2668,12 @@ export default function Calendar(): React.JSX.Element { // prova push
 						<div className="header-visualizza">
 							<label
 								htmlFor="eventType"
-								style={{margin: "0"}}
+								style={{ margin: "0" }}
 							>
 								Visualizza:
 								<select className="btn" id="eventType"
-								onChange={handleSelectMode}
-								value={selectedMode}
+									onChange={handleSelectMode}
+									value={selectedMode}
 								>
 									<option value="1">Eventi</option>
 									<option value="2">Attività</option>
@@ -2719,7 +2719,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 						<button
 							className="calendar-header-button"
-							style={{backgroundColor: "#3a7a3c"}}
+							style={{ backgroundColor: "#3a7a3c" }}
 							onClick={toggleDownloadImport}
 						>
 							Scarica/importa
@@ -2727,7 +2727,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 						<button
 							className="calendar-header-button"
-							style={{backgroundColor: "#3a7a3c", width: "45px"}}
+							style={{ backgroundColor: "#3a7a3c", width: "45px" }}
 							onClick={toggleCreate}
 						>
 							+
@@ -2735,19 +2735,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 					</div>
 
 					<div className="calendar-top-container"
-						style={{padding: (showDownloadImport || create) ? "1em" : "0"}}
+						style={{ padding: (showDownloadImport || create) ? "1em" : "0" }}
 					>
 						<div className="download-import"
 							style={{ display: showDownloadImport ? "flex" : "none" }}
 						>
-							<button 
-								className="btn btn-primary" 
+							<button
+								className="btn btn-primary"
 								style={{ backgroundColor: "bisque", color: "black", border: "0" }}
 								onClick={handleDownloadCalendar}
 							>
 								Scarica Calendario
 							</button>
-							<button 
+							<button
 								className="btn btn-primary"
 								style={{ backgroundColor: "bisque", color: "black", border: "0" }}
 								onClick={handleImportCalendar}
@@ -2762,7 +2762,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 									onChange={handleFileChange}
 									id="file-upload" // Aggiungi un ID per il collegamento
 								/>
-								<label 
+								<label
 									htmlFor="file-upload"
 									className="btn btn-primary border"
 									style={{ backgroundColor: "white", color: "black", margin: "0" }}
@@ -2793,7 +2793,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						</div>
 
 						<div className="choice-create"
-							style={{ 
+							style={{
 								display: (createEvent || createActivity || createNonDisturbare) ? "flex" : "none",
 								margin: create ? "0" : "1em 0"
 							}}
@@ -3713,7 +3713,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 																year: "numeric",
 																hour: "2-digit",
 																minute: "2-digit",
-																})}
+															})}
 															</p>
 															<p>Descrizione: {activity.description}</p>
 															<span style={{ color: "black", marginBottom: "10px" }}>
@@ -3816,7 +3816,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 																year: "numeric",
 																hour: "2-digit",
 																minute: "2-digit",
-																})}
+															})}
 															</p>
 															<p>Descrizione: {activity.description}</p>
 															<span style={{ color: "black", marginBottom: "10px" }}>
@@ -3941,7 +3941,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											))}
 										</div>
 									</div>
-									
+
 									<div className="data-orario">
 										<div className="nome-data-container">
 											{day} {Mesi[meseCorrente]}
@@ -3987,96 +3987,96 @@ export default function Calendar(): React.JSX.Element { // prova push
 											)}
 										</div>
 
-										<div className="orario" style={{fontSize: "15.8px"}}>
+										<div className="orario" style={{ fontSize: "15.8px" }}>
 											<div style={{ position: "relative", marginLeft: "10%" }}>
 												{eventPositions.map((event, index) =>
-													// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
-													(!event.type ? (
-														<div
-															key={index} // Assicurati di fornire una chiave unica per ogni elemento
-															className="evento red"
-															style={{
-																top: `${event.top}px`, // Imposta la posizione verticale
-																height: `${event.height}px`, // Imposta l'altezza dell'evento
-																width: `calc(95%/${event.width})`,
-																position: "absolute", // Assicurati che sia posizionato correttamente
-																color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
-																borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
-																backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
-																marginLeft: `${event.marginLeft}%`,
-																cursor: "default", // Imposta il cursore di default per l'intero evento
-															}}
-														>
-															<div style={{ color: "red" }}>
-																<Link
-																	to={`/pomodoro?duration=${
-																		// Funzione per calcolare la durata dell'evento e scriverlo come query param
-																		((startTime, endTime): number => {
-																			const start = new Date(startTime);
-																			const end = new Date(endTime);
-																			const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-																			return totMin;
-																		})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
-																		}&id=${event.event._id}`} // Passa l'id dell'evento
-																	style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-																>
-																	{event.name}
-																</Link>
-															</div>
-															<div
-																className="position-relative"
-																onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
+												// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+												(!event.type ? (
+													<div
+														key={index} // Assicurati di fornire una chiave unica per ogni elemento
+														className="evento red"
+														style={{
+															top: `${event.top}px`, // Imposta la posizione verticale
+															height: `${event.height}px`, // Imposta l'altezza dell'evento
+															width: `calc(95%/${event.width})`,
+															position: "absolute", // Assicurati che sia posizionato correttamente
+															color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
+															borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
+															backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
+															marginLeft: `${event.marginLeft}%`,
+															cursor: "default", // Imposta il cursore di default per l'intero evento
+														}}
+													>
+														<div style={{ color: "red" }}>
+															<Link
+																to={`/pomodoro?duration=${
+																	// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																	((startTime, endTime): number => {
+																		const start = new Date(startTime);
+																		const end = new Date(endTime);
+																		const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+																		return totMin;
+																	})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+																	}&id=${event.event._id}`} // Passa l'id dell'evento
+																style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
 															>
-																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																<i className="bi bi-trash"
-																	style={{
-																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																		fontSize: "1.5rem",
-																		margin: 0,
-																		padding: 0,
-																		color: "red",
-																		cursor: "pointer"
-																	}}
-																></i>
-															</div>
+																{event.name}
+															</Link>
 														</div>
+														<div
+															className="position-relative"
+															onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
+														>
+															{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+															<i className="bi bi-trash"
+																style={{
+																	bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																	right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																	fontSize: "1.5rem",
+																	margin: 0,
+																	padding: 0,
+																	color: "red",
+																	cursor: "pointer"
+																}}
+															></i>
+														</div>
+													</div>
 
-													) : (
+												) : (
+													<div
+														className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
+														style={{
+															top: `${event.top}px`, // Imposta la posizione verticale
+															height: `${event.height}px`, // Imposta l'altezza dell'evento
+															width: `calc(95%/${event.width})`,
+															position: "absolute", // Assicurati che sia posizionato correttamente
+															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
+															borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
+															backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
+															marginLeft: `${event.marginLeft}%`,
+															cursor: "default",
+														}}
+													>
+														{event.name}
 														<div
-															className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
-															style={{
-																top: `${event.top}px`, // Imposta la posizione verticale
-																height: `${event.height}px`, // Imposta l'altezza dell'evento
-																width: `calc(95%/${event.width})`,
-																position: "absolute", // Assicurati che sia posizionato correttamente
-																color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
-																borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-																backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
-																marginLeft: `${event.marginLeft}%`,
-																cursor: "default",
-															}}
+															className="position-relative"
+															onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
 														>
-															{event.name}
-															<div
-																className="position-relative"
-																onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
-															>
-																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																<i className="bi bi-trash"
-																	style={{
-																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																		fontSize: "1.5rem",
-																		margin: 0,
-																		padding: 0,
-																		color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-																		cursor: "pointer"
-																	}}
-																></i>
-															</div>
+															{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+															<i className="bi bi-trash"
+																style={{
+																	bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																	right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																	fontSize: "1.5rem",
+																	margin: 0,
+																	padding: 0,
+																	color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
+																	cursor: "pointer"
+																}}
+															></i>
 														</div>
-													)
+													</div>
+												)
 												))}
 											</div >
 
@@ -4484,7 +4484,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 												</div>
 											</div>
 											<div className="nome-data-week">
-											<div	
+												<div
 													style={{
 														color: "gray",
 														width: "100%",

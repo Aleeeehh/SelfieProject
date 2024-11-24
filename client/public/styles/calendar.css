@@ -546,6 +546,10 @@ button.btn:focus {
 	/* Colore per "Non disturbare" */
 }
 
+.evento.brown::before {
+	background-color: rgba(176, 110, 63, 0.48);
+}
+
 
 .orario time {
 	position: relative;
