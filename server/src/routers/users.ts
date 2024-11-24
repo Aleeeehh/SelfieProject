@@ -123,7 +123,7 @@ router.post("/register", async (req: Request, res: Response) => {
 			value: createdUser._id.toString(),
 		};
 
-		return res.json(resBody);
+		return res.status(200).json(resBody);
 	} catch (e) {
 		console.log(e);
 		const resBody: ResponseBody = {
@@ -260,7 +260,7 @@ router.delete("/", checkAuthentication, async (req, res) => {
 
 const MAX_SEARCH_RESULTS = 10;
 
-router.post("/usernames", async (req: Request, res: Response) => {
+router.post("/usernames", checkAuthentication, async (req: Request, res: Response) => {
 	try {
 		const input = req.body.username as string | undefined;
 
@@ -309,7 +309,7 @@ router.post("/usernames", async (req: Request, res: Response) => {
 	}
 });
 
-router.get("/allUsernames", async (req: Request, res: Response) => {
+router.get("/allUsernames", checkAuthentication, async (req: Request, res: Response) => {
 	try {
 		// Se l'input è vuoto, restituisci tutti gli usernames
 		const foundUsers = await UserSchema.find().lean();
