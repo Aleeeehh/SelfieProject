@@ -33,6 +33,11 @@ export default function NotePage(): React.JSX.Element {
 	const [count, setCount] = React.useState(0);
 	const nav = useNavigate();
 
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
+
 	function refreshNote(): void {
 		fetch(`${SERVER_API}/notes/${id}`)
 			.then((res) => res.json())
@@ -48,6 +53,9 @@ export default function NotePage(): React.JSX.Element {
 				setMessage("Impossibile raggiungere il server");
 				nav("/notes");
 			});
+
+		setCount(0);
+		setDeletedItems([]);
 	}
 	// On page load, get the note for the user
 	React.useEffect(() => {
@@ -173,11 +181,12 @@ export default function NotePage(): React.JSX.Element {
 	}
 
 	function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
-		e.preventDefault();
+		// e.preventDefault();
+		console.log(note.toDoList, item);
 		setNote({
 			...note,
 			toDoList: note.toDoList.map((i) =>
-				i.id === item.id ? { ...i, completed: !i.completed } : i
+				i.id === item.id ? { ...i, completed: e.target.checked } : i
 			),
 		});
 	}
@@ -196,7 +205,7 @@ export default function NotePage(): React.JSX.Element {
 			<div className="note-background">
 				<div className="note-container">
 					<div className="note-page-title">
-						Modifica nota
+						{isEditing ? "Modifica nota" : note.title}
 						<a href="/notes" className="note-close-link">
 							X
 						</a>
@@ -235,7 +244,6 @@ export default function NotePage(): React.JSX.Element {
 						</>
 					) : (
 						<>
-							<div className="note-title">{note.title}</div>
 							<div
 								className="markdown-content"
 								dangerouslySetInnerHTML={{
@@ -250,7 +258,7 @@ export default function NotePage(): React.JSX.Element {
 						<div>To Do List</div>
 						{note.toDoList &&
 							note.toDoList.map((l) => (
-								<div>
+								<div key={l.id}>
 									{isEditing ? (
 										<>
 											<input
@@ -342,6 +350,8 @@ export default function NotePage(): React.JSX.Element {
 					{/* render privacy */}
 					<label>
 						Privacy: {note.privacy}
+						{note.privacy === Privacy.PROTECTED &&
+							note.accessList.map((user) => <div>{user}</div>)}
 						{isEditing && (
 							<>
 								<select
@@ -383,21 +393,29 @@ export default function NotePage(): React.JSX.Element {
 					</label>
 					{message && <div>{message}</div>}
 
-					{isEditing ? (
+					{loggedUser.id === note.owner && (
 						<>
-							<button onClick={handleUpdateNote}>Aggiorna Nota</button>
-							<button onClick={handleAbortChanges}>Annulla Modifiche</button>
-						</>
-					) : (
-						<button onClick={(): void => setIsEditing(true)}>Modifica nota</button>
-					)}
+							{isEditing ? (
+								<>
+									<button onClick={handleUpdateNote}>Aggiorna Nota</button>
+									<button onClick={handleAbortChanges}>Annulla Modifiche</button>
+								</>
+							) : (
+								<button onClick={(): void => setIsEditing(true)}>
+									Modifica nota
+								</button>
+							)}
 
-					{!isEditing ? (
-						<button style={{ backgroundColor: "red" }} onClick={handleDeleteNote}>
-							Cancella Nota
-						</button>
-					) : (
-						<></>
+							{!isEditing ? (
+								<button
+									style={{ backgroundColor: "red" }}
+									onClick={handleDeleteNote}>
+									Cancella Nota
+								</button>
+							) : (
+								<></>
+							)}
+						</>
 					)}
 				</div>
 			</div>

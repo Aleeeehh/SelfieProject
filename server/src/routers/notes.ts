@@ -56,7 +56,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 		const userId = req.user.id;
 
-		const filter: any = { owner: userId };
+		const filter: any = { $or: [{ owner: userId }, { accessList: userId }] };
 
 		if (dateFrom) filter.startTime = { $gte: dateFrom };
 		if (dateTo) filter.endTime = { $lte: dateTo };
@@ -164,7 +164,30 @@ router.get("/:id", async (req: Request, res: Response) => {
 		// 	note: noteId,
 		// }).lean();
 
-		const accessList = await getUsernameListFromIdList(foundNote.accessList.map((x) => x._id));
+		// manage access to note based on privacy value
+		// if public, can access
+		if (foundNote.privacy !== Privacy.PUBLIC) {
+			// check if the user is can access the note
+			if (!req.user || !req.user.id)
+				return res.status(401).json({
+					status: ResponseStatus.BAD,
+					message: "User not logged in",
+				});
+
+			if (foundNote.owner.toString() !== req.user.id) {
+				// if user is not owner, check if the user can access the note
+				const foundAccess = foundNote.accessList.some((x) => x.toString() === req.user!.id);
+
+				if (foundNote.privacy === Privacy.PRIVATE || !foundAccess) {
+					const resBody: ResponseBody = {
+						status: ResponseStatus.BAD,
+						message: "User not authorized to access this note",
+					};
+
+					return res.status(401).json(resBody);
+				}
+			}
+		}
 
 		const foundItemList = await NoteItemSchema.find({
 			noteId: noteId,
@@ -179,7 +202,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 			createdAt: foundNote.createdAt,
 			updatedAt: foundNote.updatedAt,
 			privacy: foundNote.privacy.toString() as Privacy,
-			accessList,
+			accessList: await getUsernameListFromIdList(foundNote.accessList),
 			toDoList: foundItemList.map((x) => {
 				return {
 					id: x._id.toString(),
@@ -189,28 +212,6 @@ router.get("/:id", async (req: Request, res: Response) => {
 				};
 			}),
 		};
-
-		// check if the user is can access the note
-		if (!req.user || !req.user.id)
-			return res.status(401).json({
-				status: ResponseStatus.BAD,
-				message: "User not logged in",
-			});
-
-		if (foundNote.owner.toString() !== req.user.id) {
-			// check if the user can access the note
-
-			const foundAccess = foundNote.accessList.includes(new Types.ObjectId(req.user.id));
-
-			if (!foundAccess) {
-				const resBody: ResponseBody = {
-					status: ResponseStatus.BAD,
-					message: "User not authorized to access this note",
-				};
-
-				return res.status(401).json(resBody);
-			}
-		}
 
 		console.log("Returning note: ", note);
 		// TODO: filter the fields of the found note
@@ -487,13 +488,24 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		if (inputItemList) {
 			for (const inputItem of inputItemList) {
-				const updatedItem = await NoteItemSchema.findByIdAndUpdate(inputItem.id, {
-					text: inputItem.text,
-					endDate: inputItem.endDate,
-					completed: inputItem.completed,
-				});
+				if (!inputItem.id || !Types.ObjectId.isValid(inputItem.id)) {
+					// Item was created, not updated; add new
+					const newItem = await NoteItemSchema.create({
+						noteId: noteId,
+						text: inputItem.text,
+						endDate: inputItem.endDate,
+						completed: inputItem.completed,
+					});
+					console.log("Created note Item: ", newItem);
+				} else {
+					const updatedItem = await NoteItemSchema.findByIdAndUpdate(inputItem.id, {
+						text: inputItem.text,
+						endDate: inputItem.endDate,
+						completed: inputItem.completed,
+					});
 
-				console.log("Updated note Item: ", updatedItem);
+					console.log("Updated note Item: ", updatedItem);
+				}
 			}
 		}
 
