@@ -63,20 +63,22 @@ export default function Projects(): React.JSX.Element {
 				style={{
 					display: "flex",
 					flexDirection: "row",
-					justifyContent: "space-around",
+					justifyContent: "center",
+					gap: "1em",
 					alignItems: "center",
+					flexWrap: "wrap",
 				}}>
-				<div className="filter">
+				<div className="sort-label">
 					<div style={{ color: "black" }}>Seleziona la vista:</div>
-					<select onChange={(e): void => setView(e.target.value as View)} value={view}>
+					<select className="sort-select" onChange={(e): void => setView(e.target.value as View)} value={view}>
 						<option value={View.LIST}>List</option>
 						<option value={View.GANTT}>Gantt</option>
 					</select>
 				</div>
 				{/* Filter for user */}
-				<div className="filter">
+				<div className="sort-label">
 					<div>Filtra per utente: </div>
-					<select value={filter} onChange={(e): void => setFilter(e.target.value)}>
+					<select className="sort-select" value={filter} onChange={(e): void => setFilter(e.target.value)}>
 						<option value="">Tutti</option>
 						{getAllUsers().map((user) => (
 							<option value={user}>{user}</option>

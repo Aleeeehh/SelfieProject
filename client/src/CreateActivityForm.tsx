@@ -222,7 +222,8 @@ export default function CreateActivityForm(): React.JSX.Element {
 						border: "1px solid #ddd",
 						borderRadius: "8px",
 						backgroundColor: "#fdfdfd",
-					}}>
+					}}
+				>
 					Scadenza
 					<div
 						style={{
@@ -234,6 +235,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 						<input
 							type="date"
 							name="deadline"
+							className="activity-date-input"
 							onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 								setActivity({
 									...activity,

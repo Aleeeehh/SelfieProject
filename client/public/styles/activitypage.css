@@ -313,6 +313,41 @@ div[message] {
     transition: background-color 0.3s ease;
 }
 
+.activity-date-input {
+    display: inline-block;
+    padding: 10px 12px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  
+  .activity-date-input:hover {
+    border-color: #aaa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .activity-date-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+  
+  .activity-date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(50%);
+    opacity: 0.7;
+  }
+  
+  .activity-date-input::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+  
+
 @media screen and (max-width: 540px) {
     .card-activity-buttons {
         flex-direction: column;

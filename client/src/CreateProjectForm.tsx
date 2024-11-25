@@ -91,7 +91,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 				<div className="project-container">
 					<div className="project-page-title">
 						Crea un nuovo progetto
-						<a href="/projects" className="close-link">
+						<a href="/projects" className="project-close-link">
 							X
 						</a>
 					</div>
