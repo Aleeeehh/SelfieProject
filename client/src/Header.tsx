@@ -15,7 +15,7 @@ const buttonStyle = {
 	alignSelf: "center",
 };
 
-const NOTIFICATION_COUNT = 5;
+//const NOTIFICATION_COUNT = 5;
 
 export default function Header(): React.JSX.Element {
 	const [showTimeMachine, setShowTimeMachine] = useState(false);
@@ -238,15 +238,22 @@ export default function Header(): React.JSX.Element {
 	async function handleAddSharedActivity(notification: Notification): Promise<void> {
 		console.log("NOTIFICA DI ATTIVITÀ CONDIVISA:", notification);
 		//aggiungi il receiver alla accessListAccepted dell'attività
+
+		const resId = await fetch(`${SERVER_API}/users/getIdByUsername?username=${notification.receiver}`);
+		const dataId = await resId.json();
+		const idUser = dataId.id;
+		
 		const res = await fetch(
 			`${SERVER_API}/activities/${notification.data.activity.idEventoNotificaCondiviso}`,
 			{
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ accessListAcceptedUser: notification.receiver }),
+				body: JSON.stringify({ accessListAcceptedUser: idUser }),
 			}
 		);
-		console.log("AccessListAccepted aggiornato:", res);
+
+		const data = await res.json();
+		console.log("AccessListAccepted aggiornato:", data);
 
 		const newEvent = notification.data.event;
 		newEvent.owner = notification.receiver;
@@ -568,10 +575,20 @@ export default function Header(): React.JSX.Element {
 
 	const fetchNotifications = async (): Promise<void> => {
 		try {
+			const currentUser = await getCurrentUser();
+			const user = currentUser.value._id.toString();
+
 			const response = await fetch(
-				`${SERVER_API}/notifications?count=${NOTIFICATION_COUNT}`
+				`${SERVER_API}/notifications/user/${user}`
 			);
+
 			const data = await response.json();
+
+			console.log("Queste sono le notifiche trovate:", data);
+			console.log("Queste sono le notifiche trovate:", data);
+
+			console.log("Queste sono le notifiche trovate:", data);
+
 
 			// console.log("Notifications:", data);
 			if (data.status === ResponseStatus.GOOD) {
@@ -627,7 +644,7 @@ export default function Header(): React.JSX.Element {
 			await postCurrentDate(currentDate); // invia la data corrente al server
 			const currentUser = await getCurrentUser();
 
-			setUser(currentUser.value.username);
+			setUser(currentUser.value._id.toString());
 
 			/*
 						console.log("ID USER ATTUALE:", user); // Usa currentUser.value.id direttamente
@@ -1534,6 +1551,15 @@ export default function Header(): React.JSX.Element {
 											notification.read === false &&
 											doNotDisturb === false
 										) {
+											console.log("Notifica trovata: :", notification);
+											console.log("Notifica trovata: :", notification);
+
+											console.log("Notifica trovata: :", notification);
+
+											console.log("Notifica trovata: :", notification);
+
+											console.log("Notifica trovata: :", notification);
+
 											const eventDate = new Date(notification.data.date); // Crea un oggetto Date
 											if (eventDate < currentDate) {
 												return (

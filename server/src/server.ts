@@ -143,7 +143,7 @@ mongoose
 	.then(() => createDummyNotes())
 	.then(() => createDummyPomodoros())
 	.then(() => createCurrentDate())
-	.then(() => createDummyProject());
+	//.then(() => createDummyProject()); 
 
 mongoose.set("sanitizeFilter", true); // sanitize from NoSQLi
 mongoose.set("strictQuery", true); // only schema fields are saved in database!!!

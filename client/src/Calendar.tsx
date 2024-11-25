@@ -549,8 +549,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function loadActivities(): Promise<void> {
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value.username;
-		const resActivities = await fetch(`${SERVER_API}/activity/owner?owner=${owner}`);
+		const owner = currentUser.value._id.toString();
+		const resActivities = await fetch(`${SERVER_API}/activities/owner?owner=${owner}`);
 		const dataActivities = await resActivities.json();
 		console.log("Attività trovate dalla loadActivities:", dataActivities);
 		if (dataActivities.status === ResponseStatus.GOOD) {
@@ -1741,7 +1741,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
-		setAccessList([...accessList, users[0]]);
+		
+		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
+		const data = await res.json();
+		const idUser = data.id;
+		console.log(idUser);
+		console.log(idUser);
+
+		console.log(idUser);
+
+		console.log(idUser);
+
+		
+		setAccessList([...accessList, idUser]);
 
 	}
 
@@ -1847,7 +1859,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//console.log("day:", day);
 		try {
 			//console.log("Attività da eliminare:", id);
-			const res = await fetch(`${SERVER_API}/activity/deleteActivity`, {
+			const res = await fetch(`${SERVER_API}/activities/deleteActivity`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
@@ -1965,7 +1977,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function handleCompleteActivity(id: string): Promise<void> {
 		console.log("Completo l'attività:", id);
-		const res = await fetch(`${SERVER_API}/activity/completeActivity`, {
+		const res = await fetch(`${SERVER_API}/activities/completeActivity`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -1975,7 +1987,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const data = await res.json();
 		//console.log("ATTIVITA COMPLETATA:", data);
 
-		const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
+		const res2 = await fetch(`${SERVER_API}/activities`); // Assicurati che l'endpoint sia corretto
 		const updatedActivities = await res2.json();
 
 		// Aggiorna la activityList con l'elenco aggiornato
@@ -2328,7 +2340,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const currentUser = await getCurrentUser();
 
-		const owner = currentUser.value.username;
+		const owner = currentUser.value._id.toString();
 
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
@@ -2382,11 +2394,18 @@ export default function Calendar(): React.JSX.Element { // prova push
 			completed: false,
 		};
 
+		console.log("newActivity:", newActivity);
+
 		setActivityList([...activityList, newActivity]);
 
 
+		console.log("appena prima di fare la POST per creare l'attività");
+		console.log("appena prima di fare la POST per creare l'attività");
+
+		console.log("appena prima di fare la POST per creare l'attività");
+
 		//crea l'attività nella lista delle attività
-		const res2 = await fetch(`${SERVER_API}/activity`, {
+		const res2 = await fetch(`${SERVER_API}/activities`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -2399,7 +2418,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 				accessList: [...new Set([...accessList, owner])],
 			}),
 		});
-		console.log("Attività creata:", res2);
+
+		const data2 = await res2.json();
+		console.log("Attività creata:", data2);
 		await loadActivities();
 
 

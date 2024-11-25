@@ -574,10 +574,15 @@ router.post("/", async (req: Request, res: Response) => {
 		return res.status(500).json(response);
 	}
 });
-router.get("/", async (req: Request, res: Response) => {
+router.get("/user/:userId", async (req: Request, res: Response) => {
 	try {
+		console.log("Questo è il userId:", req.params.userId);
+		console.log("Questo è il userId:", req.params.userId);
+		console.log("Questo è il userId:", req.params.userId);
+		console.log("Questo è il userId:", req.params.userId);
+
 		// TODO: validate param
-		const userId = req.user.username;
+		const userId = req.params.userId;
 		/*
         console.log("Questo è il user trovato:", userId);
         console.log("Questo è il user trovato:", userId);

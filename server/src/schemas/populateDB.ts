@@ -245,6 +245,7 @@ export async function createDummyPomodoros() {
 
 // insert fake users if they do not exist
 export async function createDummyProject() {
+	
 	try {
 		const progettoScritto = new ProjectSchema({
 			title: "Preparazione Esame Scritto",

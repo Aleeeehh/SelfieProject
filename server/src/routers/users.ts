@@ -334,4 +334,10 @@ router.get("/allUsernames", checkAuthentication, async (req: Request, res: Respo
 	}
 });
 
+router.get("/getIdByUsername", async (req: Request, res: Response) => {
+	const username = req.query.username as string;
+	const foundUser = await UserSchema.findOne({ username: username }).lean();
+	return res.json({ id: foundUser?._id.toString() });
+});
+
 export default router;

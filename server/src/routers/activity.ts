@@ -115,7 +115,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 //ottieni le attività dell'owner
 router.get("/owner", async (req: Request, res: Response) => {
-	const ownerId = req.query.owner as string; //ottieni l'owner
+	var ownerId = req.query.owner as string; //ottieni l'owner
 	//  console.log("questo è l'owner passato come query:" + ownerId);
 
 	try {
@@ -356,7 +356,24 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
 	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+
+	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+
+	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+
+	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+
+
 	try {
+		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+	
+		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+	
+		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
+	
+		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
 		// TODO: validate note input
 		// TODO: validate body fields
 		const title = req.body.title as string | undefined;
@@ -365,7 +382,7 @@ router.post("/", async (req: Request, res: Response) => {
 		const deadline = req.body.deadline as string | undefined;
 		const owner = req.body.owner || (req.user?.id as string) || undefined; // TODO: l'owner può non essere l'utente loggato?
 		const idEventoNotificaCondiviso = req.body.idEventoNotificaCondiviso as string | undefined;
-		// const accessListAccepted = req.body.accessListAccepted as string[] | undefined;
+		const accessListAccepted = req.body.accessListAccepted as string[];
 
 		// Leo - Progetti - BGN
 		const projectId = req.body.projectId as string | undefined;
@@ -407,6 +424,7 @@ router.post("/", async (req: Request, res: Response) => {
 
 		let startDate: Date | undefined;
 		let realOwner = owner;
+
 		if (projectId) {
 			const project = await ProjectSchema.findById(projectId).lean();
 			if (!project) {
@@ -594,7 +612,7 @@ router.post("/", async (req: Request, res: Response) => {
 			title,
 			description,
 			deadline: deadlineDate,
-			accessList: (await getIdListFromUsernameList(accessList)).map((id) => id.toString()),
+			accessList: accessList,
 			accessListAccepted: accessListAccepted,
 			completed: false,
 			completedAt: undefined,
@@ -671,7 +689,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const inputDeadline = req.body.deadline as string | undefined;
 		const inputCompleted = req.body.completed as boolean | undefined;
 		const inputAccessList = req.body.accessList as string[] | undefined; // username list
-		const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as string[] | undefined; // username list
+		const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as Types.ObjectId[] | undefined; // username list
 
 		// Leo - Progetti - BGN
 		// cannot change projectId
@@ -745,13 +763,19 @@ router.put("/:id", async (req: Request, res: Response) => {
 			}
 		}
 
-		let updatedAccessListAccepted: string[] | undefined;
+		let updatedAccessListAccepted: Types.ObjectId[] | undefined;
 		if (inputAccessListAcceptedUser) {
 			updatedAccessListAccepted =
 				foundActivity.accessListAccepted?.concat(
 					inputAccessListAcceptedUser
 				);
 		}
+
+		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
+		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
+
+		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
+
 
 		const updatedCompleted: boolean | undefined = inputCompleted
 			? !!inputCompleted
