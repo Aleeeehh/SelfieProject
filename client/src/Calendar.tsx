@@ -1647,6 +1647,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
 		let newNotification;
+		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
+		const data = await res.json();
+		const receiver = data.id;
 
 		if (addNotification) {
 			const notificationDate = new Date(startTime);
@@ -1673,7 +1676,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			newNotification = {
 				message: message,
 				mode: "event",
-				receiver: users[0],
+				receiver: receiver,
 				type: "event",
 				data: {
 					date: notificationDate, //data prima notifica
@@ -1695,7 +1698,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const newEvent = {
 			idEventoNotificaCondiviso,
-			owner: users[0],
+			owner: receiver,
 			title,
 			startTime: startTime.toISOString(),
 			endTime: endTime.toISOString(),
@@ -1713,7 +1716,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			body: JSON.stringify({
 				message: "Hai ricevuto un invito per un evento",
 				mode: "event",
-				receiver: users[0],
+				receiver: receiver,
 				type: "message",
 				data: {
 					date: currentDate, //data prima notifica
@@ -1750,12 +1753,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
 		const data = await res.json();
 		const idUser = data.id;
-		console.log(idUser);
-		console.log(idUser);
-
-		console.log(idUser);
-
-		console.log(idUser);
 
 
 		setAccessList([...accessList, idUser]);
@@ -1765,7 +1762,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 	async function handleAddUserEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		console.log("Utente ", users[0], " aggiunto all'access list dell'evento");
-		setAccessList([...accessList, users[0]]);
+		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
+		const data = await res.json();
+		const idUser = data.id;
+		setAccessList([...accessList, idUser]);
 	}
 
 	function toggleShareActivity(): void {
@@ -2002,6 +2002,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const res3 = await fetch(`${SERVER_API}/notifications`);
 		const data3 = await res3.json();
 		const attivitaCompletata = data.value[0];
+		console.log("ATTIVITA COMPLETATA:", attivitaCompletata);
 		const notifications = data3.value; //tutte le notifiche sul database
 		console.log("NOTIFICHE RIMASTE IN LISTAAAA:", notifications);
 		console.log("Attività completataAAAA:", attivitaCompletata);
@@ -2216,7 +2217,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 					data: {
 						date: currentDate,
 						event: newEvent,
-						notification: newNotification,
+						notification: addNotification ? newNotification : null,
 
 					},
 				}),
