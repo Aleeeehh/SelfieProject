@@ -470,7 +470,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function handleDownloadCalendar(): Promise<void> {
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value.username;
+		const owner = currentUser.value._id.toString();
 		const res = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
 		if (res.ok) {
 			const data = await res.blob();  // Ottieni il blob del file
@@ -494,7 +494,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value.username;
+		const owner = currentUser.value._id.toString();
 
 		const formData = new FormData();
 		formData.append('calendarFile', file); // Aggiungi il file al FormData
@@ -522,7 +522,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const currentUser = await getCurrentUser();
 			//console.log("Valore ottenuto:", currentUser);
 
-			const owner = currentUser.value.username;
+			const owner = currentUser.value._id.toString();
 			//console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
@@ -756,8 +756,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const currentUser = await getCurrentUser();
 				console.log("Valore ottenuto:", currentUser);
 
-				const owner = currentUser.value.username;
-				console.log("Questo è l'ownerr:", owner);
+				const owner = currentUser.value._id.toString();
+				console.log("Questo è l'owner:", owner);
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
 				console.log("Eventi trovati:", data);
@@ -1049,7 +1049,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					date: date.toISOString(),
-					owner: currentUser.value.username,
+					owner: currentUser.value._id.toString(),
 				}),
 			});
 			const data = await res.json();
@@ -1253,7 +1253,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value._id.toString() }),
 				});
 
 				if (!res.ok) {
@@ -1402,7 +1402,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value.username }),
+					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value._id.toString() }),
 				});
 
 				if (!res.ok) {
@@ -1518,6 +1518,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
 		let newNotification;
+		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
+		const data = await res.json();
+		const receiver = data.id;
 
 		if (addNotification) {
 			var notificationDate = new Date(startTime);
@@ -1542,10 +1545,12 @@ export default function Calendar(): React.JSX.Element { // prova push
 				repeatedNotification = true;
 			}
 
+
+
 			newNotification = {
 				message: message,
 				mode: "activity",
-				receiver: users[0],
+				receiver: receiver,
 				type: "activity",
 				data: {
 					date: notificationDate, //data prima notifica
@@ -1564,7 +1569,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		const newEvent = {
 			idEventoNotificaCondiviso,
-			owner: users[0],
+			owner: receiver,
 			title: "Scadenza " + title,
 			startTime: startTime.toISOString(),
 			endTime: endTime.toISOString(),
@@ -1581,8 +1586,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 			title,
 			deadline: endTime,
 			description,
-			owner: users[0],
-			accessList: [users[0]],
+			owner: receiver,
+			accessList: [receiver],
 			completed: false,
 		};
 
@@ -1593,7 +1598,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			body: JSON.stringify({
 				message: "Hai ricevuto un invito per un'attività",
 				mode: "acitvity",
-				receiver: users[0],
+				receiver: receiver,
 				type: "message",
 				data: {
 					date: currentDate, //data prima notifica
@@ -1741,7 +1746,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
-		
+
 		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
 		const data = await res.json();
 		const idUser = data.id;
@@ -1752,7 +1757,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		console.log(idUser);
 
-		
+
 		setAccessList([...accessList, idUser]);
 
 	}
@@ -2076,7 +2081,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("Questo è il currentUser:", currentUser);
 
 
-		const owner = currentUser.value.username;
+		const owner = currentUser.value._id.toString();
 
 		console.log("Questo è l'owner passato come parametro:", owner);
 		console.log("Questo è l'owner passato come parametro:", owner);
@@ -2142,7 +2147,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				body: JSON.stringify({
 					message: message,
 					mode: "event",
-					receiver: currentUser.value.username,
+					receiver: currentUser.value._id.toString(),
 					type: "event",
 					data: {
 						date: notificationDate, //data prima notifica
@@ -2278,7 +2283,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return;
 		}
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value.username;
+		const owner = currentUser.value._id.toString();
 
 		//se all'evento è associata una notifica, inserisci idEventoNotificaCondiviso sia nella POST della notifica, che nell'evento
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;

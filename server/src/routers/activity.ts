@@ -368,11 +368,11 @@ router.post("/", async (req: Request, res: Response) => {
 	try {
 		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
 		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-	
+
 		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-	
+
 		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-	
+
 		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
 		// TODO: validate note input
 		// TODO: validate body fields
@@ -680,6 +680,13 @@ router.put("/:id", async (req: Request, res: Response) => {
 	const activityId = req.params.id as string;
 
 	console.log("PUT ACTIVITY", activityId, req.body);
+	console.log("Entro nella PUT delle attività");
+	console.log("Entro nella PUT delle attività");
+
+	console.log("Entro nella PUT delle attività");
+
+	console.log("Entro nella PUT delle attività");
+
 
 	try {
 		// TODO: validate param
@@ -732,6 +739,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 			: { idEventoNotificaCondiviso: activityId };
 
 		const foundActivity = await ActivitySchema.findOne(query).lean();
+		console.log("Questa è l'attività trovata:", foundActivity);
 
 		if (!foundActivity) {
 			console.log("Activity with id " + activityId + " not found!");
@@ -908,6 +916,8 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
 
+
+
 		const updatedActivity: Activity = {
 			owner: foundActivity.owner.toString(),
 			title: inputTitle || foundActivity.title,
@@ -945,8 +955,12 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		console.log("Updating activity: ", foundActivity, " to ", updatedActivity);
 
-		const result = await ActivitySchema.findByIdAndUpdate(activityId, updatedActivity);
-
+		const result = await ActivitySchema.findOneAndUpdate(
+			isValidObjectId
+				? { $or: [{ _id: new Types.ObjectId(activityId) }, { idEventoNotificaCondiviso: activityId }] }
+				: { idEventoNotificaCondiviso: activityId },
+			updatedActivity
+		);
 		if (projectId && inputNext) {
 			// set prev next to null, and update to new next
 			const foundPreviuosNext = await ActivitySchema.findById(foundActivity.next).lean();

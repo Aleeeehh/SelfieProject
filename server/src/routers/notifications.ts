@@ -523,14 +523,14 @@ router.post("/", async (req: Request, res: Response) => {
 					i === 1
 						? 60
 						: i === 2
-						? 720
-						: i === 3
-						? 1440
-						: i === 4
-						? 2880
-						: i === 5
-						? 4320
-						: 0; // Aggiunto il caso per i=5
+							? 720
+							: i === 3
+								? 1440
+								: i === 4
+									? 2880
+									: i === 5
+										? 4320
+										: 0; // Aggiunto il caso per i=5
 
 				const anotherNotification: Notification = {
 					data: {
@@ -584,13 +584,13 @@ router.get("/user/:userId", async (req: Request, res: Response) => {
 		// TODO: validate param
 		const userId = req.params.userId;
 		/*
-        console.log("Questo è il user trovato:", userId);
-        console.log("Questo è il user trovato:", userId);
-        console.log("Questo è il user trovato:", userId);
-        console.log("Questo è il user trovato:", userId);
-        console.log("Questo è il user trovato:", userId);
-        console.log("Questo è il user trovato:", userId);
-        */
+		console.log("Questo è il user trovato:", userId);
+		console.log("Questo è il user trovato:", userId);
+		console.log("Questo è il user trovato:", userId);
+		console.log("Questo è il user trovato:", userId);
+		console.log("Questo è il user trovato:", userId);
+		console.log("Questo è il user trovato:", userId);
+		*/
 		if (!userId) {
 			const response: ResponseBody = {
 				message: "User not authenticated",
@@ -603,13 +603,13 @@ router.get("/user/:userId", async (req: Request, res: Response) => {
 			receiver: userId,
 		}).lean();
 		/*
-                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
-                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
-                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
-                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
-                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
-                console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
-                */
+				console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+				console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+				console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+				console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+				console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+				console.log("Queste sono le notifiche trovate dalla find per lo user:", notifications);
+				*/
 
 		if (count && notifications.length > count) {
 			// return only the first "count" number of notifications
@@ -713,7 +713,12 @@ router.put("/:notificationId", async (req: Request, res: Response) => {
 			};
 			return res.status(404).json(response);
 		}
-		const userId = foundUser.username;
+		console.log("Questo è l'user trovato:", foundUser);
+		console.log("Questo è l'user trovato:", foundUser);
+
+		console.log("Questo è l'user trovato:", foundUser);
+
+		const userId = foundUser._id.toString();
 		const foundNotification = await NotificationSchema.findById(notificationId).lean();
 
 		if (!foundNotification) {
@@ -781,13 +786,13 @@ router.post("/cleanNotifications", async (req: Request, res: Response) => {
 		limitDate.setDate(limitDate.getDate() - 1); // Calcola la data limite (un giorno prima)
 
 		/*
-                const result = await NotificationSchema.deleteMany({
-                    date: { $lt: limitDate }, // Data della notifica è minore della data limite
-                    read: true, // Le notifiche devono essere lette
-                    isInfiniteEvent: { $ne: true }, // Mantieni le notifiche infinite
-                    //le notifiche infinite non vanno pulite
-                });
-                */
+				const result = await NotificationSchema.deleteMany({
+					date: { $lt: limitDate }, // Data della notifica è minore della data limite
+					read: true, // Le notifiche devono essere lette
+					isInfiniteEvent: { $ne: true }, // Mantieni le notifiche infinite
+					//le notifiche infinite non vanno pulite
+				});
+				*/
 
 		const notificationsToDelete = await NotificationSchema.find({
 			date: { $lt: limitDate }, // Data della notifica è minore della data limite

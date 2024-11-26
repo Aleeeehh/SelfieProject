@@ -239,16 +239,12 @@ export default function Header(): React.JSX.Element {
 		console.log("NOTIFICA DI ATTIVITÀ CONDIVISA:", notification);
 		//aggiungi il receiver alla accessListAccepted dell'attività
 
-		const resId = await fetch(`${SERVER_API}/users/getIdByUsername?username=${notification.receiver}`);
-		const dataId = await resId.json();
-		const idUser = dataId.id;
-		
 		const res = await fetch(
 			`${SERVER_API}/activities/${notification.data.activity.idEventoNotificaCondiviso}`,
 			{
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ accessListAcceptedUser: idUser }),
+				body: JSON.stringify({ accessListAcceptedUser: notification.receiver }),
 			}
 		);
 
@@ -861,9 +857,9 @@ export default function Header(): React.JSX.Element {
 										value={
 											currentDate
 												? currentDate
-														.toTimeString()
-														.split(" ")[0]
-														.slice(0, 5)
+													.toTimeString()
+													.split(" ")[0]
+													.slice(0, 5)
 												: ""
 										} // Imposta l'orario attuale come valore predefinito
 										onChange={(event): void => {
@@ -1214,9 +1210,9 @@ export default function Header(): React.JSX.Element {
 												(currentDate.getTime() >= eventDate.getTime() ||
 													(currentDate.getDate() >= eventDate.getDate() &&
 														currentDate.getMonth() >=
-															eventDate.getMonth() &&
+														eventDate.getMonth() &&
 														currentDate.getFullYear() >=
-															eventDate.getFullYear()))
+														eventDate.getFullYear()))
 											) {
 												return (
 													<div key={index}>
