@@ -1816,21 +1816,52 @@ export default function Calendar(): React.JSX.Element { // prova push
 				handleDateClick(day);
 			}
 
+			const owner = await getCurrentUser();
+			const ownerId = owner.value._id.toString();
+			console.log("ID OWNER:", ownerId);
+			console.log("ID OWNER:", ownerId);
+			console.log("ID OWNER:", ownerId);
 
-			const res2 = await fetch(`${SERVER_API}/notifications`);
+			const res2 = await fetch(`${SERVER_API}/notifications/user/${ownerId}`);
 			const data2 = await res2.json();
+			console.log("NOTIFICHE TOTALI IN LISTA:", data2);
 			const eventiEliminati = data.value;
 			const notifications = data2.value; //tutte le notifiche sul database
 			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
+
 			console.log("Eventi eliminati:", eventiEliminati);
 
-			for (const evento of eventiEliminati) { //per ogni evento in eventi eliminati
-				const idEventoNotificaCondiviso = evento.idEventoNotificaCondiviso; // Assicurati che questo campo esista
+			console.log("ENTRO NEL HANDLE DELETE EVENT");
 
+			console.log("QUEESTA E' LA LISTA DI EVENTI ELIMINATI:", eventiEliminati);
+
+			for (const evento of eventiEliminati) { //per ogni evento in eventi eliminati
+				console.log("ENTRO NEL FOREACH DEGLI EVENTI ELIMINATI");
+				console.log("ENTRO NEL FOREACH DEGLI EVENTI ELIMINATI");
+
+				const idEventoNotificaCondiviso = evento.idEventoNotificaCondiviso; // Assicurati che questo campo esista
+				console.log("ID EVENTO NOTIFICA CONDIVISO DELL'EVENTO ELIMINATO:", idEventoNotificaCondiviso);
+				console.log("Notifiche totali:", notifications);
 				// Cerca le notifiche che corrispondono all'idEventoNotificaCondiviso
+
 				const notificationsToDelete = notifications.filter((notification: Notification) => {
+					if (!notification || !notification.data) {
+						console.log("Notifica invalida:", notification);
+						return false;
+					}
 					return notification.data.idEventoNotificaCondiviso === idEventoNotificaCondiviso;
 				});
+
+				console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
+				console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
+
+				console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
+
+
 
 				// Elimina le notifiche trovate
 				for (const notification of notificationsToDelete) {
@@ -1907,8 +1938,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 			await loadActivities();
 
-			const res3 = await fetch(`${SERVER_API}/notifications`);
+			const owner = await getCurrentUser();
+			const ownerId = owner.value._id.toString();
+			console.log("ID OWNER:", ownerId);
+			console.log("ID OWNER:", ownerId);
+			console.log("ID OWNER:", ownerId);
+
+			const res3 = await fetch(`${SERVER_API}/notifications/user/${ownerId}`);
 			const data3 = await res3.json();
+			console.log("NOTIFICHE TOTALI IN LISTA:", data3);
 			const notifications = data3.value; //tutte le notifiche sul database
 			console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
 			console.log("Attività eliminata:", attivitaEliminata);
@@ -1999,7 +2037,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setActivityList(updatedActivities.value);
 		await loadActivities();
 
-		const res3 = await fetch(`${SERVER_API}/notifications`);
+		const owner = await getCurrentUser();
+		const ownerId = owner.value._id.toString();
+		const res3 = await fetch(`${SERVER_API}/notifications/user/${ownerId}`);
 		const data3 = await res3.json();
 		const attivitaCompletata = data.value[0];
 		console.log("ATTIVITA COMPLETATA:", attivitaCompletata);

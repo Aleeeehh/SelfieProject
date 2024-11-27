@@ -580,11 +580,6 @@ export default function Header(): React.JSX.Element {
 
 			const data = await response.json();
 
-			console.log("Queste sono le notifiche trovate:", data);
-			console.log("Queste sono le notifiche trovate:", data);
-
-			console.log("Queste sono le notifiche trovate:", data);
-
 
 			// console.log("Notifications:", data);
 			if (data.status === ResponseStatus.GOOD) {
@@ -710,6 +705,7 @@ export default function Header(): React.JSX.Element {
 				>
 					Progetti
 				</a>
+				{/*
 				<a
 					className="btn secondary"
 					style={buttonStyle}
@@ -718,6 +714,7 @@ export default function Header(): React.JSX.Element {
 				>
 					Attività
 				</a>
+				*/}
 			</div>
 
 			<div className="dropdown-container">
