@@ -2092,7 +2092,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
-
+		const uniqueAccessList = [...new Set(accessList)];
+		//setAccessList(uniqueAccessList);
 
 
 		//Validazione dell'input
@@ -2145,7 +2146,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				title,
 				startTime: startTime.toISOString(),
 				endTime: endTime.toISOString(),
-				accessList: [...new Set([...accessList, owner])],
+				accessList: [...new Set([...uniqueAccessList, owner])], // Usa uniqueAccessList invece di accessList
 				accessListAccepted: [owner],
 				untilDate: untilDate,
 				isInfinite,
@@ -2218,7 +2219,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			startTime: startTime.toISOString(),
 			endTime: endTime.toISOString(),
 			location: location,
-			accessList: [...new Set([...accessList, owner])],
+			accessList: [...new Set([...uniqueAccessList, owner])], // Usa uniqueAccessList invece di accessList
 			accessListAccepted: [owner],
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 			isInfinite: isInfinite,
@@ -2228,7 +2229,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 
 		//per ogni utente della accessList, invia una notifica per accettare l'invito
-		for (const receiver of accessList) {
+		for (const receiver of uniqueAccessList) {
 			const newNotification = {
 				message: message,
 				mode: "event",
@@ -2372,6 +2373,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();	//Validazione dell'input
+		const uniqueAccessList = [...new Set(accessList)];
 
 		if (!title) {
 			setMessage("Il titolo dell'attività deve essere riempito!");
@@ -2436,7 +2438,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			description,
 			accessListAccepted: [owner],
 			owner: owner,
-			accessList: [...new Set([...accessList, owner])],
+			accessList: [...new Set([...uniqueAccessList, owner])], // Usa uniqueAccessList invece di accessList
 			completed: false,
 		};
 
@@ -2461,7 +2463,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				accessListAccepted: [owner],
 				description,
 				owner: owner,
-				accessList: [...new Set([...accessList, owner])],
+				accessList: [...new Set([...uniqueAccessList, owner])], // Usa uniqueAccessList invece di accessList
 			}),
 		});
 
@@ -2492,9 +2494,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repeatedNotification = true;
 		}
 
-		const accessListt = [...new Set([...accessList, owner])];
-
-
 
 		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
 		if (addNotification) {
@@ -2521,8 +2520,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 
 
-		//invia ad ogni utente della accessListt una richiesta di accettazione dell'attività (una notifica)
-		for (const receiver of accessListt) {
+		//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
+		for (const receiver of uniqueAccessList) {
 
 
 			const newNotification = {
@@ -2534,6 +2533,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 					date: notificationDate,
 					idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 					firstNotificationTime: notificationTime,
+					repeatedNotification: repeatedNotification,
+					repeatTime: repeatTime,
 					activity: newActivity,
 					event: newEvent,
 				},

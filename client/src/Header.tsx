@@ -596,7 +596,7 @@ export default function Header(): React.JSX.Element {
 	const checkDoNotDisturb = async (): Promise<void> => {
 		// console.log("ENTRO ED EFFETTUO LA CHECKDONOTDISTURB");
 		const currentUser = await getCurrentUser();
-		const owner = currentUser.value.username;
+		const owner = currentUser.value._id.toString();
 		try {
 			const res = await fetch(
 				`${SERVER_API}/events/owner?owner=${owner}`
