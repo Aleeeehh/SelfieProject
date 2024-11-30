@@ -225,7 +225,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						key={idx}
 						className={`evento ${!event.type ? 'red' : 'blue'}`}
 						style={{
-							top: `${event.top}px`,
+							top: `calc(${event.top}px - 0.01*${event.top}px)`,
 							height: `${event.height}px`,
 							width: `calc(95%/${event.width})`,
 							position: "absolute",
@@ -528,6 +528,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			//console.log("Valore ottenuto:", currentUser);
 
 			const owner = currentUser.value._id.toString();
+			console.log("Questo è l'owner:", owner);
 			//console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
@@ -1150,8 +1151,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 
 						// Calcola la posizione e l'altezza per ogni evento
-						var topPosition = (54 * oraInizioEvento) + (54 * (minutiInizioEvento / 60)); // Posizione inizio evento
-						var eventHeight = 54 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
+						var topPosition = (53.7 * oraInizioEvento) + (54 * (minutiInizioEvento / 60)); // Posizione inizio evento
+						var eventHeight = 53.7 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
 
 
 						//console.log("Questa è la data corrente:", currentDate);
@@ -3029,24 +3030,24 @@ export default function Calendar(): React.JSX.Element { // prova push
 						<div className="choice-create-buttons"
 							style={{ display: create ? "flex" : "none" }}
 						>
-							<button className="btn"
-								style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+							<button className="calendar-header-button"
+								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateEvent}>
 								Evento
 							</button>
-							<button className="btn"
-								style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+							<button className="calendar-header-button"
+								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateActivity}>
 								Attività
 							</button>
-							<button className="btn"
-								style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+							<button className="calendar-header-button"
+								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateNonDisturbare}>
 								Non disturbare
 							</button>
 
-							<button className="btn"
-								style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+							<button className="calendar-header-button"
+								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateRisorsa}>
 								Risorsa
 							</button>
@@ -4252,8 +4253,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 									</div>
 
 									<div className="data-orario">
-										<div className="nome-data-container">
-											{day} {Mesi[meseCorrente]}
+										<div className="nome-data-container" style={{ marginLeft: "5vw" }}>
+											{day} {Mesi[meseCorrente]} {" "}
 											{year}
 											<button
 												className="year-button "

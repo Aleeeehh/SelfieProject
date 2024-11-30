@@ -55,10 +55,15 @@ function Home(): React.JSX.Element {
 			}
 
 			try {
-				const res = await fetch(`${SERVER_API}/events`);
+				const currentUser = await getCurrentUser();
+				const owner = currentUser.value._id.toString();
+				console.log("Questo è l'owner:", owner);
+
+				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+				const data = await res.json();
+				var eventi = data.value;
 				if (res.status === 200) {
-					const resBody = (await res.json()) as ResponseBody;
-					setEvents(resBody.value as Event[]);
+					setEvents(eventi);
 					console.log("stampo events:", events);
 				} else {
 					nav("/login");
@@ -181,9 +186,9 @@ function Home(): React.JSX.Element {
 											<div className="preview-calendar-card-title">
 												{event.title.length > HOME_MAX_TITLE_CHARS
 													? event.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: event.title}
 											</div>
 											<div>
@@ -265,15 +270,15 @@ function Home(): React.JSX.Element {
 											<div className="preview-note-card-title">
 												{note.title.length > HOME_MAX_TITLE_CHARS
 													? note.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: note.title}
 											</div>
 											<div className="preview-note-card-text">
 												{note.text.length > HOME_MAX_TEXT_CHARS
 													? note.text.substring(0, HOME_MAX_TEXT_CHARS) +
-													  "..."
+													"..."
 													: note.text}
 											</div>
 										</div>
@@ -308,17 +313,17 @@ function Home(): React.JSX.Element {
 											<div className="preview-projects-card-title">
 												{project.title.length > HOME_MAX_TITLE_CHARS
 													? project.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: project.title}
 											</div>
 											<div className="preview-projects-card-text">
 												{project.description.length > HOME_MAX_TEXT_CHARS
 													? project.description.substring(
-															0,
-															HOME_MAX_TEXT_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TEXT_CHARS
+													) + "..."
 													: project.description}
 											</div>
 										</div>
