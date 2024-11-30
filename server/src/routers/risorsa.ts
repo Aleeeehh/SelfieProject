@@ -42,15 +42,20 @@ router.post("/checkResourceAvailability", async (req, res) => {
     const endDateDate = new Date(endTime)
 
     console.log("nome risorsa:", risorsa);
-    console.log("nome risorsa:", risorsa);
 
-    console.log("nome risorsa:", risorsa);
 
-    console.log("nome risorsa:", risorsa);
+    const cleanRisorsa = risorsa.replace(" (Risorsa)", "");
+
+    console.log("nome risorsa pulito:", cleanRisorsa);
+    console.log("nome risorsa pulito:", cleanRisorsa);
+
+    console.log("nome risorsa pulito:", cleanRisorsa);
+
+
 
 
     const eventiRisorsaAllocati = await EventSchema.find({ //trova eventi in cui è convolta la risorsa
-        title: risorsa + " occupata", isRisorsa: true
+        title: cleanRisorsa + " occupata", isRisorsa: true
     });
 
     console.log("eventiRisorsaAllocati trovati", eventiRisorsaAllocati);
@@ -69,6 +74,13 @@ router.post("/checkResourceAvailability", async (req, res) => {
     }
 
     res.json({ isAvailable });
+});
+
+router.get("/getNameById", async (req, res) => {
+    const { id } = req.query;
+    const risorsa = await RisorsaSchema.findById(id);
+    const nomeRisorsa = risorsa?.name;
+    res.json({ nomeRisorsa });
 });
 
 export default router;

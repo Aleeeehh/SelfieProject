@@ -3,6 +3,7 @@ import * as argon2 from "argon2";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import UserSchema from "../schemas/User.js";
+import RisorsaSchema from "../schemas/Risorsa.js";
 import { validDateString } from "../lib.js";
 import User from "../types/User.js";
 import passport from "passport";
@@ -23,26 +24,26 @@ router.get("/", async (req: Request, res: Response) => {
 
 /*
 router.get("/current", checkAuthentication, (req: Request, res: Response) => {
-    console.log(req.user);
-    if (req.user) {
-        // Se l'utente è autenticato, restituisci i dati dell'utente
-        return res.status(200).json({
-            status: ResponseStatus.GOOD,
-            value: {
-                id: req.user.id,
-                username: req.body.username, //?????
-                firstName: req.body.firstName, //?????
-                lastName: req.body.lastName, //?????
-                birthday: req.body.birthday, //?????
-            },
-        });
-    } else {
-        // Se l'utente non è autenticato, restituisci un errore
-        return res.status(401).json({
-            status: ResponseStatus.BAD,
-            message: "Utente non autenticato",
-        });
-    }
+	console.log(req.user);
+	if (req.user) {
+		// Se l'utente è autenticato, restituisci i dati dell'utente
+		return res.status(200).json({
+			status: ResponseStatus.GOOD,
+			value: {
+				id: req.user.id,
+				username: req.body.username, //?????
+				firstName: req.body.firstName, //?????
+				lastName: req.body.lastName, //?????
+				birthday: req.body.birthday, //?????
+			},
+		});
+	} else {
+		// Se l'utente non è autenticato, restituisci un errore
+		return res.status(401).json({
+			status: ResponseStatus.BAD,
+			message: "Utente non autenticato",
+		});
+	}
 });
 */
 
@@ -336,8 +337,52 @@ router.get("/allUsernames", checkAuthentication, async (req: Request, res: Respo
 
 router.get("/getIdByUsername", async (req: Request, res: Response) => {
 	const username = req.query.username as string;
+
+
+	console.log("Username originale:", username);
+
+
+
 	const foundUser = await UserSchema.findOne({ username: username }).lean();
+	console.log("Questo è l'utente trovato:", foundUser);
+
+	//se l'utente è null, cerca nel db delle risorse e ricavane l'id.
+	if (foundUser === null) {
+		const cleanUsername = username.replace(" (Risorsa)", "");
+		console.log("Username pulito:", cleanUsername);
+		console.log("Username pulito:", cleanUsername);
+		console.log("Username pulito:", cleanUsername);
+		const foundResource = await RisorsaSchema.findOne({ name: cleanUsername }).lean();
+		console.log("Questa è la risorsa trovata:", foundResource);
+		return res.json({ id: foundResource?._id.toString() });
+	}
+
 	return res.json({ id: foundUser?._id.toString() });
+});
+
+router.get("/allIds", checkAuthentication, async (req: Request, res: Response) => {
+	try {
+		// Se l'input è vuoto, restituisci tutti gli usernames
+		const foundUsers = await UserSchema.find().lean();
+		let users: string[] = foundUsers.map((user) => user._id.toString()); // Estrai tutti gli usernames
+		users.sort((a, b) => a.localeCompare(b)); // Ordina gli usernames
+
+		const resBody: ResponseBody = {
+			message: "Users found",
+			status: ResponseStatus.GOOD,
+			value: users,
+		};
+
+		return res.json(resBody);
+	} catch (e) {
+		console.log(e);
+		const resBody: ResponseBody = {
+			message: "Error handling request",
+			status: ResponseStatus.BAD,
+		};
+
+		return res.status(500).json(resBody);
+	}
 });
 
 export default router;

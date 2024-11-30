@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom"
 import { Event } from "./types/Event";
 import SearchForm from "./SearchForm";
+import SearchFormResource from "./SearchFormResource";
 //import mongoose from "mongoose";
 
 
@@ -56,6 +57,10 @@ const Mesi = [
 export default function Calendar(): React.JSX.Element { // prova push
 	const [title, setTitle] = React.useState("");
 	const [file, setFile] = React.useState<File | null>(null);
+	const [createRisorsa, setCreateRisorsa] = React.useState(false);
+	const [messageRisorsa, setMessageRisorsa] = React.useState("");
+	const [showRisorse, setShowRisorse] = React.useState(true);
+	const [isAdmin, setIsAdmin] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
 
 	//const [insertFile, setInsertFile] = React.useState(false);
@@ -220,7 +225,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						key={idx}
 						className={`evento ${!event.type ? 'red' : 'blue'}`}
 						style={{
-							top: `${event.top}px`,
+							top: `calc(${event.top}px - 0.01*${event.top}px)`,
 							height: `${event.height}px`,
 							width: `calc(95%/${event.width})`,
 							position: "absolute",
@@ -523,14 +528,23 @@ export default function Calendar(): React.JSX.Element { // prova push
 			//console.log("Valore ottenuto:", currentUser);
 
 			const owner = currentUser.value._id.toString();
+			console.log("Questo è l'owner:", owner);
 			//console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
-			console.log("Eventi trovati:", data.value);
+			var eventi = data.value;
+			/*if (!showRisorse) {
+				eventi = eventi.filter((evento: Event) => !evento.isRisorsa);
+			}
 			//console.log("Eventi trovati:", data);
+			const mostraRisorse = showRisorse;
+			console.log("Eventi trovati:", eventi);
+			console.log("Mostra risorse:", mostraRisorse);
+			*/
+
 
 			if (data.status === ResponseStatus.GOOD) {
-				setEventList(data.value);
+				setEventList(eventi);
 				//console.log("stampo data.values:", data.value);
 			} else {
 				setMessage("Errore nel ritrovamento degli eventi");
@@ -579,6 +593,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 	React.useEffect(() => {
 		loadEvents();
 	}, []);
+
+
 
 	/*
 		React.useEffect(() => {
@@ -757,6 +773,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 				console.log("Valore ottenuto:", currentUser);
 
 				const owner = currentUser.value._id.toString();
+				if (currentUser.value.username === "fvPM") { //se l'utente è il PM, allora è admin per le risorse
+					setIsAdmin(true);
+				}
 				console.log("Questo è l'owner:", owner);
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
@@ -774,6 +793,12 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}
 		})();
 	}, []);
+
+	async function toggleShowRisorse(): Promise<void> {
+		setShowRisorse(!showRisorse);
+		await loadEvents();
+		handleDateClick(day);
+	}
 
 	React.useEffect(() => {
 		//console.log("EventList aggiornato", eventList);
@@ -886,6 +911,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		if (createNonDisturbare) {
 			setCreateNonDisturbare(false);
 		}
+		if (createRisorsa) {
+			setCreateRisorsa(false);
+		}
 		if (!createEvent) {
 			// Usa l'ora corrente o l'ora di startTime
 			const currentHours = startTime.getHours();
@@ -915,6 +943,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setTitle("");
 		setCreateEvent(!createEvent);
 		setFrequency(Frequency.ONCE);
+		setUsers([]);
+		setAccessList([]);
+		setMessageRisorsa("");
 	}
 
 	function toggleCreateNonDisturbare(): void {
@@ -924,6 +955,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		if (createEvent) {
 			setCreateEvent(false);
+		}
+		if (createRisorsa) {
+			setCreateRisorsa(false);
 		}
 		if (!createNonDisturbare) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -955,6 +989,29 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setCreateNonDisturbare(!createNonDisturbare);
 		setFrequency(Frequency.ONCE);
 		setShareEvent(false);
+		setUsers([]);
+		setAccessList([]);
+		setMessageRisorsa("");
+	}
+
+	function toggleCreateRisorsa(): void {
+		if (createActivity) {
+			setCreateActivity(false);
+		}
+		if (createEvent) {
+			setCreateEvent(false);
+		}
+		if (createNonDisturbare) {
+			setCreateNonDisturbare(false);
+		}
+		setTitle("");
+		setDescription("");
+		const valore = !createRisorsa;
+		console.log("Valore attuale di createRisorsa:", valore);
+		setCreateRisorsa(!createRisorsa);
+		setUsers([]);
+		setAccessList([]);
+		setMessageRisorsa("");
 	}
 
 	function toggleCreate(): void {
@@ -967,6 +1024,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		if (createNonDisturbare) {
 			setCreateNonDisturbare(false);
+		}
+
+		if (createRisorsa) {
+			setCreateRisorsa(false);
 		}
 		if (!createActivity) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -993,6 +1054,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setAddNotification(false);
 		setSendInviteActivity(false);
 		setShareActivity(false);
+		setUsers([]);
+		setAccessList([]);
+		setMessageRisorsa("");
 	}
 
 	const handleScroll = (e: React.WheelEvent<HTMLDivElement>): void => {
@@ -1055,7 +1119,17 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const data = await res.json();
 			//console.log("Questi sono gli eventi del giorno:", data)
 
-			const eventi = data.value; //ottieni la lista di eventi
+			let eventi = data.value; //ottieni la lista di eventi
+
+			//Se sto nascondendo le risorse, allora filtro gli eventi che sono risorse
+
+			if (!showRisorse) {
+				eventi = eventi.filter((evento: Event) => !evento.isRisorsa);
+			}
+
+			console.log("showRisorse:", showRisorse);
+			console.log("eventi:", eventi);
+
 
 			//INIZIO PARTE DI CODICE CHE CALCOLA LE POSIZIONI DEGLI EVENTI PER VISUALIZZAZIONE HTML
 
@@ -1077,8 +1151,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 
 						// Calcola la posizione e l'altezza per ogni evento
-						var topPosition = (54 * oraInizioEvento) + (54 * (minutiInizioEvento / 60)); // Posizione inizio evento
-						var eventHeight = 54 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
+						var topPosition = (53.7 * oraInizioEvento) + (54 * (minutiInizioEvento / 60)); // Posizione inizio evento
+						var eventHeight = 53.7 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
 
 
 						//console.log("Questa è la data corrente:", currentDate);
@@ -1755,6 +1829,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const idUser = data.id;
 
 
+
+
 		setAccessList([...accessList, idUser]);
 
 	}
@@ -1765,6 +1841,23 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
 		const data = await res.json();
 		const idUser = data.id;
+
+		const risorsa = users[0];
+
+		const resRisorsa = await fetch(`${SERVER_API}/risorsa/checkResourceAvailability`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ risorsa, startTime, endTime }),
+		});
+		const dataRisorsa = await resRisorsa.json();
+		if (!dataRisorsa.isAvailable) {
+			//alert("La risorsa non è disponibile per l'orario selezionato");
+			setMessageRisorsa("Risorsa non disponibile!");
+			return;
+		}
+		else {
+			setMessageRisorsa("");
+		}
 		setAccessList([...accessList, idUser]);
 	}
 
@@ -2228,43 +2321,106 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repetitions: repetitions,
 		}
 
-		//per ogni utente della accessList, invia una notifica per accettare l'invito
-		for (const receiver of uniqueAccessList) {
-			const newNotification = {
-				message: message,
-				mode: "event",
-				receiver: receiver,
-				type: "event",
-				data: {
-					date: notificationDate, //data prima notifica
-					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
-					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
-					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
-					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
-					frequencyEvent: frequency,
-					isInfiniteEvent: isInfinite,
-					repetitionsEvent: repetitions,
-					untilDateEvent: untilDate,
-				},
-			}
-			const res3 = await fetch(`${SERVER_API}/notifications`, {
+		//ottieni gli usernames di tutti gli utenti
+		const resUsernames = await fetch(`${SERVER_API}/users/allIds`, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		const dataIds = await resUsernames.json();
+		const userIds = dataIds.value;
+		const risorse = uniqueAccessList.filter(receiver => !userIds.includes(receiver));
+		console.log("Queste sono le risorse:", risorse);
+		//per ogni risorsa, crea un evento risorsa se non è già allocata per quell'orario
+		for (const risorsa of risorse) {
+			console.log("Questa è la risorsa:", risorsa);
+
+
+			//accetta la risorsa nella accessListAccepted (se arrivata fin qui, non è occupata)
+			const res = await fetch(`${SERVER_API}/events/${idEventoNotificaCondiviso}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ accessListAcceptedUser: risorsa }),
+			});
+
+			//trova il nome della risorsa
+			const resNomeRisorsa = await fetch(`${SERVER_API}/risorsa/getNameById?id=${risorsa}`);
+			const dataNomeRisorsa = await resNomeRisorsa.json();
+			const nomeRisorsa = dataNomeRisorsa.nomeRisorsa;
+
+			//crea l'evento occupazione risorsa
+			const res2 = await fetch(`${SERVER_API}/events`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
+					idEventoNotificaCondiviso, //lo inserisco?
+					isRisorsa: true,
+					owner,
+					title: nomeRisorsa + " occupata",
+					startTime: startTime.toISOString(),
+					endTime: endTime.toISOString(),
+					accessList: userIds,
+					accessListAccepted: userIds,
+					untilDate: untilDate,
+					isInfinite,
+					frequency: frequency,
+					location,
+					repetitions,
+				}),
+			});
+			console.log("Evento risorsa creato:", res2);
+			console.log("Risorsa accettata:", res);
+
+
+			//crea un evento risorsa sul calendario, metti un nuovo campo che dice che è una risorsa.
+			//crea evento risorsa con la post degli eventi, setta isRisorsa a true.
+		}
+		console.log("Questi sono gli id di tutti gli utenti:", userIds);
+
+
+
+		//per ogni utente della accessList, invia una notifica per accettare l'invito
+		for (const receiver of uniqueAccessList) {
+			if (userIds.includes(receiver)) {
+				console.log("Questo è il receiver:", receiver);
+				const newNotification = {
 					message: message,
 					mode: "event",
 					receiver: receiver,
-					type: "shareEvent",
+					type: "event",
 					data: {
-						date: currentDate,
-						event: newEvent,
-						notification: addNotification ? newNotification : null,
-
+						date: notificationDate, //data prima notifica
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+						frequencyEvent: frequency,
+						isInfiniteEvent: isInfinite,
+						repetitionsEvent: repetitions,
+						untilDateEvent: untilDate,
 					},
-				}),
-			});
+				}
 
-			console.log("NOTIFICA CONDIVISA:", res3);
+				const res3 = await fetch(`${SERVER_API}/notifications`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						message: message,
+						mode: "event",
+						receiver: receiver,
+						type: "shareEvent",
+						data: {
+							date: currentDate,
+							event: newEvent,
+							notification: addNotification ? newNotification : null,
+
+						},
+					}),
+				});
+
+				console.log("NOTIFICA CONDIVISA:", res3);
+			}
 		}
 
 
@@ -2296,11 +2452,27 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
-
+		setAccessList([]);
 		//chiamata alla route per ical
 		const res4 = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
 		const data4 = await res4.json();
 		console.log("ICAL:", data4);
+		setUsers([]);
+		setAccessList([]);
+		setMessageRisorsa("");
+	}
+
+	async function handleCreateRisorsa(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+		const response = await fetch(`${SERVER_API}/risorsa`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ name: title, description }),
+		});
+		console.log("Risposta:", response);
+		setCreateRisorsa(!createRisorsa);
+		setTitle("");
+		setDescription("");
 	}
 
 	async function handleCreateNonDisturbare(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -2369,6 +2541,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
 		setCreateNonDisturbare(!createNonDisturbare);
+		setUsers([]);
+		setAccessList([]);
+		setMessageRisorsa("");
 	}
 
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -2580,6 +2755,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setNotificationRepeatTime(0);
 		setSendInviteActivity(false);
 		setShareActivity(false);
+		setAccessList([]);
+		setUsers([]);
+		setAccessList([]);
+		setMessageRisorsa("");
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
@@ -2795,6 +2974,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 						<button
 							className="calendar-header-button"
+							style={{ backgroundColor: "#3a7a3c" }}
+							onClick={toggleShowRisorse}
+						>
+							{showRisorse ? "Nascondi risorse" : "Mostra risorse"}
+						</button>
+
+						<button
+							className="calendar-header-button"
 							style={{ backgroundColor: "#3a7a3c", width: "45px" }}
 							onClick={toggleCreate}
 						>
@@ -2843,26 +3030,32 @@ export default function Calendar(): React.JSX.Element { // prova push
 						<div className="choice-create-buttons"
 							style={{ display: create ? "flex" : "none" }}
 						>
-							<button className="btn"
-								style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+							<button className="calendar-header-button"
+								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateEvent}>
 								Evento
 							</button>
-							<button className="btn"
-								style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+							<button className="calendar-header-button"
+								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateActivity}>
 								Attività
 							</button>
-							<button className="btn"
-								style={{ backgroundColor: "bisque", color: "black", border: "0", margin: "3px" }}
+							<button className="calendar-header-button"
+								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateNonDisturbare}>
 								Non disturbare
+							</button>
+
+							<button className="calendar-header-button"
+								style={{ backgroundColor: "bisque" }}
+								onClick={toggleCreateRisorsa}>
+								Risorsa
 							</button>
 						</div>
 
 						<div className="choice-create"
 							style={{
-								display: (createEvent || createActivity || createNonDisturbare) ? "flex" : "none",
+								display: (createEvent || createActivity || createRisorsa || createNonDisturbare) ? "flex" : "none",
 								margin: create ? "0" : "1em 0"
 							}}
 						>
@@ -3198,9 +3391,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 										{shareEvent && (
 											<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-												<div>Scegli l'utente con il quale condividere l'evento</div>
+												<div>Scegli l'utente o la risorsa con cui condividere l'evento</div>
 												{users.length > 0}
-												<SearchForm onItemClick={handleSelectUser} list={users} />
+												<SearchFormResource onItemClick={handleSelectUser} list={users} />
+												{messageRisorsa && <div style={{ color: "red" }}>{messageRisorsa}</div>}
+
 												<button
 													onClick={handleAddUserEvent}
 													className="btn btn-primary send-invite-button"
@@ -3634,6 +3829,53 @@ export default function Calendar(): React.JSX.Element { // prova push
 									</form>
 								</div>
 							)}
+
+							{createRisorsa && (
+								<div className="create-event-container">
+									<button
+										className="btn btn-primary"
+										style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+										onClick={toggleCreateRisorsa}>
+										Chiudi
+									</button>
+									<form>
+										<label htmlFor="title">
+											Nome
+											<input
+												className="btn border"
+												type="text"
+												name="title"
+												value={title}
+												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+													setTitle(e.target.value)
+												}
+											/>
+										</label>
+										<label htmlFor="description">
+											Descrizione
+											<input
+												className="btn border"
+												type="text"
+												name="description"
+												value={description}
+												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+													setDescription(e.target.value)
+												}
+											/>
+										</label>
+										<button
+											className="btn btn-primary"
+											style={{
+												backgroundColor: "bisque",
+												color: "black",
+												border: "0",
+											}}
+											onClick={handleCreateRisorsa}>
+											Crea
+										</button>
+									</form>
+								</div>
+							)}
 						</div>
 					</div>
 
@@ -4011,8 +4253,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 									</div>
 
 									<div className="data-orario">
-										<div className="nome-data-container">
-											{day} {Mesi[meseCorrente]}
+										<div className="nome-data-container" style={{ marginLeft: "5vw" }}>
+											{day} {Mesi[meseCorrente]} {" "}
 											{year}
 											<button
 												className="year-button "
@@ -4110,17 +4352,17 @@ export default function Calendar(): React.JSX.Element { // prova push
 														</div>
 													</div>
 
-												) : (
+												) : ((!event.event.isRisorsa || (event.event.isRisorsa && showRisorse)) && (
 													<div
-														className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : "blue"}`}
+														className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : event.event.isRisorsa ? "brown" : "blue"}`}
 														style={{
 															top: `${event.top}px`, // Imposta la posizione verticale
 															height: `${event.height}px`, // Imposta l'altezza dell'evento
 															width: `calc(95%/${event.width})`,
 															position: "absolute", // Assicurati che sia posizionato correttamente
-															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"), // Colore più chiaro se currentDate è maggiore di endTime
-															borderColor: event.event.title === "Non disturbare" ? "white" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-															backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)"), // Colore di sfondo più chiaro
+															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
+															borderColor: event.event.title === "Non disturbare" ? "white" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
+															backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (event.event.isRisorsa ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(139, 69, 19, 0.2)" : "rgba(139, 69, 19, 0.5)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)")),
 															marginLeft: `${event.marginLeft}%`,
 															cursor: "default",
 														}}
@@ -4131,21 +4373,29 @@ export default function Calendar(): React.JSX.Element { // prova push
 															onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
 														>
 															{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-															<i className="bi bi-trash"
-																style={{
-																	bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																	right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																	fontSize: "1.5rem",
-																	margin: 0,
-																	padding: 0,
-																	color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)"),
-																	cursor: "pointer"
-																}}
-															></i>
+															{(!event.event.isRisorsa || (event.event.isRisorsa && isAdmin)) && (
+																<i className="bi bi-trash"
+																	style={{
+																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																		fontSize: "1.5rem",
+																		margin: 0,
+																		padding: 0,
+																		color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
+																		cursor: "pointer"
+																	}}
+																></i>
+															)}
 														</div>
 													</div>
+
 												)
-												))}
+
+												)
+
+												)
+
+												)}
 											</div >
 
 
