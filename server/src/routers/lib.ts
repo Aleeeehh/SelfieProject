@@ -4,8 +4,8 @@ import type Activity from "../types/Activity.ts";
 import { ActivitySchema } from "../schemas/Activity.ts";
 import { ActivityStatus, type AdvancementType } from "../types/Activity.ts";
 
-// 10 days
-const MAX_TIME_BEFORE_ABANDON = 10 * 24 * 60 * 60 * 1000;
+// 30 days
+const MAX_TIME_BEFORE_ABANDON = 30 * 24 * 60 * 60 * 1000;
 
 export async function getUsernameListFromIdList(list: Types.ObjectId[]): Promise<string[]> {
 	const accessList = [];
@@ -126,7 +126,18 @@ export async function getActivityList(
 	return newActivity;
 }*/
 
+import CurrentDateSchema from "../schemas/currentDate.js";
+
 export async function getStatusForActivity(activity: Activity): Promise<ActivityStatus> {
+	const dateObj = await CurrentDateSchema.findOne();
+	const serverTime = new Date(dateObj?.date || new Date()).getTime();
+
+	console.log(
+		"Start: " + new Date(activity.start || new Date()),
+		"Deadline: " + new Date(activity.deadline),
+		"Server Time: " + new Date(serverTime)
+	);
+
 	// if prev activity is completed, the current is activable
 	const prevActivities = await ActivitySchema.find({
 		next: activity.id,
@@ -145,14 +156,14 @@ export async function getStatusForActivity(activity: Activity): Promise<Activity
 	// activity is reactivated (only if activable)
 	if (activity.reactivated) {
 		// check if late
-		if (activity.deadline.getTime() < new Date().getTime()) {
+		if (new Date(activity.deadline).getTime() < serverTime) {
 			return ActivityStatus.LATE;
 		}
 
 		// if activated but very late or marked as abandoned, return abandoned
 		if (
 			activity.abandoned ||
-			activity.deadline.getTime() < new Date().getTime() + MAX_TIME_BEFORE_ABANDON
+			new Date(activity.deadline).getTime() < serverTime + MAX_TIME_BEFORE_ABANDON
 		) {
 			return ActivityStatus.ABANDONED;
 		}
@@ -165,20 +176,27 @@ export async function getStatusForActivity(activity: Activity): Promise<Activity
 		return ActivityStatus.COMPLETED;
 	}
 
+	console.log(
+		"HERE: ",
+		activity.abandoned,
+		new Date(activity.deadline).getTime(),
+		serverTime + MAX_TIME_BEFORE_ABANDON
+	);
+
+	// if activated but very late or marked as abandoned, return abandoned
+	if (
+		activity.abandoned ||
+		new Date(activity.deadline).getTime() + MAX_TIME_BEFORE_ABANDON < serverTime
+	) {
+		return ActivityStatus.ABANDONED;
+	}
+
+	// check if late
+	if (new Date(activity.deadline).getTime() < serverTime) {
+		return ActivityStatus.LATE;
+	}
+
 	if (activity.active) {
-		// check if late
-		if (activity.deadline.getTime() < new Date().getTime()) {
-			return ActivityStatus.LATE;
-		}
-
-		// if activated but very late or marked as abandoned, return abandoned
-		if (
-			activity.abandoned ||
-			activity.deadline.getTime() < new Date().getTime() + MAX_TIME_BEFORE_ABANDON
-		) {
-			return ActivityStatus.ABANDONED;
-		}
-
 		// if not abandoned or late, return activated
 		return ActivityStatus.ACTIVE;
 	}
