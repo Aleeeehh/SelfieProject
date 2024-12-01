@@ -32,6 +32,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
+				profileimage: "avatar-cards.png",
 			},
 			{
 				id: "",
@@ -41,6 +42,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
+				profileimage: "avatar-cards.png",
 			},
 			{
 				id: "",
@@ -50,6 +52,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
+				profileimage: "avatar-cards.png",
 			},
 			{
 				id: "",
@@ -59,6 +62,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
+				profileimage: "avatar-cards.png",
 			},
 			{
 				id: "",
@@ -68,6 +72,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
+				profileimage: "avatar-cards.png",
 			},
 		];
 
@@ -245,7 +250,6 @@ export async function createDummyPomodoros() {
 
 // insert fake users if they do not exist
 export async function createDummyProject() {
-	
 	try {
 		const progettoScritto = new ProjectSchema({
 			title: "Preparazione Esame Scritto",

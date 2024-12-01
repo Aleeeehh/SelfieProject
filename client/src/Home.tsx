@@ -4,10 +4,11 @@ import { ResponseBody } from "./types/ResponseBody";
 import Pomodoro from "./types/Pomodoro";
 import Note from "./types/Note";
 import { Event } from "./types/Event";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { ResponseStatus } from "./types/ResponseStatus";
 import User from "./types/User";
 import type Project from "./types/Project";
+import { checkLoginStatus } from "./AuthContext";
 
 const HOME_MAX_TITLE_CHARS = 20;
 const HOME_MAX_TEXT_CHARS = 10;
@@ -24,7 +25,7 @@ function Home(): React.JSX.Element {
 	const [numProjects, setNumProjects] = React.useState(4);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 
-	const nav = useNavigate();
+	// const nav = useNavigate();
 
 	React.useEffect(() => {
 		(async (): Promise<void> => {
@@ -34,7 +35,7 @@ function Home(): React.JSX.Element {
 					const resBody = (await res.json()) as ResponseBody;
 					setPomodoros(resBody.value as Pomodoro[]);
 				} else {
-					nav("/login");
+					// nav("/login");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -48,7 +49,7 @@ function Home(): React.JSX.Element {
 
 					setNotes(resBody.value as Note[]);
 				} else {
-					nav("/login");
+					// nav("/login");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -66,7 +67,7 @@ function Home(): React.JSX.Element {
 					setEvents(eventi);
 					console.log("stampo events:", events);
 				} else {
-					nav("/login");
+					// nav("/login");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -81,7 +82,8 @@ function Home(): React.JSX.Element {
 
 					setProjects(resBody.value as Project[]);
 				} else {
-					nav("/login");
+					console.log("Error getting projects: " + (await res.json()).message);
+					// nav("/login");
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -122,6 +124,7 @@ function Home(): React.JSX.Element {
 				setEventList(data.value);
 				console.log("stampo data.values:", data.value);
 			} else {
+				await checkLoginStatus();
 				setMessage("Errore nel ritrovamento degli eventi");
 			}
 		} catch (e) {
@@ -186,9 +189,9 @@ function Home(): React.JSX.Element {
 											<div className="preview-calendar-card-title">
 												{event.title.length > HOME_MAX_TITLE_CHARS
 													? event.title.substring(
-														0,
-														HOME_MAX_TITLE_CHARS
-													) + "..."
+															0,
+															HOME_MAX_TITLE_CHARS
+													  ) + "..."
 													: event.title}
 											</div>
 											<div>
@@ -270,15 +273,15 @@ function Home(): React.JSX.Element {
 											<div className="preview-note-card-title">
 												{note.title.length > HOME_MAX_TITLE_CHARS
 													? note.title.substring(
-														0,
-														HOME_MAX_TITLE_CHARS
-													) + "..."
+															0,
+															HOME_MAX_TITLE_CHARS
+													  ) + "..."
 													: note.title}
 											</div>
 											<div className="preview-note-card-text">
 												{note.text.length > HOME_MAX_TEXT_CHARS
 													? note.text.substring(0, HOME_MAX_TEXT_CHARS) +
-													"..."
+													  "..."
 													: note.text}
 											</div>
 										</div>
@@ -313,17 +316,17 @@ function Home(): React.JSX.Element {
 											<div className="preview-projects-card-title">
 												{project.title.length > HOME_MAX_TITLE_CHARS
 													? project.title.substring(
-														0,
-														HOME_MAX_TITLE_CHARS
-													) + "..."
+															0,
+															HOME_MAX_TITLE_CHARS
+													  ) + "..."
 													: project.title}
 											</div>
 											<div className="preview-projects-card-text">
 												{project.description.length > HOME_MAX_TEXT_CHARS
 													? project.description.substring(
-														0,
-														HOME_MAX_TEXT_CHARS
-													) + "..."
+															0,
+															HOME_MAX_TEXT_CHARS
+													  ) + "..."
 													: project.description}
 											</div>
 										</div>

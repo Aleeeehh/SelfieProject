@@ -115,12 +115,48 @@ export default function CreateNoteForm(): React.JSX.Element {
 
 		setNote({
 			...note,
-			toDoList: note.toDoList.map((i) => (i.id === item.id ? { ...i, text: item.text } : i)),
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, text: e.target.value } : i
+			),
+		});
+	}
+
+	function handleAddDateItem(e: React.MouseEvent<HTMLButtonElement>, item: ListItem): void {
+		e.preventDefault();
+
+		setNote({
+			...note,
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, endDate: new Date() } : i
+			),
+		});
+	}
+
+	function handleRemoveDateItem(e: React.MouseEvent<HTMLButtonElement>, item: ListItem): void {
+		e.preventDefault();
+
+		setNote({
+			...note,
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, endDate: undefined } : i
+			),
+		});
+	}
+
+	function handleUpdateDateItem(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
+		e.preventDefault();
+		console.log(e.target.value);
+
+		setNote({
+			...note,
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, endDate: new Date(e.target.value) } : i
+			),
 		});
 	}
 
 	function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
-		e.preventDefault();
+		// e.preventDefault();
 
 		setNote({
 			...note,
@@ -166,7 +202,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 						<div>To Do List</div>
 						{note.toDoList &&
 							note.toDoList.map((l) => (
-								<div>
+								<div key={l.id}>
 									<input
 										type="text"
 										value={l.text}
@@ -182,11 +218,35 @@ export default function CreateNoteForm(): React.JSX.Element {
 										}
 									/>
 
-									{l.endDate && (
-										<input
-											type="date"
-											value={l.endDate.toISOString().split("T")[0]}
-										/>
+									{l.endDate ? (
+										<>
+											<label>
+												<input
+													type="date"
+													value={
+														new Date(l.endDate)
+															.toISOString()
+															.split("T")[0]
+													}
+													onChange={(
+														e: React.ChangeEvent<HTMLInputElement>
+													): void => handleUpdateDateItem(e, l)}
+												/>
+											</label>
+											<button
+												onClick={(
+													e: React.MouseEvent<HTMLButtonElement>
+												): void => handleRemoveDateItem(e, l)}>
+												Rimuovi Scadenza
+											</button>
+										</>
+									) : (
+										<button
+											onClick={(
+												e: React.MouseEvent<HTMLButtonElement>
+											): void => handleAddDateItem(e, l)}>
+											Aggiungi Scadenza
+										</button>
 									)}
 
 									<button

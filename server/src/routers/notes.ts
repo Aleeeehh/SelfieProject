@@ -308,7 +308,7 @@ router.post("/", async (req: Request, res: Response) => {
 			itemList.map((x) => ({
 				text: x.text,
 				completed: x.completed,
-				note: createdNote._id,
+				noteId: createdNote._id,
 				endDate: x.endDate,
 			}))
 		);

@@ -180,6 +180,39 @@ export default function NotePage(): React.JSX.Element {
 		});
 	}
 
+	function handleAddDateItem(e: React.MouseEvent<HTMLButtonElement>, item: ListItem): void {
+		e.preventDefault();
+
+		setNote({
+			...note,
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, endDate: new Date() } : i
+			),
+		});
+	}
+
+	function handleRemoveDateItem(e: React.MouseEvent<HTMLButtonElement>, item: ListItem): void {
+		e.preventDefault();
+
+		setNote({
+			...note,
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, endDate: undefined } : i
+			),
+		});
+	}
+
+	function handleUpdateDateItem(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
+		e.preventDefault();
+		console.log(e.target.value);
+
+		setNote({
+			...note,
+			toDoList: note.toDoList.map((i) =>
+				i.id === item.id ? { ...i, endDate: new Date(e.target.value) } : i
+			),
+		});
+	}
 	function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
 		// e.preventDefault();
 		console.log(note.toDoList, item);
@@ -260,17 +293,15 @@ export default function NotePage(): React.JSX.Element {
 							note.toDoList.map((l) => (
 								<div key={l.id}>
 									{isEditing ? (
-										<>
-											<input
-												type="text"
-												value={l.text}
-												onChange={(
-													e: React.ChangeEvent<HTMLInputElement>
-												): void => {
-													handleUpdateTextItem(e, l);
-												}}
-											/>
-										</>
+										<input
+											type="text"
+											value={l.text}
+											onChange={(
+												e: React.ChangeEvent<HTMLInputElement>
+											): void => {
+												handleUpdateTextItem(e, l);
+											}}
+										/>
 									) : (
 										<div>{l.text}</div>
 									)}
@@ -285,11 +316,44 @@ export default function NotePage(): React.JSX.Element {
 									) : (
 										<div>{l.completed ? "Completato" : "Non completato"}</div>
 									)}
-									{l.endDate && (
-										<input
-											type="date"
-											value={l.endDate.toISOString().split("T")[0]}
-										/>
+									{isEditing ? (
+										l.endDate ? (
+											<>
+												<label>
+													<input
+														type="date"
+														value={
+															new Date(l.endDate)
+																.toISOString()
+																.split("T")[0]
+														}
+														onChange={(
+															e: React.ChangeEvent<HTMLInputElement>
+														): void => handleUpdateDateItem(e, l)}
+													/>
+												</label>
+												<button
+													onClick={(
+														e: React.MouseEvent<HTMLButtonElement>
+													): void => handleRemoveDateItem(e, l)}>
+													Rimuovi Scadenza
+												</button>
+											</>
+										) : (
+											<button
+												onClick={(
+													e: React.MouseEvent<HTMLButtonElement>
+												): void => handleAddDateItem(e, l)}>
+												Aggiungi Scadenza
+											</button>
+										)
+									) : l.endDate ? (
+										<div>
+											Scadenza:{" "}
+											{new Date(l.endDate).toISOString().split("T")[0]}
+										</div>
+									) : (
+										<div>No end date</div>
 									)}
 									{isEditing && (
 										<button
