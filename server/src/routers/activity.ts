@@ -69,9 +69,7 @@ router.get("/", async (req: Request, res: Response) => {
 				updatedAt: activity.updatedAt,
 				deadline: activity.deadline,
 				completed: activity.completed,
-				accessList: await getUsernameListFromIdList(
-					activity.accessList
-				),
+				accessList: await getUsernameListFromIdList(activity.accessList),
 				projectId: activity.projectId || null,
 				next: activity.next || null,
 				// status: activity.status as ActivityStatus | null,
@@ -95,13 +93,9 @@ router.get("/", async (req: Request, res: Response) => {
 			return a.deadline.getTime() - b.deadline.getTime();
 		});
 
-		sortedActivities.filter(
-			(_, index) => index >= from && index < from + count
-		);
+		sortedActivities.filter((_, index) => index >= from && index < from + count);
 
-		return res
-			.status(200)
-			.json({ status: ResponseStatus.GOOD, value: sortedActivities });
+		return res.status(200).json({ status: ResponseStatus.GOOD, value: sortedActivities });
 	} catch (e) {
 		console.log(e);
 		const resBody: ResponseBody = {
@@ -150,10 +144,7 @@ router.get("/owner", async (req: Request, res: Response) => {
 
 		if (foundDBActivities.length === 0) {
 			const resBody: ResponseBody = {
-				message:
-					"L'attività con l'owner" +
-					ownerId +
-					" Non è stato trovato!",
+				message: "L'attività con l'owner" + ownerId + " Non è stato trovato!",
 				status: ResponseStatus.BAD,
 			};
 
@@ -356,24 +347,10 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
 	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-
-	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-
-	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-
-	console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-
 
 	try {
 		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
 
-		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-
-		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
-
-		console.log("SONO ENTRATO NELLA POST DELLE ATTIVITA'!");
 		// TODO: validate note input
 		// TODO: validate body fields
 		const title = req.body.title as string | undefined;
@@ -402,12 +379,9 @@ router.post("/", async (req: Request, res: Response) => {
 		if (!title || !description || !deadline || !owner) {
 			const resBody: ResponseBody = {
 				status: ResponseStatus.BAD,
-				message:
-					"Missing required fields: 'title', 'description', 'deadline', 'owner'",
+				message: "Missing required fields: 'title', 'description', 'deadline', 'owner'",
 			};
-			console.log(
-				"Missing required fields: 'title', 'description', 'deadline', 'owner'"
-			);
+			console.log("Missing required fields: 'title', 'description', 'deadline', 'owner'");
 			return res.status(400).json(resBody);
 		}
 
@@ -439,12 +413,9 @@ router.post("/", async (req: Request, res: Response) => {
 			if (project.owner.toString() !== owner) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
-					message:
-						"You are not the owner of this project, cannot add activity",
+					message: "You are not the owner of this project, cannot add activity",
 				};
-				console.log(
-					"You are not the owner of this project, cannot add activity"
-				);
+				console.log("You are not the owner of this project, cannot add activity");
 				return res.status(403).json(resBody);
 			}
 
@@ -579,8 +550,7 @@ router.post("/", async (req: Request, res: Response) => {
 				// should have the same parent
 				if (
 					(!foundNext.parent && parent) ||
-					(foundNext.parent &&
-						(!parent || foundNext.parent.toString() !== parent))
+					(foundNext.parent && (!parent || foundNext.parent.toString() !== parent))
 				) {
 					const resBody: ResponseBody = {
 						status: ResponseStatus.BAD,
@@ -612,7 +582,7 @@ router.post("/", async (req: Request, res: Response) => {
 			title,
 			description,
 			deadline: deadlineDate,
-			accessList: accessList,
+			accessList: (await getIdListFromUsernameList(accessList)).map((id) => id.toString()),
 			accessListAccepted: accessListAccepted,
 			completed: false,
 			completedAt: undefined,
@@ -687,7 +657,6 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 	console.log("Entro nella PUT delle attività");
 
-
 	try {
 		// TODO: validate param
 		// TODO: validate body fields
@@ -696,7 +665,9 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const inputDeadline = req.body.deadline as string | undefined;
 		const inputCompleted = req.body.completed as boolean | undefined;
 		const inputAccessList = req.body.accessList as string[] | undefined; // username list
-		const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as Types.ObjectId[] | undefined; // username list
+		const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as
+			| Types.ObjectId[]
+			| undefined; // username list
 
 		// Leo - Progetti - BGN
 		// cannot change projectId
@@ -735,7 +706,12 @@ router.put("/:id", async (req: Request, res: Response) => {
 		// Controlla se l'activityId è una stringa valida per ObjectId
 		const isValidObjectId = Types.ObjectId.isValid(activityId);
 		const query = isValidObjectId
-			? { $or: [{ _id: new Types.ObjectId(activityId) }, { idEventoNotificaCondiviso: activityId }] }
+			? {
+					$or: [
+						{ _id: new Types.ObjectId(activityId) },
+						{ idEventoNotificaCondiviso: activityId },
+					],
+			  }
 			: { idEventoNotificaCondiviso: activityId };
 
 		const foundActivity = await ActivitySchema.findOne(query).lean();
@@ -773,17 +749,15 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		let updatedAccessListAccepted: Types.ObjectId[] | undefined;
 		if (inputAccessListAcceptedUser) {
-			updatedAccessListAccepted =
-				foundActivity.accessListAccepted?.concat(
-					inputAccessListAcceptedUser
-				);
+			updatedAccessListAccepted = foundActivity.accessListAccepted?.concat(
+				inputAccessListAcceptedUser
+			);
 		}
 
 		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
 		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
 
 		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
-
 
 		const updatedCompleted: boolean | undefined = inputCompleted
 			? !!inputCompleted
@@ -844,10 +818,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 			}
 
 			// should be of the same project
-			if (
-				foundNext.projectId &&
-				foundNext.projectId.toString() !== projectId.toString()
-			) {
+			if (foundNext.projectId && foundNext.projectId.toString() !== projectId.toString()) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
 					message: "Invalid next id: wrong project",
@@ -861,8 +832,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 				(!foundNext.parent && foundActivity.parent) ||
 				(foundNext.parent &&
 					(!foundActivity.parent ||
-						foundNext.parent.toString() !==
-						foundActivity.parent.toString()))
+						foundNext.parent.toString() !== foundActivity.parent.toString()))
 			) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
@@ -891,19 +861,13 @@ router.put("/:id", async (req: Request, res: Response) => {
 		if (!projectId && (inputActive || inputAbandoned || inputReactivated)) {
 			const resBody: ResponseBody = {
 				status: ResponseStatus.BAD,
-				message:
-					"Cannot change active, abandoned or reactivated for non-project activity",
+				message: "Cannot change active, abandoned or reactivated for non-project activity",
 			};
-			console.log(
-				"Cannot change active, abandoned or reactivated for non-project activity"
-			);
+			console.log("Cannot change active, abandoned or reactivated for non-project activity");
 			return res.status(400).json(resBody);
 		}
 
-		if (
-			inputReactivated &&
-			req.user?.id !== foundActivity.owner.toString()
-		) {
+		if (inputReactivated && req.user?.id !== foundActivity.owner.toString()) {
 			const resBody: ResponseBody = {
 				status: ResponseStatus.BAD,
 				message: "Only the owner can change 'reactivate' activity",
@@ -916,19 +880,19 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		console.log("updatedAccessListAccepted:", updatedAccessListAccepted);
 
-
-
 		const updatedActivity: Activity = {
 			owner: foundActivity.owner.toString(),
 			title: inputTitle || foundActivity.title,
 			description: inputDescription || foundActivity.description,
 			accessList: inputAccessList
 				? updatedAccessList.map((id) => id.toString())
-				: foundActivity.accessList,
+				: foundActivity.accessList.map((id) => id.toString()),
 			deadline: updatedDeadline || foundActivity.deadline,
 			completed: updatedCompleted,
 			completedAt: inputCompleted ? new Date() : undefined,
-			accessListAccepted: updatedAccessListAccepted || foundActivity.accessListAccepted,
+			accessListAccepted: (
+				updatedAccessListAccepted || foundActivity.accessListAccepted
+			)?.map((id) => id.toString()),
 			idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso || undefined,
 
 			// Leo - Progetti - BGN
@@ -957,7 +921,12 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		const result = await ActivitySchema.findOneAndUpdate(
 			isValidObjectId
-				? { $or: [{ _id: new Types.ObjectId(activityId) }, { idEventoNotificaCondiviso: activityId }] }
+				? {
+						$or: [
+							{ _id: new Types.ObjectId(activityId) },
+							{ idEventoNotificaCondiviso: activityId },
+						],
+				  }
 				: { idEventoNotificaCondiviso: activityId },
 			updatedActivity
 		);
@@ -1043,10 +1012,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 				"Eliminato il riferimento 'next' per l'attività eliminata, attività precedente:",
 				foundPreviuos._id.toString()
 			);
-			await ActivitySchema.findByIdAndUpdate(
-				foundPreviuos._id,
-				foundPreviuos
-			);
+			await ActivitySchema.findByIdAndUpdate(foundPreviuos._id, foundPreviuos);
 		}
 
 		// Leo - Progetti - END

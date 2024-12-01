@@ -1,7 +1,7 @@
 import React from "react";
 import { ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { SERVER_API } from "./params/params";
+import { profileImages, SERVER_API } from "./params/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 
 type RegisterData = {
@@ -16,7 +16,7 @@ type RegisterData = {
 };
 
 const initialState: RegisterData = {
-	profileImage: "/images/avatar.png",
+	profileImage: profileImages[Math.floor(Math.random() * profileImages.length)].url,
 	username: "",
 	password: "",
 	confirmPassword: "",
@@ -43,6 +43,8 @@ export default function Register(): React.JSX.Element {
 	async function handleChange(
 		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
 	): Promise<void> {
+		console.log(e.target.name);
+		console.log(e.target.value);
 		try {
 			if (e.target.name === "birthday") {
 				setData({ ...data, [e.target.name]: new Date(e.target.value) });
@@ -83,6 +85,7 @@ export default function Register(): React.JSX.Element {
 				lastName: data.lastName,
 				birthday: new Date(data.birthday).toISOString().split("T")[0],
 				address: data.address,
+				profileImage: data.profileImage,
 			}),
 		})
 			.then((response) => response.json())
@@ -109,27 +112,24 @@ export default function Register(): React.JSX.Element {
 			<div className="registration-background">
 				<div className="registration-container">
 					<div className="registration-avatar">
-						<img src={data.profileImage} alt="Avatar" />
+						<img src={`/images/profile/${data.profileImage}`} alt="Avatar" />
 					</div>
 					<div className="registration-header">
 						<h2>Benvenuto in SELFIE!</h2>
 						<p>Crea un account per iniziare la tua esperienza</p>
 					</div>
 					<form className="registration-form">
-
 						<div>
 							<label>Immagine di profilo</label>
 							<select
 								name="profileImage"
 								value={data.profileImage}
-								onChange={handleChange}
-							>
-								<option value="/images/avatar.png">Smart sloth</option>
-								<option value="/images/avatar-runner.png">Runner sloth</option>
-								<option value="/images/avatar-reader.png">Reader sloth</option>
-								<option value="/images/avatar-gym.png">Gym sloth</option>
-								<option value="/images/avatar-cards.png">Cards sloth</option>
-								<option value="/images/avatar-writer.png">Writer sloth</option>
+								onChange={handleChange}>
+								{profileImages.map((image) => (
+									<option key={image.url} value={image.url}>
+										{image.name}
+									</option>
+								))}
 							</select>
 						</div>
 

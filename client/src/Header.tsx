@@ -26,6 +26,7 @@ export default function Header(): React.JSX.Element {
 	const [notifications, setNotifications] = useState([] as Notification[]);
 	const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
 	const [user, setUser] = useState(null);
+	const [profileImage, setProfileImage] = useState("");
 	//const [isChangingDate, setIsChangingDate] = useState(false);
 
 	const isLoggedIn = !!localStorage.getItem("loggedUserId");
@@ -151,16 +152,11 @@ export default function Header(): React.JSX.Element {
 			hasEventNotifications(); //aggiorna il fatto che ci siano notifiche o meno di tipo event
 			// console.log("NOTIFICHE:", notifications);
 		} catch (error) {
-			console.error(
-				"Errore durante il recupero della data corrente:",
-				error
-			);
+			console.error("Errore durante il recupero della data corrente:", error);
 		}
 	};
 
-	async function handleAddActivity(
-		notification: Notification
-	): Promise<void> {
+	async function handleAddActivity(notification: Notification): Promise<void> {
 		console.log(
 			"EVENTO DELLA NOTIFICA DA AGGIUNGERE ALLA LISTA DEGLI EVENTI:",
 			notification.data.event
@@ -170,8 +166,7 @@ export default function Header(): React.JSX.Element {
 			notification.data.activity
 		);
 
-		const idEventoNotificaCondiviso =
-			notification.data.event.idEventoNotificaCondiviso;
+		const idEventoNotificaCondiviso = notification.data.event.idEventoNotificaCondiviso;
 		const owner = notification.data.event.owner;
 		const title = notification.data.event.title;
 		const startTime = notification.data.event.startTime;
@@ -197,8 +192,7 @@ export default function Header(): React.JSX.Element {
 		});
 		console.log("Evento scadenza creato:", res);
 
-		const idEventoNotificaCondiviso1 =
-			notification.data.activity.idEventoNotificaCondiviso;
+		const idEventoNotificaCondiviso1 = notification.data.activity.idEventoNotificaCondiviso;
 		const description1 = notification.data.activity.description;
 		const title1 = notification.data.activity.title;
 		const deadline1 = notification.data.activity.deadline;
@@ -280,11 +274,14 @@ export default function Header(): React.JSX.Element {
 		console.log("NOTIFICA DI EVENTO CONDIVISO:", notification);
 
 		//aggiungi il receiver alla accessListAccepted dell'evento (o degli eventi)
-		const res = await fetch(`${SERVER_API}/events/${notification.data.event.idEventoNotificaCondiviso}`, {
-			method: "PUT",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ accessListAcceptedUser: notification.receiver }),
-		});
+		const res = await fetch(
+			`${SERVER_API}/events/${notification.data.event.idEventoNotificaCondiviso}`,
+			{
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ accessListAcceptedUser: notification.receiver }),
+			}
+		);
 		console.log("AccessListAccepted aggiornato:", res);
 
 		//aggiungi la notifica dell'evento condiviso come notifica sul calendario
@@ -357,30 +354,20 @@ export default function Header(): React.JSX.Element {
 		handleReadNotification(notification.id);
 	}
 
-	async function handleSnoozeNotification(
-		notificationId: string
-	): Promise<void> {
+	async function handleSnoozeNotification(notificationId: string): Promise<void> {
 		try {
 			const snoozeDate = new Date(currentDate.getTime() + 1000 * 60 * 60); // Aggiungi 1 ora
-			const res = await fetch(
-				`${SERVER_API}/notifications/${notificationId}`,
-				{
-					method: "PUT",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: snoozeDate }), //posticipa la notifica di 1 ora
-				}
-			);
+			const res = await fetch(`${SERVER_API}/notifications/${notificationId}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ date: snoozeDate }), //posticipa la notifica di 1 ora
+			});
 
 			if (!res.ok) {
 				const errorData = await res.json();
-				console.error(
-					"Errore durante l'aggiornamento della notifica:",
-					errorData
-				);
+				console.error("Errore durante l'aggiornamento della notifica:", errorData);
 			} else {
-				console.log(
-					`Notifica con ID ${notificationId} aggiornata con successo.`
-				);
+				console.log(`Notifica con ID ${notificationId} aggiornata con successo.`);
 				// Aggiorna lo stato locale se necessario
 				// Ad esempio, puoi aggiornare l'array delle notifiche per riflettere il cambiamento
 			}
@@ -390,29 +377,19 @@ export default function Header(): React.JSX.Element {
 		}
 	}
 
-	const handleReadNotification = async (
-		notificationId: string
-	): Promise<void> => {
+	const handleReadNotification = async (notificationId: string): Promise<void> => {
 		try {
-			const res = await fetch(
-				`${SERVER_API}/notifications/${notificationId}`,
-				{
-					method: "PUT",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ read: "true" }), // Imposta il campo read a true
-				}
-			);
+			const res = await fetch(`${SERVER_API}/notifications/${notificationId}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ read: "true" }), // Imposta il campo read a true
+			});
 
 			if (!res.ok) {
 				const errorData = await res.json();
-				console.error(
-					"Errore durante l'aggiornamento della notifica:",
-					errorData
-				);
+				console.error("Errore durante l'aggiornamento della notifica:", errorData);
 			} else {
-				console.log(
-					`Notifica con ID ${notificationId} aggiornata con successo.`
-				);
+				console.log(`Notifica con ID ${notificationId} aggiornata con successo.`);
 				// Aggiorna lo stato locale se necessario
 				// Ad esempio, puoi aggiornare l'array delle notifiche per riflettere il cambiamento
 			}
@@ -435,9 +412,7 @@ export default function Header(): React.JSX.Element {
 			});
 
 			if (!response.ok) {
-				throw new Error(
-					"ERRORE NELLA RICHIESTA POST DI CURRENTDATE NELL'HEADER"
-				);
+				throw new Error("ERRORE NELLA RICHIESTA POST DI CURRENTDATE NELL'HEADER");
 			}
 
 			//  const data = await response.json();
@@ -445,9 +420,7 @@ export default function Header(): React.JSX.Element {
 
 			const getResponse = await fetch(`${SERVER_API}/currentDate`);
 			if (!getResponse.ok) {
-				throw new Error(
-					"ERRORE NELLA RICHIESTA GET DI CURRENTDATE NELL'HEADER"
-				);
+				throw new Error("ERRORE NELLA RICHIESTA GET DI CURRENTDATE NELL'HEADER");
 			}
 		} catch (error) {
 			console.error("Errore durante l'invio della data corrente:", error);
@@ -461,8 +434,7 @@ export default function Header(): React.JSX.Element {
 		return notifications.some((notification: Notification) => {
 			if (
 				notification &&
-				(notification.type === "event" ||
-					notification.type === "activity") &&
+				(notification.type === "event" || notification.type === "activity") &&
 				notification.read === false &&
 				!notification.data.isInfiniteEvent
 			) {
@@ -470,11 +442,7 @@ export default function Header(): React.JSX.Element {
 				const eventDate = new Date(notification.data.date); // Assicurati che notification.data.date sia un formato valido
 				return eventDate < currentDate; // Controlla se la data dell'evento è inferiore a currentDate
 			}
-			if (
-				notification &&
-				notification.type === "pomodoro" &&
-				notification.read === false
-			) {
+			if (notification && notification.type === "pomodoro" && notification.read === false) {
 				// Includi anche il tipo "activity"
 				return true;
 			}
@@ -496,8 +464,7 @@ export default function Header(): React.JSX.Element {
 					(currentDate.getTime() >= eventDate.getTime() ||
 						(currentDate.getDate() >= eventDate.getDate() &&
 							currentDate.getMonth() >= eventDate.getMonth() &&
-							currentDate.getFullYear() >=
-							eventDate.getFullYear()))
+							currentDate.getFullYear() >= eventDate.getFullYear()))
 				) {
 					return true;
 				}
@@ -528,11 +495,7 @@ export default function Header(): React.JSX.Element {
 				}
 			}
 
-			if (
-				notification &&
-				notification.type === "message" &&
-				notification.read === false
-			) {
+			if (notification && notification.type === "message" && notification.read === false) {
 				return true;
 			}
 
@@ -574,12 +537,9 @@ export default function Header(): React.JSX.Element {
 			const currentUser = await getCurrentUser();
 			const user = currentUser.value._id.toString();
 
-			const response = await fetch(
-				`${SERVER_API}/notifications/user/${user}`
-			);
+			const response = await fetch(`${SERVER_API}/notifications/user/${user}`);
 
 			const data = await response.json();
-
 
 			// console.log("Notifications:", data);
 			if (data.status === ResponseStatus.GOOD) {
@@ -598,9 +558,7 @@ export default function Header(): React.JSX.Element {
 		const currentUser = await getCurrentUser();
 		const owner = currentUser.value._id.toString();
 		try {
-			const res = await fetch(
-				`${SERVER_API}/events/owner?owner=${owner}`
-			);
+			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const eventi = await res.json();
 			// console.log("eventi:", eventi);
 			// console.log("Questi sono gli eventi trovati nell'header:", eventi);
@@ -636,6 +594,7 @@ export default function Header(): React.JSX.Element {
 			const currentUser = await getCurrentUser();
 
 			setUser(currentUser.value._id.toString());
+			setProfileImage(currentUser.value.profileImage);
 
 			/*
 						console.log("ID USER ATTUALE:", user); // Usa currentUser.value.id direttamente
@@ -677,32 +636,16 @@ export default function Header(): React.JSX.Element {
 					className="btn secondary"
 					style={buttonStyle}
 					href="/calendar"
-					title="Calendario"
-				>
+					title="Calendario">
 					Calendario
 				</a>
-				<a
-					className="btn secondary"
-					style={buttonStyle}
-					href="/pomodoro"
-					title="Pomodoro"
-				>
+				<a className="btn secondary" style={buttonStyle} href="/pomodoro" title="Pomodoro">
 					Pomodoro
 				</a>
-				<a
-					className="btn secondary"
-					style={buttonStyle}
-					href="/notes"
-					title="Note"
-				>
+				<a className="btn secondary" style={buttonStyle} href="/notes" title="Note">
 					Note
 				</a>
-				<a
-					className="btn secondary"
-					style={buttonStyle}
-					href="/projects"
-					title="Progetti"
-				>
+				<a className="btn secondary" style={buttonStyle} href="/projects" title="Progetti">
 					Progetti
 				</a>
 				{/*
@@ -729,8 +672,7 @@ export default function Header(): React.JSX.Element {
 						width: "80px",
 						position: "relative",
 					}}
-					onClick={toggleDropdown}
-				>
+					onClick={toggleDropdown}>
 					Menù
 					<ul
 						className="dropdown-menu"
@@ -748,8 +690,7 @@ export default function Header(): React.JSX.Element {
 							margin: "0",
 							width: "120px",
 							zIndex: "100",
-						}}
-					>
+						}}>
 						<li>
 							<a href="/calendar" title="Calendario">
 								Calendario
@@ -786,8 +727,7 @@ export default function Header(): React.JSX.Element {
 						justifyContent: "flex-end",
 						width: "50%",
 						alignItems: "center",
-					}}
-				>
+					}}>
 					{currentDate && (
 						<>
 							<span className="btn secondary date-button">
@@ -818,24 +758,16 @@ export default function Header(): React.JSX.Element {
 										id="dateInput"
 										value={
 											currentDate
-												? currentDate
-													.toISOString()
-													.split("T")[0]
+												? currentDate.toISOString().split("T")[0]
 												: ""
 										} // Assicurati che currentDate sia valido
 										onChange={(event): void => {
-											const inputDate =
-												event.target.value;
-											const parsedDate = new Date(
-												inputDate
-											);
+											const inputDate = event.target.value;
+											const parsedDate = new Date(inputDate);
 
 											// Controlla se la data è valida
 											if (isNaN(parsedDate.getTime())) {
-												console.error(
-													"Data non valida:",
-													inputDate
-												);
+												console.error("Data non valida:", inputDate);
 												return; // Non procedere se la data non è valida
 											}
 
@@ -854,9 +786,9 @@ export default function Header(): React.JSX.Element {
 										value={
 											currentDate
 												? currentDate
-													.toTimeString()
-													.split(" ")[0]
-													.slice(0, 5)
+														.toTimeString()
+														.split(" ")[0]
+														.slice(0, 5)
 												: ""
 										} // Imposta l'orario attuale come valore predefinito
 										onChange={(event): void => {
@@ -864,11 +796,8 @@ export default function Header(): React.JSX.Element {
 
 											// Controlla se il valore è vuoto
 											if (timeValue) {
-												const timeParts =
-													timeValue.split(":");
-												const newDate = new Date(
-													currentDate
-												);
+												const timeParts = timeValue.split(":");
+												const newDate = new Date(currentDate);
 												newDate.setHours(
 													Number(timeParts[0]),
 													Number(timeParts[1])
@@ -876,9 +805,7 @@ export default function Header(): React.JSX.Element {
 												setCurrentDate(newDate); // Aggiorna lo stato con la nuova data e orario
 											} else {
 												// Se il valore è vuoto, non fare nulla o gestisci come preferisci
-												console.warn(
-													"Orario non valido"
-												);
+												console.warn("Orario non valido");
 											}
 										}}
 										style={{ marginLeft: "10px" }}
@@ -891,8 +818,7 @@ export default function Header(): React.JSX.Element {
 										postCurrentDate(currentDate); // Chiama postCurrentDate con la data e orario selezionati
 										setShowTimeMachine(false); // Nascondi il time machine
 									}}
-									style={buttonStyle}
-								>
+									style={buttonStyle}>
 									Imposta Data
 								</button>
 
@@ -904,8 +830,7 @@ export default function Header(): React.JSX.Element {
 										setCurrentDate(newDate); // Aggiorna lo stato con la nuova data
 										setShowTimeMachine(false); // Nascondi il time machine
 									}}
-									style={buttonStyle}
-								>
+									style={buttonStyle}>
 									Resetta Data
 								</button>
 							</div>
@@ -923,8 +848,7 @@ export default function Header(): React.JSX.Element {
 						onClick={(): void => {
 							setShowNotifications(!showNotifications);
 							playNotificationSound();
-						}}
-					>
+						}}>
 						<i className="fas fa-bell" />
 						{hasEventNotifications() &&
 							!doNotDisturb && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
@@ -947,8 +871,7 @@ export default function Header(): React.JSX.Element {
 									padding: "10px",
 									zIndex: "1",
 									borderRadius: "10px",
-								}}
-							>
+								}}>
 								{doNotDisturb && (
 									<div>
 										Sei in modalità{" "}
@@ -956,31 +879,22 @@ export default function Header(): React.JSX.Element {
 											style={{
 												fontWeight: "bold",
 												color: "gray",
-											}}
-										>
+											}}>
 											non disturbare
 										</span>
 									</div>
 								)}
 								{notifications && notifications.length > 0 ? (
 									notifications.map((notification, index) => {
-										console.log(
-											"NOTIFICHE ATTUALI:",
-											notifications
-										);
+										console.log("NOTIFICHE ATTUALI:", notifications);
 										// TODO: Differentiate by type
 										if (
 											notification.type ===
 											"pomodoro" /*&& notification.receiver === user*/
 										) {
-											const nCycles =
-												notification.data.cycles || 5;
-											const nStudyTime =
-												notification.data.studyTime ||
-												25;
-											const nPauseTime =
-												notification.data.pauseTime ||
-												5;
+											const nCycles = notification.data.cycles || 5;
+											const nStudyTime = notification.data.studyTime || 25;
+											const nPauseTime = notification.data.pauseTime || 5;
 
 											return (
 												<>
@@ -988,31 +902,25 @@ export default function Header(): React.JSX.Element {
 														key={index} // Sposta la chiave qui
 														style={{
 															color: "black",
-															textDecoration:
-																"none",
+															textDecoration: "none",
 														}} // Imposta il colore del testo a nero e rimuovi la sottolineatura
 													>
-														Hai ricevuto un invito
-														per un{" "}
+														Hai ricevuto un invito per un{" "}
 														<span
 															style={{
 																color: "lightcoral",
-															}}
-														>
+															}}>
 															pomodoro
 														</span>
 														!
 														<button
 															className="btn secondary"
 															style={{
-																background:
-																	"none",
+																background: "none",
 																cursor: "pointer",
 															}}
 															onClick={(): void => {
-																if (
-																	notification.id
-																) {
+																if (notification.id) {
 																	// Controlla se notification.id è definito
 																	handleReadNotification(
 																		notification.id
@@ -1023,29 +931,23 @@ export default function Header(): React.JSX.Element {
 																		"ID notifica non definito"
 																	);
 																}
-															}}
-														>
+															}}>
 															<i
 																className="fas fa-check"
 																style={{
 																	color: "green",
-																	fontSize:
-																		"20px",
-																}}
-															></i>{" "}
+																	fontSize: "20px",
+																}}></i>{" "}
 															{/* Icona di tick */}
 														</button>
 														<button
 															className="btn secondary"
 															style={{
-																background:
-																	"none",
+																background: "none",
 																cursor: "pointer",
 															}}
 															onClick={(): void => {
-																if (
-																	notification.id
-																) {
+																if (notification.id) {
 																	// Controlla se notification.id è definito
 																	handleReadNotification(
 																		notification.id
@@ -1055,16 +957,13 @@ export default function Header(): React.JSX.Element {
 																		"ID notifica non definito"
 																	);
 																}
-															}}
-														>
+															}}>
 															<i
 																className="fas fa-times"
 																style={{
 																	color: "red",
-																	fontSize:
-																		"20px",
-																}}
-															></i>{" "}
+																	fontSize: "20px",
+																}}></i>{" "}
 															{/* Icona di tick */}
 														</button>
 													</div>
@@ -1072,18 +971,13 @@ export default function Header(): React.JSX.Element {
 											);
 										} else if (
 											notification.type === "event" &&
-											notification.data
-												.isInfiniteEvent === false &&
+											notification.data.isInfiniteEvent === false &&
 											notification.receiver === user &&
 											notification.read === false
 										) {
-											console.log(
-												"ENTRO NELL'IF DELLA NOTIFICA TYPE EVENT:"
-											);
+											console.log("ENTRO NELL'IF DELLA NOTIFICA TYPE EVENT:");
 
-											const eventDate = new Date(
-												notification.data.date
-											); // Crea un oggetto Date
+											const eventDate = new Date(notification.data.date); // Crea un oggetto Date
 
 											//mostra la notifica solo se la data corrente è successiva alla data della notifica
 											if (eventDate < currentDate) {
@@ -1093,14 +987,11 @@ export default function Header(): React.JSX.Element {
 														<button
 															className="btn secondary"
 															style={{
-																background:
-																	"none",
+																background: "none",
 																cursor: "pointer",
 															}}
 															onClick={(): void => {
-																if (
-																	notification.id
-																) {
+																if (notification.id) {
 																	// Controlla se notification.id è definito
 																	handleReadNotification(
 																		notification.id
@@ -1110,16 +1001,13 @@ export default function Header(): React.JSX.Element {
 																		"ID notifica non definito"
 																	);
 																}
-															}}
-														>
+															}}>
 															<i
 																className="fas fa-check"
 																style={{
 																	color: "green",
-																	fontSize:
-																		"20px",
-																}}
-															></i>{" "}
+																	fontSize: "20px",
+																}}></i>{" "}
 															{/* Icona di tick */}
 														</button>
 													</div>
@@ -1130,9 +1018,7 @@ export default function Header(): React.JSX.Element {
 											notification.receiver === user &&
 											notification.read === false
 										) {
-											const eventDate = new Date(
-												notification.data.date
-											); // Crea un oggetto Date
+											const eventDate = new Date(notification.data.date); // Crea un oggetto Date
 
 											//mostra la notifica solo se la data corrente è successiva alla data della notifica
 											if (eventDate < currentDate) {
@@ -1142,14 +1028,11 @@ export default function Header(): React.JSX.Element {
 														<button
 															className="btn secondary"
 															style={{
-																background:
-																	"none",
+																background: "none",
 																cursor: "pointer",
 															}}
 															onClick={(): void => {
-																if (
-																	notification.id
-																) {
+																if (notification.id) {
 																	// Controlla se notification.id è definito
 																	handleReadNotification(
 																		notification.id
@@ -1159,46 +1042,36 @@ export default function Header(): React.JSX.Element {
 																		"ID notifica non definito"
 																	);
 																}
-															}}
-														>
+															}}>
 															<i
 																className="fas fa-check"
 																style={{
 																	color: "green",
-																	fontSize:
-																		"20px",
-																}}
-															></i>{" "}
+																	fontSize: "20px",
+																}}></i>{" "}
 															{/* Icona di tick */}
 														</button>
 													</div>
 												);
 											}
 										} else if (
-											notification.data
-												.isInfiniteEvent === true &&
+											notification.data.isInfiniteEvent === true &&
 											notification.receiver === user
 										) {
-											console.log(
-												"ENTRO NELL'IF DELLA NOTIFICA INFINITA:"
+											console.log("ENTRO NELL'IF DELLA NOTIFICA INFINITA:");
+
+											const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+
+											const currentDateSenzaOrario = new Date(
+												currentDate.getFullYear(),
+												currentDate.getMonth(),
+												currentDate.getDate()
 											);
-
-											const eventDate = new Date(
-												notification.data.date
-											); // Crea un oggetto Date
-
-											const currentDateSenzaOrario =
-												new Date(
-													currentDate.getFullYear(),
-													currentDate.getMonth(),
-													currentDate.getDate()
-												);
-											const eventDateSenzaOrario =
-												new Date(
-													eventDate.getFullYear(),
-													eventDate.getMonth(),
-													eventDate.getDate()
-												);
+											const eventDateSenzaOrario = new Date(
+												eventDate.getFullYear(),
+												eventDate.getMonth(),
+												eventDate.getDate()
+											);
 											//console.log("CURRENT DATE SENZA ORARIO:", currentDateSenzaOrario);
 											//console.log("EVENT DATE SENZA ORARIO:", eventDateSenzaOrario);
 
@@ -1207,9 +1080,9 @@ export default function Header(): React.JSX.Element {
 												(currentDate.getTime() >= eventDate.getTime() ||
 													(currentDate.getDate() >= eventDate.getDate() &&
 														currentDate.getMonth() >=
-														eventDate.getMonth() &&
+															eventDate.getMonth() &&
 														currentDate.getFullYear() >=
-														eventDate.getFullYear()))
+															eventDate.getFullYear()))
 											) {
 												return (
 													<div key={index}>
@@ -1234,13 +1107,9 @@ export default function Header(): React.JSX.Element {
 											}
 
 											if (
-												notification.data
-													.frequencyEvent ===
-												"week" &&
-												currentDate.getDay() ===
-												eventDate.getDay() &&
-												currentDateSenzaOrario >=
-												eventDateSenzaOrario
+												notification.data.frequencyEvent === "week" &&
+												currentDate.getDay() === eventDate.getDay() &&
+												currentDateSenzaOrario >= eventDateSenzaOrario
 											) {
 												return (
 													<div key={index}>
@@ -1248,21 +1117,18 @@ export default function Header(): React.JSX.Element {
 														<span
 															style={{
 																color: "lightblue",
-															}}
-														>
+															}}>
 															infinito
 														</span>{" "}
-														in data corrente, alle
-														ore{" "}
+														in data corrente, alle ore{" "}
 														<span
 															style={{
-																fontWeight:
-																	"bold",
-															}}
-														>
-															{String(
-																eventDate.getHours()
-															).padStart(2, "0")}
+																fontWeight: "bold",
+															}}>
+															{String(eventDate.getHours()).padStart(
+																2,
+																"0"
+															)}
 															:
 															{String(
 																eventDate.getMinutes()
@@ -1274,13 +1140,9 @@ export default function Header(): React.JSX.Element {
 											}
 
 											if (
-												notification.data
-													.frequencyEvent ===
-												"month" &&
-												currentDate.getDate() ===
-												eventDate.getDate() &&
-												currentDateSenzaOrario >=
-												eventDateSenzaOrario
+												notification.data.frequencyEvent === "month" &&
+												currentDate.getDate() === eventDate.getDate() &&
+												currentDateSenzaOrario >= eventDateSenzaOrario
 											) {
 												return (
 													<div key={index}>
@@ -1288,21 +1150,18 @@ export default function Header(): React.JSX.Element {
 														<span
 															style={{
 																color: "lightblue",
-															}}
-														>
+															}}>
 															infinito
 														</span>{" "}
-														in data corrente, alle
-														ore{" "}
+														in data corrente, alle ore{" "}
 														<span
 															style={{
-																fontWeight:
-																	"bold",
-															}}
-														>
-															{String(
-																eventDate.getHours()
-															).padStart(2, "0")}
+																fontWeight: "bold",
+															}}>
+															{String(eventDate.getHours()).padStart(
+																2,
+																"0"
+															)}
 															:
 															{String(
 																eventDate.getMinutes()
@@ -1781,10 +1640,19 @@ export default function Header(): React.JSX.Element {
 								display: "flex",
 								justifyContent: "center",
 							}}>
-							<img /*src={user?.profileImage} alt="Avatar"*/  //TODO: impostare la foto profilo dell'utente come immagine visualizzata
-								src="/images/avatar.png"
+							<img /*src={user?.profileImage} alt="Avatar"*/ //TODO: impostare la foto profilo dell'utente come immagine visualizzata
+								src={
+									profileImage
+										? `/images/profile/${profileImage}`
+										: "/images/avatar.png"
+								}
 								alt="Avatar"
-								style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }}
+								style={{
+									width: "40px",
+									height: "40px",
+									borderRadius: "50%",
+									objectFit: "cover",
+								}}
 							/>
 						</a>
 					</div>

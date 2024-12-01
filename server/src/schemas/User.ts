@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
 	{
-		profileimage: { type: String, required: true },
 		username: { type: String, required: true },
 		password: { type: String, required: true },
 		firstName: { type: String, required: true },
@@ -10,6 +9,7 @@ const userSchema = new mongoose.Schema(
 		birthday: { type: Date, required: true },
 		address: { type: String, required: true },
 		admin: { type: Boolean, required: true, default: false },
+		profileImage: { type: String, required: true },
 	},
 	{ timestamps: true }
 );
