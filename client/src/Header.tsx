@@ -447,7 +447,7 @@ export default function Header(): React.JSX.Element {
 				return true;
 			}
 
-			if (notification && notification.data.isInfiniteEvent === true) {
+			if (notification && notification.data && notification.data.isInfiniteEvent === true) {
 				const eventDate = new Date(notification.data.date);
 				const currentDateSenzaOrario = new Date(
 					currentDate.getFullYear(),
@@ -563,7 +563,11 @@ export default function Header(): React.JSX.Element {
 			// console.log("eventi:", eventi);
 			// console.log("Questi sono gli eventi trovati nell'header:", eventi);
 			const eventiValue = eventi.value;
-			// console.log("eventiValue:", eventiValue);
+			console.log("eventiValue:", eventiValue);
+
+			if (!eventiValue) {
+				throw new Error("eventiValue non è definito");
+			}
 
 			for (const evento of eventiValue) {
 				//console.log("Questo è l'evento di un iterazione:", evento);
@@ -590,11 +594,32 @@ export default function Header(): React.JSX.Element {
 
 	useEffect(() => {
 		const fetchData = async (): Promise<void> => {
-			await postCurrentDate(currentDate); // invia la data corrente al server
+			// await postCurrentDate(currentDate); // invia la data corrente al server
 			const currentUser = await getCurrentUser();
 
 			setUser(currentUser.value._id.toString());
 			setProfileImage(currentUser.value.profileImage);
+
+			// PINNA - BGN
+			// Imposta data del server
+			try {
+				const response = await fetch(`${SERVER_API}/currentDate`);
+				if (!response.ok) {
+					throw new Error("Errore nel recupero della data corrente");
+				}
+				const data = await response.json();
+				// console.log("showTimeMachine:", showTimeMachine);
+
+				// Aggiungi un secondo alla data ottenuta
+				const newDate = new Date(data.currentDate);
+				newDate.setSeconds(newDate.getSeconds() + 1); // Aggiungi un secondo
+
+				// Imposta la data corrente
+				setCurrentDate(newDate); // Imposta la data corrente
+			} catch (error) {
+				console.error("Errore durante il recupero della data corrente:", error);
+			}
+			// PINNA - END
 
 			/*
 						console.log("ID USER ATTUALE:", user); // Usa currentUser.value.id direttamente
@@ -621,7 +646,6 @@ export default function Header(): React.JSX.Element {
 
 	//guarda se ci sono notifiche al caricamento del componente
 	useEffect(() => {
-
 		fetchNotifications();
 		checkDoNotDisturb();
 	}, []);
@@ -793,9 +817,9 @@ export default function Header(): React.JSX.Element {
 										value={
 											currentDate
 												? currentDate
-													.toTimeString()
-													.split(" ")[0]
-													.slice(0, 5)
+														.toTimeString()
+														.split(" ")[0]
+														.slice(0, 5)
 												: ""
 										} // Imposta l'orario attuale come valore predefinito
 										onChange={(event): void => {
@@ -824,6 +848,7 @@ export default function Header(): React.JSX.Element {
 									onClick={(): void => {
 										postCurrentDate(currentDate); // Chiama postCurrentDate con la data e orario selezionati
 										setShowTimeMachine(false); // Nascondi il time machine
+										window.location.reload();
 									}}
 									style={buttonStyle}>
 									Imposta Data
@@ -836,6 +861,7 @@ export default function Header(): React.JSX.Element {
 										await postCurrentDate(newDate); // Chiama postCurrentDate con la data corrente
 										setCurrentDate(newDate); // Aggiorna lo stato con la nuova data
 										setShowTimeMachine(false); // Nascondi il time machine
+										window.location.reload();
 									}}
 									style={buttonStyle}>
 									Resetta Data
@@ -1087,9 +1113,9 @@ export default function Header(): React.JSX.Element {
 												(currentDate.getTime() >= eventDate.getTime() ||
 													(currentDate.getDate() >= eventDate.getDate() &&
 														currentDate.getMonth() >=
-														eventDate.getMonth() &&
+															eventDate.getMonth() &&
 														currentDate.getFullYear() >=
-														eventDate.getFullYear()))
+															eventDate.getFullYear()))
 											) {
 												return (
 													<div key={index}>
