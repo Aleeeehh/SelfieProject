@@ -11,17 +11,17 @@
 }
 
 .note-container {
-	width: calc(100% - 4em);
-	height: calc(100% - 4em);
-	margin: 2em auto;
-	max-width: 800px;
-	display: flex;
-	flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.9);
-	padding: 2em;
-	border-radius: 15px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	transition: transform 0.2s;
+    width: calc(100% - 4em);
+    height: calc(100% - 4em);
+    margin: 2em auto;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgb(238, 234, 228);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    padding: 2em;
+    border-radius: 15px;
+    transition: transform 0.2s;
 }
 
 .note-page-title {
@@ -65,139 +65,141 @@
     color: #a12a2a;
 }
 
-.note-container > * {
-	width: 100%;
-	margin-bottom: 1em;
-	border-radius: 8px;
-	transition: all 0.3s ease;
+.note-container>* {
+    width: 100%;
+    margin-bottom: 1em;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 .note-container * {
-	border-radius: 8px;
+    border-radius: 8px;
 }
 
-.note-container > label {
-	display: flex;
-	flex-direction: column;
-	font-weight: bold;
-	color: #4a4a4a;
+.note-container>label {
+    display: flex;
+    flex-direction: column;
+    font-weight: bold;
+    color: #4a4a4a;
 }
 
 .note-container input,
 .note-container textarea,
 .note-container select {
-	width: 100%;
-	padding: 0.8em;
-	border: 1px solid #ddd;
-	border-radius: 8px;
-	outline: none;
-	font-size: 1em;
-	transition: box-shadow 0.2s ease;
+    width: 100%;
+    padding: 0.8em;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 1em;
+    transition: box-shadow 0.2s ease;
 }
 
 .note-container input:focus,
 .note-container textarea:focus,
 .note-container select:focus {
-	box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
 }
 
 .note-container button {
-	margin: 0.5em auto;
-	padding: 0.8em 1.5em;
-	border-radius: 8px;
-	font-weight: bold;
-	font-size: 1em;
-	cursor: pointer;
-	background-color: #3a7a3c;
-	color: white;
-	border: none;
-	box-shadow: 0 2px 8px rgba(58, 122, 60, 0.2);
-	transition: background-color 0.2s, transform 0.2s;
+    margin: 0.5em auto;
+    padding: 0.8em 1.5em;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #3a7a3c;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(58, 122, 60, 0.2);
+    transition: background-color 0.2s, transform 0.2s;
 }
 
 .tags-form {
-	display: flex;
-	align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .tags-form input {
-	vertical-align: middle;
+    vertical-align: middle;
 }
 
 .tags-form button {
-	vertical-align: middle;
-	margin: 0 0.5em;
+    vertical-align: middle;
+    margin: 0 0.5em;
 }
 
 .tags-container {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	gap: 0.5em;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5em;
     margin-top: 5px;
 }
 
 .tag-box {
-	padding: 0.4em 0.8em;
-	background-color: #ffd57e;
-	color: #4a4a4a;
-	font-weight: 500;
-	font-style: italic;
-	display: flex;
-	align-items: center;
-	border-radius: 12px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0.4em 0.8em;
+    background-color: #ffd57e;
+    color: #4a4a4a;
+    font-weight: 500;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.tag-delete, .user-delete {
-	color: #d64545;
-	width: 2em;
-	height: 1.5em;
-	font-size: 0.8em;
-	margin-left: 0.5em;
-	border: none;
-	background: transparent;
-	cursor: pointer;
-	transition: color 0.2s;
+.tag-delete,
+.user-delete {
+    color: #d64545;
+    width: 2em;
+    height: 1.5em;
+    font-size: 0.8em;
+    margin-left: 0.5em;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.2s;
 }
 
-.tag-delete:hover, .user-delete:hover {
-	background-color: #a12a2a;
+.tag-delete:hover,
+.user-delete:hover {
+    background-color: #a12a2a;
 }
 
 .note-container textarea {
-	resize: vertical;
-	min-height: 200px;
-	font-family: "Roboto", sans-serif;
-	font-size: 1em;
-	line-height: 1.5em;
-	border: 1px solid #ddd;
+    resize: vertical;
+    min-height: 200px;
+    font-family: "Roboto", sans-serif;
+    font-size: 1em;
+    line-height: 1.5em;
+    border: 1px solid #ddd;
 }
 
 .privacy-container {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	gap: 0.5em;
-	margin-top: 1em;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    margin-top: 1em;
 }
 
 .privacy-container .tag-box {
-	padding: 0.4em 0.8em;
-	font-size: 0.9em;
-	background-color: #d9edc4;
-	color: #3c763d;
+    padding: 0.4em 0.8em;
+    font-size: 0.9em;
+    background-color: #d9edc4;
+    color: #3c763d;
 }
 
 .message {
-	margin-top: 1em;
-	padding: 0.8em;
-	border-radius: 8px;
-	background-color: #f9f9f9;
-	color: #333;
-	font-size: 1em;
-	text-align: center;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 1em;
+    padding: 0.8em;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    color: #333;
+    font-size: 1em;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 @media screen and (max-width: 600px) {
@@ -236,11 +238,11 @@
     padding: 2em;
 }
 
-.note-outer-container > a {
+.note-outer-container>a {
     margin: 1em auto;
 }
 
-.note-outer-container > a > button {
+.note-outer-container>a>button {
     background-color: bisque;
     color: black;
     font-weight: bold;
@@ -258,9 +260,10 @@
     font-size: 1em;
     color: black;
     margin: 1em 0;
-	background-color: white;
-	border-radius: 8px;
-	padding: 0.5em;
+    background-color: rgb(238, 234, 228);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 0.5em;
 }
 
 .sort-select {
@@ -296,10 +299,10 @@
 
 .card-note {
     width: 300px;
-    height:300px;
-    background-color: rgba(255, 255, 255, 0.9);
+    height: 300px;
+    background-color: rgb(238, 234, 228);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -308,7 +311,7 @@
 
 .card-note-title {
     text-align: center;
-    background-color: rgba(255, 228, 196, 0.9);
+    background-color: rgba(255, 228, 196);
     color: black;
     padding: 1em;
     font-weight: bold;
@@ -333,7 +336,8 @@
 
 .card-note-actions {
     display: flex;
-    justify-content: space-evenly; /* Distribuisco i pulsanti in modo uniforme */
+    justify-content: space-evenly;
+    /* Distribuisco i pulsanti in modo uniforme */
     padding: 0.5em 1em 1em;
     gap: 0.5em;
 }

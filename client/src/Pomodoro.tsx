@@ -251,17 +251,17 @@ export default function Pomodoros(): React.JSX.Element {
 	//Funzione per aggiornare la lista dei pomodori in tempo reale (non funziona al momento)
 
 	/*const updateTomatoList = async (): Promise<void> => {
-        try {
-            const response = await fetch(`${SERVER_API}/pomodoro`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch pomodori');
-            }
-            const fetchedTomatoes = await response.json();
-            setTomatoList(fetchedTomatoes);
-        } catch (error) {
-            console.error(error);
-        }
-    };*/
+		try {
+			const response = await fetch(`${SERVER_API}/pomodoro`);
+			if (!response.ok) {
+				throw new Error('Failed to fetch pomodori');
+			}
+			const fetchedTomatoes = await response.json();
+			setTomatoList(fetchedTomatoes);
+		} catch (error) {
+			console.error(error);
+		}
+	};*/
 
 	function stopProcess(): void {
 		playRing();
@@ -946,7 +946,7 @@ export default function Pomodoros(): React.JSX.Element {
 									style={{
 										backgroundColor: "bisque",
 										color: "black",
-										border: "1px solid black",
+										border: "0",
 									}}
 									onClick={toggleAddEvent}>
 									CHIUDI
@@ -1102,9 +1102,9 @@ export default function Pomodoros(): React.JSX.Element {
 												.getHours()
 												.toString()
 												.padStart(2, "0")}:${pomEvent.startTime
-												.getMinutes()
-												.toString()
-												.padStart(2, "0")}`}
+													.getMinutes()
+													.toString()
+													.padStart(2, "0")}`}
 											onChange={(
 												e: React.ChangeEvent<HTMLInputElement>
 											): void => {
@@ -1157,9 +1157,9 @@ export default function Pomodoros(): React.JSX.Element {
 												.getHours()
 												.toString()
 												.padStart(2, "0")}:${pomEvent.endTime
-												.getMinutes()
-												.toString()
-												.padStart(2, "0")}`}
+													.getMinutes()
+													.toString()
+													.padStart(2, "0")}`}
 											onChange={(
 												e: React.ChangeEvent<HTMLInputElement>
 											): void => {
@@ -1202,7 +1202,7 @@ export default function Pomodoros(): React.JSX.Element {
 									style={{
 										backgroundColor: "bisque",
 										color: "black",
-										border: "1px solid black",
+										border: "0",
 									}}
 									onClick={handleCreateEvent}>
 									CREA EVENTO
@@ -1266,14 +1266,15 @@ export default function Pomodoros(): React.JSX.Element {
 						<div
 							className="send-invite-container"
 							style={{ display: shareConfig ? "block" : "none" }}>
-							<div style={{marginBottom: "10px", fontWeight: "bold"}}>
+							<div style={{ marginBottom: "10px", fontWeight: "bold" }}>
 								Invia la configurazione del Pomodoro ad un amico
 							</div>
 							{users.length > 0}
 							<SearchForm onItemClick={handleSelectUser} list={users} />
 							<button
 								onClick={handleSendInvite}
-								className="btn btn-primary send-invite-button">
+								className="btn btn-primary send-invite-button"
+								style={{ backgroundColor: "lightcoral", color: "white", border: "0" }}>
 								Invia Invito
 							</button>
 						</div>
@@ -1281,7 +1282,7 @@ export default function Pomodoros(): React.JSX.Element {
 						<div
 							className="music-container"
 							style={{ display: chooseMusic ? "block" : "none" }}>
-							<div style={{marginBottom: "10px", fontWeight: "bold"}}>
+							<div style={{ marginBottom: "10px", fontWeight: "bold" }}>
 								Scegli che canzone vuoi ascoltare
 							</div>
 							<Mp3Player />

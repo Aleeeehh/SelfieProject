@@ -21,20 +21,20 @@ body {
 
 .activity-container {
     width: calc(100% - 4em);
-	height: calc(100% - 4em);
-	margin: 2em auto;
-	max-width: 800px;
-	display: flex;
-	flex-direction: column;
+    height: calc(100% - 4em);
+    margin: 2em auto;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.9);
-	padding: 2em;
-	border-radius: 15px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	transition: transform 0.2s;
+    background-color: rgb(238, 234, 228);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    padding: 2em;
+    border-radius: 15px;
+    transition: transform 0.2s;
 }
 
-.activity-container > * {
+.activity-container>* {
     width: 100%;
 }
 
@@ -89,18 +89,18 @@ body {
     background-color: #fdfdfd;
 }
 
-.activity-title > div:first-child,
-.activity-description > div:first-child,
-.activity-project > div:first-child,
-.activity-completed > div:first-child,
-.activity-status > div:first-child,
-.activity-milestone > div:first-child,
-.activity-advancementType > div:first-child,
-.activity-dates > div:first-child,
-.activity-participants > div:first-child,
-.activity-parent > div:first-child,
-.activity-next > div:first-child,
-.activity-children > div:first-child {
+.activity-title>div:first-child,
+.activity-description>div:first-child,
+.activity-project>div:first-child,
+.activity-completed>div:first-child,
+.activity-status>div:first-child,
+.activity-milestone>div:first-child,
+.activity-advancementType>div:first-child,
+.activity-dates>div:first-child,
+.activity-participants>div:first-child,
+.activity-parent>div:first-child,
+.activity-next>div:first-child,
+.activity-children>div:first-child {
     font-weight: bold;
     margin-bottom: 8px;
     color: #555;
@@ -115,43 +115,43 @@ body {
 
 .activity-user-box {
     padding: 0.4em 0.8em;
-	background-color: #ffd57e;
-	color: #4a4a4a;
-	font-weight: 500;
-	font-style: italic;
-	display: flex;
-	align-items: center;
-	border-radius: 12px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #ffd57e;
+    color: #4a4a4a;
+    font-weight: 500;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .activity-user-delete {
-	color: #d64545;
-	width: 2em;
-	height: 1.5em;
-	font-size: 0.8em;
-	margin-left: 0.5em;
-	border: none;
-	background: transparent;
-	cursor: pointer;
-	transition: color 0.2s;
+    color: #d64545;
+    width: 2em;
+    height: 1.5em;
+    font-size: 0.8em;
+    margin-left: 0.5em;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.2s;
 }
 
 .activity-user-delete:hover {
-	background-color: #a12a2a;
+    background-color: #a12a2a;
 }
 
 .activity-container button {
-	margin: 0.5em auto;
-	padding: 0.8em 1.5em;
-	border-radius: 8px;
-	font-weight: bold;
-	font-size: 1em;
-	cursor: pointer;
-	background-color: #3a7a3c;
-	color: white;
-	border: none;
-	box-shadow: 0 2px 8px rgba(58, 122, 60, 0.2);
+    margin: 0.5em auto;
+    padding: 0.8em 1.5em;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #3a7a3c;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(58, 122, 60, 0.2);
 }
 
 label {
@@ -241,12 +241,12 @@ div[message] {
     flex-direction: column;
 }
 
-.activities-container > a {
+.activities-container>a {
     margin: 1em auto;
 }
 
-.activities-container > a > button {
-    background-color: bisque;
+.activities-container>a>button {
+    background-color: rgb(249, 205, 140);
     color: black;
     font-weight: bold;
     border: none;
@@ -267,9 +267,9 @@ div[message] {
 
 .card-activity {
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgb(238, 234, 228);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -278,7 +278,7 @@ div[message] {
 
 .card-activity-title {
     text-align: center;
-    background-color: rgba(255, 228, 196, 0.9);
+    background-color: rgb(249, 205, 140);
     color: black;
     padding: 1em;
     font-weight: bold;
@@ -322,29 +322,29 @@ div[message] {
     border-radius: 4px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  
-  .activity-date-input:hover {
+}
+
+.activity-date-input:hover {
     border-color: #aaa;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  .activity-date-input:focus {
+}
+
+.activity-date-input:focus {
     outline: none;
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-  }
-  
-  .activity-date-input::-webkit-calendar-picker-indicator {
+}
+
+.activity-date-input::-webkit-calendar-picker-indicator {
     cursor: pointer;
     filter: invert(50%);
     opacity: 0.7;
-  }
-  
-  .activity-date-input::-webkit-calendar-picker-indicator:hover {
+}
+
+.activity-date-input::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
-  }
-  
+}
+
 
 @media screen and (max-width: 540px) {
     .card-activity-buttons {

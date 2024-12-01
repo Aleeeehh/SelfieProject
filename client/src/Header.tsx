@@ -619,6 +619,13 @@ export default function Header(): React.JSX.Element {
 		return () => clearInterval(intervalId); // Pulizia dell'intervallo al momento dello smontaggio
 	}, [showTimeMachine]); // Aggiungi showTimeMachine come dipendenza
 
+	//guarda se ci sono notifiche al caricamento del componente
+	useEffect(() => {
+
+		fetchNotifications();
+		checkDoNotDisturb();
+	}, []);
+
 	function toggleDropdown(): void {
 		setShowDropdown((prevState) => !prevState);
 		console.log("showDropdown:", showDropdown);
@@ -786,9 +793,9 @@ export default function Header(): React.JSX.Element {
 										value={
 											currentDate
 												? currentDate
-														.toTimeString()
-														.split(" ")[0]
-														.slice(0, 5)
+													.toTimeString()
+													.split(" ")[0]
+													.slice(0, 5)
 												: ""
 										} // Imposta l'orario attuale come valore predefinito
 										onChange={(event): void => {
@@ -1080,9 +1087,9 @@ export default function Header(): React.JSX.Element {
 												(currentDate.getTime() >= eventDate.getTime() ||
 													(currentDate.getDate() >= eventDate.getDate() &&
 														currentDate.getMonth() >=
-															eventDate.getMonth() &&
+														eventDate.getMonth() &&
 														currentDate.getFullYear() >=
-															eventDate.getFullYear()))
+														eventDate.getFullYear()))
 											) {
 												return (
 													<div key={index}>

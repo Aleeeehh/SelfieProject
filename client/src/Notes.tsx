@@ -142,7 +142,14 @@ export default function Notes(): React.JSX.Element {
 		<div className="note-background">
 			<div className="note-outer-container">
 				<a href={"/notes/new"}>
-					<button>Crea nota</button>
+					<button
+						style={{
+							backgroundColor: "bisque",
+							color: "black",
+							boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4)",
+						}}>
+						Crea nota
+					</button>
 				</a>
 				<label className="sort-label" htmlFor="sort-select">
 					Ordina per:

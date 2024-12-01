@@ -119,7 +119,7 @@
 }
 
 .preview-note-card {
-    background-color: rgba(201, 181, 147, 0.8);
+    background-color: rgba(201, 181, 147);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 
 
@@ -127,7 +127,7 @@
 }
 
 .preview-projects-card {
-    background-color: #6a6a96;
+    background-color: #b6b6e3;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
