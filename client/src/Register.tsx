@@ -5,6 +5,7 @@ import { SERVER_API } from "./params/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 
 type RegisterData = {
+	profileImage: string;
 	username: string;
 	password: string;
 	confirmPassword: string;
@@ -15,6 +16,7 @@ type RegisterData = {
 };
 
 const initialState: RegisterData = {
+	profileImage: "/images/avatar.png",
 	username: "",
 	password: "",
 	confirmPassword: "",
@@ -39,11 +41,10 @@ export default function Register(): React.JSX.Element {
 	}, [isLoggedIn, nav]);
 
 	async function handleChange(
-		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
 	): Promise<void> {
 		try {
 			if (e.target.name === "birthday") {
-				console.log(e.target.value);
 				setData({ ...data, [e.target.name]: new Date(e.target.value) });
 			} else {
 				setData({ ...data, [e.target.name]: e.target.value });
@@ -108,13 +109,30 @@ export default function Register(): React.JSX.Element {
 			<div className="registration-background">
 				<div className="registration-container">
 					<div className="registration-avatar">
-						<img src="/images/avatar.png" alt="Avatar" />
+						<img src={data.profileImage} alt="Avatar" />
 					</div>
 					<div className="registration-header">
 						<h2>Benvenuto in SELFIE!</h2>
 						<p>Crea un account per iniziare la tua esperienza</p>
 					</div>
 					<form className="registration-form">
+
+						<div>
+							<label>Immagine di profilo</label>
+							<select
+								name="profileImage"
+								value={data.profileImage}
+								onChange={handleChange}
+							>
+								<option value="/images/avatar.png">Smart sloth</option>
+								<option value="/images/avatar-runner.png">Runner sloth</option>
+								<option value="/images/avatar-reader.png">Reader sloth</option>
+								<option value="/images/avatar-gym.png">Gym sloth</option>
+								<option value="/images/avatar-cards.png">Cards sloth</option>
+								<option value="/images/avatar-writer.png">Writer sloth</option>
+							</select>
+						</div>
+
 						<div>
 							<label>Nome</label>
 							<input

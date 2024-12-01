@@ -42,7 +42,7 @@ export default function Login(): React.JSX.Element {
             <div className="login-background">
                 <div className="login-container">
                     <div className="login-avatar">
-                        <img src="/images/avatar.png" alt="Avatar" />
+                        <img src="/images/avatar.png" alt="Avatar" /*TODO: impostare la foto profilo dell'utente come immagine visualizzata*//>
                     </div>
                     <div className="login-header">
                         {message && <div>{message}</div>}

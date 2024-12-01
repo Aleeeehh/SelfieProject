@@ -52,6 +52,7 @@ router.post("/register", async (req: Request, res: Response) => {
 		// TODO: validate body parameters
 		// TODO: password hashing in database
 
+		const profileimage = req.body.profileimage as string | undefined;
 		const username = req.body.username as string | undefined;
 		const password = req.body.password as string | undefined;
 		const confirmPassword = req.body.confirmPassword as string | undefined;
@@ -62,6 +63,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
 		if (
 			!(
+				profileimage &&
 				username &&
 				password &&
 				confirmPassword &&
@@ -95,6 +97,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
 		const hashedPassword = await argon2.hash(password);
 		const newUser: User = {
+			profileimage,
 			username,
 			password: hashedPassword,
 			firstName,

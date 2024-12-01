@@ -1,4 +1,5 @@
 type User = {
+	profileImage: string;
 	id: string;
 	username: string;
 	password: string;

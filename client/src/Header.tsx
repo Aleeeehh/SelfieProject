@@ -1781,7 +1781,11 @@ export default function Header(): React.JSX.Element {
 								display: "flex",
 								justifyContent: "center",
 							}}>
-							<span style={{ color: "white" }}>U</span>
+							<img /*src={user?.profileImage} alt="Avatar"*/  //TODO: impostare la foto profilo dell'utente come immagine visualizzata
+								src="/images/avatar.png"
+								alt="Avatar"
+								style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover" }}
+							/>
 						</a>
 					</div>
 				</div>

@@ -1,5 +1,6 @@
 type User = {
     id?: String;
+    profileimage: String;
     username: String;
     password: String;
     firstName: String;

@@ -8,6 +8,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { logout } from "./AuthContext";
 
 const emptyUser: User = {
+    profileImage: "",
     id: "",
     username: "",
     password: "",
@@ -85,7 +86,7 @@ export default function Profile(): React.JSX.Element {
             {message && <div>{message}</div>}
             <div className="profile-container">
                 <div className="profile-avatar">
-                    <img src="/images/avatar.png" alt="Avatar" />
+                    <img src="/images/avatar.png" alt="Avatar" /*TODO: impostare la foto profilo dell'utente come immagine visualizzata*/ />
                 </div>
                 <div className="profile-header">
                     <h1>{`${user.firstName} ${user.lastName}`}</h1>
