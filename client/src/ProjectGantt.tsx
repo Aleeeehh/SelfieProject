@@ -1,101 +1,6 @@
 import React, { useState } from "react";
-// import Activity, { ActivityStatus } from "./types/Activity";
 import type Project from "./types/Project";
-
-/* type Task = {
-	id: number;
-	title: string;
-	start: string;
-	deadline: string;
-	accessList: string[];
-	status: ActivityStatus | null;
-	children?: Task[];
-};
-
-const dummyData: Task[] = [
-	{
-		id: 1,
-		title: "Task 1",
-		start: "2024-11-01",
-		deadline: "2024-11-07",
-		accessList: ["fv1"],
-		status: ActivityStatus.COMPLETED,
-		children: [
-			{
-				id: 4,
-				title: "Sub task 1-1",
-				start: "2024-11-01",
-				deadline: "2024-11-07",
-				status: ActivityStatus.COMPLETED,
-
-				accessList: ["fv1"],
-			},
-		],
-	},
-	{
-		id: 2,
-		title: "Task 2",
-		start: "2024-11-08",
-		deadline: "2024-11-14",
-		accessList: ["fv1", "fv2"],
-		status: ActivityStatus.ACTIVE,
-	},
-	{
-		id: 3,
-		title: "Task 3",
-		start: "2024-11-15",
-		deadline: "2024-11-21",
-		accessList: ["fv1", "fv3", "fvPM"],
-		status: ActivityStatus.NOT_ACTIVABLE,
-
-		children: [
-			{
-				id: 4,
-				title: "Sub task 3-1",
-				start: "2024-11-15",
-				deadline: "2024-11-18",
-				accessList: ["fv1"],
-				status: ActivityStatus.NOT_ACTIVABLE,
-			},
-			{
-				id: 4,
-				title: "Sub task 3-1",
-				start: "2024-11-20",
-				deadline: "2024-11-21",
-				accessList: ["fv3"],
-				status: ActivityStatus.NOT_ACTIVABLE,
-			},
-		],
-	},
-	{
-		id: 4,
-		title: "Task 4",
-		start: "2024-11-30",
-		deadline: "2024-12-21",
-		accessList: ["fv1", "fv3", "fvPM"],
-		status: ActivityStatus.NOT_ACTIVABLE,
-
-		children: [
-			{
-				id: 4,
-				title: "Sub task 4-1",
-				start: "2024-11-30",
-				deadline: "2024-12-10",
-				accessList: ["fv1"],
-				status: ActivityStatus.NOT_ACTIVABLE,
-			},
-			{
-				id: 4,
-				title: "Sub task 4-1",
-				start: "2024-12-10",
-				deadline: "2024-12-21",
-				accessList: ["fv3"],
-				status: ActivityStatus.NOT_ACTIVABLE,
-			},
-		],
-	},
-	// Add more tasks here...
-];*/
+import { SERVER_API } from "./params/params";
 
 enum View {
 	DAY = "Day",
@@ -111,6 +16,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 	const [end, setEnd] = useState<Date>(new Date(start.getTime() + THIRTY_DAYS));
 	const [points, setPoints] = useState<number[]>([]);
 	const [view, setView] = useState<View>(View.DAY);
+
+	const [serverTime, setServerTime] = useState<Date>(new Date());
 
 	const [limit, setLimit] = useState(0);
 
@@ -173,15 +80,23 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 	};*/
 
 	React.useEffect(() => {
-		const startZero = new Date(start.getTime());
-		startZero.setHours(0, 0, 0, 0);
-		setStart(startZero);
+		fetch(`${SERVER_API}/currentDate`)
+			.then((res) => {
+				return res.json();
+			})
+			.then((data) => {
+				setServerTime(new Date(data.currentDate));
 
-		const endZero = new Date(end.getTime());
-		endZero.setHours(0, 0, 0, 0);
-		setEnd(endZero);
+				const startZero = new Date(data.currentDate);
+				startZero.setHours(0, 0, 0, 0);
+				setStart(startZero);
 
-		getPoints();
+				const endZero = new Date(new Date(data.currentDate).getTime() + THIRTY_DAYS);
+				endZero.setHours(0, 0, 0, 0);
+				setEnd(endZero);
+
+				getPoints();
+			});
 	}, []);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -243,7 +158,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 									key={index}
 									className="gantt-table-head-cell"
 									style={
-										Date.now() <= point && Date.now() + limit >= point
+										new Date(serverTime).getTime() <= point &&
+										new Date(serverTime).getTime() + limit >= point
 											? { backgroundColor: "blueviolet" }
 											: {}
 									}>
@@ -269,7 +185,7 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 											</td>
 											{points.map((point, i) => (
 												<td key={i} className="day-cell">
-													{new Date(task.start || Date.now()).getTime() <=
+													{new Date(task.start || serverTime).getTime() <=
 														point &&
 													point <=
 														new Date(task.deadline).getTime() +
@@ -277,10 +193,12 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 														<div
 															className="gantt-task-bar"
 															style={
-																point < Date.now()
+																point <
+																new Date(serverTime).getTime()
 																	? new Date(
 																			task.deadline
-																	  ).getTime() < Date.now()
+																	  ).getTime() <
+																	  new Date(serverTime).getTime()
 																		? {
 																				backgroundColor:
 																					"darkred",
@@ -332,11 +250,16 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 																	<div
 																		className="gantt-task-bar"
 																		style={
-																			point < Date.now()
+																			point <
+																			new Date(
+																				serverTime
+																			).getTime()
 																				? new Date(
 																						task.deadline
 																				  ).getTime() <
-																				  Date.now()
+																				  new Date(
+																						serverTime
+																				  ).getTime()
 																					? {
 																							backgroundColor:
 																								"darkred",
