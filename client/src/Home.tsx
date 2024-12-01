@@ -112,17 +112,18 @@ function Home(): React.JSX.Element {
 	async function loadEvents(): Promise<void> {
 		try {
 			const currentUser = await getCurrentUser();
-			console.log("Valore ottenuto:", currentUser);
+			//console.log("Valore ottenuto:", currentUser);
 
-			const owner = currentUser.value.username;
+			const owner = currentUser.value._id.toString();
 			console.log("Questo è l'owner:", owner);
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
-			console.log("Eventi trovati:", data);
+			var eventi = data.value;
+			//console.log("Eventi trovati:", data);
 
 			if (data.status === ResponseStatus.GOOD) {
-				setEventList(data.value);
-				console.log("stampo data.values:", data.value);
+				setEventList(eventi);
+				console.log("Eventi trovati:", eventi);
 			} else {
 				await checkLoginStatus();
 				setMessage("Errore nel ritrovamento degli eventi");
@@ -189,9 +190,9 @@ function Home(): React.JSX.Element {
 											<div className="preview-calendar-card-title">
 												{event.title.length > HOME_MAX_TITLE_CHARS
 													? event.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: event.title}
 											</div>
 											<div>
@@ -273,15 +274,15 @@ function Home(): React.JSX.Element {
 											<div className="preview-note-card-title">
 												{note.title.length > HOME_MAX_TITLE_CHARS
 													? note.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: note.title}
 											</div>
 											<div className="preview-note-card-text">
 												{note.text.length > HOME_MAX_TEXT_CHARS
 													? note.text.substring(0, HOME_MAX_TEXT_CHARS) +
-													  "..."
+													"..."
 													: note.text}
 											</div>
 										</div>
@@ -316,17 +317,17 @@ function Home(): React.JSX.Element {
 											<div className="preview-projects-card-title">
 												{project.title.length > HOME_MAX_TITLE_CHARS
 													? project.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: project.title}
 											</div>
 											<div className="preview-projects-card-text">
 												{project.description.length > HOME_MAX_TEXT_CHARS
 													? project.description.substring(
-															0,
-															HOME_MAX_TEXT_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TEXT_CHARS
+													) + "..."
 													: project.description}
 											</div>
 										</div>
