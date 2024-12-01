@@ -129,6 +129,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 				title: activity.title,
 				description: activity.description,
 				accessList: activity.accessList,
+				accessListAccepted: activity.accessList, //per ora accetta in automatico
 				deadline: new Date(activity.deadline).toISOString().split("T")[0],
 				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
 

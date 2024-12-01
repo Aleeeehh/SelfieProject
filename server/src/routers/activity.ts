@@ -583,7 +583,7 @@ router.post("/", async (req: Request, res: Response) => {
 			description,
 			deadline: deadlineDate,
 			accessList: (await getIdListFromUsernameList(accessList)).map((id) => id.toString()),
-			accessListAccepted: accessListAccepted,
+			accessListAccepted: (await getIdListFromUsernameList(accessListAccepted)).map((id) => id.toString()),
 			completed: false,
 			completedAt: undefined,
 
@@ -707,11 +707,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const isValidObjectId = Types.ObjectId.isValid(activityId);
 		const query = isValidObjectId
 			? {
-					$or: [
-						{ _id: new Types.ObjectId(activityId) },
-						{ idEventoNotificaCondiviso: activityId },
-					],
-			  }
+				$or: [
+					{ _id: new Types.ObjectId(activityId) },
+					{ idEventoNotificaCondiviso: activityId },
+				],
+			}
 			: { idEventoNotificaCondiviso: activityId };
 
 		const foundActivity = await ActivitySchema.findOne(query).lean();
@@ -922,11 +922,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const result = await ActivitySchema.findOneAndUpdate(
 			isValidObjectId
 				? {
-						$or: [
-							{ _id: new Types.ObjectId(activityId) },
-							{ idEventoNotificaCondiviso: activityId },
-						],
-				  }
+					$or: [
+						{ _id: new Types.ObjectId(activityId) },
+						{ idEventoNotificaCondiviso: activityId },
+					],
+				}
 				: { idEventoNotificaCondiviso: activityId },
 			updatedActivity
 		);
