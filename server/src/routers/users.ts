@@ -52,7 +52,8 @@ router.post("/register", async (req: Request, res: Response) => {
 		// TODO: validate body parameters
 		// TODO: password hashing in database
 
-		const profileimage = req.body.profileimage as string | undefined;
+		console.log(req.body);
+		const profileImage = req.body.profileImage as string | undefined;
 		const username = req.body.username as string | undefined;
 		const password = req.body.password as string | undefined;
 		const confirmPassword = req.body.confirmPassword as string | undefined;
@@ -63,7 +64,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
 		if (
 			!(
-				profileimage &&
+				profileImage &&
 				username &&
 				password &&
 				confirmPassword &&
@@ -97,7 +98,7 @@ router.post("/register", async (req: Request, res: Response) => {
 
 		const hashedPassword = await argon2.hash(password);
 		const newUser: User = {
-			profileimage,
+			profileImage,
 			username,
 			password: hashedPassword,
 			firstName,
@@ -341,10 +342,7 @@ router.get("/allUsernames", checkAuthentication, async (req: Request, res: Respo
 router.get("/getIdByUsername", async (req: Request, res: Response) => {
 	const username = req.query.username as string;
 
-
 	console.log("Username originale:", username);
-
-
 
 	const foundUser = await UserSchema.findOne({ username: username }).lean();
 	console.log("Questo è l'utente trovato:", foundUser);

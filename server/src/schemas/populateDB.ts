@@ -5,7 +5,7 @@ import { AdvancementType } from "../types/Activity.ts";
 import Note from "../types/Note.js";
 import Pomodoro from "../types/Pomodoro.js";
 import { Privacy } from "../types/Privacy.js";
-import User from "../types/User.js";
+import User, { profileImages } from "../types/User.js";
 import { ActivitySchema } from "./Activity.ts";
 // import EventSchema from "./Event.js";
 import NoteSchema from "./Note.js";
@@ -32,7 +32,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileimage: "avatar-cards.png",
+				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
 			},
 			{
 				id: "",
@@ -42,7 +42,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileimage: "avatar-cards.png",
+				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
 			},
 			{
 				id: "",
@@ -52,7 +52,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileimage: "avatar-cards.png",
+				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
 			},
 			{
 				id: "",
@@ -62,7 +62,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileimage: "avatar-cards.png",
+				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
 			},
 			{
 				id: "",
@@ -72,7 +72,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileimage: "avatar-cards.png",
+				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
 			},
 		];
 

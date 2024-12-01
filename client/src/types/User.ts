@@ -1,5 +1,4 @@
 type User = {
-	profileImage: string;
 	id: string;
 	username: string;
 	password: string;
@@ -9,6 +8,7 @@ type User = {
 	address?: string;
 	createdAt?: Date;
 	updatedAt?: Date;
+	profileImage?: string;
 };
 
 export default User;
