@@ -51,7 +51,7 @@
 	height: 60%;
 	text-align: center;
 	padding: 15px;
-	max-width: 400px;
+	width: 350px;
 	margin: 20px 20px;
 }
 
@@ -61,10 +61,11 @@
 	align-items: center;
 	background-color: rgb(238, 234, 228);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	height: 60%;
 	padding: 15px;
 	text-align: center;
 	border-radius: 15px;
-	max-width: 400px;
+	width: 350px;
 	margin: 20px 20px;
 }
 
@@ -330,7 +331,7 @@ h1 {
 /*Media query per responsiveness*/
 
 @media screen and (max-width: 768px) {
-	.create-event-container>form {
+	.create-event-container > form {
 		width: 300px;
 	}
 
@@ -343,7 +344,7 @@ h1 {
 	}
 
 	.config-container {
-		width: 300px;
+		width: 350px;
 	}
 
 	.commands-container {
