@@ -83,8 +83,12 @@ export default function Profile(): React.JSX.Element {
 			<div className="profile-container">
 				<div className="profile-avatar">
 					<img
-						src={`/images/profile/${user.profileImage}`}
-						alt="Avatar" /*TODO: impostare la foto profilo dell'utente come immagine visualizzata*/
+						src={
+							user.profileImage
+								? `/images/profile/${user.profileImage}`
+								: "/images/avatar.png"
+						}
+						alt="Avatar"
 					/>
 				</div>
 				<div className="profile-header">

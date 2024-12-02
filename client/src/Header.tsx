@@ -1673,7 +1673,7 @@ export default function Header(): React.JSX.Element {
 								display: "flex",
 								justifyContent: "center",
 							}}>
-							<img /*src={user?.profileImage} alt="Avatar"*/ //TODO: impostare la foto profilo dell'utente come immagine visualizzata
+							<img
 								src={
 									profileImage
 										? `/images/profile/${profileImage}`
