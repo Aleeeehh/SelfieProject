@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { SERVER_API } from "./params/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
@@ -22,6 +22,14 @@ function MessageHub(): React.JSX.Element {
     const [message, setMessage] = React.useState("");
 
     const nav = useNavigate();
+
+    const lastMessageRef = useRef<HTMLDivElement | null>(null);
+
+    React.useEffect(() => {
+        if (lastMessageRef.current) {
+            lastMessageRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [activeChat]);
 
     async function getAllChats(): Promise<void> {
         try {
@@ -72,6 +80,42 @@ function MessageHub(): React.JSX.Element {
             setMessage("Impossibile raggiungere il server");
         }
     }
+
+    /*React.useEffect(() => {
+        if (activeChat.id) {
+            console.log("Inizio polling per chat:", activeChat.id);
+            const interval = setInterval(() => {
+                console.log("Polling in esecuzione...");
+                updateChatMessages();
+            }, 5000);
+            return () => {
+                console.log("Interrompo polling per chat:", activeChat.id);
+                clearInterval(interval);
+            };
+        }
+        else {
+            return;
+        }
+    }, [activeChat]);
+    
+    
+    async function updateChatMessages(): Promise<void> {
+        try {
+            const res = await fetch(`${SERVER_API}/chats/${activeChat.id}`);
+            if (res.status === 200) {
+                const resBody = (await res.json()) as ResponseBody;
+                if (resBody.status === ResponseStatus.GOOD) {
+                    setActiveChat(resBody.value as Chat);
+                } else {
+                    setMessage("Errore aggiornando i messaggi.");
+                }
+            } else {
+                setMessage("Errore di connessione.");
+            }
+        } catch (error) {
+            setMessage("Impossibile raggiungere il server.");
+        }
+    }*/
 
     async function addNewChat(
         e: React.ChangeEvent<HTMLSelectElement>,
@@ -235,15 +279,17 @@ function MessageHub(): React.JSX.Element {
                         <div className="chat-message-list">
                             {activeChat &&
                                 activeChat.messageList &&
-                                activeChat.messageList.map((message) => (
+                                activeChat.messageList.map((message, index) => (
                                     <div
-										className={`chat-message ${
-											message.username === loggedUser?.username
-												? "message-sent"
-												: "message-received"
-										}`}
-										key={message.id}>
-										<div className="message-text">{message.text}</div>
+                                        className={`chat-message ${
+                                            message.username === loggedUser?.username
+                                                ? "message-sent"
+                                                : "message-received"
+                                        }`}
+                                        key={message.id}
+                                        ref={index === activeChat.messageList.length - 1 ? lastMessageRef : null}
+                                    >
+                                        <div className="message-text">{message.text}</div>
                                         <div className="message-info">
                                             <span>from {message.username}</span>
                                             <span>
