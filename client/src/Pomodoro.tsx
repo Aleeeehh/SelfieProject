@@ -171,6 +171,27 @@ export default function Pomodoros(): React.JSX.Element {
 		})();
 	}, []);
 
+	async function updateTomatoList(): Promise<void> {
+		try {
+			const res = await fetch(`${SERVER_API}/pomodoro`);
+			if (res.status !== 200) {
+				nav("/login");
+			}
+			// TODO: set session value as response
+			const data = (await res.json()) as ResponseBody;
+
+			//console.log(data);
+
+			if (data.status === ResponseStatus.GOOD) {
+				setTomatoList(data.value as Pomodoro[]);
+			} else {
+				console.log("Errore nel ritrovamento dei pomodoro");
+			}
+		} catch (e) {
+			console.log("Impossibile raggiungere il server");
+		}
+	}
+
 	function inputCheck(): boolean {
 		if (
 			data.studyTime <= 0 ||
@@ -193,6 +214,7 @@ export default function Pomodoros(): React.JSX.Element {
 	}
 
 	function startProcess(): void {
+		updateTomatoList();
 		playRing();
 		setInitialCycles(data.cycles);
 		clearInterval(data.intervalId);
