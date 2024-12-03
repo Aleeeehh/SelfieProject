@@ -247,64 +247,66 @@ export default function CreateNoteForm(): React.JSX.Element {
 
 					{/* render to do list */}
 					<div className="note-list-container">
-						<div>To Do List</div>
-						{note.toDoList &&
-							note.toDoList.map((l) => (
-								<div key={l.id}>
-									<input
-										type="text"
-										value={l.text}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-											handleUpdateTextItem(e, l)
-										}
-									/>
-									<input
-										type="checkbox"
-										checked={l.completed}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-											handleCheckboxChange(e, l)
-										}
-									/>
+						<label>To Do List
+							{note.toDoList &&
+								note.toDoList.map((l) => (
+									<div key={l.id}>
+										<input
+											type="text"
+											value={l.text}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+												handleUpdateTextItem(e, l)
+											}
+										/>
+										<input
+											type="checkbox"
+											checked={l.completed}
+											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
+												handleCheckboxChange(e, l)
+											}
+										/>
 
-									{l.endDate ? (
-										<>
-											<label>
-												<input
-													type="date"
-													value={
-														new Date(l.endDate)
-															.toISOString()
-															.split("T")[0]
-													}
-													onChange={(
-														e: React.ChangeEvent<HTMLInputElement>
-													): void => handleUpdateDateItem(e, l)}
-												/>
-											</label>
+										{l.endDate ? (
+											<>
+												<label>
+													<input
+														type="date"
+														value={
+															new Date(l.endDate)
+																.toISOString()
+																.split("T")[0]
+														}
+														onChange={(
+															e: React.ChangeEvent<HTMLInputElement>
+														): void => handleUpdateDateItem(e, l)}
+													/>
+												</label>
+												<button
+													onClick={(
+														e: React.MouseEvent<HTMLButtonElement>
+													): void => handleRemoveDateItem(e, l)}>
+													Rimuovi Scadenza
+												</button>
+											</>
+										) : (
 											<button
 												onClick={(
 													e: React.MouseEvent<HTMLButtonElement>
-												): void => handleRemoveDateItem(e, l)}>
-												Rimuovi Scadenza
+												): void => handleAddDateItem(e, l)}>
+												Aggiungi Scadenza
 											</button>
-										</>
-									) : (
-										<button
-											onClick={(
-												e: React.MouseEvent<HTMLButtonElement>
-											): void => handleAddDateItem(e, l)}>
-											Aggiungi Scadenza
-										</button>
-									)}
+										)}
 
-									<button
-										onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
-											handleRemoveItem(e, l)
-										}>
-										Elimina
-									</button>
-								</div>
-							))}
+										<button
+											onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
+												handleRemoveItem(e, l)
+											}>
+											Elimina
+										</button>
+									</div>
+								))
+							}
+						</label>
 						<button onClick={handleAddItem}>Aggiungi Item</button>
 					</div>
 

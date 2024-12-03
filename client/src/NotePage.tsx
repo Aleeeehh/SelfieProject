@@ -287,88 +287,131 @@ export default function NotePage(): React.JSX.Element {
 							/>
 						</>
 					)}
-
 					{/* render to do list */}
-					<div className="note-list-container">
-						<div>To Do List</div>
-						{note.toDoList &&
-							note.toDoList.map((l) => (
-								<div key={l.id}>
-									{isEditing ? (
-										<input
-											type="text"
-											value={l.text}
-											onChange={(
-												e: React.ChangeEvent<HTMLInputElement>
-											): void => {
-												handleUpdateTextItem(e, l);
-											}}
-										/>
-									) : (
-										<div>{l.text}</div>
-									)}
-									{isEditing ? (
-										<input
-											type="checkbox"
-											checked={l.completed}
-											onChange={(
-												e: React.ChangeEvent<HTMLInputElement>
-											): void => handleCheckboxChange(e, l)}
-										/>
-									) : (
-										<div>{l.completed ? "Completato" : "Non completato"}</div>
-									)}
-									{isEditing ? (
-										l.endDate ? (
+						<label>
+							To Do List
+							{note.toDoList &&
+								note.toDoList.map((l) => (
+									<div key={l.id}>
+										{isEditing ? (
 											<>
-												<label>
+												<div className="note-to-do-container-editing">
 													<input
-														type="date"
-														value={
-															new Date(l.endDate)
-																.toISOString()
-																.split("T")[0]
-														}
+														type="text"
+														value={l.text}
+														style={{width: "200px", marginBottom: "5px"}}
+														placeholder="Nuovo to-do item"
 														onChange={(
 															e: React.ChangeEvent<HTMLInputElement>
-														): void => handleUpdateDateItem(e, l)}
+														): void => {
+															handleUpdateTextItem(e, l);
+														}}
 													/>
-												</label>
-												<button
-													onClick={(
-														e: React.MouseEvent<HTMLButtonElement>
-													): void => handleRemoveDateItem(e, l)}>
-													Rimuovi Scadenza
-												</button>
+													<div style={{display: "flex", alignItems: "center", flexDirection: "column"}}>
+														{l.endDate ? (
+															<>
+																<label style={{ margin: "0" }}>
+																	<input
+																		type="date"
+																		value={
+																			new Date(l.endDate)
+																				.toISOString()
+																				.split("T")[0]
+																		}
+																		onChange={(
+																			e: React.ChangeEvent<HTMLInputElement>
+																		): void => handleUpdateDateItem(e, l)}
+																	/>
+																</label>
+																<button
+																	onClick={(
+																		e: React.MouseEvent<HTMLButtonElement>
+																	): void => handleRemoveDateItem(e, l)}>
+																	Rimuovi Scadenza
+																</button>
+															</>
+														) : (
+															<button
+																onClick={(
+																	e: React.MouseEvent<HTMLButtonElement>
+																): void => handleAddDateItem(e, l)}>
+																Aggiungi Scadenza
+															</button>
+														)}
+													</div>
+													<button
+														onClick={(
+															e: React.MouseEvent<HTMLButtonElement>
+														): void => handleRemoveItem(e, l)}
+														style={{ backgroundColor: "#d64545" }}
+													>
+														Elimina Item
+													</button>
+												</div>
 											</>
 										) : (
-											<button
-												onClick={(
-													e: React.MouseEvent<HTMLButtonElement>
-												): void => handleAddDateItem(e, l)}>
-												Aggiungi Scadenza
-											</button>
-										)
-									) : l.endDate ? (
-										<div>
-											Scadenza:{" "}
-											{new Date(l.endDate).toISOString().split("T")[0]}
-										</div>
-									) : (
-										<div>No end date</div>
-									)}
-									{isEditing && (
-										<button
-											onClick={(
-												e: React.MouseEvent<HTMLButtonElement>
-											): void => handleRemoveItem(e, l)}>
-											Elimina
-										</button>
-									)}
-								</div>
-							))}
+											<>
+												<div className="note-to-do-container">
+													<div style={{display: "flex", alignItems: "center"}}>
+														<input
+															id="todo-completed"
+															type="checkbox"
+															style={{height: "15px", width: "15px"}}
+															checked={l.completed}
+															onChange={(
+																e: React.ChangeEvent<HTMLInputElement>
+															): void => handleCheckboxChange(e, l)}
+														/>
+													</div>
+													<div>
+														<span style={{fontWeight: "300"}}>
+															Titolo:{" "}
+														</span>
+														<span style={{fontStyle: "italic"}}>
+															{l.text}
+														</span>
+													</div>
+													<div>
+														<span style={{fontWeight: "300"}}>
+															Stato:{" "}
+														</span>
+														<span style={{fontStyle: "italic"}}>
+															{l.completed ? "Completato" : "Non completato"}
+														</span>
+													</div>
+													<div style={{display: "flex", alignItems: "center"}}>
+														{l.endDate ?(
+															<div>
+																<span style={{fontWeight: "300"}}>
+																	Scadenza:{" "}
+																</span>
+																<span style={{fontStyle: "italic"}}>
+																	{new Date(l.endDate).toLocaleString("it-IT", {
+																		day: "2-digit",
+																		month: "2-digit",
+																		year: "numeric",
+																	})}
+																</span>
+															</div>
+														) : (
+															<div>
+																<span style={{fontWeight: "300"}}>
+																	Scadenza:{" "}
+																</span>
+																<span style={{fontStyle: "italic"}}>
+																	Nessuna
+																</span>
+															</div>
+														)}
+													</div>
+												</div>
+											</>
+										)}
+									</div>
+								))
+							}
+						</label>
 						{isEditing && <button onClick={handleAddItem}>Aggiungi Item</button>}
-					</div>
 					{/* render tags */}
 					<label>
 						Tags
@@ -464,7 +507,7 @@ export default function NotePage(): React.JSX.Element {
 							{isEditing ? (
 								<>
 									<button onClick={handleUpdateNote}>Aggiorna Nota</button>
-									<button onClick={handleAbortChanges}>Annulla Modifiche</button>
+									<button style={{ backgroundColor: "#d64545" }} onClick={handleAbortChanges}>Annulla Modifiche</button>
 								</>
 							) : (
 								<button onClick={(): void => setIsEditing(true)}>
