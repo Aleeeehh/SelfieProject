@@ -5,15 +5,7 @@ import Notification from "./types/Notification";
 import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const buttonStyle = {
-	backgroundColor: "white",
-	color: "black",
-	borderColor: "gray",
-	margin: "3px 4px",
-	padding: "4px 6px",
-	width: "100px",
-	alignSelf: "center",
-};
+const buttonStyle = {};
 
 //const NOTIFICATION_COUNT = 5;
 
@@ -658,25 +650,31 @@ export default function Header(): React.JSX.Element {
 	return (
 		<header className="header-container">
 			{/*Parte sinistra dell'header*/}
-			<div className="link-container">
-				<a href="/">
-					<img src="/images/logo.jpeg" alt="logo.jpeg" title="Home" />
+			<div className="logged-header-buttons">
+				<a className="header-home" href="/">
+					<img
+						src="/images/logo.jpeg"
+						alt="logo.jpeg"
+						title="Home"
+						style={{ margin: "0.5em" }}
+					/>
+					<div
+						className="selfie-title"
+						style={{ alignSelf: "center", textAlign: "center" }}>
+						SELFIE
+					</div>
 				</a>
 
-				<a
-					className="btn secondary"
-					style={buttonStyle}
-					href="/calendar"
-					title="Calendario">
+				<a className="header-link" href="/calendar" title="Calendario">
 					Calendario
 				</a>
-				<a className="btn secondary" style={buttonStyle} href="/pomodoro" title="Pomodoro">
+				<a className="header-link" href="/pomodoro" title="Pomodoro">
 					Pomodoro
 				</a>
-				<a className="btn secondary" style={buttonStyle} href="/notes" title="Note">
+				<a className="header-link" href="/notes" title="Note">
 					Note
 				</a>
-				<a className="btn secondary" style={buttonStyle} href="/projects" title="Progetti">
+				<a className="header-link" href="/projects" title="Progetti">
 					Progetti
 				</a>
 				{/*
@@ -697,9 +695,8 @@ export default function Header(): React.JSX.Element {
 				</a>
 				<button
 					type="button"
-					className="btn secondary"
+					className="header-link"
 					style={{
-						...buttonStyle,
 						width: "80px",
 						position: "relative",
 					}}
@@ -752,26 +749,20 @@ export default function Header(): React.JSX.Element {
 			</div>
 
 			{isLoggedIn ? (
-				<div
-					style={{
-						display: "flex",
-						justifyContent: "flex-end",
-						width: "50%",
-						alignItems: "center",
-					}}>
+				<div className="logged-header-buttons">
 					{currentDate && (
 						<>
-							<span className="btn secondary date-button">
+							<span className="btn secondary date-button time-machine-button">
 								{formatDate(currentDate)}
 							</span>
-							<span className="btn secondary date-button">
+							<span className="btn secondary date-button time-machine-button">
 								{formatDateHours(currentDate)}
 							</span>
 						</>
 					)}
 
 					<button
-						className="btn secondary"
+						className="btn secondary time-machine-button"
 						title="Time Machine"
 						style={{ ...buttonStyle, width: "45px" }}
 						onClick={(): void => setShowTimeMachine(!showTimeMachine)}>
