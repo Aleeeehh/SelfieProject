@@ -8,6 +8,7 @@ import { marked } from "marked";
 // import UserResult from "./types/UserResult";
 import { Privacy } from "./types/Privacy";
 import SearchForm from "./SearchForm";
+import User from "./types/User";
 
 const baseNote: Note = {
 	id: "",
@@ -40,15 +41,62 @@ export default function CreateNoteForm(): React.JSX.Element {
 		setNote({ ...note, privacy: e.target.value as Privacy });
 	}
 
+	async function getCurrentUser(): Promise<Promise<any> | null> {
+		try {
+			const res = await fetch(`${SERVER_API}/users`);
+			if (!res.ok) { // Controlla se la risposta non è ok
+				setMessage("Utente non autenticato");
+				return null; // Restituisci null se non autenticato
+			}
+			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			const data: User = await res.json();
+			//console.log("Questo è il json della risposta", data);
+			return data;
+		} catch (e) {
+			setMessage("Impossibile recuperare l'utente corrente");
+			return null;
+		}
+	}
+
 	async function handleCreateNote(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
 		try {
+			console.log("Creo la nota:", note);
+
+			//crea la nota nella lista delle note
 			const res = await fetch(`${SERVER_API}/notes`, {
 				method: "POST",
 				body: JSON.stringify(note),
 				headers: { "Content-Type": "application/json" },
 			});
+
+			//crea le attività nella lista delle attività
+			const currentUser = await getCurrentUser();
+			const owner = currentUser.value._id.toString();
+			const todoList = note.toDoList;
+
+			for (const item of todoList) {
+				console.log(item);
+				//crea l'attività nella lista delle attività
+
+				if (item.endDate) { //se esiste una scadenza per l'item
+					const res2 = await fetch(`${SERVER_API}/activities`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							idEventoNotificaCondiviso: note.id,
+							title: item.text,
+							deadline: item.endDate?.toISOString(),
+							accessList: [owner],
+							accessListAccepted: [owner],
+							description: "Item in ToDoList della nota " + note.title,
+							owner: owner,
+						}),
+					});
+					console.log(res2);
+				}
+			}
 
 			const resBody = (await res.json()) as ResponseBody;
 

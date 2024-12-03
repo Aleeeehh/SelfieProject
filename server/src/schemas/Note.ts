@@ -1,5 +1,18 @@
 import mongoose from "mongoose";
 import { Privacy } from "../types/Privacy.js";
+export type ListItem = {
+	id?: string;
+	endDate?: Date;
+	completed: boolean;
+	text: string;
+};
+
+// Schema per Mongoose
+const listItemSchema = new mongoose.Schema({
+	endDate: { type: Date },
+	completed: { type: Boolean, required: true },
+	text: { type: String, required: true }
+});
 
 const noteSchema = new mongoose.Schema(
 	{
@@ -20,6 +33,7 @@ const noteSchema = new mongoose.Schema(
 				ref: "User",
 			},
 		],
+		toDoList: { type: [listItemSchema], required: false },
 		// project related fields
 		projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
 		activityId: { type: mongoose.Schema.Types.ObjectId, ref: "Activity" },

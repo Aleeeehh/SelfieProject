@@ -32,6 +32,8 @@ export default function NotePage(): React.JSX.Element {
 	const [deletedItems, setDeletedItems] = React.useState([] as string[]); // id list
 	const [count, setCount] = React.useState(0);
 	const nav = useNavigate();
+	//const [scadenzaItem, setScadenzaItem] = React.useState([] as string[]);
+	//const [titoloItem, setTitoloItem] = React.useState([] as string[]);
 
 	const loggedUser = {
 		username: localStorage.getItem("loggedUserName"),

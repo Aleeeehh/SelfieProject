@@ -245,6 +245,11 @@ router.post("/", async (req: Request, res: Response) => {
 
 		// Leo - Note 18-33 - BEGIN
 		const inputItemList = req.body.toDoList as ListItem[] | undefined;
+		console.log("Questo è l'itemList:", inputItemList);
+		console.log("Questo è l'itemList:", inputItemList);
+
+		console.log("Questo è l'itemList:", inputItemList);
+
 		// Leo - Note 18-33 - END
 
 		if (!inputTitle || !inputText) {
@@ -286,6 +291,7 @@ router.post("/", async (req: Request, res: Response) => {
 			title: inputTitle,
 			text: inputText,
 			tags: inputTags,
+			toDoList: inputItemList,
 			privacy,
 			accessList: newAccessList.map((x) => x.toString()),
 		};

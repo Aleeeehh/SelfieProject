@@ -376,6 +376,8 @@ router.post("/", async (req: Request, res: Response) => {
 		const reactivated = req.body.reactivated as boolean | undefined;
 		// Leo - Progetti - END
 
+		console.log("Questo è la accessList ricevuta:", accessList);
+		console.log("Questo è la accessListAccepted ricevuta:", accessListAccepted);
 		if (!title || !description || !deadline || !owner) {
 			const resBody: ResponseBody = {
 				status: ResponseStatus.BAD,
@@ -582,8 +584,8 @@ router.post("/", async (req: Request, res: Response) => {
 			title,
 			description,
 			deadline: deadlineDate,
-			accessList: (await getIdListFromUsernameList(accessList)).map((id) => id.toString()),
-			accessListAccepted: (await getIdListFromUsernameList(accessListAccepted)).map((id) => id.toString()),
+			accessList: accessList,
+			accessListAccepted: accessListAccepted,
 			completed: false,
 			completedAt: undefined,
 
