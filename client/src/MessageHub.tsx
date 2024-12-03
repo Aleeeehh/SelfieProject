@@ -164,16 +164,22 @@ function MessageHub(): React.JSX.Element {
 		}
 	}
 
-	//TODO: non funziona
-	async function deleteChat(e: React.ChangeEvent<HTMLSelectElement>): Promise<void> {
+	async function deleteChat(
+		e: React.ChangeEvent<HTMLSelectElement>,
+		username: string
+	): Promise<void> {
 		e.preventDefault();
-		const otherUser =
-			activeChat.firstUser === loggedUser?.username
-				? activeChat.secondUser
-				: activeChat.firstUser;
+
+		const foundChat = chatList.find(
+			(chat) => chat.firstUser === username || chat.secondUser === username
+		);
+
+		if (!foundChat) {
+			alert("Chat con utente '" + username + "' non trovata, impossibile eliminare");
+		}
 
 		try {
-			const res = await fetch(`${SERVER_API}/chats/${otherUser}`, {
+			const res = await fetch(`${SERVER_API}/chats/${foundChat?.id}`, {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
@@ -249,8 +255,8 @@ function MessageHub(): React.JSX.Element {
 						{deletingChat && (
 							<>
 								<SearchForm
-									onItemClick={(e): void => {
-										deleteChat(e);
+									onItemClick={(e, user: string): void => {
+										deleteChat(e, user);
 									}}
 									list={[]}
 								/>
