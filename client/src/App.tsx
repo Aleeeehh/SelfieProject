@@ -98,6 +98,7 @@ function WithLayout<T extends React.ReactNode>({
 						fontSize: "20px",
 						cursor: "pointer",
 						boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
+						zIndex: 10,
 					}}>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
