@@ -10,12 +10,7 @@ import type Activity from "../types/Activity.js";
 import { validDateString } from "../lib.ts";
 import { ProjectSchema } from "../schemas/Project.ts";
 import { AdvancementType } from "../types/Activity.js";
-import {
-	getActivityList,
-	getIdListFromUsernameList,
-	getStatusForActivity,
-	getUsernameListFromIdList,
-} from "./lib.ts";
+import { getActivityList, getStatusForActivity, getUsernameListFromIdList } from "./lib.ts";
 // import { validDateString } from "../lib.js";
 
 const router: Router = Router();
@@ -709,11 +704,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const isValidObjectId = Types.ObjectId.isValid(activityId);
 		const query = isValidObjectId
 			? {
-				$or: [
-					{ _id: new Types.ObjectId(activityId) },
-					{ idEventoNotificaCondiviso: activityId },
-				],
-			}
+					$or: [
+						{ _id: new Types.ObjectId(activityId) },
+						{ idEventoNotificaCondiviso: activityId },
+					],
+			  }
 			: { idEventoNotificaCondiviso: activityId };
 
 		const foundActivity = await ActivitySchema.findOne(query).lean();
@@ -924,11 +919,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const result = await ActivitySchema.findOneAndUpdate(
 			isValidObjectId
 				? {
-					$or: [
-						{ _id: new Types.ObjectId(activityId) },
-						{ idEventoNotificaCondiviso: activityId },
-					],
-				}
+						$or: [
+							{ _id: new Types.ObjectId(activityId) },
+							{ idEventoNotificaCondiviso: activityId },
+						],
+				  }
 				: { idEventoNotificaCondiviso: activityId },
 			updatedActivity
 		);

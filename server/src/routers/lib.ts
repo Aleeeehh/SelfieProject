@@ -2,7 +2,7 @@ import type { Types } from "mongoose";
 import UserSchema from "../schemas/User.ts";
 import type Activity from "../types/Activity.ts";
 import { ActivitySchema } from "../schemas/Activity.ts";
-import { ActivityStatus, type AdvancementType } from "../types/Activity.ts";
+import { ActivityStatus, AdvancementType } from "../types/Activity.ts";
 
 // 30 days
 const MAX_TIME_BEFORE_ABANDON = 30 * 24 * 60 * 60 * 1000;
@@ -79,6 +79,8 @@ export async function getActivityList(
 		};
 
 		newActivity.status = await getStatusForActivity(newActivity);
+		newActivity.start = newActivity.start ? await getActivityStartDate(newActivity) : null;
+		newActivity.deadline = await getActivityEndDate(newActivity);
 
 		activityList.push(newActivity);
 	}
@@ -202,4 +204,68 @@ export async function getStatusForActivity(activity: Activity): Promise<Activity
 	}
 
 	return ActivityStatus.ACTIVABLE;
+}
+
+export async function getActivityEndDate(activity: Activity): Promise<Date> {
+	const dateObj = await CurrentDateSchema.findOne();
+	const serverTime = new Date(dateObj?.date || new Date()).getTime();
+
+	if (!activity.projectId) return activity.deadline;
+
+	// if the current activity is a milestone, return the deadline date
+	// if the current activity has contraction type, return the deadline date
+	// if the current activity is not a milestone, get the late time from the previuos activity
+	// and traslate start and deadline of the late time
+
+	if (activity.milestone || activity.advancementType === AdvancementType.CONTRACTION) {
+		return activity.deadline;
+	}
+
+	const prevActivity = await ActivitySchema.findOne({
+		next: activity.id,
+	}).lean();
+
+	if (!prevActivity) {
+		return activity.deadline;
+	}
+
+	const lateTime = new Date(prevActivity.deadline).getTime() - serverTime;
+
+	if (lateTime > 0) {
+		return new Date(new Date(activity.deadline).getTime() + lateTime);
+	}
+
+	return activity.deadline;
+}
+
+export async function getActivityStartDate(activity: Activity): Promise<Date | null> {
+	const dateObj = await CurrentDateSchema.findOne();
+	const serverTime = new Date(dateObj?.date || new Date()).getTime();
+
+	if (!activity.projectId) return null;
+
+	if (!activity.start) return null;
+
+	// if the current activity has translation type, return the start date shifted of the late time of previuos activity
+	// if the current activity has contraction type, return the min between the (start date + late time) and end date
+
+	const prevActivity = await ActivitySchema.findOne({
+		next: activity.id,
+	}).lean();
+
+	if (!prevActivity) {
+		if (new Date(activity.start).getTime() <= serverTime) {
+			return activity.start;
+		}
+
+		return new Date(serverTime);
+	}
+
+	const lateTime = new Date(prevActivity.deadline).getTime() - serverTime;
+
+	if (lateTime > 0) {
+		return new Date(new Date(activity.start).getTime() + lateTime);
+	}
+
+	return activity.start;
 }
