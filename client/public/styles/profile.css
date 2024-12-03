@@ -8,8 +8,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: url('/images/background.png');
-    background-position: center;
+   /* background-image: url('/images/background.png');
+    background-position: center;*/
     height: 100%;
     padding: 2rem;
     font-family: Arial, sans-serif;

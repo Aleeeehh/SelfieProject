@@ -21,6 +21,9 @@
 /* All files */
 
 body {
+    background-image: url("/images/background.png");
+    padding: 0; 
+    margin: 0;
 	text-align: justify;
 }
 
