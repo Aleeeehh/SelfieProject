@@ -10,10 +10,10 @@ body {
 }*/
 
 .activity-background {
-    background-image: url('/images/background.png');
+    /*background-image: url('/images/background.png');
     background-repeat: repeat;
     width: 100vw;
-    height: 100%;
+    height: 100%;*/
     display: flex;
     justify-content: center;
     align-items: center;
@@ -231,10 +231,10 @@ div[message] {
 /* ACTIVITIES PAGE */
 
 .activities-container {
-    background-image: url('/images/background.png');
+    /*background-image: url('/images/background.png');
     background-repeat: repeat;
     width: 100vw;
-    height: 100%;
+    height: 100%;*/
     display: flex;
     justify-content: center;
     align-items: center;
