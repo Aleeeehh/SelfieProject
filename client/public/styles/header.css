@@ -178,6 +178,7 @@
 	position: relative;
 	width: 80px;
 	border: 0;
+	font-weight: bold;
 }
 
 @media screen and (max-width: 900px) {

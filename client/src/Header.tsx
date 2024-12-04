@@ -8,7 +8,6 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const buttonStyle = {
 	backgroundColor: "white",
 	color: "black",
-	borderColor: "gray",
 	margin: "3px 4px",
 	padding: "4px 6px",
 	width: "100px",
@@ -671,9 +670,6 @@ export default function Header(): React.JSX.Element {
 						style={{ alignSelf: "center", textAlign: "center" }}>
 						SELFIE
 					</div>
-			{/*<div className="link-container">
-				<a href="/">
-					<img src="/images/logo.jpeg" alt="logo.jpeg" title="Home" />*/}
 				</a>
 
 				<a
@@ -713,13 +709,6 @@ export default function Header(): React.JSX.Element {
 					className="header-link header-menu-button"
 					onClick={toggleDropdown}
 				>
-					{/*className="btn secondary"
-					style={{
-						...buttonStyle,
-						width: "80px",
-						position: "relative",
-					}}
-					onClick={toggleDropdown}>*/}
 					Menù
 					<ul
 						className="dropdown-menu"
@@ -770,13 +759,6 @@ export default function Header(): React.JSX.Element {
 
 			{isLoggedIn ? (
 				<div className="right-menu-buttons">
-				{/*<div
-					style={{
-						display: "flex",
-						justifyContent: "flex-end",
-						width: "50%",
-						alignItems: "center",
-					}}>*/}
 					{currentDate && (
 						<>
 							<span className="btn secondary date-button">
