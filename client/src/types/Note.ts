@@ -6,6 +6,7 @@ export type ListItem = {
     endDate?: Date;
     completed: boolean;
     text: string;
+    //idEventoNotificaCondiviso?: string;
 };
 
 type Note = {

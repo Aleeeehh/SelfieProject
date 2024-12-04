@@ -167,6 +167,63 @@ router.get("/owner", async (req: Request, res: Response) => {
 	}
 });
 
+// Ottieni il titolo di un'attività dato il suo ID
+router.get("/title/:id", async (req: Request, res: Response) => {
+	try {
+		const activityId = req.params.id;
+
+		// Verifica che l'ID sia valido
+		if (!Types.ObjectId.isValid(activityId)) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "ID attività non valido"
+			});
+		}
+
+		// Trova l'attività e seleziona solo il campo title
+		const activity = await ActivitySchema.findById(activityId)
+			.select('title')
+			.lean();
+
+		if (!activity) {
+			return res.status(404).json({
+				status: ResponseStatus.BAD,
+				message: `Attività con id ${activityId} non trovata`
+			});
+		}
+
+		return res.status(200).json({
+			status: ResponseStatus.GOOD,
+			value: activity.title
+		});
+
+	} catch (e) {
+		console.error("Errore durante il recupero del titolo dell'attività:", e);
+		return res.status(500).json({
+			status: ResponseStatus.BAD,
+			message: "Errore durante il recupero del titolo dell'attività"
+		});
+	}
+});
+
+//ottieni l'attività dato il suo titolo
+router.get("/by-title/:title", async (req: Request, res: Response) => {
+	try {
+		const title = req.params.title;
+		const activity = await ActivitySchema.findOne({ title }).lean();
+
+		return res.status(200).json({
+			status: ResponseStatus.GOOD,
+			value: activity
+		});
+	} catch (e) {
+		return res.status(500).json({
+			status: ResponseStatus.BAD,
+			message: "Errore durante la ricerca dell'attività"
+		});
+	}
+});
+
 //elimina attività
 router.post("/deleteActivity", async (req: Request, res: Response) => {
 	// console.log("Richiesta ricevuta per eliminare evento");
@@ -704,11 +761,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const isValidObjectId = Types.ObjectId.isValid(activityId);
 		const query = isValidObjectId
 			? {
-					$or: [
-						{ _id: new Types.ObjectId(activityId) },
-						{ idEventoNotificaCondiviso: activityId },
-					],
-			  }
+				$or: [
+					{ _id: new Types.ObjectId(activityId) },
+					{ idEventoNotificaCondiviso: activityId },
+				],
+			}
 			: { idEventoNotificaCondiviso: activityId };
 
 		const foundActivity = await ActivitySchema.findOne(query).lean();
@@ -919,11 +976,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const result = await ActivitySchema.findOneAndUpdate(
 			isValidObjectId
 				? {
-						$or: [
-							{ _id: new Types.ObjectId(activityId) },
-							{ idEventoNotificaCondiviso: activityId },
-						],
-				  }
+					$or: [
+						{ _id: new Types.ObjectId(activityId) },
+						{ idEventoNotificaCondiviso: activityId },
+					],
+				}
 				: { idEventoNotificaCondiviso: activityId },
 			updatedActivity
 		);

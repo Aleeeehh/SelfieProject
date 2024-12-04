@@ -7,7 +7,7 @@ import { default as apiRouter } from "./routers/api.js";
 import mongoose from "mongoose";
 import {
 	//createDummyEvents,
-	createDummyNotes,
+	//createDummyNotes,
 	createDummyPomodoros,
 	createDummyUsers,
 	createCurrentDate,
@@ -140,10 +140,10 @@ mongoose
 	.connect(dbConnectionString + `/${DB_APP_NAME}`)
 	.then(() => createDummyUsers())
 	//.then(() => createDummyEvents())
-	.then(() => createDummyNotes())
+	//.then(() => createDummyNotes())
 	.then(() => createDummyPomodoros())
 	.then(() => createCurrentDate())
-	//.then(() => createDummyProject()); 
+//.then(() => createDummyProject()); 
 
 mongoose.set("sanitizeFilter", true); // sanitize from NoSQLi
 mongoose.set("strictQuery", true); // only schema fields are saved in database!!!
