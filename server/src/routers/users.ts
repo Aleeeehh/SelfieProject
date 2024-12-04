@@ -387,3 +387,91 @@ router.get("/allIds", checkAuthentication, async (req: Request, res: Response) =
 });
 
 export default router;
+
+router.put("/", async (req: Request, res: Response) => {
+	try {
+		// TODO: validate body parameters
+		// TODO: password hashing in database
+
+		const profileImage = req.body.profileImage as string | undefined;
+		// const username = req.body.username as string | undefined; // username cannot change
+		const firstName = req.body.firstName as string | undefined;
+		const lastName = req.body.lastName as string | undefined;
+		const address = req.body.address as string | undefined;
+		const birthdayStr = req.body.birthday as string | undefined;
+
+		const oldPassword = req.body.oldPassword as string | undefined;
+		const password = req.body.password as string | undefined;
+		const confirmPassword = req.body.confirmPassword as string | undefined;
+
+		const foundUser = await UserSchema.findById(req.user!.id);
+
+		if (!foundUser) {
+			console.log("User does not exist");
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "User does not exist",
+			});
+		}
+
+		if (password && password !== confirmPassword)
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Passwords do not match",
+			});
+
+		if (password && (!oldPassword || !(await argon2.verify(foundUser.password, oldPassword))))
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Old password is incorrect",
+			});
+
+		var newBirthday = foundUser.birthday;
+		if (birthdayStr) {
+			if (!validDateString(birthdayStr)) {
+				console.log("Invalid date format, should be: YYYY-MM-DD");
+				return res.status(400).json({
+					status: ResponseStatus.BAD,
+					message: "Invalid date format, should be: YYYY-MM-DD",
+				});
+			}
+			newBirthday = new Date(birthdayStr);
+		}
+
+		var newPassword = foundUser.password;
+		if (password) {
+			newPassword = await argon2.hash(password);
+		}
+
+		const newUser = await UserSchema.findByIdAndUpdate(
+			req.user!.id,
+			{
+				profileImage: profileImage,
+				firstName: firstName,
+				lastName: lastName,
+				address: address,
+				birthday: newBirthday,
+				password: newPassword,
+			},
+			{ new: true }
+		);
+		// Insert into database new event
+		console.log("Updating user: ", newUser);
+
+		const resBody: ResponseBody = {
+			message: "User updated into database",
+			status: ResponseStatus.GOOD,
+			value: newUser,
+		};
+
+		return res.status(200).json(resBody);
+	} catch (e) {
+		console.log(e);
+		const resBody: ResponseBody = {
+			message: "Error handling request",
+			status: ResponseStatus.BAD,
+		};
+
+		return res.status(500).json(resBody);
+	}
+});
