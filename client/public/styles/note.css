@@ -268,7 +268,6 @@ input[type="checkbox"] {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 2em;
 }
 
 .note-outer-container>a {

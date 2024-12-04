@@ -689,15 +689,10 @@ export default function Header(): React.JSX.Element {
 				<a className="header-link" href="/projects" title="Progetti">
 					Progetti
 				</a>
-				{/*
 				<a
-					className="header-link"
-					href="/activities"
-					title="Attività"
-				>
+					className="header-link" href="/activities" title="Attività">
 					Attività
 				</a>
-				*/}
 			</div>
 
 			<div className="dropdown-container">
@@ -746,11 +741,11 @@ export default function Header(): React.JSX.Element {
 								Progetti
 							</a>
 						</li>
-						{/* <li>
+						<li>
 							<a href="/activities" className="header-link" title="Attività">
 								Attività
 							</a>
-						</li> */}
+						</li>
 					</ul>
 				</button>
 			</div>

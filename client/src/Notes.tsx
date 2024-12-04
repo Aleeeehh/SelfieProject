@@ -139,7 +139,6 @@ export default function Notes(): React.JSX.Element {
 	}
 
 	return (
-		<div className="note-background">
 			<div className="note-outer-container">
 				<a href={"/notes/new"}>
 					<button
@@ -148,7 +147,7 @@ export default function Notes(): React.JSX.Element {
 							color: "black",
 							boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4)",
 						}}>
-						Crea nota
+						Crea nuova nota
 					</button>
 				</a>
 				<label className="sort-label" htmlFor="sort-select">
@@ -211,6 +210,5 @@ export default function Notes(): React.JSX.Element {
 				</div>
 				{message && <div>{message}</div>}
 			</div>
-		</div>
 	);
 }
