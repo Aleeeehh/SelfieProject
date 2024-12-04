@@ -650,7 +650,7 @@ export default function Header(): React.JSX.Element {
 	return (
 		<header className="header-container">
 			{/*Parte sinistra dell'header*/}
-			<div className="logged-header-buttons">
+			<div className="left-menu-buttons">
 				<a className="header-home" href="/">
 					<img
 						src="/images/logo.jpeg"
@@ -695,12 +695,9 @@ export default function Header(): React.JSX.Element {
 				</a>
 				<button
 					type="button"
-					className="header-link"
-					style={{
-						width: "80px",
-						position: "relative",
-					}}
-					onClick={toggleDropdown}>
+					className="header-link header-menu-button"
+					onClick={toggleDropdown}
+				>
 					Menù
 					<ul
 						className="dropdown-menu"
@@ -718,7 +715,8 @@ export default function Header(): React.JSX.Element {
 							margin: "0",
 							width: "120px",
 							zIndex: "100",
-						}}>
+						}}
+					>
 						<li>
 							<a href="/calendar" title="Calendario">
 								Calendario
@@ -749,7 +747,7 @@ export default function Header(): React.JSX.Element {
 			</div>
 
 			{isLoggedIn ? (
-				<div className="logged-header-buttons">
+				<div className="right-menu-buttons">
 					{currentDate && (
 						<>
 							<span className="btn secondary date-button time-machine-button">
@@ -765,7 +763,8 @@ export default function Header(): React.JSX.Element {
 						className="btn secondary time-machine-button"
 						title="Time Machine"
 						style={{ ...buttonStyle, width: "45px" }}
-						onClick={(): void => setShowTimeMachine(!showTimeMachine)}>
+						onClick={(): void => setShowTimeMachine(!showTimeMachine)}
+					>
 						<i className="fas fa-hourglass"></i>
 						{/* Icona della clessidra */}
 					</button>
@@ -862,7 +861,7 @@ export default function Header(): React.JSX.Element {
 					)}
 
 					<button
-						className="btn secondary"
+						className="btn secondary time-machine-button"
 						title="Notifiche"
 						style={{
 							...buttonStyle,
@@ -872,7 +871,8 @@ export default function Header(): React.JSX.Element {
 						onClick={(): void => {
 							setShowNotifications(!showNotifications);
 							playNotificationSound();
-						}}>
+						}}
+					>
 						<i className="fas fa-bell" />
 						{hasEventNotifications() &&
 							!doNotDisturb && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
@@ -1649,7 +1649,8 @@ export default function Header(): React.JSX.Element {
 							width: undefined,
 							justifyContent: "flex-end",
 							alignItems: "center",
-						}}>
+						}}
+					>
 						<a
 							href="/profile"
 							title="Profilo"
@@ -1663,7 +1664,8 @@ export default function Header(): React.JSX.Element {
 								alignItems: "center",
 								display: "flex",
 								justifyContent: "center",
-							}}>
+							}}
+						>
 							<img
 								src={
 									profileImage
@@ -1690,7 +1692,9 @@ export default function Header(): React.JSX.Element {
 						...buttonStyle,
 						backgroundColor: "green",
 						color: "white",
-					}}>
+						margin: "12px",
+					}}
+				>
 					Login
 				</a>
 			)}
