@@ -5,7 +5,15 @@ import Notification from "./types/Notification";
 import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const buttonStyle = {};
+const buttonStyle = {
+	backgroundColor: "white",
+	color: "black",
+	borderColor: "gray",
+	margin: "3px 4px",
+	padding: "4px 6px",
+	width: "100px",
+	alignSelf: "center",
+};
 
 //const NOTIFICATION_COUNT = 5;
 
@@ -586,7 +594,7 @@ export default function Header(): React.JSX.Element {
 
 	useEffect(() => {
 		const fetchData = async (): Promise<void> => {
-			// await postCurrentDate(currentDate); // invia la data corrente al server
+			await postCurrentDate(currentDate); // invia la data corrente al server
 			const currentUser = await getCurrentUser();
 
 			setUser(currentUser.value._id.toString());
@@ -594,7 +602,7 @@ export default function Header(): React.JSX.Element {
 
 			// PINNA - BGN
 			// Imposta data del server
-			try {
+			/* try {
 				const response = await fetch(`${SERVER_API}/currentDate`);
 				if (!response.ok) {
 					throw new Error("Errore nel recupero della data corrente");
@@ -610,7 +618,7 @@ export default function Header(): React.JSX.Element {
 				setCurrentDate(newDate); // Imposta la data corrente
 			} catch (error) {
 				console.error("Errore durante il recupero della data corrente:", error);
-			}
+			} */
 			// PINNA - END
 
 			/*
@@ -650,31 +658,25 @@ export default function Header(): React.JSX.Element {
 	return (
 		<header className="header-container">
 			{/*Parte sinistra dell'header*/}
-			<div className="logged-header-buttons">
-				<a className="header-home" href="/">
-					<img
-						src="/images/logo.jpeg"
-						alt="logo.jpeg"
-						title="Home"
-						style={{ margin: "0.5em" }}
-					/>
-					<div
-						className="selfie-title"
-						style={{ alignSelf: "center", textAlign: "center" }}>
-						SELFIE
-					</div>
+			<div className="link-container">
+				<a href="/">
+					<img src="/images/logo.jpeg" alt="logo.jpeg" title="Home" />
 				</a>
 
-				<a className="header-link" href="/calendar" title="Calendario">
+				<a
+					className="btn secondary"
+					style={buttonStyle}
+					href="/calendar"
+					title="Calendario">
 					Calendario
 				</a>
-				<a className="header-link" href="/pomodoro" title="Pomodoro">
+				<a className="btn secondary" style={buttonStyle} href="/pomodoro" title="Pomodoro">
 					Pomodoro
 				</a>
-				<a className="header-link" href="/notes" title="Note">
+				<a className="btn secondary" style={buttonStyle} href="/notes" title="Note">
 					Note
 				</a>
-				<a className="header-link" href="/projects" title="Progetti">
+				<a className="btn secondary" style={buttonStyle} href="/projects" title="Progetti">
 					Progetti
 				</a>
 				{/*
@@ -695,8 +697,9 @@ export default function Header(): React.JSX.Element {
 				</a>
 				<button
 					type="button"
-					className="header-link"
+					className="btn secondary"
 					style={{
+						...buttonStyle,
 						width: "80px",
 						position: "relative",
 					}}
@@ -749,20 +752,26 @@ export default function Header(): React.JSX.Element {
 			</div>
 
 			{isLoggedIn ? (
-				<div className="logged-header-buttons">
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "flex-end",
+						width: "50%",
+						alignItems: "center",
+					}}>
 					{currentDate && (
 						<>
-							<span className="btn secondary date-button time-machine-button">
+							<span className="btn secondary date-button">
 								{formatDate(currentDate)}
 							</span>
-							<span className="btn secondary date-button time-machine-button">
+							<span className="btn secondary date-button">
 								{formatDateHours(currentDate)}
 							</span>
 						</>
 					)}
 
 					<button
-						className="btn secondary time-machine-button"
+						className="btn secondary"
 						title="Time Machine"
 						style={{ ...buttonStyle, width: "45px" }}
 						onClick={(): void => setShowTimeMachine(!showTimeMachine)}>
@@ -839,7 +848,7 @@ export default function Header(): React.JSX.Element {
 									onClick={(): void => {
 										postCurrentDate(currentDate); // Chiama postCurrentDate con la data e orario selezionati
 										setShowTimeMachine(false); // Nascondi il time machine
-										window.location.reload();
+										// window.location.reload();
 									}}
 									style={buttonStyle}>
 									Imposta Data
@@ -852,7 +861,7 @@ export default function Header(): React.JSX.Element {
 										await postCurrentDate(newDate); // Chiama postCurrentDate con la data corrente
 										setCurrentDate(newDate); // Aggiorna lo stato con la nuova data
 										setShowTimeMachine(false); // Nascondi il time machine
-										window.location.reload();
+										// window.location.reload();
 									}}
 									style={buttonStyle}>
 									Resetta Data
