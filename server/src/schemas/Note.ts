@@ -5,6 +5,7 @@ export type ListItem = {
 	endDate?: Date;
 	completed: boolean;
 	text: string;
+	//idEventoNotificaCondiviso?: string;
 };
 
 // Schema per Mongoose

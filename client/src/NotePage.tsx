@@ -8,6 +8,8 @@ import { marked } from "marked";
 // import UserResult from "./types/UserResult";
 import { Privacy } from "./types/Privacy";
 import SearchForm from "./SearchForm";
+import User from "./types/User";
+
 
 const baseNote: Note = {
 	id: "",
@@ -59,6 +61,24 @@ export default function NotePage(): React.JSX.Element {
 		setCount(0);
 		setDeletedItems([]);
 	}
+
+	async function getCurrentUser(): Promise<Promise<any> | null> {
+		try {
+			const res = await fetch(`${SERVER_API}/users`);
+			if (!res.ok) { // Controlla se la risposta non è ok
+				setMessage("Utente non autenticato");
+				return null; // Restituisci null se non autenticato
+			}
+			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			const data: User = await res.json();
+			//console.log("Questo è il json della risposta", data);
+			return data;
+		} catch (e) {
+			setMessage("Impossibile recuperare l'utente corrente");
+			return null;
+		}
+	}
+
 	// On page load, get the note for the user
 	React.useEffect(() => {
 		refreshNote();
@@ -84,6 +104,45 @@ export default function NotePage(): React.JSX.Element {
 				body: JSON.stringify({ ...note, deletedItems }),
 				headers: { "Content-Type": "application/json" },
 			});
+
+			console.log("NOTA AGGIORNATA:", note);
+
+			const currentUser = await getCurrentUser();
+			const owner = currentUser.value._id.toString();
+			const todoList = note.toDoList;
+
+			//per ogni item della nota, controlla se esiste un'attività con lo stesso titolo, se
+			//non esiste, crea l'attività (significa che l'item è stato aggiunto con l'aggiornamento della nota)
+			for (const item of todoList) {
+				console.log(item);
+				//crea l'attività nella lista delle attività
+
+				if (item.endDate) { //se esiste una scadenza per l'item
+					//controlla se esiste già un'attività con lo stesso titolo
+					const res2 = await fetch(`${SERVER_API}/activities/by-title/${item.text}`);
+					const data = await res2.json();
+					const activity = data.value;
+
+					console.log("ATTIVITA TROVATA LEGATA ALL'ITEM:", activity);
+					if (!activity) {
+						console.log("CREO ATTIVITA' PER L'ITEM APPENA AGGIUNTO");
+						const res2 = await fetch(`${SERVER_API}/activities`, {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({
+								idEventoNotificaCondiviso: note.id,
+								title: item.text,
+								deadline: item.endDate?.toISOString(),
+								accessList: [owner],
+								accessListAccepted: [owner],
+								description: "Item in ToDoList di una nota",
+								owner: owner,
+							}),
+						});
+						console.log(res2);
+					}
+				}
+			}
 
 			console.log(res);
 			const resBody = (await res.json()) as ResponseBody;
@@ -288,130 +347,177 @@ export default function NotePage(): React.JSX.Element {
 						</>
 					)}
 					{/* render to do list */}
-						<label>
-							To Do List
-							{note.toDoList &&
-								note.toDoList.map((l) => (
-									<div key={l.id}>
-										{isEditing ? (
-											<>
-												<div className="note-to-do-container-editing">
-													<input
-														type="text"
-														value={l.text}
-														style={{width: "200px", marginBottom: "5px"}}
-														placeholder="Nuovo to-do item"
-														onChange={(
-															e: React.ChangeEvent<HTMLInputElement>
-														): void => {
-															handleUpdateTextItem(e, l);
-														}}
-													/>
-													<div style={{display: "flex", alignItems: "center", flexDirection: "column"}}>
-														{l.endDate ? (
-															<>
-																<label style={{ margin: "0" }}>
-																	<input
-																		type="date"
-																		value={
-																			new Date(l.endDate)
-																				.toISOString()
-																				.split("T")[0]
-																		}
-																		onChange={(
-																			e: React.ChangeEvent<HTMLInputElement>
-																		): void => handleUpdateDateItem(e, l)}
-																	/>
-																</label>
-																<button
-																	onClick={(
-																		e: React.MouseEvent<HTMLButtonElement>
-																	): void => handleRemoveDateItem(e, l)}>
-																	Rimuovi Scadenza
-																</button>
-															</>
-														) : (
+					<label>
+						To Do List
+						{note.toDoList &&
+							note.toDoList.map((l) => (
+								<div key={l.id}>
+									{isEditing ? (
+										<>
+											<div className="note-to-do-container-editing">
+												<input
+													type="text"
+													value={l.text}
+													style={{ width: "200px", marginBottom: "5px" }}
+													placeholder="Nuovo to-do item"
+													onChange={(
+														e: React.ChangeEvent<HTMLInputElement>
+													): void => {
+														handleUpdateTextItem(e, l);
+													}}
+												/>
+												<div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+													{l.endDate ? (
+														<>
+															<label style={{ margin: "0" }}>
+																<input
+																	type="date"
+																	value={
+																		new Date(l.endDate)
+																			.toISOString()
+																			.split("T")[0]
+																	}
+																	onChange={(
+																		e: React.ChangeEvent<HTMLInputElement>
+																	): void => handleUpdateDateItem(e, l)}
+																/>
+															</label>
 															<button
 																onClick={(
 																	e: React.MouseEvent<HTMLButtonElement>
-																): void => handleAddDateItem(e, l)}>
-																Aggiungi Scadenza
+																): void => handleRemoveDateItem(e, l)}>
+																Rimuovi Scadenza
 															</button>
-														)}
-													</div>
-													<button
-														onClick={(
-															e: React.MouseEvent<HTMLButtonElement>
-														): void => handleRemoveItem(e, l)}
-														style={{ backgroundColor: "#d64545" }}
-													>
-														Elimina Item
-													</button>
+														</>
+													) : (
+														<button
+															onClick={(
+																e: React.MouseEvent<HTMLButtonElement>
+															): void => handleAddDateItem(e, l)}>
+															Aggiungi Scadenza
+														</button>
+													)}
 												</div>
-											</>
-										) : (
-											<>
-												<div className="note-to-do-container">
-													<div style={{display: "flex", alignItems: "center"}}>
-														<input
-															id="todo-completed"
-															type="checkbox"
-															style={{height: "15px", width: "15px"}}
-															checked={l.completed}
-															onChange={(
-																e: React.ChangeEvent<HTMLInputElement>
-															): void => handleCheckboxChange(e, l)}
-														/>
-													</div>
-													<div>
-														<span style={{fontWeight: "300"}}>
-															Titolo:{" "}
-														</span>
-														<span style={{fontStyle: "italic"}}>
-															{l.text}
-														</span>
-													</div>
-													<div>
-														<span style={{fontWeight: "300"}}>
-															Stato:{" "}
-														</span>
-														<span style={{fontStyle: "italic"}}>
-															{l.completed ? "Completato" : "Non completato"}
-														</span>
-													</div>
-													<div style={{display: "flex", alignItems: "center"}}>
-														{l.endDate ?(
-															<div>
-																<span style={{fontWeight: "300"}}>
-																	Scadenza:{" "}
-																</span>
-																<span style={{fontStyle: "italic"}}>
-																	{new Date(l.endDate).toLocaleString("it-IT", {
-																		day: "2-digit",
-																		month: "2-digit",
-																		year: "numeric",
-																	})}
-																</span>
-															</div>
-														) : (
-															<div>
-																<span style={{fontWeight: "300"}}>
-																	Scadenza:{" "}
-																</span>
-																<span style={{fontStyle: "italic"}}>
-																	Nessuna
-																</span>
-															</div>
-														)}
-													</div>
+												<button
+													onClick={(
+														e: React.MouseEvent<HTMLButtonElement>
+													): void => handleRemoveItem(e, l)}
+													style={{ backgroundColor: "#d64545" }}
+												>
+													Elimina Item
+												</button>
+											</div>
+										</>
+									) : (
+										<>
+											<div className="note-to-do-container">
+												<div style={{ display: "flex", alignItems: "center" }}>
+													<input
+														id="todo-completed"
+														type="checkbox"
+														style={{ height: "15px", width: "15px" }}
+														checked={l.completed}
+														disabled={l.completed} // Disabilita il checkbox se è già completato
+														onChange={async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+															if (!l.completed) { // Permetti il cambiamento solo se non è già completato
+																handleCheckboxChange(e, l);
+																try {
+																	//cerca l'attività con lo stesso titolo della nota
+																	const res = await fetch(`${SERVER_API}/activities/by-title/${l.text}`);
+																	const data = await res.json();
+																	const activity = data.value;
+																	console.log("ATTIVITA DA COMPLETARE:", activity);
+
+																	//completa l'attività trovata
+																	const res2 = await fetch(`${SERVER_API}/activities/completeActivity`, {
+																		method: "POST",
+																		headers: { "Content-Type": "application/json" },
+																		body: JSON.stringify({
+																			activity_id: activity._id,
+																		}),
+																	});
+																	console.log("ATTIVITA COMPLETATA:", res2);
+
+																	// Aggiorna la nota nel database per rendere permanente il completed=true
+																	const updateNoteRes = await fetch(`${SERVER_API}/notes/${id}`, {
+																		method: "PUT",
+																		headers: { "Content-Type": "application/json" },
+																		body: JSON.stringify({
+																			...note,
+																			toDoList: note.toDoList.map(item =>
+																				item.id === l.id
+																					? { ...item, completed: true }
+																					: item
+																			)
+																		}),
+																	});
+																	console.log("NOTA AGGIORNATA:", updateNoteRes);
+
+																	if (!updateNoteRes.ok) {
+																		console.error("Errore nell'aggiornamento permanente della nota");
+																	} else {
+																		// Aggiorna lo stato locale
+																		refreshNote(); // Ricarica la nota per avere i dati aggiornati
+																	}
+
+
+
+																} catch (e) {
+																	console.error("Errore durante il completamento dell'attività:", e);
+																}
+															}
+														}}
+													/>
 												</div>
-											</>
-										)}
-									</div>
-								))
-							}
-						</label>
-						{isEditing && <button onClick={handleAddItem}>Aggiungi Item</button>}
+												<div>
+													<span style={{ fontWeight: "300" }}>
+														Titolo:{" "}
+													</span>
+													<span style={{ fontStyle: "italic" }}>
+														{l.text}
+													</span>
+												</div>
+												<div>
+													<span style={{ fontWeight: "300" }}>
+														Stato:{" "}
+													</span>
+													<span style={{ fontStyle: "italic" }}>
+														{l.completed ? "Completato" : "Non completato"}
+													</span>
+												</div>
+												<div style={{ display: "flex", alignItems: "center" }}>
+													{l.endDate ? (
+														<div>
+															<span style={{ fontWeight: "300" }}>
+																Scadenza:{" "}
+															</span>
+															<span style={{ fontStyle: "italic" }}>
+																{new Date(l.endDate).toLocaleString("it-IT", {
+																	day: "2-digit",
+																	month: "2-digit",
+																	year: "numeric",
+																})}
+															</span>
+														</div>
+													) : (
+														<div>
+															<span style={{ fontWeight: "300" }}>
+																Scadenza:{" "}
+															</span>
+															<span style={{ fontStyle: "italic" }}>
+																Nessuna
+															</span>
+														</div>
+													)}
+												</div>
+											</div>
+										</>
+									)}
+								</div>
+							))
+						}
+					</label>
+					{isEditing && <button onClick={handleAddItem}>Aggiungi Item</button>}
 					{/* render tags */}
 					<label>
 						Tags

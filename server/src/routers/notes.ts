@@ -242,7 +242,6 @@ router.post("/", async (req: Request, res: Response) => {
 		const inputTags = req.body.tags as string[] | [];
 		const privacyStr = req.body.privacy as string | undefined;
 		const accessListStr = req.body.accessList as string[] | undefined; // list of usernames
-
 		// Leo - Note 18-33 - BEGIN
 		const inputItemList = req.body.toDoList as ListItem[] | undefined;
 		console.log("Questo è l'itemList:", inputItemList);
@@ -587,6 +586,70 @@ router.put("/:id", async (req: Request, res: Response) => {
 		};
 
 		return res.status(500).json(resBody);
+	}
+});
+
+// Completa un item specifico di una nota
+// Completa un item specifico di una nota
+router.put("/:noteId/complete-item/:itemId", async (req: Request, res: Response) => {
+	try {
+		const { noteId, itemId } = req.params;
+
+		// Verifica che la nota esista
+		const foundNote = await NoteSchema.findById(noteId).lean();
+		if (!foundNote) {
+			return res.status(404).json({
+				status: ResponseStatus.BAD,
+				message: `Nota con id ${noteId} non trovata`
+			});
+		}
+
+		// Trova e aggiorna l'item nel NoteItemSchema
+		const updatedItem = await NoteItemSchema.findOneAndUpdate(
+			{
+				_id: itemId,
+				noteId: noteId
+			},
+			{
+				completed: true
+			},
+			{
+				new: true
+			}
+		);
+
+		if (!updatedItem) {
+			return res.status(404).json({
+				status: ResponseStatus.BAD,
+				message: `Item con id ${itemId} non trovato nella nota ${noteId}`
+			});
+		}
+
+		// Aggiorna anche l'item nella toDoList della nota
+		await NoteSchema.updateOne(
+			{
+				_id: noteId,
+				"toDoList.id": itemId
+			},
+			{
+				$set: { "toDoList.$.completed": true }
+			}
+		);
+
+		console.log("Item completato:", updatedItem);
+
+		return res.status(200).json({
+			status: ResponseStatus.GOOD,
+			message: "Item completato con successo",
+			value: updatedItem
+		});
+
+	} catch (e) {
+		console.error("Errore durante il completamento dell'item:", e);
+		return res.status(500).json({
+			status: ResponseStatus.BAD,
+			message: "Errore durante il completamento dell'item"
+		});
 	}
 });
 

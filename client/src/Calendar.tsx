@@ -2120,6 +2120,55 @@ export default function Calendar(): React.JSX.Element { // prova push
 				activity_id: id,
 			}),
 		});
+
+		const resTitle = await fetch(`${SERVER_API}/activities/title/${id}`);
+		const dataTitle = await resTitle.json();
+		const activityTitle = dataTitle.value;
+		console.log("TITOLO ATTIVITA COMPLETATA:", activityTitle);
+
+		//ottieni tutte le note con l'id dell'attività completata
+		const resNotes = await fetch(`${SERVER_API}/notes/`);
+		const dataNotes = await resNotes.json();
+		const Notes = dataNotes.value;
+		console.log("ATTIVITA COMPLETATA:", activityTitle);
+		//per ogni nota, scorri la sua todoList, e controlla se ci sono item il cui item.text sia 
+		//uguale ad activity.title
+		console.log("Queste sono le note su cui iterare:", Notes);
+
+		for (const note of Notes) {
+			console.log("Questi sono gli item della nota:", note.toDoList);
+			for (const item of note.toDoList) {
+				if (item.text === activityTitle) {
+					console.log("ITEM DA COMPLETARE:", item);
+
+					const noteId = note._id || note.id;
+					console.log("ID NOTA:", noteId);
+
+
+					// Chiamata alla nuova API per completare l'item
+					const res = await fetch(
+						`${SERVER_API}/notes/${noteId}/complete-item/${item.id}`,
+						{
+							method: "PUT",
+							headers: { "Content-Type": "application/json" }
+						}
+					);
+
+					if (!res.ok) {
+						console.error("Errore nel completamento dell'item");
+					} else {
+						console.log("Item completato con successo");
+					}
+				}
+			}
+		}
+
+
+
+
+
+
+
 		const data = await res.json();
 		//console.log("ATTIVITA COMPLETATA:", data);
 

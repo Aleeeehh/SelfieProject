@@ -62,7 +62,14 @@ export default function CreateNoteForm(): React.JSX.Element {
 		e.preventDefault();
 
 		try {
+
+			//genera un idEventoNotificaCondiviso
+			//const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 			console.log("Creo la nota:", note);
+
+
+
+
 
 			//crea la nota nella lista delle note
 			const res = await fetch(`${SERVER_API}/notes`, {
@@ -90,7 +97,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 							deadline: item.endDate?.toISOString(),
 							accessList: [owner],
 							accessListAccepted: [owner],
-							description: "Item in ToDoList della nota " + note.title,
+							description: "Item in ToDoList di una nota",
 							owner: owner,
 						}),
 					});
