@@ -672,26 +672,21 @@ export default function Header(): React.JSX.Element {
 					</div>
 				</a>
 
-				<a
-					className="btn secondary"
-					style={buttonStyle}
-					href="/calendar"
-					title="Calendario">
+				<a className="header-link" href="/calendar" title="Calendario">
 					Calendario
 				</a>
-				<a className="btn secondary" style={buttonStyle} href="/pomodoro" title="Pomodoro">
+				<a className="header-link" href="/pomodoro" title="Pomodoro">
 					Pomodoro
 				</a>
-				<a className="btn secondary" style={buttonStyle} href="/notes" title="Note">
+				<a className="header-link" href="/notes" title="Note">
 					Note
 				</a>
-				<a className="btn secondary" style={buttonStyle} href="/projects" title="Progetti">
+				<a className="header-link" href="/projects" title="Progetti">
 					Progetti
 				</a>
 				{/*
 				<a
-					className="btn secondary"
-					style={buttonStyle}
+					className="header-link"
 					href="/activities"
 					title="Attività"
 				>
@@ -707,8 +702,7 @@ export default function Header(): React.JSX.Element {
 				<button
 					type="button"
 					className="header-link header-menu-button"
-					onClick={toggleDropdown}
-				>
+					onClick={toggleDropdown}>
 					Menù
 					<ul
 						className="dropdown-menu"
@@ -726,33 +720,32 @@ export default function Header(): React.JSX.Element {
 							margin: "0",
 							width: "120px",
 							zIndex: "100",
-						}}
-					>
+						}}>
 						<li>
-							<a href="/calendar" title="Calendario">
+							<a href="/calendar" className="header-link" title="Calendario">
 								Calendario
 							</a>
 						</li>
 						<li>
-							<a href="/pomodoro" title="Pomodoro">
+							<a href="/pomodoro" className="header-link" title="Pomodoro">
 								Pomodoro
 							</a>
 						</li>
 						<li>
-							<a href="/notes" title="Note">
+							<a href="/notes" className="header-link" title="Note">
 								Note
 							</a>
 						</li>
 						<li>
-							<a href="/projects" title="Progetti">
+							<a href="/projects" className="header-link" title="Progetti">
 								Progetti
 							</a>
 						</li>
-						<li>
-							<a href="/activities" title="Attività">
+						{/* <li>
+							<a href="/activities" className="header-link" title="Attività">
 								Attività
 							</a>
-						</li>
+						</li> */}
 					</ul>
 				</button>
 			</div>
@@ -774,8 +767,7 @@ export default function Header(): React.JSX.Element {
 						className="btn secondary"
 						title="Time Machine"
 						style={{ ...buttonStyle, width: "45px" }}
-						onClick={(): void => setShowTimeMachine(!showTimeMachine)}
-					>
+						onClick={(): void => setShowTimeMachine(!showTimeMachine)}>
 						<i className="fas fa-hourglass"></i>
 						{/* Icona della clessidra */}
 					</button>
@@ -882,8 +874,7 @@ export default function Header(): React.JSX.Element {
 						onClick={(): void => {
 							setShowNotifications(!showNotifications);
 							playNotificationSound();
-						}}
-					>
+						}}>
 						<i className="fas fa-bell" />
 						{hasEventNotifications() &&
 							!doNotDisturb && ( // Mostra il pallino solo se ci sono notifiche di tipo "event"
@@ -1660,8 +1651,7 @@ export default function Header(): React.JSX.Element {
 							width: undefined,
 							justifyContent: "flex-end",
 							alignItems: "center",
-						}}
-					>
+						}}>
 						<a
 							href="/profile"
 							title="Profilo"
@@ -1675,8 +1665,7 @@ export default function Header(): React.JSX.Element {
 								alignItems: "center",
 								display: "flex",
 								justifyContent: "center",
-							}}
-						>
+							}}>
 							<img
 								src={
 									profileImage
@@ -1704,8 +1693,7 @@ export default function Header(): React.JSX.Element {
 						backgroundColor: "green",
 						color: "white",
 						margin: "12px",
-					}}
-				>
+					}}>
 					Login
 				</a>
 			)}

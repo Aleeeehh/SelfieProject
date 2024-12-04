@@ -167,6 +167,7 @@
 	width: 9vw;
 	align-self: center;
 	background: transparent;
+    font-weight: 600;
 }
 
 .header-link:hover {
