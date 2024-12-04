@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import type { ResponseBody } from "./types/ResponseBody";
 import type Project from "./types/Project";
 import { useNavigate } from "react-router-dom";

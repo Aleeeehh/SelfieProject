@@ -1,7 +1,7 @@
 import React from "react";
 import { ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { profileImages, SERVER_API } from "./params/params";
+import { profileImages, SERVER_API } from "./lib/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 
 type RegisterData = {

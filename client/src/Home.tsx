@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 import Pomodoro from "./types/Pomodoro";
 import Note from "./types/Note";

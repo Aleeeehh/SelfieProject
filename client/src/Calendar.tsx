@@ -4,16 +4,15 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ResponseBody } from "./types/ResponseBody";
 import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { getDaysInMonth, startOfMonth, getDay } from "date-fns"; //funzioni di date-fns
 import { ResponseStatus } from "./types/ResponseStatus";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import { Event } from "./types/Event";
 import SearchForm from "./SearchForm";
 import SearchFormResource from "./SearchFormResource";
 //import mongoose from "mongoose";
-
 
 enum Frequency {
 	ONCE = "once",
@@ -52,9 +51,8 @@ const Mesi = [
 ];
 //const GiorniSettimana = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
 
-
-
-export default function Calendar(): React.JSX.Element { // prova push
+export default function Calendar(): React.JSX.Element {
+	// prova push
 	const [title, setTitle] = React.useState("");
 	const [file, setFile] = React.useState<File | null>(null);
 	const [createRisorsa, setCreateRisorsa] = React.useState(false);
@@ -104,21 +102,56 @@ export default function Calendar(): React.JSX.Element { // prova push
 		return now;
 	});
 	//const [loadWeek, setLoadWeek] = React.useState(false);
-	const [weekEvents, setWeekEvents] = React.useState<{ day: number; positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[]>([]);
-	const [monthEvents, setMonthEvents] = React.useState<{ day: number; positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[]>([]);
+	const [weekEvents, setWeekEvents] = React.useState<
+		{
+			day: number;
+			positions: {
+				top: number;
+				height: number;
+				name: string;
+				type: boolean;
+				width: number;
+				marginLeft: number;
+				event: Event;
+			}[];
+		}[]
+	>([]);
+	const [monthEvents, setMonthEvents] = React.useState<
+		{
+			day: number;
+			positions: {
+				top: number;
+				height: number;
+				name: string;
+				type: boolean;
+				width: number;
+				marginLeft: number;
+				event: Event;
+			}[];
+		}[]
+	>([]);
 	const [location, setLocation] = React.useState("");
 	const [meseCorrente, setMeseCorrente] = React.useState(new Date().getMonth()); //inizializzazione mese corrente
 	const [message, setMessage] = React.useState("");
 	const [day, setDay] = React.useState(new Date().getDate());
 	const [activeButton, setActiveButton] = React.useState(0);
-	const [year, setYear] = React.useState(new Date().getFullYear())
+	const [year, setYear] = React.useState(new Date().getFullYear());
 	const [shareActivity, setShareActivity] = React.useState(false);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 	const [activityList, setActivityList] = React.useState<Activity[]>([]);
 	const [addTitle, setAddTitle] = React.useState(true);
 
-
-	const [eventPositions, setEventPositions] = React.useState<{ top: number; height: number; name: string; type: boolean, width: number, marginLeft: number, event: Event }[]>([]);
+	const [eventPositions, setEventPositions] = React.useState<
+		{
+			top: number;
+			height: number;
+			name: string;
+			type: boolean;
+			width: number;
+			marginLeft: number;
+			event: Event;
+		}[]
+	>([]);
 	const nav = useNavigate();
 
 	//ANDRE
@@ -126,10 +159,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 	const getValidRepeatOptions = (time: number): number[] => {
 		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
-		return options.filter(option => option !== time && (time % option === 0 || option === 0)); // Filtra solo i divisori, escludendo il numero stesso
+		return options.filter((option) => option !== time && (time % option === 0 || option === 0)); // Filtra solo i divisori, escludendo il numero stesso
 	};
-
-
 
 	React.useEffect(() => {
 		(async (): Promise<void> => {
@@ -137,7 +168,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res2 = await fetch(`${SERVER_API}/notifications`);
 				const notifications = await res2.json();
 				console.log("NOTIFICHE RIMASTE IN LISTA:", notifications);
-				console.log("COSA VOGLIAMO STAMPARE:", notifications.value)
+				console.log("COSA VOGLIAMO STAMPARE:", notifications.value);
 				const res = await fetch(`${SERVER_API}/events`);
 				if (res.status !== 200) {
 					nav("/login");
@@ -157,7 +188,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 					setEventList(data.value);
 					console.log("QUESTA E' LA EVENTLIST::", eventList);
 				} else {
-					setMessage("Errore nel ritrovamento degli eventi: nessun evento trovato nel database!");
+					setMessage(
+						"Errore nel ritrovamento degli eventi: nessun evento trovato nel database!"
+					);
 				}
 			} catch (e) {
 				setMessage("Impossibile raggiungere il server");
@@ -203,9 +236,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//aggiorna la currentDate di calendar ogni secondo
 		const intervalId = setInterval(fetchCurrentDate, 1000);
 		return () => clearInterval(intervalId);
-
-	}, [activitiesMode,]); // Chiamata GET ogni volta che activitiesMode cambia
-
+	}, [activitiesMode]); // Chiamata GET ogni volta che activitiesMode cambia
 
 	React.useEffect(() => {
 		if (isInfinite === true) {
@@ -213,8 +244,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 	}, [isInfinite]);
 
-
-	function renderWeekEvents(weekEvents: { positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[], index: number): JSX.Element {
+	function renderWeekEvents(
+		weekEvents: {
+			positions: {
+				top: number;
+				height: number;
+				name: string;
+				type: boolean;
+				width: number;
+				marginLeft: number;
+				event: Event;
+			}[];
+		}[],
+		index: number
+	): JSX.Element {
 		if (!weekEvents[index] || !weekEvents[index].positions) {
 			return <div> </div>;
 		}
@@ -223,7 +266,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				{weekEvents[index].positions.map((event, idx) => (
 					<div
 						key={idx}
-						className={`evento ${!event.type ? 'red' : 'blue'}`}
+						className={`evento ${!event.type ? "red" : "blue"}`}
 						style={{
 							top: `calc(${event.top}px - 0.01*${event.top}px)`,
 							height: `${event.height}px`,
@@ -231,35 +274,46 @@ export default function Calendar(): React.JSX.Element { // prova push
 							position: "absolute",
 							color: !event.type ? "red" : "rgb(155, 223, 212)",
 							borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
-							backgroundColor: !event.type ? "rgba(249, 67, 67, 0.5)" : "rgba(155, 223, 212, 0.5)",
+							backgroundColor: !event.type
+								? "rgba(249, 67, 67, 0.5)"
+								: "rgba(155, 223, 212, 0.5)",
 							marginLeft: `${event.marginLeft}%`,
 							cursor: "default",
-						}}
-					>
+						}}>
 						<div style={{ color: !event.type ? "red" : "rgb(155, 223, 212)" }}>
 							{!event.type ? (
 								<Link
 									to={`/pomodoro?duration=${((startTime, endTime): number => {
 										const start = new Date(startTime);
 										const end = new Date(endTime);
-										const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+										const totMin = Math.max(
+											(end.getTime() - start.getTime()) / (1000 * 60),
+											0
+										);
 										return totMin;
-									})(event.event.startTime, event.event.endTime)
-										}&id=${event.event._id}`}
-									style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-								>
+									})(event.event.startTime, event.event.endTime)}&id=${
+										event.event._id
+									}`}
+									style={{
+										textDecoration: "none",
+										color: "inherit",
+										cursor: "pointer",
+									}}>
 									{event.name}
 								</Link>
 							) : (
 								<span>{event.name}</span>
 							)}
 						</div>
-						<div className="position-relative" onClick={async (e): Promise<void> => {
-							await handleDeleteEvent(event.event._id, event.event.groupId);
+						<div
+							className="position-relative"
+							onClick={async (e): Promise<void> => {
+								await handleDeleteEvent(event.event._id, event.event.groupId);
 
-							weekMode(e as React.MouseEvent<HTMLElement>);
-						}}>
-							<i className="bi bi-trash"
+								weekMode(e as React.MouseEvent<HTMLElement>);
+							}}>
+							<i
+								className="bi bi-trash"
 								style={{
 									bottom: "2px",
 									right: "50%",
@@ -267,19 +321,29 @@ export default function Calendar(): React.JSX.Element { // prova push
 									margin: 0,
 									padding: 0,
 									color: !event.type ? "red" : "rgb(155, 223, 212)",
-									cursor: "pointer"
-								}}
-							></i>
+									cursor: "pointer",
+								}}></i>
 						</div>
 					</div>
 				))}
 			</div>
 		);
-
 	}
 
-
-	function renderMonthEvents(monthEvents: { positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[], index: number): JSX.Element {
+	function renderMonthEvents(
+		monthEvents: {
+			positions: {
+				top: number;
+				height: number;
+				name: string;
+				type: boolean;
+				width: number;
+				marginLeft: number;
+				event: Event;
+			}[];
+		}[],
+		index: number
+	): JSX.Element {
 		if (!monthEvents[index] || !monthEvents[index].positions) {
 			return <div> </div>;
 		}
@@ -292,7 +356,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						return (
 							<div
 								key={idx}
-								className={`evento ${!event.type ? 'red' : 'blue'}`}
+								className={`evento ${!event.type ? "red" : "blue"}`}
 								style={{
 									top: `0px`,
 									height: `15px`,
@@ -300,38 +364,81 @@ export default function Calendar(): React.JSX.Element { // prova push
 									position: "relative",
 									color: !event.type ? "red" : "rgb(155, 223, 212)",
 									borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
-									backgroundColor: !event.type ? "rgba(249, 67, 67, 0.5)" : "rgba(155, 223, 212, 0.5)",
+									backgroundColor: !event.type
+										? "rgba(249, 67, 67, 0.5)"
+										: "rgba(155, 223, 212, 0.5)",
 									marginLeft: `0px`,
 									cursor: "default",
 									marginBottom: "1px",
-									fontSize: "12px"
-								}}
-							>
+									fontSize: "12px",
+								}}>
 								<div style={{ color: !event.type ? "red" : "rgb(155, 223, 212)" }}>
 									{!event.type ? (
 										<Link
-											to={`/pomodoro?duration=${((startTime, endTime): number => {
+											to={`/pomodoro?duration=${((
+												startTime,
+												endTime
+											): number => {
 												const start = new Date(startTime);
 												const end = new Date(endTime);
-												const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+												const totMin = Math.max(
+													(end.getTime() - start.getTime()) / (1000 * 60),
+													0
+												);
 												return totMin;
-											})(event.event.startTime, event.event.endTime)
-												}&id=${event.event._id}`}
-											style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-										>
+											})(event.event.startTime, event.event.endTime)}&id=${
+												event.event._id
+											}`}
+											style={{
+												textDecoration: "none",
+												color: "inherit",
+												cursor: "pointer",
+											}}>
 											{((): any => {
-												const endTime = new Date(new Date(event.event.endTime).getFullYear(), new Date(event.event.endTime).getMonth(), new Date(event.event.endTime).getDate());
-												const startTimeOrario = new Date(event.event.startTime);
+												const endTime = new Date(
+													new Date(event.event.endTime).getFullYear(),
+													new Date(event.event.endTime).getMonth(),
+													new Date(event.event.endTime).getDate()
+												);
+												const startTimeOrario = new Date(
+													event.event.startTime
+												);
 												const endTimeOrario = new Date(event.event.endTime);
-												const startTime = new Date(new Date(event.event.startTime).getFullYear(), new Date(event.event.startTime).getMonth(), new Date(event.event.startTime).getDate());
-												const isSameDay = endTime.getTime() === startTime.getTime(); //se l'evento inizia e termina lo stesso giorno, mostra l'orario
+												const startTime = new Date(
+													new Date(event.event.startTime).getFullYear(),
+													new Date(event.event.startTime).getMonth(),
+													new Date(event.event.startTime).getDate()
+												);
+												const isSameDay =
+													endTime.getTime() === startTime.getTime(); //se l'evento inizia e termina lo stesso giorno, mostra l'orario
 
-												const isAllDayEvent = startTimeOrario.getHours() === 0 && startTimeOrario.getMinutes() === 0 &&
-													endTimeOrario.getHours() === 23 && endTimeOrario.getMinutes() === 50;
-												var nameToDisplay = event.name.length > (isSameDay ? 10 : 15) ? `${event.name.substring(0, isSameDay ? 10 : 15)}...` : event.name;
-												nameToDisplay = event.name.length > (isAllDayEvent ? 15 : 10) ? `${event.name.substring(0, isAllDayEvent ? 15 : 10)}...` : event.name;
+												const isAllDayEvent =
+													startTimeOrario.getHours() === 0 &&
+													startTimeOrario.getMinutes() === 0 &&
+													endTimeOrario.getHours() === 23 &&
+													endTimeOrario.getMinutes() === 50;
+												var nameToDisplay =
+													event.name.length > (isSameDay ? 10 : 15)
+														? `${event.name.substring(
+																0,
+																isSameDay ? 10 : 15
+														  )}...`
+														: event.name;
+												nameToDisplay =
+													event.name.length > (isAllDayEvent ? 15 : 10)
+														? `${event.name.substring(
+																0,
+																isAllDayEvent ? 15 : 10
+														  )}...`
+														: event.name;
 
-												const timeToDisplay = (isSameDay && !isAllDayEvent) ? startTimeOrario.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+												const timeToDisplay =
+													isSameDay && !isAllDayEvent
+														? startTimeOrario.toLocaleTimeString([], {
+																hour: "2-digit",
+																minute: "2-digit",
+														  })
+														: null;
 												/*console.log("Start Time Ore:", startTimeOrario.getHours());
 												console.log("Start Time minuti:", startTimeOrario.getMinutes());
 												console.log("End Time Ore:", endTimeOrario.getHours());
@@ -351,17 +458,49 @@ export default function Calendar(): React.JSX.Element { // prova push
 									) : (
 										<span>
 											{((): any => {
-												const endTime = new Date(new Date(event.event.endTime).getFullYear(), new Date(event.event.endTime).getMonth(), new Date(event.event.endTime).getDate());
-												const startTimeOrario = new Date(event.event.startTime);
+												const endTime = new Date(
+													new Date(event.event.endTime).getFullYear(),
+													new Date(event.event.endTime).getMonth(),
+													new Date(event.event.endTime).getDate()
+												);
+												const startTimeOrario = new Date(
+													event.event.startTime
+												);
 												const endTimeOrario = new Date(event.event.endTime);
-												const startTime = new Date(new Date(event.event.startTime).getFullYear(), new Date(event.event.startTime).getMonth(), new Date(event.event.startTime).getDate());
-												const isSameDay = endTime.getTime() === startTime.getTime(); //se l'evento inizia e termina lo stesso giorno, mostra l'orario
+												const startTime = new Date(
+													new Date(event.event.startTime).getFullYear(),
+													new Date(event.event.startTime).getMonth(),
+													new Date(event.event.startTime).getDate()
+												);
+												const isSameDay =
+													endTime.getTime() === startTime.getTime(); //se l'evento inizia e termina lo stesso giorno, mostra l'orario
 
-												const isAllDayEvent = startTimeOrario.getHours() === 0 && startTimeOrario.getMinutes() === 0 &&
-													endTimeOrario.getHours() === 23 && endTimeOrario.getMinutes() === 50;
-												var nameToDisplay = event.name.length > (isSameDay ? 10 : 15) ? `${event.name.substring(0, isSameDay ? 10 : 15)}...` : event.name;
-												nameToDisplay = event.name.length > (isAllDayEvent ? 15 : 10) ? `${event.name.substring(0, isAllDayEvent ? 15 : 10)}...` : event.name;
-												const timeToDisplay = (isSameDay && !isAllDayEvent) ? startTimeOrario.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+												const isAllDayEvent =
+													startTimeOrario.getHours() === 0 &&
+													startTimeOrario.getMinutes() === 0 &&
+													endTimeOrario.getHours() === 23 &&
+													endTimeOrario.getMinutes() === 50;
+												var nameToDisplay =
+													event.name.length > (isSameDay ? 10 : 15)
+														? `${event.name.substring(
+																0,
+																isSameDay ? 10 : 15
+														  )}...`
+														: event.name;
+												nameToDisplay =
+													event.name.length > (isAllDayEvent ? 15 : 10)
+														? `${event.name.substring(
+																0,
+																isAllDayEvent ? 15 : 10
+														  )}...`
+														: event.name;
+												const timeToDisplay =
+													isSameDay && !isAllDayEvent
+														? startTimeOrario.toLocaleTimeString([], {
+																hour: "2-digit",
+																minute: "2-digit",
+														  })
+														: null;
 												/*console.log("Start Time Ore:", startTimeOrario.getHours());
 												console.log("Start Time minuti:", startTimeOrario.getMinutes());
 												console.log("End Time Ore:", endTimeOrario.getHours());
@@ -389,7 +528,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 							return (
 								<div
 									key={idx}
-									className={`evento ${!event.type ? 'red' : 'blue'}`}
+									className={`evento ${!event.type ? "red" : "blue"}`}
 									style={{
 										top: `0px`,
 										height: `15px`,
@@ -397,41 +536,71 @@ export default function Calendar(): React.JSX.Element { // prova push
 										position: "relative",
 										color: !event.type ? "red" : "rgb(155, 223, 212)",
 										borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
-										backgroundColor: !event.type ? "rgba(249, 67, 67, 0.5)" : "rgba(155, 223, 212, 0.5)",
+										backgroundColor: !event.type
+											? "rgba(249, 67, 67, 0.5)"
+											: "rgba(155, 223, 212, 0.5)",
 										marginLeft: `0px`,
 										cursor: "default",
 										marginBottom: "1px",
-										fontSize: "12px"
-									}}
-								>
-									<div style={{ color: !event.type ? "red" : "rgb(155, 223, 212)" }}>
+										fontSize: "12px",
+									}}>
+									<div
+										style={{
+											color: !event.type ? "red" : "rgb(155, 223, 212)",
+										}}>
 										{!event.type ? (
 											<Link
-												to={`/pomodoro?duration=${((startTime, endTime): number => {
+												to={`/pomodoro?duration=${((
+													startTime,
+													endTime
+												): number => {
 													const start = new Date(startTime);
 													const end = new Date(endTime);
-													const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
+													const totMin = Math.max(
+														(end.getTime() - start.getTime()) /
+															(1000 * 60),
+														0
+													);
 													return totMin;
-												})(event.event.startTime, event.event.endTime)
-													}&id=${event.event._id}`}
-												style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-											>
-												{event.name.length > 12 ? `${event.name.substring(0, 12)}...` : event.name}
+												})(
+													event.event.startTime,
+													event.event.endTime
+												)}&id=${event.event._id}`}
+												style={{
+													textDecoration: "none",
+													color: "inherit",
+													cursor: "pointer",
+												}}>
+												{event.name.length > 12
+													? `${event.name.substring(0, 12)}...`
+													: event.name}
 												{"  "}
 												{((): any => {
-													const startTime = new Date(event.event.startTime);
+													const startTime = new Date(
+														event.event.startTime
+													);
 													startTime.setHours(startTime.getHours());
-													return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+													return startTime.toLocaleTimeString([], {
+														hour: "2-digit",
+														minute: "2-digit",
+													});
 												})()}
 											</Link>
 										) : (
 											<span>
-												{event.name.length > 12 ? `${event.name.substring(0, 12)}...` : event.name}
+												{event.name.length > 12
+													? `${event.name.substring(0, 12)}...`
+													: event.name}
 												{"  "}
 												{((): any => {
-													const startTime = new Date(event.event.startTime);
+													const startTime = new Date(
+														event.event.startTime
+													);
 													startTime.setHours(startTime.getHours());
-													return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+													return startTime.toLocaleTimeString([], {
+														hour: "2-digit",
+														minute: "2-digit",
+													});
 												})()}
 											</span>
 										)}
@@ -455,14 +624,12 @@ export default function Calendar(): React.JSX.Element { // prova push
 										cursor: "default",
 										marginBottom: "1px",
 										fontSize: "12px",
-										textAlign: "center"
-									}}
-								>
+										textAlign: "center",
+									}}>
 									<span>...</span>
 								</div>
 							);
 						}
-
 					}
 					// Non renderizzare eventi oltre il sesto
 
@@ -470,7 +637,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 				})}
 			</div>
 		);
-
 	}
 
 	async function handleDownloadCalendar(): Promise<void> {
@@ -478,13 +644,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const owner = currentUser.value._id.toString();
 		const res = await fetch(`${SERVER_API}/events/ical?owner=${owner}`);
 		if (res.ok) {
-			const data = await res.blob();  // Ottieni il blob del file
+			const data = await res.blob(); // Ottieni il blob del file
 			console.log("icalString:", data);
 			const url = URL.createObjectURL(data); // Crea un URL per il blob
-			const a = document.createElement('a'); // Crea un elemento <a>
-			a.style.display = 'none'; // Nascondi l'elemento
+			const a = document.createElement("a"); // Crea un elemento <a>
+			a.style.display = "none"; // Nascondi l'elemento
 			a.href = url; // Imposta l'URL del blob come href
-			a.download = 'calendar.ics'; // Nome del file da scaricare
+			a.download = "calendar.ics"; // Nome del file da scaricare
 			a.click(); // Simula un clic per avviare il download
 			window.URL.revokeObjectURL(url); // Pulisce l'URL del blob
 		} else {
@@ -502,13 +668,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const owner = currentUser.value._id.toString();
 
 		const formData = new FormData();
-		formData.append('calendarFile', file); // Aggiungi il file al FormData
-		formData.append('owner', owner); // Aggiungi l'owner al FormData
+		formData.append("calendarFile", file); // Aggiungi il file al FormData
+		formData.append("owner", owner); // Aggiungi l'owner al FormData
 		console.log("Questo è il file:", file);
 
 		// Esegui una richiesta per importare il file
 		const response = await fetch(`${SERVER_API}/events/importCalendar`, {
-			method: 'POST',
+			method: "POST",
 			body: formData,
 		});
 
@@ -519,8 +685,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 		loadEvents();
 		handleDateClick(day);
-	};
-
+	}
 
 	async function loadEvents(): Promise<void> {
 		try {
@@ -541,7 +706,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			console.log("Eventi trovati:", eventi);
 			console.log("Mostra risorse:", mostraRisorse);
 			*/
-
 
 			if (data.status === ResponseStatus.GOOD) {
 				setEventList(eventi);
@@ -580,12 +744,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 			setActivityList(activities);
 
-
-
 			//setActivityList(activities);
 			//console.log("Questa è la lista delle attività:", activityList);
-		}
-		else {
+		} else {
 			//setMessage("ERRORE RITROVAMENTO ATTIVITA'");
 		}
 	}
@@ -593,8 +754,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 	React.useEffect(() => {
 		loadEvents();
 	}, []);
-
-
 
 	/*
 		React.useEffect(() => {
@@ -632,7 +791,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const startDay = getStartDayOfWeek(year, meseCorrente, day);
 		await loadWeekEvents(startDay, year, meseCorrente);
 		setActiveButton(1);
-		console.log("Questi sono gli eventi della settimana intera e le loro posizioni:", weekEvents);
+		console.log(
+			"Questi sono gli eventi della settimana intera e le loro posizioni:",
+			weekEvents
+		);
 	}
 
 	async function monthMode(e: React.MouseEvent<HTMLElement>): Promise<void> {
@@ -702,7 +864,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setMeseCorrente((meseCorrente - 1 + 12) % 12);
 		}
 
-		if ((nuovoMese === 3 || nuovoMese === 5 || nuovoMese === 8 || nuovoMese === 10) && day === 31) {
+		if (
+			(nuovoMese === 3 || nuovoMese === 5 || nuovoMese === 8 || nuovoMese === 10) &&
+			day === 31
+		) {
 			setDay(30);
 		}
 
@@ -730,7 +895,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 		} else {
 			setMeseCorrente((meseCorrente + 1) % 12);
 		}
-		if ((nuovoMese === 3 || nuovoMese === 5 || nuovoMese === 8 || nuovoMese === 10) && day === 31) {
+		if (
+			(nuovoMese === 3 || nuovoMese === 5 || nuovoMese === 8 || nuovoMese === 10) &&
+			day === 31
+		) {
 			setDay(30);
 		}
 		if (nuovoMese === 1 && (day === 29 || day === 30 || day === 31)) {
@@ -764,7 +932,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 	}, [frequency]);
 
-
 	// On page load, get the events for the user
 	React.useEffect(() => {
 		(async (): Promise<void> => {
@@ -773,7 +940,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 				console.log("Valore ottenuto:", currentUser);
 
 				const owner = currentUser.value._id.toString();
-				if (currentUser.value.username === "fvPM") { //se l'utente è il PM, allora è admin per le risorse
+				if (currentUser.value.username === "fvPM") {
+					//se l'utente è il PM, allora è admin per le risorse
 					setIsAdmin(true);
 				}
 				console.log("Questo è l'owner:", owner);
@@ -784,8 +952,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 				if (data.status === ResponseStatus.GOOD) {
 					setEventList(data.value);
 					console.log("stampo data.valuess:", data.value);
-				}
-				else {
+				} else {
 					setMessage("Errore nel ritrovamento degli eventi");
 				}
 			} catch (e) {
@@ -819,60 +986,61 @@ export default function Calendar(): React.JSX.Element { // prova push
 			return false;
 		}
 
-		return eventList.some(event => {
+		return eventList.some((event) => {
 			const eventStartDate = new Date(event.startTime);
 			const eventEndDate = new Date(event.endTime);
 			const currentDate = new Date(year, meseCorrente, day);
 
 			// Normalizza le date per confrontare solo giorno, mese e anno
-			const normalizeDate: (date: Date) => Date = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+			const normalizeDate: (date: Date) => Date = (date: Date) =>
+				new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 			const normalizedEventStartDate = normalizeDate(eventStartDate);
 			const normalizedEventEndDate = normalizeDate(eventEndDate);
 			const normalizedCurrentDate = normalizeDate(currentDate);
 
 			// Controlla se l'evento è nel giorno selezionato
-			const isSameDayEvent = (
+			const isSameDayEvent =
 				normalizedCurrentDate >= normalizedEventStartDate &&
-				normalizedCurrentDate <= normalizedEventEndDate
-			);
+				normalizedCurrentDate <= normalizedEventEndDate;
 
 			// Controlla se l'evento è giornaliero, infinito e iniziato prima o nello stesso giorno del currentDate
-			const isDailyInfiniteEvent = (
+			const isDailyInfiniteEvent =
 				event.frequency === "day" &&
 				event.isInfinite === true &&
-				normalizedEventStartDate <= normalizedCurrentDate
-			);
+				normalizedEventStartDate <= normalizedCurrentDate;
 
-			const isMonthlyInfiniteEvent = (
+			const isMonthlyInfiniteEvent =
 				event.frequency === "month" &&
 				event.isInfinite === true &&
 				eventStartDate.getDate() === currentDate.getDate() && //controlla se è lo stesso giorno del mese
-				normalizedEventStartDate <= normalizedCurrentDate
-			);
+				normalizedEventStartDate <= normalizedCurrentDate;
 
-
-			const isWeeklyInfiniteEvent = (
+			const isWeeklyInfiniteEvent =
 				event.frequency === "week" &&
 				event.isInfinite === true &&
 				normalizedEventStartDate <= normalizedCurrentDate &&
-				eventStartDate.getDay() === currentDate.getDay()  //controlla se è lo stesso giorno della settimana
-			);
+				eventStartDate.getDay() === currentDate.getDay(); //controlla se è lo stesso giorno della settimana
 
-			const isYearlyInfiniteEvent = (
+			const isYearlyInfiniteEvent =
 				event.frequency === "year" &&
 				event.isInfinite === true &&
 				normalizedEventStartDate <= normalizedCurrentDate &&
 				eventStartDate.getDate() === currentDate.getDate() && //controlla se è lo stesso giorno del mese
-				eventStartDate.getMonth() === currentDate.getMonth()  //controlla se è lo stesso mese
-			);
+				eventStartDate.getMonth() === currentDate.getMonth(); //controlla se è lo stesso mese
 
 			// Ritorna true se l'evento è nello stesso giorno o se è giornaliero e infinito
-			return isSameDayEvent || isDailyInfiniteEvent || isMonthlyInfiniteEvent || isWeeklyInfiniteEvent || isYearlyInfiniteEvent;
+			return (
+				isSameDayEvent ||
+				isDailyInfiniteEvent ||
+				isMonthlyInfiniteEvent ||
+				isWeeklyInfiniteEvent ||
+				isYearlyInfiniteEvent
+			);
 		});
 	}
 
-	const activitiesCheScadonoOggi = activityList.filter(activity => {
+	const activitiesCheScadonoOggi = activityList.filter((activity) => {
 		const deadline = new Date(activity.deadline);
 		return (
 			deadline.getFullYear() === year &&
@@ -891,7 +1059,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			setAllActivitiesMode(false);
 		}
 		fetchCurrentDate();
-
 	}
 
 	async function toggleAllActivitiesMode(): Promise<void> {
@@ -922,7 +1089,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const endMinutes = endTime.getMinutes();
 
 			// Imposta startTime con day, meseCorrente, year e l'ora corrente
-			var initialStartTime = new Date(year, meseCorrente, day, currentHours, currentMinutes, 0, 0);
+			var initialStartTime = new Date(
+				year,
+				meseCorrente,
+				day,
+				currentHours,
+				currentMinutes,
+				0,
+				0
+			);
 			setStartTime(initialStartTime);
 
 			// Imposta endTime a 30 minuti dopo startTime
@@ -967,7 +1142,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const endMinutes = endTime.getMinutes();
 
 			// Imposta startTime con day, meseCorrente, year e l'ora corrente
-			var initialStartTime = new Date(year, meseCorrente, day, currentHours, currentMinutes, 0, 0);
+			var initialStartTime = new Date(
+				year,
+				meseCorrente,
+				day,
+				currentHours,
+				currentMinutes,
+				0,
+				0
+			);
 			setStartTime(initialStartTime);
 
 			// Imposta endTime a 30 minuti dopo startTime
@@ -1037,7 +1220,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const endMinutes = endTime.getMinutes();
 
 			// Imposta startTime con day, meseCorrente, year e l'ora corrente
-			var initialStartTime = new Date(year, meseCorrente, day, currentHours, currentMinutes, 0, 0);
+			var initialStartTime = new Date(
+				year,
+				meseCorrente,
+				day,
+				currentHours,
+				currentMinutes,
+				0,
+				0
+			);
 			setStartTime(initialStartTime);
 
 			// Imposta endTime a 30 minuti dopo startTime
@@ -1062,14 +1253,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 	const handleScroll = (e: React.WheelEvent<HTMLDivElement>): void => {
 		//e.preventDefault(); // Previene il comportamento di scroll predefinito
 		const scrollAmount = e.deltaY; // Ottieni la quantità di scroll
-		const orarioDivs = document.querySelectorAll('.orario'); // Seleziona tutti i div con classe 'orario'
+		const orarioDivs = document.querySelectorAll(".orario"); // Seleziona tutti i div con classe 'orario'
 
 		// Calcola il nuovo scroll per il div attivo
 		const activeDiv = e.currentTarget as HTMLDivElement;
 		const newScrollTop = activeDiv.scrollTop + scrollAmount;
 
 		// Applica lo scroll a ciascun div
-		orarioDivs.forEach(div => {
+		orarioDivs.forEach((div) => {
 			div.scrollTop = newScrollTop; // Imposta la stessa posizione di scroll
 		});
 	};
@@ -1079,7 +1270,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//e.preventDefault();
 		fetchCurrentDate();
 		setEventPositions([]);
-		setRenderKey(prevKey => prevKey + 1);
+		setRenderKey((prevKey) => prevKey + 1);
 		//console.log("renderKey:", renderKey);
 		//console.log("Questo è ciò che viene passato in input alla handleDateClick:", e);
 		let dayValue: number;
@@ -1088,15 +1279,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		if (typeof e === "number") {
 			dayValue = e;
-		}
-		else {
+		} else {
 			dayValue = Number(e.currentTarget.textContent);
 		}
 		//console.log("Clicked day:", dayValue); // Log per il debug
 		setDay(dayValue);
 
 		try {
-
 			const date = new Date(); //ottengo data corrente
 			date.setDate(dayValue);
 			//console.log("Questo è il mese corrente:", meseCorrente);
@@ -1105,8 +1294,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			console.log(date);
 
 			const currentUser = await getCurrentUser();
-
-
 
 			const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 				method: "POST",
@@ -1130,74 +1317,99 @@ export default function Calendar(): React.JSX.Element { // prova push
 			console.log("showRisorse:", showRisorse);
 			console.log("eventi:", eventi);
 
-
 			//INIZIO PARTE DI CODICE CHE CALCOLA LE POSIZIONI DEGLI EVENTI PER VISUALIZZAZIONE HTML
 
-
-
 			if (eventi && eventi.length > 0) {
-				const positions = eventi.map((evento: Event) => {
-					if (evento && evento.startTime) {
-						const oraInizioEvento = new Date(evento.startTime).getHours();
-						const minutiInizioEvento = new Date(evento.startTime).getMinutes();
-						const minutiFineEvento = new Date(evento.endTime).getMinutes();
-						const oraFineEvento = new Date(evento.endTime).getHours();
+				const positions = eventi
+					.map((evento: Event) => {
+						if (evento && evento.startTime) {
+							const oraInizioEvento = new Date(evento.startTime).getHours();
+							const minutiInizioEvento = new Date(evento.startTime).getMinutes();
+							const minutiFineEvento = new Date(evento.endTime).getMinutes();
+							const oraFineEvento = new Date(evento.endTime).getHours();
 
-						//normalizzo data corrente, data di inizio evento e data di fine evento
-						const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-						const eventEndDate = new Date(new Date(evento.endTime).getFullYear(), new Date(evento.endTime).getMonth(), new Date(evento.endTime).getDate()).getTime();
-						const eventStartDate = new Date(new Date(evento.startTime).getFullYear(), new Date(evento.startTime).getMonth(), new Date(evento.startTime).getDate()).getTime();
+							//normalizzo data corrente, data di inizio evento e data di fine evento
+							const currentDate = new Date(
+								date.getFullYear(),
+								date.getMonth(),
+								date.getDate()
+							).getTime();
+							const eventEndDate = new Date(
+								new Date(evento.endTime).getFullYear(),
+								new Date(evento.endTime).getMonth(),
+								new Date(evento.endTime).getDate()
+							).getTime();
+							const eventStartDate = new Date(
+								new Date(evento.startTime).getFullYear(),
+								new Date(evento.startTime).getMonth(),
+								new Date(evento.startTime).getDate()
+							).getTime();
 
+							// Calcola la posizione e l'altezza per ogni evento
+							var topPosition =
+								53.7 * oraInizioEvento + 54 * (minutiInizioEvento / 60); // Posizione inizio evento
+							var eventHeight =
+								53.7 * (oraFineEvento - oraInizioEvento) +
+								54 * (minutiFineEvento / 60) -
+								54 * (minutiInizioEvento / 60); // Altezza dell'evento
 
+							//console.log("Questa è la data corrente:", currentDate);
+							//console.log("Questa è la data di inizio evento:", eventStartDate);
+							//console.log("Questa è la data di fine evento:", eventEndDate);
 
-						// Calcola la posizione e l'altezza per ogni evento
-						var topPosition = (53.7 * oraInizioEvento) + (54 * (minutiInizioEvento / 60)); // Posizione inizio evento
-						var eventHeight = 53.7 * (oraFineEvento - oraInizioEvento) + 54 * (minutiFineEvento / 60) - 54 * (minutiInizioEvento / 60); // Altezza dell'evento
+							//se la data attuale è inferiore alla data di fine evento, allora estendi l'evento a fino a fine giornata
+							if (currentDate < eventEndDate) {
+								console.log(
+									"L'evento non termina nella data corrente, quindi estendo l'evento fino a fine giornata"
+								);
+								topPosition = 54 * oraInizioEvento + 54 * (minutiInizioEvento / 60);
+								eventHeight =
+									54 * (23 - oraInizioEvento) +
+									54 * ((60 - minutiInizioEvento) / 60);
+							}
 
+							//se la data attuale è superiore alla data di inizio evento, e la data corrente è uguale alla data di fine evento
+							//allora l'evento inzia in un giorno precedente ad oggi e finisce oggi
+							// allora mostro l'evento a partire dall'inizio del giorno e lo faccio finire all'orario di fine evento
+							if (currentDate > eventStartDate && currentDate === eventEndDate) {
+								console.log(
+									"L'evento non inizia nella data corrente ma finisce oggi"
+								);
+								topPosition = 0; //altezza 0
+								eventHeight = 54 * oraFineEvento + 54 * (minutiFineEvento / 60); // Altezza dell'evento
+							}
 
-						//console.log("Questa è la data corrente:", currentDate);
-						//console.log("Questa è la data di inizio evento:", eventStartDate);
-						//console.log("Questa è la data di fine evento:", eventEndDate);
+							// se l'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi
+							if (currentDate > eventStartDate && currentDate < eventEndDate) {
+								console.log(
+									"L'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi"
+								);
+								topPosition = 0; //altezza 0
+								eventHeight = 54 * 24;
+							}
 
-						//se la data attuale è inferiore alla data di fine evento, allora estendi l'evento a fino a fine giornata
-						if (currentDate < eventEndDate) {
-							console.log("L'evento non termina nella data corrente, quindi estendo l'evento fino a fine giornata");
-							topPosition = (54 * oraInizioEvento) + (54 * (minutiInizioEvento / 60));
-							eventHeight = 54 * (23 - oraInizioEvento) + 54 * ((60 - minutiInizioEvento) / 60);
+							const nomeEvento = evento.title;
+							var tipoEvento = true; //se l'evento è un evento (non un pomodoro), metto type a true
+							if (evento.title === "Pomodoro Session") {
+								tipoEvento = false; //se l'evento è un pomodoro, metto type a false
+							}
+
+							//console.log("stampa l'evento con i propri campi:", evento);
+							return {
+								top: topPosition,
+								height: eventHeight,
+								name: nomeEvento,
+								type: tipoEvento,
+								width: 1,
+								marginLeft: 0,
+								event: evento,
+							};
 						}
-
-						//se la data attuale è superiore alla data di inizio evento, e la data corrente è uguale alla data di fine evento
-						//allora l'evento inzia in un giorno precedente ad oggi e finisce oggi
-						// allora mostro l'evento a partire dall'inizio del giorno e lo faccio finire all'orario di fine evento
-						if (currentDate > eventStartDate && currentDate === eventEndDate) {
-							console.log("L'evento non inizia nella data corrente ma finisce oggi");
-							topPosition = 0; //altezza 0
-							eventHeight = (54 * oraFineEvento) + (54 * (minutiFineEvento / 60)); // Altezza dell'evento
-						}
-
-						// se l'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi
-						if (currentDate > eventStartDate && currentDate < eventEndDate) {
-							console.log("L'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi");
-							topPosition = 0; //altezza 0
-							eventHeight = (54 * 24)
-						}
-
-
-						const nomeEvento = evento.title;
-						var tipoEvento = true; //se l'evento è un evento (non un pomodoro), metto type a true
-						if (evento.title === "Pomodoro Session") {
-							tipoEvento = false; //se l'evento è un pomodoro, metto type a false
-						}
-
-						//console.log("stampa l'evento con i propri campi:", evento);
-						return { top: topPosition, height: eventHeight, name: nomeEvento, type: tipoEvento, width: 1, marginLeft: 0, event: evento };
-					}
-					return null; // Ritorna null se l'evento non è valido
-				}).filter(Boolean); // Rimuove eventuali null
+						return null; // Ritorna null se l'evento non è valido
+					})
+					.filter(Boolean); // Rimuove eventuali null
 
 				//console.log("STAMPO POSITIONS: ", positions);
-
-
 
 				// Mappa per tenere traccia delle sovrapposizioni
 				const overlapCount: { [key: string]: number } = {};
@@ -1219,7 +1431,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 								// Incrementa il contatore per l'evento corrente
 								overlapCount[index] = (overlapCount[index] || 0) + 1;
 								// Incrementa il contatore per l'altro evento
-								overlapCount[i] = (overlapCount[i] || 0);
+								overlapCount[i] = overlapCount[i] || 0;
 							}
 						}
 					}
@@ -1236,51 +1448,81 @@ export default function Calendar(): React.JSX.Element { // prova push
 				});
 
 				//ordino gli eventi dall'alto verso il basso nella visualizzazione (secondo parametro top)
-				finalPositions.sort((a: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event },
-					b: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number, event: Event }) => {
-					return a.top - b.top; // Ordina in base al valore di top
-				});
-
+				finalPositions.sort(
+					(
+						a: {
+							top: number;
+							height: number;
+							name: string;
+							type: boolean;
+							width: number;
+							marginLeft: number;
+							event: Event;
+						},
+						b: {
+							top: number;
+							height: number;
+							name: string;
+							type: boolean;
+							width: number;
+							marginLeft: number;
+							event: Event;
+						}
+					) => {
+						return a.top - b.top; // Ordina in base al valore di top
+					}
+				);
 
 				//console.log("POSIZIONI FINALI EVENTI:", finalPositions);
 
-				finalPositions.forEach((position: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number, event: Event }, index: number) => {
-					if (index > 0) {
-						const previousPosition = finalPositions[index - 1];
-						// Controlla se l'evento corrente è sovrapposto al precedente, controllando width
-						// (numero eventi sovrapposti) e ora inizio degli eventi (per controllare bug)
-						if (position.width === previousPosition.width && position.event.startTime <= previousPosition.event.endTime) {
-							// Se sono contigui, calcola il marginLeft
+				finalPositions.forEach(
+					(
+						position: {
+							top: number;
+							height: number;
+							name: string;
+							type: boolean;
+							width: number;
+							marginLeft: number;
+							event: Event;
+						},
+						index: number
+					) => {
+						if (index > 0) {
+							const previousPosition = finalPositions[index - 1];
+							// Controlla se l'evento corrente è sovrapposto al precedente, controllando width
+							// (numero eventi sovrapposti) e ora inizio degli eventi (per controllare bug)
+							if (
+								position.width === previousPosition.width &&
+								position.event.startTime <= previousPosition.event.endTime
+							) {
+								// Se sono contigui, calcola il marginLeft
 
-							position.marginLeft = previousPosition.marginLeft + 95 / position.width;
+								position.marginLeft =
+									previousPosition.marginLeft + 95 / position.width;
+							} else {
+								// Altrimenti, non c'è margine
+								position.marginLeft = 0;
+							}
 						} else {
-							// Altrimenti, non c'è margine
+							// Per il primo evento, non c'è margine
 							position.marginLeft = 0;
 						}
-					} else {
-						// Per il primo evento, non c'è margine
-						position.marginLeft = 0;
 					}
-				});
-
-
+				);
 
 				//FINE PARTE DI CODICE CHE CALCOLA LE POSIZIONI DEGLI EVENTI PER VISUALIZZAZIONE HTML
 
-
 				setEventPositions(finalPositions);
-			}
-			else {
+			} else {
 				console.log("Nessun evento trovato per questo giorno");
 			}
 			//console.log("Queste sono le posizioni degli eventi ottenuti:", eventPositions);
-
-
-
-		}
-
-		catch (e) {
-			console.error("Si è verificato un errore durante il recupero degli eventi del giorno:", e);
+		} catch (e) {
+			console.error(
+				"Si è verificato un errore durante il recupero degli eventi del giorno:",
+				e
+			);
 		}
 	}
 
@@ -1294,7 +1536,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 		return startDay;
 	}
 
-	async function loadWeekEvents(startDay: number, year: number, meseCorrente: number): Promise<void> {
+	async function loadWeekEvents(
+		startDay: number,
+		year: number,
+		meseCorrente: number
+	): Promise<void> {
 		const eventiSettimana = [];
 
 		for (let i = 0; i < 7; i++) {
@@ -1327,7 +1573,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value._id.toString() }),
+					body: JSON.stringify({
+						date: date.toISOString(),
+						owner: currentUser.value._id.toString(),
+					}),
 				});
 
 				if (!res.ok) {
@@ -1338,60 +1587,83 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const eventi = data.value;
 
 				if (eventi && eventi.length > 0) {
-					const positions = eventi.map((evento: Event) => {
-						if (evento && evento.startTime) {
-							const oraInizioEvento = new Date(evento.startTime).getHours();
-							const minutiInizioEvento = new Date(evento.startTime).getMinutes();
-							const minutiFineEvento = new Date(evento.endTime).getMinutes();
-							const oraFineEvento = new Date(evento.endTime).getHours();
+					const positions = eventi
+						.map((evento: Event) => {
+							if (evento && evento.startTime) {
+								const oraInizioEvento = new Date(evento.startTime).getHours();
+								const minutiInizioEvento = new Date(evento.startTime).getMinutes();
+								const minutiFineEvento = new Date(evento.endTime).getMinutes();
+								const oraFineEvento = new Date(evento.endTime).getHours();
 
-							//normalizzo data corrente, data di inizio evento e data di fine evento
-							const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-							const eventEndDate = new Date(new Date(evento.endTime).getFullYear(), new Date(evento.endTime).getMonth(), new Date(evento.endTime).getDate()).getTime();
-							const eventStartDate = new Date(new Date(evento.startTime).getFullYear(), new Date(evento.startTime).getMonth(), new Date(evento.startTime).getDate()).getTime();
+								//normalizzo data corrente, data di inizio evento e data di fine evento
+								const currentDate = new Date(
+									date.getFullYear(),
+									date.getMonth(),
+									date.getDate()
+								).getTime();
+								const eventEndDate = new Date(
+									new Date(evento.endTime).getFullYear(),
+									new Date(evento.endTime).getMonth(),
+									new Date(evento.endTime).getDate()
+								).getTime();
+								const eventStartDate = new Date(
+									new Date(evento.startTime).getFullYear(),
+									new Date(evento.startTime).getMonth(),
+									new Date(evento.startTime).getDate()
+								).getTime();
 
+								// Calcola la posizione e l'altezza per ogni evento
+								var topPosition =
+									47.3 * oraInizioEvento + 47.3 * (minutiInizioEvento / 60); // Posizione inizio evento
+								var eventHeight =
+									47.3 * (oraFineEvento - oraInizioEvento) +
+									47.3 * (minutiFineEvento / 60) -
+									47.3 * (minutiInizioEvento / 60); // Altezza dell'evento
 
+								//console.log("Questa è la data corrente:", currentDate);
+								//console.log("Questa è la data di inizio evento:", eventStartDate);
+								//console.log("Questa è la data di fine evento:", eventEndDate);
 
-							// Calcola la posizione e l'altezza per ogni evento
-							var topPosition = (47.3 * oraInizioEvento) + (47.3 * (minutiInizioEvento / 60));  // Posizione inizio evento
-							var eventHeight = 47.3 * (oraFineEvento - oraInizioEvento) + 47.3 * (minutiFineEvento / 60) - 47.3 * (minutiInizioEvento / 60); // Altezza dell'evento
+								//se la data attuale è inferiore alla data di fine evento, allora estendi l'evento a fino a fine giornata
+								if (currentDate < eventEndDate) {
+									topPosition =
+										47.3 * oraInizioEvento + 47.3 * (minutiInizioEvento / 60);
+									eventHeight =
+										47.3 * (23 - oraInizioEvento) +
+										47.3 * ((60 - minutiInizioEvento) / 60);
+								}
 
+								//se la data attuale è superiore alla data di inizio evento, e la data corrente è uguale alla data di fine evento
+								//allora l'evento inzia in un giorno precedente ad oggi e finisce oggi
+								// allora mostro l'evento a partire dall'inizio del giorno e lo faccio finire all'orario di fine evento
+								if (currentDate > eventStartDate && currentDate === eventEndDate) {
+									topPosition = 0; //altezza 0
+									eventHeight =
+										47.3 * oraFineEvento + 47.3 * (minutiFineEvento / 60); // Altezza dell'evento
+								}
 
-							//console.log("Questa è la data corrente:", currentDate);
-							//console.log("Questa è la data di inizio evento:", eventStartDate);
-							//console.log("Questa è la data di fine evento:", eventEndDate);
+								// se l'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi
+								if (currentDate > eventStartDate && currentDate < eventEndDate) {
+									topPosition = 0; //altezza 0
+									eventHeight = 47.3 * 24;
+								}
 
+								const nomeEvento = evento.title;
+								const tipoEvento = evento.title !== "Pomodoro Session";
 
-
-							//se la data attuale è inferiore alla data di fine evento, allora estendi l'evento a fino a fine giornata
-							if (currentDate < eventEndDate) {
-
-								topPosition = (47.3 * oraInizioEvento) + (47.3 * (minutiInizioEvento / 60));
-								eventHeight = 47.3 * (23 - oraInizioEvento) + 47.3 * ((60 - minutiInizioEvento) / 60);
+								return {
+									top: topPosition,
+									height: eventHeight,
+									name: nomeEvento,
+									type: tipoEvento,
+									width: 1,
+									marginLeft: 0,
+									event: evento,
+								};
 							}
-
-							//se la data attuale è superiore alla data di inizio evento, e la data corrente è uguale alla data di fine evento
-							//allora l'evento inzia in un giorno precedente ad oggi e finisce oggi
-							// allora mostro l'evento a partire dall'inizio del giorno e lo faccio finire all'orario di fine evento
-							if (currentDate > eventStartDate && currentDate === eventEndDate) {
-								topPosition = 0; //altezza 0
-								eventHeight = (47.3 * oraFineEvento) + (47.3 * (minutiFineEvento / 60)); // Altezza dell'evento
-							}
-
-							// se l'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi
-							if (currentDate > eventStartDate && currentDate < eventEndDate) {
-								topPosition = 0; //altezza 0
-								eventHeight = (47.3 * 24)
-							}
-
-
-							const nomeEvento = evento.title;
-							const tipoEvento = evento.title !== "Pomodoro Session";
-
-							return { top: topPosition, height: eventHeight, name: nomeEvento, type: tipoEvento, width: 1, marginLeft: 0, event: evento };
-						}
-						return null;
-					}).filter(Boolean);
+							return null;
+						})
+						.filter(Boolean);
 
 					// Calcola le sovrapposizioni e aggiorna le posizioni
 					const overlapCount: { [key: string]: number } = {};
@@ -1407,7 +1679,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 								if (startTime < otherEndTime && endTime > otherStartTime) {
 									overlapCount[index] = (overlapCount[index] || 0) + 1;
-									overlapCount[j] = (overlapCount[j] || 0);
+									overlapCount[j] = overlapCount[j] || 0;
 								}
 							}
 						}
@@ -1421,20 +1693,58 @@ export default function Calendar(): React.JSX.Element { // prova push
 						};
 					});
 
-					finalPositions.sort((a: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }, b: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }) => a.top - b.top);
+					finalPositions.sort(
+						(
+							a: {
+								top: number;
+								height: number;
+								name: string;
+								type: boolean;
+								width: number;
+								marginLeft: number;
+								event: Event;
+							},
+							b: {
+								top: number;
+								height: number;
+								name: string;
+								type: boolean;
+								width: number;
+								marginLeft: number;
+								event: Event;
+							}
+						) => a.top - b.top
+					);
 
-					finalPositions.forEach((position: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }, index: number) => {
-						if (index > 0) {
-							const previousPosition = finalPositions[index - 1];
-							if (position.width === previousPosition.width && position.event.startTime <= previousPosition.event.endTime) {
-								position.marginLeft = previousPosition.marginLeft + 95 / position.width;
+					finalPositions.forEach(
+						(
+							position: {
+								top: number;
+								height: number;
+								name: string;
+								type: boolean;
+								width: number;
+								marginLeft: number;
+								event: Event;
+							},
+							index: number
+						) => {
+							if (index > 0) {
+								const previousPosition = finalPositions[index - 1];
+								if (
+									position.width === previousPosition.width &&
+									position.event.startTime <= previousPosition.event.endTime
+								) {
+									position.marginLeft =
+										previousPosition.marginLeft + 95 / position.width;
+								} else {
+									position.marginLeft = 0;
+								}
 							} else {
 								position.marginLeft = 0;
 							}
-						} else {
-							position.marginLeft = 0;
 						}
-					});
+					);
 
 					eventiSettimana.push({ day, positions: finalPositions });
 				} else {
@@ -1476,7 +1786,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ date: date.toISOString(), owner: currentUser.value._id.toString() }),
+					body: JSON.stringify({
+						date: date.toISOString(),
+						owner: currentUser.value._id.toString(),
+					}),
 				});
 
 				if (!res.ok) {
@@ -1487,23 +1800,37 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const eventi = data.value;
 
 				if (eventi && eventi.length > 0) {
-					const positions = eventi.map((evento: Event) => {
-						if (evento && evento.startTime) {
-							const oraInizioEvento = new Date(evento.startTime).getHours();
-							const minutiInizioEvento = new Date(evento.startTime).getMinutes();
-							const minutiFineEvento = new Date(evento.endTime).getMinutes();
-							const oraFineEvento = new Date(evento.endTime).getHours();
+					const positions = eventi
+						.map((evento: Event) => {
+							if (evento && evento.startTime) {
+								const oraInizioEvento = new Date(evento.startTime).getHours();
+								const minutiInizioEvento = new Date(evento.startTime).getMinutes();
+								const minutiFineEvento = new Date(evento.endTime).getMinutes();
+								const oraFineEvento = new Date(evento.endTime).getHours();
 
-							const topPosition = (5 * oraInizioEvento) + (5 * (minutiInizioEvento / 60));
-							const eventHeight = 5 * (oraFineEvento - oraInizioEvento) + 5 * (minutiFineEvento / 60) - 5 * (minutiInizioEvento / 60);
+								const topPosition =
+									5 * oraInizioEvento + 5 * (minutiInizioEvento / 60);
+								const eventHeight =
+									5 * (oraFineEvento - oraInizioEvento) +
+									5 * (minutiFineEvento / 60) -
+									5 * (minutiInizioEvento / 60);
 
-							const nomeEvento = evento.title;
-							const tipoEvento = evento.title !== "Pomodoro Session";
+								const nomeEvento = evento.title;
+								const tipoEvento = evento.title !== "Pomodoro Session";
 
-							return { top: topPosition, height: eventHeight, name: nomeEvento, type: tipoEvento, width: 1, marginLeft: 0, event: evento };
-						}
-						return null;
-					}).filter(Boolean);
+								return {
+									top: topPosition,
+									height: eventHeight,
+									name: nomeEvento,
+									type: tipoEvento,
+									width: 1,
+									marginLeft: 0,
+									event: evento,
+								};
+							}
+							return null;
+						})
+						.filter(Boolean);
 
 					// Calcola le sovrapposizioni e aggiorna le posizioni
 					const overlapCount: { [key: string]: number } = {};
@@ -1519,7 +1846,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 								if (startTime < otherEndTime && endTime > otherStartTime) {
 									overlapCount[index] = (overlapCount[index] || 0) + 1;
-									overlapCount[j] = (overlapCount[j] || 0);
+									overlapCount[j] = overlapCount[j] || 0;
 								}
 							}
 						}
@@ -1533,20 +1860,58 @@ export default function Calendar(): React.JSX.Element { // prova push
 						};
 					});
 
-					finalPositions.sort((a: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }, b: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }) => a.top - b.top);
+					finalPositions.sort(
+						(
+							a: {
+								top: number;
+								height: number;
+								name: string;
+								type: boolean;
+								width: number;
+								marginLeft: number;
+								event: Event;
+							},
+							b: {
+								top: number;
+								height: number;
+								name: string;
+								type: boolean;
+								width: number;
+								marginLeft: number;
+								event: Event;
+							}
+						) => a.top - b.top
+					);
 
-					finalPositions.forEach((position: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }, index: number) => {
-						if (index > 0) {
-							const previousPosition = finalPositions[index - 1];
-							if (position.width === previousPosition.width && position.event.startTime <= previousPosition.event.endTime) {
-								position.marginLeft = previousPosition.marginLeft + 95 / position.width;
+					finalPositions.forEach(
+						(
+							position: {
+								top: number;
+								height: number;
+								name: string;
+								type: boolean;
+								width: number;
+								marginLeft: number;
+								event: Event;
+							},
+							index: number
+						) => {
+							if (index > 0) {
+								const previousPosition = finalPositions[index - 1];
+								if (
+									position.width === previousPosition.width &&
+									position.event.startTime <= previousPosition.event.endTime
+								) {
+									position.marginLeft =
+										previousPosition.marginLeft + 95 / position.width;
+								} else {
+									position.marginLeft = 0;
+								}
 							} else {
 								position.marginLeft = 0;
 							}
-						} else {
-							position.marginLeft = 0;
 						}
-					});
+					);
 
 					eventiMese.push({ day, positions: finalPositions });
 				} else {
@@ -1558,23 +1923,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}
 		}
 
-
 		// Aggiorna lo stato con gli eventi del mese
 		setMonthEvents(eventiMese);
 	}
 
-	function handleSelectUser(
-		e: React.ChangeEvent<HTMLSelectElement>,
-		username: string
-	): void {
+	function handleSelectUser(e: React.ChangeEvent<HTMLSelectElement>, username: string): void {
 		e.preventDefault();
 		setUsers([username]);
 	}
 
-
-	async function handleSendInviteActivity(
-		e: React.MouseEvent<HTMLButtonElement>
-	): Promise<void> {
+	async function handleSendInviteActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		if (!(users.length > 0)) {
 			console.log("Nessun utente selezionato");
@@ -1619,8 +1977,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 				repeatedNotification = true;
 			}
 
-
-
 			newNotification = {
 				message: message,
 				mode: "activity",
@@ -1633,13 +1989,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
 					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
 				},
-
-			}
-
+			};
 		}
-
-
-
 
 		const newEvent = {
 			idEventoNotificaCondiviso,
@@ -1665,7 +2016,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			completed: false,
 		};
 
-
 		const res3 = await fetch(`${SERVER_API}/notifications`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -1681,12 +2031,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 					notification: newNotification,
 				},
 			}),
-
 		});
 		console.log("Notifica creata:", res3);
-
-
-
 
 		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
 
@@ -1701,9 +2047,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setSendInviteActivity(false);
 	}
 
-	async function handleSendInviteEvent(
-		e: React.MouseEvent<HTMLButtonElement>
-	): Promise<void> {
+	async function handleSendInviteEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		if (!(users.length > 0)) {
 			console.log("Nessun utente selezionato");
@@ -1716,7 +2060,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		//const currentUser = await getCurrentUser();
 
 		//const ownerr = currentUser.value.username;
-
 
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
@@ -1763,12 +2106,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 					repetitionsEvent: repetitions,
 					untilDateEvent: untilDate,
 				},
-
-			}
+			};
 		}
-
-
-
 
 		const newEvent = {
 			idEventoNotificaCondiviso,
@@ -1782,7 +2121,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			location,
 			repetitions,
 		};
-
 
 		const res3 = await fetch(`${SERVER_API}/notifications`, {
 			method: "POST",
@@ -1798,12 +2136,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 					notification: newNotification,
 				},
 			}),
-
 		});
 		console.log("Notifica creata:", res3);
-
-
-
 
 		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
 
@@ -1816,8 +2150,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		toggleCreateEvent();
 		setSendInviteEvent(false);
-
-
 	}
 
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -1828,11 +2160,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const data = await res.json();
 		const idUser = data.id;
 
-
-
-
 		setAccessList([...accessList, idUser]);
-
 	}
 
 	async function handleAddUserEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -1854,8 +2182,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			//alert("La risorsa non è disponibile per l'orario selezionato");
 			setMessageRisorsa("Risorsa non disponibile!");
 			return;
-		}
-		else {
+		} else {
 			setMessageRisorsa("");
 		}
 		setAccessList([...accessList, idUser]);
@@ -1869,8 +2196,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setShareEvent(!shareEvent);
 	}
 
-
-
 	function toggleSendInviteActivity(): void {
 		setSendInviteActivity(!sendInviteActivity);
 	}
@@ -1878,9 +2203,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 	function toggleSendInviteEvent(): void {
 		setSendInviteEvent(!sendInviteEvent);
 	}
-
-
-
 
 	async function handleDeleteEvent(id: string, groupId: string): Promise<void> {
 		//console.log("day:", day);
@@ -1900,10 +2222,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const eventiEliminati = data.value; // Supponendo che `value` contenga gli eventi eliminati
 
 				// Ottieni gli ID degli eventi eliminati
-				const idsEliminati = eventiEliminati.map((event: { groupId: string }) => event.groupId);
+				const idsEliminati = eventiEliminati.map(
+					(event: { groupId: string }) => event.groupId
+				);
 
 				// Aggiorna la eventList rimuovendo gli eventi eliminati
-				setEventList(prevEventList => prevEventList.filter(event => !idsEliminati.includes(event.groupId)));
+				setEventList((prevEventList) =>
+					prevEventList.filter((event) => !idsEliminati.includes(event.groupId))
+				);
 
 				console.log("Event list aggiornata:", eventList);
 				handleDateClick(day);
@@ -1932,12 +2258,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 			console.log("QUEESTA E' LA LISTA DI EVENTI ELIMINATI:", eventiEliminati);
 
-			for (const evento of eventiEliminati) { //per ogni evento in eventi eliminati
+			for (const evento of eventiEliminati) {
+				//per ogni evento in eventi eliminati
 				console.log("ENTRO NEL FOREACH DEGLI EVENTI ELIMINATI");
 				console.log("ENTRO NEL FOREACH DEGLI EVENTI ELIMINATI");
 
 				const idEventoNotificaCondiviso = evento.idEventoNotificaCondiviso; // Assicurati che questo campo esista
-				console.log("ID EVENTO NOTIFICA CONDIVISO DELL'EVENTO ELIMINATO:", idEventoNotificaCondiviso);
+				console.log(
+					"ID EVENTO NOTIFICA CONDIVISO DELL'EVENTO ELIMINATO:",
+					idEventoNotificaCondiviso
+				);
 				console.log("Notifiche totali:", notifications);
 				// Cerca le notifiche che corrispondono all'idEventoNotificaCondiviso
 
@@ -1946,7 +2276,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 						console.log("Notifica invalida:", notification);
 						return false;
 					}
-					return notification.data.idEventoNotificaCondiviso === idEventoNotificaCondiviso;
+					return (
+						notification.data.idEventoNotificaCondiviso === idEventoNotificaCondiviso
+					);
 				});
 
 				console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
@@ -1954,14 +2286,15 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 				console.log("NOTIFICHE DA ELIMINARE:", notificationsToDelete);
 
-
-
 				// Elimina le notifiche trovate
 				for (const notification of notificationsToDelete) {
 					const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({ notification_id: notification.id, idEventoNotificaCondiviso: idEventoNotificaCondiviso }), // Assicurati di usare il campo corretto
+						body: JSON.stringify({
+							notification_id: notification.id,
+							idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						}), // Assicurati di usare il campo corretto
 					});
 					console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
 
@@ -1969,19 +2302,18 @@ export default function Calendar(): React.JSX.Element { // prova push
 						const errorData = await res3.json();
 						console.error("Errore durante l'eliminazione della notifica:", errorData);
 					} else {
-						console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+						console.log(
+							`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`
+						);
 					}
 				}
 			}
 
 			return data;
-
-		}
-		catch (e) {
+		} catch (e) {
 			setMessage("Errore nell'eliminazione dell'evento: " + e);
 			return;
 		}
-
 	}
 
 	async function handleDeleteActivity(id: string): Promise<void> {
@@ -2003,9 +2335,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const attivitaEliminata = data.value; // Supponendo che `value` contenga l'attività eliminata
 
 			if (data.status === "success") {
-
 				// Aggiorna la activityList rimuovendo le attività eliminati
-				setActivityList(prevActivityList => prevActivityList.filter(activity => activity._id !== attivitaEliminata._id));
+				setActivityList((prevActivityList) =>
+					prevActivityList.filter((activity) => activity._id !== attivitaEliminata._id)
+				);
 
 				console.log("Activity list aggiornata:", activityList);
 				handleDateClick(day);
@@ -2015,15 +2348,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const res2 = await fetch(`${SERVER_API}/events/deleteEventTitle`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ titoloDaEliminare: "Scadenza " + attivitaEliminata[0].title }),
+				body: JSON.stringify({
+					titoloDaEliminare: "Scadenza " + attivitaEliminata[0].title,
+				}),
 			});
 
 			const data2 = await res2.json();
 
 			console.log("Evento scadenza eliminato:", data2);
 
-			setEventList(prevEventList =>
-				prevEventList.filter(event => event.title !== "Scadenza " + attivitaEliminata[0].title) // Filtra l'evento eliminato
+			setEventList(
+				(prevEventList) =>
+					prevEventList.filter(
+						(event) => event.title !== "Scadenza " + attivitaEliminata[0].title
+					) // Filtra l'evento eliminato
 			);
 			await loadEvents();
 
@@ -2046,14 +2384,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 			const idEventoNotificaCondiviso = attivitaEliminata[0].idEventoNotificaCondiviso;
 
-			console.log("ID EVENTO NOTIFICA CONDIVISO DELL'ATTIVITA' ELIMINATA:", idEventoNotificaCondiviso);
+			console.log(
+				"ID EVENTO NOTIFICA CONDIVISO DELL'ATTIVITA' ELIMINATA:",
+				idEventoNotificaCondiviso
+			);
 
 			for (const notification of notifications) {
-
 				const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ notification_id: notification.id, idEventoNotificaCondiviso: idEventoNotificaCondiviso }), // Assicurati di usare il campo corretto
+					body: JSON.stringify({
+						notification_id: notification.id,
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+					}), // Assicurati di usare il campo corretto
 				});
 				console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
 
@@ -2061,7 +2404,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 					const errorData = await res3.json();
 					console.error("Errore durante l'eliminazione della notifica:", errorData);
 				} else {
-					console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+					console.log(
+						`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`
+					);
 				}
 			}
 			/*
@@ -2102,13 +2447,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 							*/
 
 			return data;
-
-		}
-		catch (e) {
+		} catch (e) {
 			setMessage("Errore nell'eliminazione dell'evento: " + e);
 			return;
 		}
-
 	}
 
 	async function handleCompleteActivity(id: string): Promise<void> {
@@ -2131,7 +2473,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 		const dataNotes = await resNotes.json();
 		const Notes = dataNotes.value;
 		console.log("ATTIVITA COMPLETATA:", activityTitle);
-		//per ogni nota, scorri la sua todoList, e controlla se ci sono item il cui item.text sia 
+		//per ogni nota, scorri la sua todoList, e controlla se ci sono item il cui item.text sia
 		//uguale ad activity.title
 		console.log("Queste sono le note su cui iterare:", Notes);
 
@@ -2144,13 +2486,12 @@ export default function Calendar(): React.JSX.Element { // prova push
 					const noteId = note._id || note.id;
 					console.log("ID NOTA:", noteId);
 
-
 					// Chiamata alla nuova API per completare l'item
 					const res = await fetch(
 						`${SERVER_API}/notes/${noteId}/complete-item/${item.id}`,
 						{
 							method: "PUT",
-							headers: { "Content-Type": "application/json" }
+							headers: { "Content-Type": "application/json" },
 						}
 					);
 
@@ -2162,12 +2503,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 				}
 			}
 		}
-
-
-
-
-
-
 
 		const data = await res.json();
 		//console.log("ATTIVITA COMPLETATA:", data);
@@ -2193,11 +2528,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("NOTIFICHE ATTUALIIII:", notifications);
 
 		for (const notification of notifications) {
-
 			const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ notification_id: notification.id, idEventoNotificaCondiviso: idEventoNotificaCondiviso }), // Assicurati di usare il campo corretto
+				body: JSON.stringify({
+					notification_id: notification.id,
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+				}), // Assicurati di usare il campo corretto
 			});
 			console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
 
@@ -2205,18 +2542,18 @@ export default function Calendar(): React.JSX.Element { // prova push
 				const errorData = await res3.json();
 				console.error("Errore durante l'eliminazione della notifica:", errorData);
 			} else {
-				console.log(`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`);
+				console.log(
+					`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`
+				);
 			}
 		}
-
 	}
-
-
 
 	async function getCurrentUser(): Promise<Promise<any> | null> {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
-			if (!res.ok) { // Controlla se la risposta non è ok
+			if (!res.ok) {
+				// Controlla se la risposta non è ok
 				setMessage("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
@@ -2230,13 +2567,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 	}
 
-
-
 	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		const uniqueAccessList = [...new Set(accessList)];
 		//setAccessList(uniqueAccessList);
-
 
 		//Validazione dell'input
 		if (!title || !startTime || !endTime || !location) {
@@ -2264,7 +2598,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("Questo è il currentUser:", currentUser);
 		console.log("Questo è il currentUser:", currentUser);
 
-
 		const owner = currentUser.value._id.toString();
 
 		console.log("Questo è l'owner passato come parametro:", owner);
@@ -2273,7 +2606,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("Questo è l'owner passato come parametro:", owner);
 		console.log("Questo è l'owner passato come parametro:", owner);
 
-		console.log("Questa è la frequenza prima di inviare la richiesta di creazione dell'evento:", frequency);
+		console.log(
+			"Questa è la frequenza prima di inviare la richiesta di creazione dell'evento:",
+			frequency
+		);
 
 		//se all'evento è associata una notifica, inserisci idEventoNotificaCondiviso sia nella POST della notifica, che nell'evento
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
@@ -2298,8 +2634,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}),
 		});
 
-
-
 		const notificationDate = new Date(startTime);
 		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
 		console.log("Questa è la data di inizio evento:", startTime);
@@ -2321,10 +2655,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repeatedNotification = true;
 		}
 
-
-
 		if (addNotification) {
-			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'evento ", title);
+			console.log(
+				"Aggiungo notifica di lunghezza ",
+				notificationTime,
+				" minuti prima per l'evento ",
+				title
+			);
 			const res2 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -2347,13 +2684,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 				}),
 			});
 
-
-
 			const data2 = await res2.json();
 
 			console.log("NOTIFICA AGGIUNTA:", data2);
 		}
-
 
 		const newEvent = {
 			owner: owner,
@@ -2368,7 +2702,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 			frequency: frequency,
 			untilDate: untilDate,
 			repetitions: repetitions,
-		}
+		};
 
 		//ottieni gli usernames di tutti gli utenti
 		const resUsernames = await fetch(`${SERVER_API}/users/allIds`, {
@@ -2379,12 +2713,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 		});
 		const dataIds = await resUsernames.json();
 		const userIds = dataIds.value;
-		const risorse = uniqueAccessList.filter(receiver => !userIds.includes(receiver));
+		const risorse = uniqueAccessList.filter((receiver) => !userIds.includes(receiver));
 		console.log("Queste sono le risorse:", risorse);
 		//per ogni risorsa, crea un evento risorsa se non è già allocata per quell'orario
 		for (const risorsa of risorse) {
 			console.log("Questa è la risorsa:", risorsa);
-
 
 			//accetta la risorsa nella accessListAccepted (se arrivata fin qui, non è occupata)
 			const res = await fetch(`${SERVER_API}/events/${idEventoNotificaCondiviso}`, {
@@ -2421,13 +2754,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 			console.log("Evento risorsa creato:", res2);
 			console.log("Risorsa accettata:", res);
 
-
 			//crea un evento risorsa sul calendario, metti un nuovo campo che dice che è una risorsa.
 			//crea evento risorsa con la post degli eventi, setta isRisorsa a true.
 		}
 		console.log("Questi sono gli id di tutti gli utenti:", userIds);
-
-
 
 		//per ogni utente della accessList, invia una notifica per accettare l'invito
 		for (const receiver of uniqueAccessList) {
@@ -2449,7 +2779,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 						repetitionsEvent: repetitions,
 						untilDateEvent: untilDate,
 					},
-				}
+				};
 
 				const res3 = await fetch(`${SERVER_API}/notifications`, {
 					method: "POST",
@@ -2463,7 +2793,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 							date: currentDate,
 							event: newEvent,
 							notification: addNotification ? newNotification : null,
-
 						},
 					}),
 				});
@@ -2471,8 +2800,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 				console.log("NOTIFICA CONDIVISA:", res3);
 			}
 		}
-
-
 
 		if (!res.ok) {
 			const errorData = await res.json();
@@ -2524,7 +2851,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setDescription("");
 	}
 
-	async function handleCreateNonDisturbare(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+	async function handleCreateNonDisturbare(
+		e: React.MouseEvent<HTMLButtonElement>
+	): Promise<void> {
 		e.preventDefault();
 		//Validazione dell'input
 		if (!startTime || !endTime) {
@@ -2596,7 +2925,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 	}
 
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();	//Validazione dell'input
+		e.preventDefault(); //Validazione dell'input
 		const uniqueAccessList = [...new Set(accessList)];
 
 		if (!title) {
@@ -2637,8 +2966,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		});
 		console.log("Evento scadenza creato:", res);
 
-
-
 		//crea struttura dati per il body della POST dell'evento
 		const newEvent = {
 			idEventoNotificaCondiviso,
@@ -2652,7 +2979,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			location,
 			repetitions: 1,
 		};
-
 
 		const newActivity = {
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
@@ -2669,7 +2995,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("newActivity:", newActivity);
 
 		setActivityList([...activityList, newActivity]);
-
 
 		console.log("appena prima di fare la POST per creare l'attività");
 		console.log("appena prima di fare la POST per creare l'attività");
@@ -2695,7 +3020,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		console.log("Attività creata:", data2);
 		await loadActivities();
 
-
 		var notificationDate = new Date(startTime);
 		notificationDate.setHours(notificationDate.getHours() + 1); // Aggiungi un'ora
 		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
@@ -2718,10 +3042,14 @@ export default function Calendar(): React.JSX.Element { // prova push
 			repeatedNotification = true;
 		}
 
-
 		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
 		if (addNotification) {
-			console.log("Aggiungo notifica di lunghezza ", notificationTime, " minuti prima per l'attività ", title);
+			console.log(
+				"Aggiungo notifica di lunghezza ",
+				notificationTime,
+				" minuti prima per l'attività ",
+				title
+			);
 			const res3 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -2742,12 +3070,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 			console.log("Notifica creata per: " + owner, "Risposta:", res3);
 		}
 
-
-
 		//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
 		for (const receiver of uniqueAccessList) {
-
-
 			const newNotification = {
 				message: message,
 				mode: "activity",
@@ -2788,7 +3112,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			}
 		}
 
-
 		// Aggiorna la lista degli eventi
 		await loadEvents();
 		handleDateClick(startTime.getDate());
@@ -2811,8 +3134,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
-
-
 
 	//ottieni il giorno del mese per la visualizzazione weekly
 	function getAdjustedDay(day: number, offset: number, year: number, month: number): number {
@@ -2867,7 +3188,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		}
 	}
 
-
 	function toggleAllDayEvent(): void {
 		if (!allDayEvent) {
 			// Selezionato "Dura tutto il giorno"
@@ -2884,7 +3204,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 			const endTime = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
 			setStartTime(startTime);
 			setEndTime(endTime);
-
 		}
 		setAllDayEvent(!allDayEvent);
 	}
@@ -2897,7 +3216,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 	function toggleUntil(selectedValue: string): void {
 		console.log("toggleUntil", selectedValue);
 		setUntil(true);
-
 	}
 
 	function toggleSelectFrequency(e: React.ChangeEvent<HTMLSelectElement>): void {
@@ -2924,7 +3242,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 				setFrequency(Frequency.YEARLY);
 				break;
 		}
-
 	}
 
 	function toggleSelectUntil(e: React.ChangeEvent<HTMLSelectElement>): void {
@@ -2954,7 +3271,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 		setShowDownloadImport(!showDownloadImport);
 	}
 
-
 	return (
 		<>
 			{message && <div>{message}</div>}
@@ -2962,15 +3278,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 				<div className="whole-calendar-container">
 					<div className="calendar-header">
 						<div className="header-visualizza">
-							<label
-								htmlFor="eventType"
-								style={{ margin: "0" }}
-							>
+							<label htmlFor="eventType" style={{ margin: "0" }}>
 								Visualizza:
-								<select className="btn" id="eventType"
+								<select
+									className="btn"
+									id="eventType"
 									onChange={handleSelectMode}
-									value={selectedMode}
-								>
+									value={selectedMode}>
 									<option value="1">Eventi</option>
 									<option value="2">Attività</option>
 								</select>
@@ -2984,9 +3298,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 								disabled={!eventsMode}
 								style={{
 									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
-									cursor: eventsMode ? "pointer" : "default"
-								}}
-							>
+									cursor: eventsMode ? "pointer" : "default",
+								}}>
 								Day
 							</button>
 							<button
@@ -2995,9 +3308,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 								disabled={!eventsMode}
 								style={{
 									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
-									cursor: eventsMode ? "pointer" : "default"
-								}}
-							>
+									cursor: eventsMode ? "pointer" : "default",
+								}}>
 								Week
 							</button>
 							<button
@@ -3006,9 +3318,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 								disabled={!eventsMode}
 								style={{
 									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
-									cursor: eventsMode ? "pointer" : "default"
-								}}
-							>
+									cursor: eventsMode ? "pointer" : "default",
+								}}>
 								Month
 							</button>
 						</div>
@@ -3016,46 +3327,41 @@ export default function Calendar(): React.JSX.Element { // prova push
 						<button
 							className="calendar-header-button"
 							style={{ backgroundColor: "#3a7a3c" }}
-							onClick={toggleDownloadImport}
-						>
+							onClick={toggleDownloadImport}>
 							Scarica/importa
 						</button>
 
 						<button
 							className="calendar-header-button"
 							style={{ backgroundColor: "#3a7a3c" }}
-							onClick={toggleShowRisorse}
-						>
+							onClick={toggleShowRisorse}>
 							{showRisorse ? "Nascondi risorse" : "Mostra risorse"}
 						</button>
 
 						<button
 							className="calendar-header-button"
 							style={{ backgroundColor: "#3a7a3c", width: "45px" }}
-							onClick={toggleCreate}
-						>
+							onClick={toggleCreate}>
 							+
 						</button>
 					</div>
 
-					<div className="calendar-top-container"
-						style={{ padding: (showDownloadImport || create) ? "1em" : "0" }}
-					>
-						<div className="download-import"
-							style={{ display: showDownloadImport ? "flex" : "none" }}
-						>
+					<div
+						className="calendar-top-container"
+						style={{ padding: showDownloadImport || create ? "1em" : "0" }}>
+						<div
+							className="download-import"
+							style={{ display: showDownloadImport ? "flex" : "none" }}>
 							<button
 								className="btn btn-primary"
 								style={{ backgroundColor: "bisque", color: "black", border: "0" }}
-								onClick={handleDownloadCalendar}
-							>
+								onClick={handleDownloadCalendar}>
 								Scarica Calendario
 							</button>
 							<button
 								className="btn btn-primary"
 								style={{ backgroundColor: "bisque", color: "black", border: "0" }}
-								onClick={handleImportCalendar}
-							>
+								onClick={handleImportCalendar}>
 								Importa Calendario
 							</button>
 							<div>
@@ -3069,50 +3375,67 @@ export default function Calendar(): React.JSX.Element { // prova push
 								<label
 									htmlFor="file-upload"
 									className="btn btn-primary border"
-									style={{ backgroundColor: "white", color: "black", margin: "0" }}
-								>
+									style={{
+										backgroundColor: "white",
+										color: "black",
+										margin: "0",
+									}}>
 									Scegli file
 								</label>
 							</div>
 						</div>
 
-						<div className="choice-create-buttons"
-							style={{ display: create ? "flex" : "none" }}
-						>
-							<button className="calendar-header-button"
+						<div
+							className="choice-create-buttons"
+							style={{ display: create ? "flex" : "none" }}>
+							<button
+								className="calendar-header-button"
 								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateEvent}>
 								Evento
 							</button>
-							<button className="calendar-header-button"
+							<button
+								className="calendar-header-button"
 								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateActivity}>
 								Attività
 							</button>
-							<button className="calendar-header-button"
+							<button
+								className="calendar-header-button"
 								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateNonDisturbare}>
 								Non disturbare
 							</button>
 
-							<button className="calendar-header-button"
+							<button
+								className="calendar-header-button"
 								style={{ backgroundColor: "bisque" }}
 								onClick={toggleCreateRisorsa}>
 								Risorsa
 							</button>
 						</div>
 
-						<div className="choice-create"
+						<div
+							className="choice-create"
 							style={{
-								display: (createEvent || createActivity || createRisorsa || createNonDisturbare) ? "flex" : "none",
-								margin: create ? "0" : "1em 0"
-							}}
-						>
+								display:
+									createEvent ||
+									createActivity ||
+									createRisorsa ||
+									createNonDisturbare
+										? "flex"
+										: "none",
+								margin: create ? "0" : "1em 0",
+							}}>
 							{createEvent && (
 								<div className="creation-event-container">
 									<button
 										className="btn btn-primary"
-										style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+										style={{
+											backgroundColor: "bisque",
+											color: "black",
+											border: "0",
+										}}
 										onClick={toggleCreateEvent}>
 										Chiudi
 									</button>
@@ -3122,7 +3445,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="checkbox"
 												name="useDefaultTitle"
 												onClick={toggleEventTitle}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Evento Pomodoro
 										</label>
@@ -3132,10 +3459,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="checkbox"
 												name="allDayEvent"
 												onClick={toggleAllDayEvent}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Tutto il giorno
-
 										</label>
 
 										<label htmlFor="allDayEvent">
@@ -3143,41 +3473,67 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="checkbox"
 												name="repeatEvent"
 												onClick={toggleRepeatEvent}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Evento ripetuto
-
 										</label>
 										{repeatEvent && (
 											<>
-												<div className="flex" style={{ marginRight: "10px" }}>
+												<div
+													className="flex"
+													style={{ marginRight: "10px" }}>
 													Ripeti l'evento
 													<label htmlFor="repeatEvent">
 														<select
 															className="btn border"
 															name="repetitionType"
 															onChange={toggleSelectFrequency}
-															style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-														>
+															style={{
+																marginLeft: "5px",
+																marginRight: "3px",
+																marginTop: "3px",
+															}}>
 															<option value="Once">Una volta</option>
-															<option value="Daily">Ogni giorno</option>
-															<option value="Weekly">Ogni settimana</option>
-															<option value="Monthly">Ogni mese </option>
-															<option value="Yearly">Ogni anno</option>
+															<option value="Daily">
+																Ogni giorno
+															</option>
+															<option value="Weekly">
+																Ogni settimana
+															</option>
+															<option value="Monthly">
+																Ogni mese{" "}
+															</option>
+															<option value="Yearly">
+																Ogni anno
+															</option>
 														</select>
-
 													</label>
 												</div>
 
 												{until && (
 													<div>
 														<div>
-															<div className="flex" style={{ marginRight: "10px" }}>
+															<div
+																className="flex"
+																style={{ marginRight: "10px" }}>
 																Fino a
-																<select className="btn border" onChange={toggleSelectUntil} defaultValue="Data">
-																	<option value="Data">Data</option>
-																	<option value="Ripetizioni">Ripetizioni</option>
-																	<option value="Infinito">Infinito </option>
+																<select
+																	className="btn border"
+																	onChange={toggleSelectUntil}
+																	defaultValue="Data">
+																	<option value="Data">
+																		Data
+																	</option>
+																	<option value="Ripetizioni">
+																		Ripetizioni
+																	</option>
+																	<option value="Infinito">
+																		Infinito{" "}
+																	</option>
 																</select>
 															</div>
 
@@ -3186,9 +3542,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 																	className="btn border"
 																	name="finoAData"
 																	selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
-																	onChange={(date: Date | null): void => {
+																	onChange={(
+																		date: Date | null
+																	): void => {
 																		if (date) {
-																			date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
+																			date.setHours(
+																				12,
+																				0,
+																				0,
+																				0
+																			); // Imposta l'orario a mezzogiorno
 																			setUntilDate(date); // Aggiorna lo stato con la nuova data
 																		}
 																	}}
@@ -3198,18 +3561,32 @@ export default function Calendar(): React.JSX.Element { // prova push
 
 															{selectedValue === "Ripetizioni" && (
 																<div>
-																	<input className="btn border" type="number" min="1"
-																		onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-																			setRepetitions(Number(e.target.value));
+																	<input
+																		className="btn border"
+																		type="number"
+																		min="1"
+																		onChange={(
+																			e: React.ChangeEvent<HTMLInputElement>
+																		): void => {
+																			setRepetitions(
+																				Number(
+																					e.target.value
+																				)
+																			);
 																			//setIsUntilDate(false);
 																			setUntilDate(null); // Aggiorna lo stato con la nuova data
 
-																			if (repetitions < 1 || isNaN(repetitions)) {
+																			if (
+																				repetitions < 1 ||
+																				isNaN(repetitions)
+																			) {
 																				setRepetitions(1);
 																			}
-																			console.log("Numero ripetizione dell'evento: ", repetitions);
-																		}}>
-																	</input>
+																			console.log(
+																				"Numero ripetizione dell'evento: ",
+																				repetitions
+																			);
+																		}}></input>
 																</div>
 															)}
 														</div>
@@ -3225,9 +3602,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 													type="text"
 													name="title"
 													value={title}
-													onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-														setTitle(e.target.value)
-													}
+													onChange={(
+														e: React.ChangeEvent<HTMLInputElement>
+													): void => setTitle(e.target.value)}
 												/>
 											</label>
 										)}
@@ -3243,7 +3620,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 														if (date) {
 															// Aggiorna la data mantenendo l'orario attuale
 															const newDate = new Date(startTime);
-															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+															newDate.setFullYear(
+																date.getFullYear(),
+																date.getMonth(),
+																date.getDate()
+															);
 															setStartTime(newDate);
 														}
 													}}
@@ -3255,17 +3636,43 @@ export default function Calendar(): React.JSX.Element { // prova push
 														<input
 															className="btn border"
 															type="time"
-															value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
-															onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-																const [hours, minutes] = e.target.value.split(':');
-																if (hours && minutes) { // Controlla se hours e minutes sono definiti
-																	const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-																	newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+															value={
+																startTime
+																	? `${startTime
+																			.getHours()
+																			.toString()
+																			.padStart(
+																				2,
+																				"0"
+																			)}:${startTime
+																			.getMinutes()
+																			.toString()
+																			.padStart(2, "0")}`
+																	: ""
+															}
+															onChange={(
+																e: React.ChangeEvent<HTMLInputElement>
+															): void => {
+																const [hours, minutes] =
+																	e.target.value.split(":");
+																if (hours && minutes) {
+																	// Controlla se hours e minutes sono definiti
+																	const newDate = new Date(
+																		startTime
+																	); // Crea un nuovo oggetto Date basato su startTime
+																	newDate.setHours(
+																		Number(hours),
+																		Number(minutes),
+																		0,
+																		0
+																	); // Imposta l'orario
 																	setStartTime(newDate); // Imposta il nuovo oggetto Date
 																}
 															}}
-															onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-																if (e.key === 'Backspace') {
+															onKeyDown={(
+																e: React.KeyboardEvent<HTMLInputElement>
+															): void => {
+																if (e.key === "Backspace") {
 																	e.preventDefault(); // Impedisce l'input del tasto backspace
 																}
 															}}
@@ -3285,7 +3692,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 														if (date) {
 															// Aggiorna la data mantenendo l'orario attuale
 															const newDate = new Date(endTime);
-															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+															newDate.setFullYear(
+																date.getFullYear(),
+																date.getMonth(),
+																date.getDate()
+															);
 															setEndTime(newDate);
 														}
 													}}
@@ -3297,17 +3708,34 @@ export default function Calendar(): React.JSX.Element { // prova push
 														<input
 															className="btn border"
 															type="time"
-															value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
-															onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-																const [hours, minutes] = e.target.value.split(':');
-																if (hours && minutes) { // Controlla se hours e minutes sono definiti
-																	const newDate = new Date(endTime);
-																	newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+															value={`${endTime
+																.getHours()
+																.toString()
+																.padStart(2, "0")}:${endTime
+																.getMinutes()
+																.toString()
+																.padStart(2, "0")}`}
+															onChange={(
+																e: React.ChangeEvent<HTMLInputElement>
+															): void => {
+																const [hours, minutes] =
+																	e.target.value.split(":");
+																if (hours && minutes) {
+																	// Controlla se hours e minutes sono definiti
+																	const newDate = new Date(
+																		endTime
+																	);
+																	newDate.setHours(
+																		Number(hours),
+																		Number(minutes)
+																	); // Aggiorna l'orario
 																	setEndTime(newDate); // Imposta il nuovo oggetto Date
 																}
 															}}
-															onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-																if (e.key === 'Backspace') {
+															onKeyDown={(
+																e: React.KeyboardEvent<HTMLInputElement>
+															): void => {
+																if (e.key === "Backspace") {
 																	e.preventDefault(); // Impedisce l'input del tasto backspace
 																}
 															}}
@@ -3337,10 +3765,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="checkbox"
 												name="addNotification"
 												onClick={toggleAddNotification}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Aggiungi notifica
-
 										</label>
 
 										{addNotification && (
@@ -3349,7 +3780,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<select
 													id="notificationTimeSelect"
 													className="btn border"
-													onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+													onChange={(
+														e: React.ChangeEvent<HTMLSelectElement>
+													): void => {
 														setNotificationTime(Number(e.target.value));
 														if (Number(e.target.value) > 0) {
 															setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
@@ -3363,15 +3796,29 @@ export default function Calendar(): React.JSX.Element { // prova push
 														<option value="0">All'ora d'inizio</option> // Solo questa opzione se isInfinite è true
 													) : (
 														<>
-															<option value="0">All'ora d'inizio</option>
-															<option value="5">5 minuti prima</option>
-															<option value="10">10 minuti prima</option>
-															<option value="15">15 minuti prima</option>
-															<option value="30">30 minuti prima</option>
+															<option value="0">
+																All'ora d'inizio
+															</option>
+															<option value="5">
+																5 minuti prima
+															</option>
+															<option value="10">
+																10 minuti prima
+															</option>
+															<option value="15">
+																15 minuti prima
+															</option>
+															<option value="30">
+																30 minuti prima
+															</option>
 															<option value="60">1 ora prima</option>
 															<option value="120">2 ore prima</option>
-															<option value="1440">Un giorno prima</option>
-															<option value="2880">2 giorni prima</option>
+															<option value="1440">
+																Un giorno prima
+															</option>
+															<option value="2880">
+																2 giorni prima
+															</option>
 														</>
 													)}
 												</select>
@@ -3384,19 +3831,24 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<select
 													className="btn border"
 													name="notificationRepeatTime"
-													onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-														setNotificationRepeatTime(Number(e.target.value));
-													}}
-												>
-													{getValidRepeatOptions(notificationTime).map(option => (
-														<option key={option} value={option}>
-															{option === 0
-																? "Mai"
-																: option >= 60
+													onChange={(
+														e: React.ChangeEvent<HTMLSelectElement>
+													): void => {
+														setNotificationRepeatTime(
+															Number(e.target.value)
+														);
+													}}>
+													{getValidRepeatOptions(notificationTime).map(
+														(option) => (
+															<option key={option} value={option}>
+																{option === 0
+																	? "Mai"
+																	: option >= 60
 																	? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
 																	: `Ogni ${option} minuti`}
-														</option>
-													))}
+															</option>
+														)
+													)}
 												</select>
 											</label>
 										)}
@@ -3404,24 +3856,43 @@ export default function Calendar(): React.JSX.Element { // prova push
 										<label htmlFor="allDayEvent">
 											<input
 												type="checkbox"
-
 												onClick={toggleSendInviteEvent}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Invia evento ad utente
-
 										</label>
 
 										{sendInviteEvent && (
-											<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-												<div>Scegli l'utente al quale inviare la notifica</div>
+											<div
+												id="send-invite"
+												className="send-invite-container"
+												style={{
+													display: "flex",
+													flexDirection: "column",
+													alignItems: "center",
+													justifyContent: "center",
+												}}>
+												<div>
+													Scegli l'utente al quale inviare la notifica
+												</div>
 												{users.length > 0}
-												<SearchForm onItemClick={handleSelectUser} list={users} />
+												<SearchForm
+													onItemClick={handleSelectUser}
+													list={users}
+												/>
 												<button
 													onClick={handleSendInviteEvent}
 													className="btn btn-primary send-invite-button"
-													style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
-												>
+													style={{
+														backgroundColor: "bisque",
+														color: "black",
+														border: "0",
+														marginBottom: "10px",
+													}}>
 													Invia Invito
 												</button>
 											</div>
@@ -3430,26 +3901,50 @@ export default function Calendar(): React.JSX.Element { // prova push
 										<label htmlFor="allDayEvent">
 											<input
 												type="checkbox"
-
 												onClick={toggleShareEvent}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Condividi evento
-
 										</label>
 
 										{shareEvent && (
-											<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-												<div>Scegli l'utente o la risorsa con cui condividere l'evento</div>
+											<div
+												id="send-invite"
+												className="send-invite-container"
+												style={{
+													display: "flex",
+													flexDirection: "column",
+													alignItems: "center",
+													justifyContent: "center",
+												}}>
+												<div>
+													Scegli l'utente o la risorsa con cui condividere
+													l'evento
+												</div>
 												{users.length > 0}
-												<SearchFormResource onItemClick={handleSelectUser} list={users} />
-												{messageRisorsa && <div style={{ color: "red" }}>{messageRisorsa}</div>}
+												<SearchFormResource
+													onItemClick={handleSelectUser}
+													list={users}
+												/>
+												{messageRisorsa && (
+													<div style={{ color: "red" }}>
+														{messageRisorsa}
+													</div>
+												)}
 
 												<button
 													onClick={handleAddUserEvent}
 													className="btn btn-primary send-invite-button"
-													style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
-												>
+													style={{
+														backgroundColor: "bisque",
+														color: "black",
+														border: "0",
+														marginBottom: "10px",
+													}}>
 													Condividi
 												</button>
 											</div>
@@ -3473,7 +3968,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 								<div className="creation-event-container">
 									<button
 										className="btn btn-primary"
-										style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+										style={{
+											backgroundColor: "bisque",
+											color: "black",
+											border: "0",
+										}}
 										onClick={toggleCreateActivity}>
 										Chiudi
 									</button>
@@ -3486,9 +3985,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 													type="text"
 													name="title"
 													value={title}
-													onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-														setTitle(e.target.value)
-													}
+													onChange={(
+														e: React.ChangeEvent<HTMLInputElement>
+													): void => setTitle(e.target.value)}
 												/>
 											</label>
 										)}
@@ -3499,9 +3998,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="text"
 												name="title"
 												value={description}
-												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-													setDescription(e.target.value)
-												}
+												onChange={(
+													e: React.ChangeEvent<HTMLInputElement>
+												): void => setDescription(e.target.value)}
 											/>
 										</label>
 										<label htmlFor="endTime">
@@ -3515,43 +4014,61 @@ export default function Calendar(): React.JSX.Element { // prova push
 														if (date) {
 															// Aggiorna la data mantenendo l'orario attuale
 															const newDate = new Date(endTime);
-															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+															newDate.setFullYear(
+																date.getFullYear(),
+																date.getMonth(),
+																date.getDate()
+															);
 															setEndTime(newDate);
 														}
 													}}
 												/>
 											</div>
-
 											<div>
 												<input
 													className="btn border"
 													type="time"
-													value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
-													onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-														const [hours, minutes] = e.target.value.split(':');
+													value={`${endTime
+														.getHours()
+														.toString()
+														.padStart(2, "0")}:${endTime
+														.getMinutes()
+														.toString()
+														.padStart(2, "0")}`}
+													onChange={(
+														e: React.ChangeEvent<HTMLInputElement>
+													): void => {
+														const [hours, minutes] =
+															e.target.value.split(":");
 														const newDate = new Date(endTime);
-														newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+														newDate.setHours(
+															Number(hours),
+															Number(minutes)
+														); // Aggiorna l'orario
 														setEndTime(newDate); // Imposta il nuovo oggetto Date
 													}}
-													onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-														if (e.key === 'Backspace') {
+													onKeyDown={(
+														e: React.KeyboardEvent<HTMLInputElement>
+													): void => {
+														if (e.key === "Backspace") {
 															e.preventDefault(); // Impedisce l'input del tasto backspace
 														}
 													}}
 												/>
 											</div>
-
 										</label>
 
 										<label htmlFor="allDayEvent">
 											<input
 												type="checkbox"
-
 												onClick={toggleAddNotification}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Aggiungi notifica
-
 										</label>
 
 										{addNotification && (
@@ -3560,12 +4077,13 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<select
 													id="notificationTimeSelect"
 													className="btn border"
-													onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
+													onChange={(
+														e: React.ChangeEvent<HTMLSelectElement>
+													): void => {
 														setNotificationTime(Number(e.target.value));
 														if (Number(e.target.value) > 0) {
 															setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-														}
-														else if (Number(e.target.value) == 0) {
+														} else if (Number(e.target.value) == 0) {
 															setNotificationRepeat(false);
 														}
 													}}
@@ -3590,19 +4108,24 @@ export default function Calendar(): React.JSX.Element { // prova push
 												<select
 													className="btn border"
 													name="notificationRepeatTime"
-													onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
-														setNotificationRepeatTime(Number(e.target.value));
-													}}
-												>
-													{getValidRepeatOptions(notificationTime).map(option => (
-														<option key={option} value={option}>
-															{option === 0
-																? "Mai"
-																: option >= 60
+													onChange={(
+														e: React.ChangeEvent<HTMLSelectElement>
+													): void => {
+														setNotificationRepeatTime(
+															Number(e.target.value)
+														);
+													}}>
+													{getValidRepeatOptions(notificationTime).map(
+														(option) => (
+															<option key={option} value={option}>
+																{option === 0
+																	? "Mai"
+																	: option >= 60
 																	? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
 																	: `Ogni ${option} minuti`}
-														</option>
-													))}
+															</option>
+														)
+													)}
 												</select>
 											</label>
 										)}
@@ -3612,22 +4135,42 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="checkbox"
 												name="addNotification"
 												onClick={toggleSendInviteActivity}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Invia attività ad utente
-
 										</label>
 
 										{sendInviteActivity && (
-											<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-												<div>Scegli l'utente al quale inviare la notifica</div>
+											<div
+												id="send-invite"
+												className="send-invite-container"
+												style={{
+													display: "flex",
+													flexDirection: "column",
+													alignItems: "center",
+													justifyContent: "center",
+												}}>
+												<div>
+													Scegli l'utente al quale inviare la notifica
+												</div>
 												{users.length > 0}
-												<SearchForm onItemClick={handleSelectUser} list={users} />
+												<SearchForm
+													onItemClick={handleSelectUser}
+													list={users}
+												/>
 												<button
 													onClick={handleSendInviteActivity}
 													className="btn btn-primary send-invite-button"
-													style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
-												>
+													style={{
+														backgroundColor: "bisque",
+														color: "black",
+														border: "0",
+														marginBottom: "10px",
+													}}>
 													Invia Invito
 												</button>
 											</div>
@@ -3638,22 +4181,43 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="checkbox"
 												name="addNotification"
 												onClick={toggleShareActivity}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Condividi attività
-
 										</label>
 
 										{shareActivity && (
-											<div id="send-invite" className="send-invite-container" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-												<div>Scegli l'utente con il quale condividere l'attività</div>
+											<div
+												id="send-invite"
+												className="send-invite-container"
+												style={{
+													display: "flex",
+													flexDirection: "column",
+													alignItems: "center",
+													justifyContent: "center",
+												}}>
+												<div>
+													Scegli l'utente con il quale condividere
+													l'attività
+												</div>
 												{users.length > 0}
-												<SearchForm onItemClick={handleSelectUser} list={users} />
+												<SearchForm
+													onItemClick={handleSelectUser}
+													list={users}
+												/>
 												<button
 													onClick={handleAddUserActivity}
 													className="btn btn-primary send-invite-button"
-													style={{ backgroundColor: "bisque", color: "black", border: "0", marginBottom: "10px" }}
-												>
+													style={{
+														backgroundColor: "bisque",
+														color: "black",
+														border: "0",
+														marginBottom: "10px",
+													}}>
 													Condividi
 												</button>
 											</div>
@@ -3677,21 +4241,27 @@ export default function Calendar(): React.JSX.Element { // prova push
 								<div className="creation-event-container">
 									<button
 										className="btn btn-primary"
-										style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+										style={{
+											backgroundColor: "bisque",
+											color: "black",
+											border: "0",
+										}}
 										onClick={toggleCreateNonDisturbare}>
 										Chiudi
 									</button>
 									<form>
-
 										<label htmlFor="allDayEvent">
 											<input
 												type="checkbox"
 												name="allDayEvent"
 												onClick={toggleAllDayEvent}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Tutto il giorno
-
 										</label>
 
 										<label htmlFor="allDayEvent">
@@ -3699,43 +4269,67 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="checkbox"
 												name="repeatEvent"
 												onClick={toggleRepeatEvent}
-												style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}
 											/>
 											Ripeti
-
 										</label>
 										{repeatEvent && (
 											<>
-												<div className="flex" style={{ marginRight: "10px" }}>
+												<div
+													className="flex"
+													style={{ marginRight: "10px" }}>
 													Ripeti l'evento
 													<label htmlFor="repeatEvent">
 														<select
 															className="btn border"
 															name="repetitionType"
 															onChange={toggleSelectFrequency}
-															style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
-														>
+															style={{
+																marginLeft: "5px",
+																marginRight: "3px",
+																marginTop: "3px",
+															}}>
 															<option value="Once">Una volta</option>
-															<option value="Daily">Ogni giorno</option>
-															<option value="Weekly">Ogni settimana</option>
-															<option value="Monthly">Ogni mese </option>
-															<option value="Yearly">Ogni anno</option>
+															<option value="Daily">
+																Ogni giorno
+															</option>
+															<option value="Weekly">
+																Ogni settimana
+															</option>
+															<option value="Monthly">
+																Ogni mese{" "}
+															</option>
+															<option value="Yearly">
+																Ogni anno
+															</option>
 														</select>
-
 													</label>
 												</div>
-
-
 
 												{until && (
 													<div>
 														<div>
-															<div className="flex" style={{ marginRight: "10px" }}>
+															<div
+																className="flex"
+																style={{ marginRight: "10px" }}>
 																Fino a
-																<select className="btn border" onChange={toggleSelectUntil} defaultValue="Data">
-																	<option value="Data">Data</option>
-																	<option value="Ripetizioni">Ripetizioni</option>
-																	<option value="Infinito">Infinito </option>
+																<select
+																	className="btn border"
+																	onChange={toggleSelectUntil}
+																	defaultValue="Data">
+																	<option value="Data">
+																		Data
+																	</option>
+																	<option value="Ripetizioni">
+																		Ripetizioni
+																	</option>
+																	<option value="Infinito">
+																		Infinito{" "}
+																	</option>
 																</select>
 															</div>
 
@@ -3744,9 +4338,16 @@ export default function Calendar(): React.JSX.Element { // prova push
 																	className="btn border"
 																	name="finoAData"
 																	selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
-																	onChange={(date: Date | null): void => {
+																	onChange={(
+																		date: Date | null
+																	): void => {
 																		if (date) {
-																			date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
+																			date.setHours(
+																				12,
+																				0,
+																				0,
+																				0
+																			); // Imposta l'orario a mezzogiorno
 																			setUntilDate(date); // Aggiorna lo stato con la nuova data
 																		}
 																	}}
@@ -3754,26 +4355,36 @@ export default function Calendar(): React.JSX.Element { // prova push
 																/>
 															)}
 
-
-
 															{selectedValue === "Ripetizioni" && (
 																<div>
-																	<input className="btn border" type="number" min="1"
-																		onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-																			setRepetitions(Number(e.target.value));
+																	<input
+																		className="btn border"
+																		type="number"
+																		min="1"
+																		onChange={(
+																			e: React.ChangeEvent<HTMLInputElement>
+																		): void => {
+																			setRepetitions(
+																				Number(
+																					e.target.value
+																				)
+																			);
 																			//setIsUntilDate(false);
 																			setUntilDate(null); // Aggiorna lo stato con la nuova data
 
-																			if (repetitions < 1 || isNaN(repetitions)) {
+																			if (
+																				repetitions < 1 ||
+																				isNaN(repetitions)
+																			) {
 																				setRepetitions(1);
 																			}
-																			console.log("Numero ripetizione dell'evento: ", repetitions);
-																		}}>
-																	</input>
+																			console.log(
+																				"Numero ripetizione dell'evento: ",
+																				repetitions
+																			);
+																		}}></input>
 																</div>
 															)}
-
-
 														</div>
 													</div>
 												)}
@@ -3791,7 +4402,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 														if (date) {
 															// Aggiorna la data mantenendo l'orario attuale
 															const newDate = new Date(startTime);
-															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+															newDate.setFullYear(
+																date.getFullYear(),
+																date.getMonth(),
+																date.getDate()
+															);
 															setStartTime(newDate);
 														}
 													}}
@@ -3803,17 +4418,43 @@ export default function Calendar(): React.JSX.Element { // prova push
 														<input
 															className="btn border"
 															type="time"
-															value={startTime ? `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}` : ""}
-															onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-																const [hours, minutes] = e.target.value.split(':');
-																if (hours && minutes) { // Controlla se hours e minutes sono definiti
-																	const newDate = new Date(startTime); // Crea un nuovo oggetto Date basato su startTime
-																	newDate.setHours(Number(hours), Number(minutes), 0, 0); // Imposta l'orario
+															value={
+																startTime
+																	? `${startTime
+																			.getHours()
+																			.toString()
+																			.padStart(
+																				2,
+																				"0"
+																			)}:${startTime
+																			.getMinutes()
+																			.toString()
+																			.padStart(2, "0")}`
+																	: ""
+															}
+															onChange={(
+																e: React.ChangeEvent<HTMLInputElement>
+															): void => {
+																const [hours, minutes] =
+																	e.target.value.split(":");
+																if (hours && minutes) {
+																	// Controlla se hours e minutes sono definiti
+																	const newDate = new Date(
+																		startTime
+																	); // Crea un nuovo oggetto Date basato su startTime
+																	newDate.setHours(
+																		Number(hours),
+																		Number(minutes),
+																		0,
+																		0
+																	); // Imposta l'orario
 																	setStartTime(newDate); // Imposta il nuovo oggetto Date
 																}
 															}}
-															onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-																if (e.key === 'Backspace') {
+															onKeyDown={(
+																e: React.KeyboardEvent<HTMLInputElement>
+															): void => {
+																if (e.key === "Backspace") {
 																	e.preventDefault(); // Impedisce l'input del tasto backspace
 																}
 															}}
@@ -3833,7 +4474,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 														if (date) {
 															// Aggiorna la data mantenendo l'orario attuale
 															const newDate = new Date(endTime);
-															newDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+															newDate.setFullYear(
+																date.getFullYear(),
+																date.getMonth(),
+																date.getDate()
+															);
 															setEndTime(newDate);
 														}
 													}}
@@ -3845,17 +4490,34 @@ export default function Calendar(): React.JSX.Element { // prova push
 														<input
 															className="btn border"
 															type="time"
-															value={`${endTime.getHours().toString().padStart(2, '0')}:${(endTime.getMinutes()).toString().padStart(2, '0')}`}
-															onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-																const [hours, minutes] = e.target.value.split(':');
-																if (hours && minutes) { // Controlla se hours e minutes sono definiti
-																	const newDate = new Date(endTime);
-																	newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+															value={`${endTime
+																.getHours()
+																.toString()
+																.padStart(2, "0")}:${endTime
+																.getMinutes()
+																.toString()
+																.padStart(2, "0")}`}
+															onChange={(
+																e: React.ChangeEvent<HTMLInputElement>
+															): void => {
+																const [hours, minutes] =
+																	e.target.value.split(":");
+																if (hours && minutes) {
+																	// Controlla se hours e minutes sono definiti
+																	const newDate = new Date(
+																		endTime
+																	);
+																	newDate.setHours(
+																		Number(hours),
+																		Number(minutes)
+																	); // Aggiorna l'orario
 																	setEndTime(newDate); // Imposta il nuovo oggetto Date
 																}
 															}}
-															onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
-																if (e.key === 'Backspace') {
+															onKeyDown={(
+																e: React.KeyboardEvent<HTMLInputElement>
+															): void => {
+																if (e.key === "Backspace") {
 																	e.preventDefault(); // Impedisce l'input del tasto backspace
 																}
 															}}
@@ -3883,7 +4545,11 @@ export default function Calendar(): React.JSX.Element { // prova push
 								<div className="create-event-container">
 									<button
 										className="btn btn-primary"
-										style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+										style={{
+											backgroundColor: "bisque",
+											color: "black",
+											border: "0",
+										}}
 										onClick={toggleCreateRisorsa}>
 										Chiudi
 									</button>
@@ -3895,9 +4561,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="text"
 												name="title"
 												value={title}
-												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-													setTitle(e.target.value)
-												}
+												onChange={(
+													e: React.ChangeEvent<HTMLInputElement>
+												): void => setTitle(e.target.value)}
 											/>
 										</label>
 										<label htmlFor="description">
@@ -3907,9 +4573,9 @@ export default function Calendar(): React.JSX.Element { // prova push
 												type="text"
 												name="description"
 												value={description}
-												onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-													setDescription(e.target.value)
-												}
+												onChange={(
+													e: React.ChangeEvent<HTMLInputElement>
+												): void => setDescription(e.target.value)}
 											/>
 										</label>
 										<button
@@ -3939,8 +4605,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											justifyContent: "center",
 											alignItems: "center",
 											gap: "0.5em",
-										}}
-									>
+										}}>
 										<button
 											className="calendar-arrows"
 											onClick={(): void => {
@@ -3949,14 +4614,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 												const date = new Date(year, meseCorrente - 1);
 												console.log(getDaysInMonth(date));
 												*/
-											}}
-										>
+											}}>
 											{"<<"}
-										</button >
-										<time>
-											{" "}
-											{Mesi[meseCorrente]}
-										</time>
+										</button>
+										<time> {Mesi[meseCorrente]}</time>
 										<button
 											className="calendar-arrows"
 											onClick={(): void => {
@@ -3965,11 +4626,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 												const date = new Date(year, meseCorrente + 1);
 												console.log(getDaysInMonth(date));
 												*/
-											}}
-										>
+											}}>
 											{">>"}
 										</button>
-									</div >
+									</div>
 									<div className="day-of-week">
 										<div>Dom</div>
 										<div>Lun</div>
@@ -3983,17 +4643,20 @@ export default function Calendar(): React.JSX.Element { // prova push
 										{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
 										{((): JSX.Element[] => {
 											return Array.from({
-												length: getDay(startOfMonth(new Date(year, meseCorrente))),
+												length: getDay(
+													startOfMonth(new Date(year, meseCorrente))
+												),
 											}).map((_, index) => <div key={index}></div>);
 										})()}
 										{/* Genera i bottoni per i giorni del mese */}
 										{Array.from({
 											length: getDaysInMonth(new Date(year, meseCorrente)),
 										}).map((_, day) => (
-											<div key={day + 1} style={{ position: 'relative' }}>
+											<div key={day + 1} style={{ position: "relative" }}>
 												<button onClick={handleDateClick}>{day + 1}</button>
 												{hasEventsForDay(day + 1) && ( //true se ci sono eventi
-													<span className="calendar-event-dot"
+													<span
+														className="calendar-event-dot"
 														/*style={{
 														position: 'absolute', // Posiziona il pallino in modo assoluto
 														bottom: '3px', // Posiziona il pallino sotto il bottone
@@ -4003,7 +4666,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 														height: '8px',
 														borderRadius: '50%',
 														backgroundColor: 'lightgray', // Colore del pallino
-													}} *//>
+													}} */
+													/>
 												)}
 											</div>
 										))}
@@ -4015,8 +4679,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 										<div className="data-orario">
 											<div
 												className="nome-data-container"
-												style={{ flexDirection: "column" }}
-											>
+												style={{ flexDirection: "column" }}>
 												<div>
 													{day} {Mesi[meseCorrente]}
 													{year}
@@ -4028,85 +4691,172 @@ export default function Calendar(): React.JSX.Element { // prova push
 														}}>
 														-
 													</button>
-													<button className="year-button" onClick={(): void => {
-														setEventPositions([]); // Svuota l'array delle posizioni
-														setYear(year + 1); // Decrementa l'anno
-													}}>
+													<button
+														className="year-button"
+														onClick={(): void => {
+															setEventPositions([]); // Svuota l'array delle posizioni
+															setYear(year + 1); // Decrementa l'anno
+														}}>
 														+
 													</button>
 												</div>
 												{activitiesMode && (
 													<div className="activities-button-container">
-														<button className="btn btn-primary"
+														<button
+															className="btn btn-primary"
 															onClick={toggleTodayActivitiesMode}
 															style={{
 																backgroundColor: "bisque",
 																color: "black",
 																border: "0",
-															}}
-														>
-															Mostra attività che scadono questo giorno
+															}}>
+															Mostra attività che scadono questo
+															giorno
 														</button>
 
-														<button className="btn btn-primary"
+														<button
+															className="btn btn-primary"
 															onClick={toggleAllActivitiesMode}
 															style={{
 																backgroundColor: "bisque",
 																color: "black",
 																border: "0",
-															}}
-														>
+															}}>
 															Mostra tutte le attività
 														</button>
 													</div>
 												)}
 											</div>
-											<div className="orario" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
+											<div
+												className="orario"
+												style={{
+													display: "flex",
+													justifyContent: "flex-start",
+													alignItems: "center",
+												}}
+												key={renderKey}>
 												{activitiesCheScadonoOggi.length > 0 ? (
-													activitiesCheScadonoOggi.map((activity, index) => (
-														<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
-															<h4>{activity.title}</h4>
-															<p>Scadenza: {new Date(activity.deadline).toLocaleString("it-IT", {
-																day: "2-digit",
-																month: "2-digit",
-																year: "numeric",
-																hour: "2-digit",
-																minute: "2-digit",
-															})}
-															</p>
-															<p>Descrizione: {activity.description}</p>
-															<span style={{ color: "black", marginBottom: "10px" }}>
-																Completata:
-																<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
-																	{activity.completed ? " Si" : " No"}
+													activitiesCheScadonoOggi.map(
+														(activity, index) => (
+															<div
+																key={index}
+																style={{
+																	margin: "5px",
+																	padding: "10px",
+																	border: "1px solid #ccc",
+																	borderRadius: "10px",
+																	width: "100%",
+																}}>
+																<h4>{activity.title}</h4>
+																<p>
+																	Scadenza:{" "}
+																	{new Date(
+																		activity.deadline
+																	).toLocaleString("it-IT", {
+																		day: "2-digit",
+																		month: "2-digit",
+																		year: "numeric",
+																		hour: "2-digit",
+																		minute: "2-digit",
+																	})}
+																</p>
+																<p>
+																	Descrizione:{" "}
+																	{activity.description}
+																</p>
+																<span
+																	style={{
+																		color: "black",
+																		marginBottom: "10px",
+																	}}>
+																	Completata:
+																	<span
+																		style={{
+																			color: activity.completed
+																				? "lightgreen"
+																				: "lightcoral",
+																		}}>
+																		{activity.completed
+																			? " Si"
+																			: " No"}
+																	</span>
+																	{new Date(activity.deadline) <
+																		currentDate &&
+																		!activity.completed && (
+																			<p
+																				style={{
+																					color: "red",
+																					fontWeight:
+																						"bold",
+																				}}>
+																				ATTIVITÀ IN RITARDO
+																			</p>
+																		)}
 																</span>
+																<br />
+																<button
+																	onClick={async (): Promise<void> => {
+																		await handleDeleteActivity(
+																			activity._id
+																		); // Chiama la funzione di eliminazione
+																		// Dopo l'eliminazione, aggiorna la lista delle attività
+																		setActivityList(
+																			(prevList) =>
+																				prevList.filter(
+																					(a) =>
+																						a._id !==
+																						activity._id
+																				)
+																		);
+																	}}
+																	className="btn btn-primary"
+																	style={{
+																		backgroundColor: "bisque",
+																		marginRight: "10px",
+																		color: "white",
+																		border: "0",
+																		padding: "5px 5px 5px 5px",
+																	}}>
+																	<i
+																		style={{ color: "black" }}
+																		className="bi bi-trash">
+																		{" "}
+																	</i>
+																</button>
 
-
-																{new Date(activity.deadline) < currentDate && !activity.completed && (
-																	<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
-																)}
-
-															</span>
-															<br />
-															<button onClick={async (): Promise<void> => {
-																await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
-																// Dopo l'eliminazione, aggiorna la lista delle attività
-																setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
-															}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-																<i style={{ color: "black" }} className="bi bi-trash"> </i>
-															</button>
-
-															<button onClick={async (): Promise<void> => {
-																await handleCompleteActivity(activity._id); //completo l'attività corrente
-															}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-																<i style={{ color: "black" }} className="bi bi-check"> </i>
-															</button>
-
-														</div>
-
-													))
+																<button
+																	onClick={async (): Promise<void> => {
+																		await handleCompleteActivity(
+																			activity._id
+																		); //completo l'attività corrente
+																	}}
+																	className="btn btn-primary"
+																	style={{
+																		backgroundColor: "bisque",
+																		color: "white",
+																		border: "0",
+																		padding: "5px 5px 5px 5px",
+																	}}>
+																	<i
+																		style={{ color: "black" }}
+																		className="bi bi-check">
+																		{" "}
+																	</i>
+																</button>
+															</div>
+														)
+													)
 												) : (
-													<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold" }}>Non ci sono attività in scadenza oggi.</p>
+													<p
+														style={{
+															color: "black",
+															textAlign: "center",
+															justifyContent: "center",
+															marginTop: "16vw",
+															fontWeight: "bold",
+														}}>
+														Non ci sono attività in scadenza oggi.
+													</p>
 												)}
 											</div>
 										</div>
@@ -4118,8 +4868,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 										<div className="data-orario">
 											<div
 												className="nome-data-container"
-												style={{ flexDirection: "column" }}
-											>
+												style={{ flexDirection: "column" }}>
 												<div>
 													{day} {Mesi[meseCorrente]}
 													{year}
@@ -4131,84 +4880,169 @@ export default function Calendar(): React.JSX.Element { // prova push
 														}}>
 														-
 													</button>
-													<button className="year-button" onClick={(): void => {
-														setEventPositions([]); // Svuota l'array delle posizioni
-														setYear(year + 1); // Decrementa l'anno
-													}}>
+													<button
+														className="year-button"
+														onClick={(): void => {
+															setEventPositions([]); // Svuota l'array delle posizioni
+															setYear(year + 1); // Decrementa l'anno
+														}}>
 														+
 													</button>
 												</div>
 												{activitiesMode && (
 													<div className="activities-button-container">
-														<button className="btn btn-primary"
+														<button
+															className="btn btn-primary"
 															onClick={toggleTodayActivitiesMode}
 															style={{
 																backgroundColor: "bisque",
 																color: "black",
 																border: "0",
-															}}
-														>
-															Mostra attività che scadono questo giorno
+															}}>
+															Mostra attività che scadono questo
+															giorno
 														</button>
 
-														<button className="btn btn-primary"
+														<button
+															className="btn btn-primary"
 															onClick={toggleAllActivitiesMode}
 															style={{
 																backgroundColor: "bisque",
 																color: "black",
 																border: "0",
-															}}
-														>
+															}}>
 															Mostra tutte le attività
 														</button>
 													</div>
 												)}
 											</div>
-											<div className="orario" style={{ display: "flex", justifyContent: "flex-start", alignItems: "center" }} key={renderKey}>
+											<div
+												className="orario"
+												style={{
+													display: "flex",
+													justifyContent: "flex-start",
+													alignItems: "center",
+												}}
+												key={renderKey}>
 												{activityList.length > 0 ? (
 													activityList.map((activity, index) => (
-														<div key={index} style={{ margin: "5px", padding: "10px", border: "1px solid #ccc", borderRadius: "10px", width: "100%" }}>
+														<div
+															key={index}
+															style={{
+																margin: "5px",
+																padding: "10px",
+																border: "1px solid #ccc",
+																borderRadius: "10px",
+																width: "100%",
+															}}>
 															<h4>{activity.title}</h4>
-															<p>Scadenza: {new Date(activity.deadline).toLocaleString("it-IT", {
-																day: "2-digit",
-																month: "2-digit",
-																year: "numeric",
-																hour: "2-digit",
-																minute: "2-digit",
-															})}
+															<p>
+																Scadenza:{" "}
+																{new Date(
+																	activity.deadline
+																).toLocaleString("it-IT", {
+																	day: "2-digit",
+																	month: "2-digit",
+																	year: "numeric",
+																	hour: "2-digit",
+																	minute: "2-digit",
+																})}
 															</p>
-															<p>Descrizione: {activity.description}</p>
-															<span style={{ color: "black", marginBottom: "10px" }}>
+															<p>
+																Descrizione: {activity.description}
+															</p>
+															<span
+																style={{
+																	color: "black",
+																	marginBottom: "10px",
+																}}>
 																Completata:
-																<span style={{ color: activity.completed ? "lightgreen" : "lightcoral" }}>
-																	{activity.completed ? " Si" : " No"}
+																<span
+																	style={{
+																		color: activity.completed
+																			? "lightgreen"
+																			: "lightcoral",
+																	}}>
+																	{activity.completed
+																		? " Si"
+																		: " No"}
 																</span>
 															</span>
 
-															{new Date(activity.deadline) < currentDate && !activity.completed && (
-																<p style={{ color: "red", fontWeight: "bold" }}>ATTIVITÀ IN RITARDO</p>
-															)}
+															{new Date(activity.deadline) <
+																currentDate &&
+																!activity.completed && (
+																	<p
+																		style={{
+																			color: "red",
+																			fontWeight: "bold",
+																		}}>
+																		ATTIVITÀ IN RITARDO
+																	</p>
+																)}
 
 															<br />
-															<button onClick={async (): Promise<void> => {
-																await handleDeleteActivity(activity._id); // Chiama la funzione di eliminazione
-																// Dopo l'eliminazione, aggiorna la lista delle attività
-																setActivityList(prevList => prevList.filter(a => a._id !== activity._id));
-															}} className="btn btn-primary" style={{ backgroundColor: "bisque", marginRight: "10px", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-																<i style={{ color: "black" }} className="bi bi-trash"> </i>
+															<button
+																onClick={async (): Promise<void> => {
+																	await handleDeleteActivity(
+																		activity._id
+																	); // Chiama la funzione di eliminazione
+																	// Dopo l'eliminazione, aggiorna la lista delle attività
+																	setActivityList((prevList) =>
+																		prevList.filter(
+																			(a) =>
+																				a._id !==
+																				activity._id
+																		)
+																	);
+																}}
+																className="btn btn-primary"
+																style={{
+																	backgroundColor: "bisque",
+																	marginRight: "10px",
+																	color: "white",
+																	border: "0",
+																	padding: "5px 5px 5px 5px",
+																}}>
+																<i
+																	style={{ color: "black" }}
+																	className="bi bi-trash">
+																	{" "}
+																</i>
 															</button>
 
-															<button onClick={async (): Promise<void> => {
-																await handleCompleteActivity(activity._id); //completo l'attività corrente
-															}} className="btn btn-primary" style={{ backgroundColor: "bisque", color: "white", border: "0", padding: "5px 5px 5px 5px" }}>
-																<i style={{ color: "black" }} className="bi bi-check"> </i>
+															<button
+																onClick={async (): Promise<void> => {
+																	await handleCompleteActivity(
+																		activity._id
+																	); //completo l'attività corrente
+																}}
+																className="btn btn-primary"
+																style={{
+																	backgroundColor: "bisque",
+																	color: "white",
+																	border: "0",
+																	padding: "5px 5px 5px 5px",
+																}}>
+																<i
+																	style={{ color: "black" }}
+																	className="bi bi-check">
+																	{" "}
+																</i>
 															</button>
-
 														</div>
-
 													))
 												) : (
-													<p style={{ color: "black", textAlign: "center", justifyContent: "center", marginTop: "16vw", fontWeight: "bold", }}>Non ci sono attività in scadenza.</p>
+													<p
+														style={{
+															color: "black",
+															textAlign: "center",
+															justifyContent: "center",
+															marginTop: "16vw",
+															fontWeight: "bold",
+														}}>
+														Non ci sono attività in scadenza.
+													</p>
 												)}
 											</div>
 										</div>
@@ -4230,8 +5064,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 												justifyContent: "center",
 												alignItems: "center",
 												gap: "0.5em",
-											}}
-										>
+											}}>
 											<button
 												className="calendar-arrows"
 												onClick={(): void => {
@@ -4240,14 +5073,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 													const date = new Date(year, meseCorrente - 1);
 													console.log(getDaysInMonth(date));
 													*/
-												}}
-											>
+												}}>
 												{"<<"}
-											</button >
-											<time>
-												{" "}
-												{Mesi[meseCorrente]}
-											</time>
+											</button>
+											<time> {Mesi[meseCorrente]}</time>
 											<button
 												className="calendar-arrows"
 												onClick={(): void => {
@@ -4256,11 +5085,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 													const date = new Date(year, meseCorrente + 1);
 													console.log(getDaysInMonth(date));
 													*/
-												}}
-											>
+												}}>
 												{">>"}
 											</button>
-										</div >
+										</div>
 										<div className="day-of-week">
 											<div>Dom</div>
 											<div>Lun</div>
@@ -4274,17 +5102,24 @@ export default function Calendar(): React.JSX.Element { // prova push
 											{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
 											{((): JSX.Element[] => {
 												return Array.from({
-													length: getDay(startOfMonth(new Date(year, meseCorrente))),
+													length: getDay(
+														startOfMonth(new Date(year, meseCorrente))
+													),
 												}).map((_, index) => <div key={index}></div>);
 											})()}
 											{/* Genera i bottoni per i giorni del mese */}
 											{Array.from({
-												length: getDaysInMonth(new Date(year, meseCorrente)),
+												length: getDaysInMonth(
+													new Date(year, meseCorrente)
+												),
 											}).map((_, day) => (
-												<div key={day + 1} style={{ position: 'relative' }}>
-													<button onClick={handleDateClick}>{day + 1}</button>
+												<div key={day + 1} style={{ position: "relative" }}>
+													<button onClick={handleDateClick}>
+														{day + 1}
+													</button>
 													{hasEventsForDay(day + 1) && ( //true se ci sono eventi
-														<span className="calendar-event-dot"
+														<span
+															className="calendar-event-dot"
 															/*style={{
 															position: 'absolute', // Posiziona il pallino in modo assoluto
 															bottom: '3px', // Posiziona il pallino sotto il bottone
@@ -4294,7 +5129,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 															height: '8px',
 															borderRadius: '50%',
 															backgroundColor: 'lightgray', // Colore del pallino
-														}} *//>
+														}} */
+														/>
 													)}
 												</div>
 											))}
@@ -4302,9 +5138,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 									</div>
 
 									<div className="data-orario">
-										<div className="nome-data-container" style={{ marginLeft: "5vw" }}>
-											{day} {Mesi[meseCorrente]} {" "}
-											{year}
+										<div
+											className="nome-data-container"
+											style={{ marginLeft: "5vw" }}>
+											{day} {Mesi[meseCorrente]} {year}
 											<button
 												className="year-button "
 												onClick={(): void => {
@@ -4313,15 +5150,18 @@ export default function Calendar(): React.JSX.Element { // prova push
 												}}>
 												-
 											</button>
-											<button className="year-button" onClick={(): void => {
-												setEventPositions([]); // Svuota l'array delle posizioni
-												setYear(year + 1); // Decrementa l'anno
-											}}>
+											<button
+												className="year-button"
+												onClick={(): void => {
+													setEventPositions([]); // Svuota l'array delle posizioni
+													setYear(year + 1); // Decrementa l'anno
+												}}>
 												+
 											</button>
 											{activitiesMode && (
 												<div>
-													<button className="btn btn-primary"
+													<button
+														className="btn btn-primary"
 														onClick={toggleTodayActivitiesMode}
 														style={{
 															backgroundColor: "bisque",
@@ -4332,7 +5172,8 @@ export default function Calendar(): React.JSX.Element { // prova push
 														Mostra attività che scadono questo giorno
 													</button>
 
-													<button className="btn btn-primary"
+													<button
+														className="btn btn-primary"
 														onClick={toggleAllActivitiesMode}
 														style={{
 															backgroundColor: "bisque",
@@ -4347,106 +5188,217 @@ export default function Calendar(): React.JSX.Element { // prova push
 										</div>
 
 										<div className="orario" style={{ fontSize: "15.8px" }}>
-											<div style={{ position: "relative", marginLeft: "10%" }}>
+											<div
+												style={{ position: "relative", marginLeft: "10%" }}>
 												{eventPositions.map((event, index) =>
-												// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
-												(!event.type ? (
-													<div
-														key={index} // Assicurati di fornire una chiave unica per ogni elemento
-														className="evento red"
-														style={{
-															top: `${event.top}px`, // Imposta la posizione verticale
-															height: `${event.height}px`, // Imposta l'altezza dell'evento
-															width: `calc(95%/${event.width})`,
-															position: "absolute", // Assicurati che sia posizionato correttamente
-															color: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"), // Colore più chiaro se currentDate è maggiore di endTime
-															borderColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(209, 150, 150, 1)" : "red"),
-															backgroundColor: (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(249, 67, 67, 0.2)" : "rgba(249, 67, 67, 0.5)"), // Colore di sfondo più chiaro
-															marginLeft: `${event.marginLeft}%`,
-															cursor: "default", // Imposta il cursore di default per l'intero evento
-														}}
-													>
-														<div style={{ color: "red" }}>
-															<Link
-																to={`/pomodoro?duration=${
-																	// Funzione per calcolare la durata dell'evento e scriverlo come query param
-																	((startTime, endTime): number => {
-																		const start = new Date(startTime);
-																		const end = new Date(endTime);
-																		const totMin = Math.max((end.getTime() - start.getTime()) / (1000 * 60), 0);
-																		return totMin;
-																	})(event.event.startTime, event.event.endTime) // Passa startTime e endTime
+													// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
+													!event.type ? (
+														<div
+															key={index} // Assicurati di fornire una chiave unica per ogni elemento
+															className="evento red"
+															style={{
+																top: `${event.top}px`, // Imposta la posizione verticale
+																height: `${event.height}px`, // Imposta l'altezza dell'evento
+																width: `calc(95%/${event.width})`,
+																position: "absolute", // Assicurati che sia posizionato correttamente
+																color:
+																	new Date(currentDate) >
+																	new Date(event.event.endTime)
+																		? "rgba(209, 150, 150, 1)"
+																		: "red", // Colore più chiaro se currentDate è maggiore di endTime
+																borderColor:
+																	new Date(currentDate) >
+																	new Date(event.event.endTime)
+																		? "rgba(209, 150, 150, 1)"
+																		: "red",
+																backgroundColor:
+																	new Date(currentDate) >
+																	new Date(event.event.endTime)
+																		? "rgba(249, 67, 67, 0.2)"
+																		: "rgba(249, 67, 67, 0.5)", // Colore di sfondo più chiaro
+																marginLeft: `${event.marginLeft}%`,
+																cursor: "default", // Imposta il cursore di default per l'intero evento
+															}}>
+															<div style={{ color: "red" }}>
+																<Link
+																	to={`/pomodoro?duration=${
+																		// Funzione per calcolare la durata dell'evento e scriverlo come query param
+																		((
+																			startTime,
+																			endTime
+																		): number => {
+																			const start = new Date(
+																				startTime
+																			);
+																			const end = new Date(
+																				endTime
+																			);
+																			const totMin = Math.max(
+																				(end.getTime() -
+																					start.getTime()) /
+																					(1000 * 60),
+																				0
+																			);
+																			return totMin;
+																		})(
+																			event.event.startTime,
+																			event.event.endTime
+																		) // Passa startTime e endTime
 																	}&id=${event.event._id}`} // Passa l'id dell'evento
-																style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
-															>
-																{event.name}
-															</Link>
-														</div>
-														<div
-															className="position-relative"
-															onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
-														>
-															{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-															<i className="bi bi-trash"
-																style={{
-																	bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																	right: "50%",  // Posiziona l'icona a 10px dal lato destro
-																	fontSize: "1.5rem",
-																	margin: 0,
-																	padding: 0,
-																	color: "red",
-																	cursor: "pointer"
-																}}
-															></i>
-														</div>
-													</div>
-
-												) : ((!event.event.isRisorsa || (event.event.isRisorsa && showRisorse)) && (
-													<div
-														className={`evento ${event.event.title === "Non disturbare" ? "non-disturbare" : event.event.isRisorsa ? "brown" : "blue"}`}
-														style={{
-															top: `${event.top}px`, // Imposta la posizione verticale
-															height: `${event.height}px`, // Imposta l'altezza dell'evento
-															width: `calc(95%/${event.width})`,
-															position: "absolute", // Assicurati che sia posizionato correttamente
-															color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
-															borderColor: event.event.title === "Non disturbare" ? "white" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
-															backgroundColor: event.event.title === "Non disturbare" ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(128, 138, 136, 0.2)" : "rgba(128, 138, 136, 0.4)") : (event.event.isRisorsa ? (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(139, 69, 19, 0.2)" : "rgba(139, 69, 19, 0.5)") : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(155, 223, 212, 0.2)" : "rgba(155, 223, 212, 0.5)")),
-															marginLeft: `${event.marginLeft}%`,
-															cursor: "default",
-														}}
-													>
-														{event.name}
-														<div
-															className="position-relative"
-															onClick={(): Promise<void> => handleDeleteEvent(event.event._id, event.event.groupId)}
-														>
-															{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-															{(!event.event.isRisorsa || (event.event.isRisorsa && isAdmin)) && (
-																<i className="bi bi-trash"
+																	style={{
+																		textDecoration: "none",
+																		color: "inherit",
+																		cursor: "pointer",
+																	}}>
+																	{event.name}
+																</Link>
+															</div>
+															<div
+																className="position-relative"
+																onClick={(): Promise<void> =>
+																	handleDeleteEvent(
+																		event.event._id,
+																		event.event.groupId
+																	)
+																}>
+																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+																<i
+																	className="bi bi-trash"
 																	style={{
 																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																		right: "50%",  // Posiziona l'icona a 10px dal lato destro
+																		right: "50%", // Posiziona l'icona a 10px dal lato destro
 																		fontSize: "1.5rem",
 																		margin: 0,
 																		padding: 0,
-																		color: event.event.title === "Non disturbare" ? "rgba(128, 138, 136, 1)" : (event.event.isRisorsa ? "rgba(166, 93, 41, 0.48)" : (new Date(currentDate) > new Date(event.event.endTime) ? "rgba(135, 190, 196, 0.8)" : "rgb(155, 223, 212)")),
-																		cursor: "pointer"
-																	}}
-																></i>
-															)}
+																		color: "red",
+																		cursor: "pointer",
+																	}}></i>
+															</div>
 														</div>
-													</div>
-
-												)
-
-												)
-
-												)
-
+													) : (
+														(!event.event.isRisorsa ||
+															(event.event.isRisorsa &&
+																showRisorse)) && (
+															<div
+																className={`evento ${
+																	event.event.title ===
+																	"Non disturbare"
+																		? "non-disturbare"
+																		: event.event.isRisorsa
+																		? "brown"
+																		: "blue"
+																}`}
+																style={{
+																	top: `${event.top}px`, // Imposta la posizione verticale
+																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	width: `calc(95%/${event.width})`,
+																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	color:
+																		event.event.title ===
+																		"Non disturbare"
+																			? "rgba(128, 138, 136, 1)"
+																			: event.event.isRisorsa
+																			? "rgba(166, 93, 41, 0.48)"
+																			: new Date(
+																					currentDate
+																			  ) >
+																			  new Date(
+																					event.event.endTime
+																			  )
+																			? "rgba(135, 190, 196, 0.8)"
+																			: "rgb(155, 223, 212)",
+																	borderColor:
+																		event.event.title ===
+																		"Non disturbare"
+																			? "white"
+																			: event.event.isRisorsa
+																			? "rgba(166, 93, 41, 0.48)"
+																			: new Date(
+																					currentDate
+																			  ) >
+																			  new Date(
+																					event.event.endTime
+																			  )
+																			? "rgba(135, 190, 196, 0.8)"
+																			: "rgb(155, 223, 212)",
+																	backgroundColor:
+																		event.event.title ===
+																		"Non disturbare"
+																			? new Date(
+																					currentDate
+																			  ) >
+																			  new Date(
+																					event.event.endTime
+																			  )
+																				? "rgba(128, 138, 136, 0.2)"
+																				: "rgba(128, 138, 136, 0.4)"
+																			: event.event.isRisorsa
+																			? new Date(
+																					currentDate
+																			  ) >
+																			  new Date(
+																					event.event.endTime
+																			  )
+																				? "rgba(139, 69, 19, 0.2)"
+																				: "rgba(139, 69, 19, 0.5)"
+																			: new Date(
+																					currentDate
+																			  ) >
+																			  new Date(
+																					event.event.endTime
+																			  )
+																			? "rgba(155, 223, 212, 0.2)"
+																			: "rgba(155, 223, 212, 0.5)",
+																	marginLeft: `${event.marginLeft}%`,
+																	cursor: "default",
+																}}>
+																{event.name}
+																<div
+																	className="position-relative"
+																	onClick={(): Promise<void> =>
+																		handleDeleteEvent(
+																			event.event._id,
+																			event.event.groupId
+																		)
+																	}>
+																	{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+																	{(!event.event.isRisorsa ||
+																		(event.event.isRisorsa &&
+																			isAdmin)) && (
+																		<i
+																			className="bi bi-trash"
+																			style={{
+																				bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																				right: "50%", // Posiziona l'icona a 10px dal lato destro
+																				fontSize: "1.5rem",
+																				margin: 0,
+																				padding: 0,
+																				color:
+																					event.event
+																						.title ===
+																					"Non disturbare"
+																						? "rgba(128, 138, 136, 1)"
+																						: event
+																								.event
+																								.isRisorsa
+																						? "rgba(166, 93, 41, 0.48)"
+																						: new Date(
+																								currentDate
+																						  ) >
+																						  new Date(
+																								event.event.endTime
+																						  )
+																						? "rgba(135, 190, 196, 0.8)"
+																						: "rgb(155, 223, 212)",
+																				cursor: "pointer",
+																			}}></i>
+																	)}
+																</div>
+															</div>
+														)
+													)
 												)}
-											</div >
-
+											</div>
 
 											<time>00:00</time>
 											<time>01:00</time>
@@ -4472,7 +5424,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 											<time>21:00</time>
 											<time>22:00</time>
 											<time>23:00</time>
-
 										</div>
 									</div>
 								</div>
@@ -4487,8 +5438,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 											justifyContent: "center",
 											alignItems: "center",
 											gap: "0.5em",
-										}}
-									>
+										}}>
 										<button className="calendar-arrows" onClick={prevWeek}>
 											{"<<"}
 										</button>
@@ -4523,26 +5473,60 @@ export default function Calendar(): React.JSX.Element { // prova push
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}
-												>
+													}}>
 													Dom{" "}
 													{((): JSX.Element | null => {
-														const currentDayOfWeek = getDay(new Date(year, meseCorrente, day));
-
-
+														const currentDayOfWeek = getDay(
+															new Date(year, meseCorrente, day)
+														);
 
 														return (
 															<>
-																{currentDayOfWeek === 5 && getAdjustedDay(day, -5, year, meseCorrente)}
-																{currentDayOfWeek === 4 && getAdjustedDay(day, -4, year, meseCorrente)}
-																{currentDayOfWeek === 3 && getAdjustedDay(day, -3, year, meseCorrente)}
-																{currentDayOfWeek === 2 && getAdjustedDay(day, -2, year, meseCorrente)}
-																{currentDayOfWeek === 1 && getAdjustedDay(day, -1, year, meseCorrente)}
-																{currentDayOfWeek === 0 && getAdjustedDay(day, 0, year, meseCorrente)}
+																{currentDayOfWeek === 5 &&
+																	getAdjustedDay(
+																		day,
+																		-5,
+																		year,
+																		meseCorrente
+																	)}
+																{currentDayOfWeek === 4 &&
+																	getAdjustedDay(
+																		day,
+																		-4,
+																		year,
+																		meseCorrente
+																	)}
+																{currentDayOfWeek === 3 &&
+																	getAdjustedDay(
+																		day,
+																		-3,
+																		year,
+																		meseCorrente
+																	)}
+																{currentDayOfWeek === 2 &&
+																	getAdjustedDay(
+																		day,
+																		-2,
+																		year,
+																		meseCorrente
+																	)}
+																{currentDayOfWeek === 1 &&
+																	getAdjustedDay(
+																		day,
+																		-1,
+																		year,
+																		meseCorrente
+																	)}
+																{currentDayOfWeek === 0 &&
+																	getAdjustedDay(
+																		day,
+																		0,
+																		year,
+																		meseCorrente
+																	)}
 															</>
 														);
 													})()}
-
 												</div>
 												<div
 													className="orario"
@@ -4553,13 +5537,10 @@ export default function Calendar(): React.JSX.Element { // prova push
 														overflowY: "auto",
 													}}
 													onWheel={handleScroll}>
-
 													{renderWeekEvents(weekEvents, 0)}
 
 													{/*{renderMonthEvents(monthEvents, 12)}
 													RENDERIZZA GLI EVENTI DEL GIORNO 12+1 = 13*/}
-
-
 
 													<time>00:00</time>
 													<time>01:00</time>
@@ -4585,7 +5566,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 													<time>21:00</time>
 													<time>22:00</time>
 													<time>23:00</time>
-
 												</div>
 											</div>
 											<div className="nome-data-week">
@@ -4598,24 +5578,28 @@ export default function Calendar(): React.JSX.Element { // prova push
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}
-												>
+													}}>
 													Lun{" "}
-
-
-													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														6 &&
 														getAdjustedDay(day, -5, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														5 &&
 														getAdjustedDay(day, -4, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														4 &&
 														getAdjustedDay(day, -3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														3 &&
 														getAdjustedDay(day, -2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														2 &&
 														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														1 &&
 														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														0 &&
 														getAdjustedDay(day, 1, year, meseCorrente)}
 												</div>
 
@@ -4626,9 +5610,7 @@ export default function Calendar(): React.JSX.Element { // prova push
 														flex: "1",
 													}}
 													onWheel={handleScroll}>
-
 													{renderWeekEvents(weekEvents, 1)}
-
 
 													<time>00:00</time>
 													<time>01:00</time>
@@ -4654,7 +5636,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 													<time>21:00</time>
 													<time>22:00</time>
 													<time>23:00</time>
-
 												</div>
 											</div>
 											<div className="nome-data-week">
@@ -4667,22 +5648,28 @@ export default function Calendar(): React.JSX.Element { // prova push
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}
-												>
+													}}>
 													Mar{" "}
-													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														6 &&
 														getAdjustedDay(day, -4, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														5 &&
 														getAdjustedDay(day, -3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														4 &&
 														getAdjustedDay(day, -2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														3 &&
 														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														2 &&
 														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														1 &&
 														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														0 &&
 														getAdjustedDay(day, 2, year, meseCorrente)}
 												</div>
 												<div
@@ -4692,8 +5679,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 														flex: "1",
 													}}
 													onWheel={handleScroll}>
-
-
 													{renderWeekEvents(weekEvents, 2)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -4719,7 +5704,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 													<time>21:00</time>
 													<time>22:00</time>
 													<time>23:00</time>
-
 												</div>
 											</div>
 											<div className="nome-data-week">
@@ -4732,22 +5716,28 @@ export default function Calendar(): React.JSX.Element { // prova push
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}
-												>
+													}}>
 													Mer{" "}
-													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														6 &&
 														getAdjustedDay(day, -3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														5 &&
 														getAdjustedDay(day, -2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														4 &&
 														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														3 &&
 														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														2 &&
 														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														1 &&
 														getAdjustedDay(day, 2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														0 &&
 														getAdjustedDay(day, 3, year, meseCorrente)}
 												</div>
 												<div
@@ -4757,7 +5747,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 														flex: "1",
 													}}
 													onWheel={handleScroll}>
-
 													{renderWeekEvents(weekEvents, 3)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -4783,7 +5772,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 													<time>21:00</time>
 													<time>22:00</time>
 													<time>23:00</time>
-
 												</div>
 											</div>
 											<div className="nome-data-week">
@@ -4796,22 +5784,28 @@ export default function Calendar(): React.JSX.Element { // prova push
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}
-												>
+													}}>
 													Gio{" "}
-													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														6 &&
 														getAdjustedDay(day, -2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														5 &&
 														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														4 &&
 														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														3 &&
 														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														2 &&
 														getAdjustedDay(day, 2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														1 &&
 														getAdjustedDay(day, 3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														0 &&
 														getAdjustedDay(day, 4, year, meseCorrente)}
 												</div>
 												<div
@@ -4821,7 +5815,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 														flex: "1",
 													}}
 													onWheel={handleScroll}>
-
 													{renderWeekEvents(weekEvents, 4)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -4847,7 +5840,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 													<time>21:00</time>
 													<time>22:00</time>
 													<time>23:00</time>
-
 												</div>
 											</div>
 											<div className="nome-data-week">
@@ -4860,22 +5852,28 @@ export default function Calendar(): React.JSX.Element { // prova push
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}
-												>
+													}}>
 													Ven{" "}
-													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														6 &&
 														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														5 &&
 														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														4 &&
 														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														3 &&
 														getAdjustedDay(day, 2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														2 &&
 														getAdjustedDay(day, 3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														1 &&
 														getAdjustedDay(day, 4, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														0 &&
 														getAdjustedDay(day, 5, year, meseCorrente)}
 												</div>
 												<div
@@ -4885,7 +5883,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 														flex: "1",
 													}}
 													onWheel={handleScroll}>
-
 													{renderWeekEvents(weekEvents, 5)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -4911,7 +5908,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 													<time>21:00</time>
 													<time>22:00</time>
 													<time>23:00</time>
-
 												</div>
 											</div>
 											<div className="nome-data-week">
@@ -4924,22 +5920,28 @@ export default function Calendar(): React.JSX.Element { // prova push
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}
-												>
+													}}>
 													Sab{" "}
-													{getDay(new Date(year, meseCorrente, day)) === 6 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														6 &&
 														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 5 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														5 &&
 														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 4 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														4 &&
 														getAdjustedDay(day, 2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 3 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														3 &&
 														getAdjustedDay(day, 3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 2 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														2 &&
 														getAdjustedDay(day, 4, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 1 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														1 &&
 														getAdjustedDay(day, 5, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) === 0 &&
+													{getDay(new Date(year, meseCorrente, day)) ===
+														0 &&
 														getAdjustedDay(day, 6, year, meseCorrente)}
 												</div>
 												<div
@@ -4949,7 +5951,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 														flex: "1",
 													}}
 													onWheel={handleScroll}>
-
 													{renderWeekEvents(weekEvents, 6)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -4975,7 +5976,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 													<time>21:00</time>
 													<time>22:00</time>
 													<time>23:00</time>
-
 												</div>
 											</div>
 										</div>
@@ -4991,16 +5991,19 @@ export default function Calendar(): React.JSX.Element { // prova push
 											display: "flex",
 											justifyContent: "center",
 											alignItems: "center",
-											gap: "0.5em"
-										}}
-									>
-										<button className="calendar-arrows" onClick={mesePrecedente}>
+											gap: "0.5em",
+										}}>
+										<button
+											className="calendar-arrows"
+											onClick={mesePrecedente}>
 											{"<<"}
 										</button>
 										<div>
 											{Mesi[meseCorrente]} {year}{" "}
 										</div>
-										<button className="calendar-arrows" onClick={meseSuccessivo}>
+										<button
+											className="calendar-arrows"
+											onClick={meseSuccessivo}>
 											{">>"}
 										</button>
 									</div>
@@ -5017,27 +6020,36 @@ export default function Calendar(): React.JSX.Element { // prova push
 										<div className="date-grid">
 											{/* Celle vuote per allineare il primo giorno del mese */}
 											{Array.from({
-												length: getDay(startOfMonth(new Date(year, meseCorrente))),
+												length: getDay(
+													startOfMonth(new Date(year, meseCorrente))
+												),
 											}).map((_, index) => (
-												<div key={index} className="date-cell empty-cell"></div>
+												<div
+													key={index}
+													className="date-cell empty-cell"></div>
 											))}
 
 											{/* Celle per i giorni del mese */}
 											{Array.from({
-												length: getDaysInMonth(new Date(year, meseCorrente)),
+												length: getDaysInMonth(
+													new Date(year, meseCorrente)
+												),
 											}).map((_, day) => (
 												<div
 													key={day + 1}
 													className="date-cell"
-													style={{ position: "relative", minHeight: "100px" }}
-												>
+													style={{
+														position: "relative",
+														minHeight: "100px",
+													}}>
 													<div>{renderMonthEvents(monthEvents, day)}</div>
 													<button
 														onClick={(e): void => {
 															handleDateClick(day + 1);
-															dayMode(e as React.MouseEvent<HTMLElement>);
-														}}
-													>
+															dayMode(
+																e as React.MouseEvent<HTMLElement>
+															);
+														}}>
 														{day + 1}
 													</button>
 												</div>
@@ -5048,7 +6060,6 @@ export default function Calendar(): React.JSX.Element { // prova push
 							)}
 						</>
 					)}
-
 				</div>
 			</div>
 		</>

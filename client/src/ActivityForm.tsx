@@ -1,7 +1,7 @@
 import DatePicker from "react-datepicker";
 import Activity, { AdvancementType } from "./types/Activity";
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 
 const baseActivity: Activity = {
 	id: "",

@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Note, { type ListItem } from "./types/Note";
@@ -10,6 +10,8 @@ import { Privacy } from "./types/Privacy";
 import SearchForm from "./SearchForm";
 import type Project from "./types/Project";
 import type Activity from "./types/Activity";
+import { useRefresh } from "./TimeContext";
+import { getActivityStatus } from "./lib/helpers";
 
 const baseNote: Note = {
 	id: "",
@@ -38,6 +40,8 @@ export default function ProjectPage(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [isOwner, setIsOwner] = React.useState(false);
+
+	const { serverTime } = useRefresh();
 
 	const loggedUser = {
 		username: localStorage.getItem("loggedUserName"),
@@ -68,10 +72,10 @@ export default function ProjectPage(): React.JSX.Element {
 			});
 	}
 
-	// On page load, get the project data
+	// On page load or when time changes, get the project data
 	React.useEffect(() => {
 		refreshProject();
-	}, []);
+	}, [serverTime]);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
 		setProject({ ...project, [e.target.name]: e.target.value });
@@ -248,7 +252,7 @@ export default function ProjectPage(): React.JSX.Element {
 											<a
 												href={`/activities/${a.id}`}
 												style={{ width: "100%" }}>
-												{a.title} - {a.status}
+												{a.title} - {getActivityStatus(serverTime, a)}
 											</a>
 
 											{isEditing && (

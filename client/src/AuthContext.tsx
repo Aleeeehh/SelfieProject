@@ -1,4 +1,4 @@
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 
 export const checkLoginStatus = async (): Promise<void> => {

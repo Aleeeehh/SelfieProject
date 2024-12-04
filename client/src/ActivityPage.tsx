@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { useNavigate, useParams } from "react-router-dom";
 // import { marked } from "marked";
@@ -9,6 +9,8 @@ import { ActivityStatus, AdvancementType } from "./types/Activity";
 import type Project from "./types/Project";
 import DatePicker from "react-datepicker";
 import SearchForm from "./SearchForm";
+import { getActivityStatus } from "./lib/helpers";
+import { useRefresh } from "./TimeContext";
 
 // const baseActivity: Activity = {
 // 	id: "",
@@ -48,6 +50,8 @@ export default function ActivityPage(): React.JSX.Element {
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [isUser, setIsUser] = React.useState(false);
 	const [isOwner, setIsOwner] = React.useState(false);
+
+	const { serverTime } = useRefresh();
 
 	// handle share activity
 	// const [shareActivity, setShareActivity] = React.useState(false);
@@ -257,13 +261,13 @@ export default function ActivityPage(): React.JSX.Element {
 	// On page load, get the project data
 	React.useEffect(() => {
 		refreshActivity();
-	}, []);
+	}, [serverTime]);
 
 	React.useEffect(() => {
 		if (activity.projectId) {
 			refreshProject();
 		}
-	}, [activity.projectId]);
+	}, [serverTime, activity.projectId]);
 
 	// share activity handlers
 	// function handleAddUserToShareList(
@@ -875,7 +879,7 @@ export default function ActivityPage(): React.JSX.Element {
 									{/* render status */}
 									<div className="activity-status">
 										<div>
-											Status: <b>{activity.status}</b>
+											Status: <b>{getActivityStatus(serverTime, activity)}</b>
 										</div>
 									</div>
 

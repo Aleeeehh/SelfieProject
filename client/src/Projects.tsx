@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import type { ResponseBody } from "./types/ResponseBody";
 import type Project from "./types/Project";
 import { useNavigate } from "react-router-dom";
@@ -70,7 +70,10 @@ export default function Projects(): React.JSX.Element {
 				}}>
 				<div className="sort-label">
 					<div style={{ color: "black" }}>Seleziona la vista:</div>
-					<select className="sort-select" onChange={(e): void => setView(e.target.value as View)} value={view}>
+					<select
+						className="sort-select"
+						onChange={(e): void => setView(e.target.value as View)}
+						value={view}>
 						<option value={View.LIST}>List</option>
 						<option value={View.GANTT}>Gantt</option>
 					</select>
@@ -78,7 +81,10 @@ export default function Projects(): React.JSX.Element {
 				{/* Filter for user */}
 				<div className="sort-label">
 					<div>Filtra per utente: </div>
-					<select className="sort-select" value={filter} onChange={(e): void => setFilter(e.target.value)}>
+					<select
+						className="sort-select"
+						value={filter}
+						onChange={(e): void => setFilter(e.target.value)}>
 						<option value="">Tutti</option>
 						{getAllUsers().map((user) => (
 							<option value={user}>{user}</option>

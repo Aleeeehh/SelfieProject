@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Note, { type ListItem } from "./types/Note";
@@ -44,7 +44,8 @@ export default function CreateNoteForm(): React.JSX.Element {
 	async function getCurrentUser(): Promise<Promise<any> | null> {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
-			if (!res.ok) { // Controlla se la risposta non è ok
+			if (!res.ok) {
+				// Controlla se la risposta non è ok
 				setMessage("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
@@ -62,14 +63,9 @@ export default function CreateNoteForm(): React.JSX.Element {
 		e.preventDefault();
 
 		try {
-
 			//genera un idEventoNotificaCondiviso
 			//const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 			console.log("Creo la nota:", note);
-
-
-
-
 
 			//crea la nota nella lista delle note
 			const res = await fetch(`${SERVER_API}/notes`, {
@@ -87,7 +83,8 @@ export default function CreateNoteForm(): React.JSX.Element {
 				console.log(item);
 				//crea l'attività nella lista delle attività
 
-				if (item.endDate) { //se esiste una scadenza per l'item
+				if (item.endDate) {
+					//se esiste una scadenza per l'item
 					const res2 = await fetch(`${SERVER_API}/activities`, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
@@ -254,23 +251,24 @@ export default function CreateNoteForm(): React.JSX.Element {
 
 					{/* render to do list */}
 					<div className="note-list-container">
-						<label>To Do List
+						<label>
+							To Do List
 							{note.toDoList &&
 								note.toDoList.map((l) => (
 									<div key={l.id}>
 										<input
 											type="text"
 											value={l.text}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-												handleUpdateTextItem(e, l)
-											}
+											onChange={(
+												e: React.ChangeEvent<HTMLInputElement>
+											): void => handleUpdateTextItem(e, l)}
 										/>
 										<input
 											type="checkbox"
 											checked={l.completed}
-											onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-												handleCheckboxChange(e, l)
-											}
+											onChange={(
+												e: React.ChangeEvent<HTMLInputElement>
+											): void => handleCheckboxChange(e, l)}
 										/>
 
 										{l.endDate ? (
@@ -305,14 +303,13 @@ export default function CreateNoteForm(): React.JSX.Element {
 										)}
 
 										<button
-											onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
-												handleRemoveItem(e, l)
-											}>
+											onClick={(
+												e: React.MouseEvent<HTMLButtonElement>
+											): void => handleRemoveItem(e, l)}>
 											Elimina
 										</button>
 									</div>
-								))
-							}
+								))}
 						</label>
 						<button onClick={handleAddItem}>Aggiungi Item</button>
 					</div>

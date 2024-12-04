@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import Note from "./types/Note";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { ResponseBody } from "./types/ResponseBody";

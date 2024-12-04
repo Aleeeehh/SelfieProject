@@ -1,7 +1,7 @@
 import React from "react";
 import { useState, ChangeEvent, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
@@ -1124,9 +1124,9 @@ export default function Pomodoros(): React.JSX.Element {
 												.getHours()
 												.toString()
 												.padStart(2, "0")}:${pomEvent.startTime
-													.getMinutes()
-													.toString()
-													.padStart(2, "0")}`}
+												.getMinutes()
+												.toString()
+												.padStart(2, "0")}`}
 											onChange={(
 												e: React.ChangeEvent<HTMLInputElement>
 											): void => {
@@ -1179,9 +1179,9 @@ export default function Pomodoros(): React.JSX.Element {
 												.getHours()
 												.toString()
 												.padStart(2, "0")}:${pomEvent.endTime
-													.getMinutes()
-													.toString()
-													.padStart(2, "0")}`}
+												.getMinutes()
+												.toString()
+												.padStart(2, "0")}`}
 											onChange={(
 												e: React.ChangeEvent<HTMLInputElement>
 											): void => {
@@ -1296,7 +1296,11 @@ export default function Pomodoros(): React.JSX.Element {
 							<button
 								onClick={handleSendInvite}
 								className="btn btn-primary send-invite-button"
-								style={{ backgroundColor: "lightcoral", color: "white", border: "0" }}>
+								style={{
+									backgroundColor: "lightcoral",
+									color: "white",
+									border: "0",
+								}}>
 								Invia Invito
 							</button>
 						</div>

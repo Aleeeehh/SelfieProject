@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type Project from "./types/Project";
-import { SERVER_API } from "./params/params";
+import { useRefresh } from "./TimeContext";
 
 enum View {
 	DAY = "Day",
@@ -17,7 +17,7 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 	const [points, setPoints] = useState<number[]>([]);
 	const [view, setView] = useState<View>(View.DAY);
 
-	const [serverTime, setServerTime] = useState<Date>(new Date());
+	const { serverTime } = useRefresh();
 
 	const [limit, setLimit] = useState(0);
 
@@ -80,24 +80,16 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 	};*/
 
 	React.useEffect(() => {
-		fetch(`${SERVER_API}/currentDate`)
-			.then((res) => {
-				return res.json();
-			})
-			.then((data) => {
-				setServerTime(new Date(data.currentDate));
+		const startZero = new Date(serverTime);
+		startZero.setHours(0, 0, 0, 0);
+		setStart(startZero);
 
-				const startZero = new Date(data.currentDate);
-				startZero.setHours(0, 0, 0, 0);
-				setStart(startZero);
+		const endZero = new Date(new Date(serverTime).getTime() + THIRTY_DAYS);
+		endZero.setHours(0, 0, 0, 0);
+		setEnd(endZero);
 
-				const endZero = new Date(new Date(data.currentDate).getTime() + THIRTY_DAYS);
-				endZero.setHours(0, 0, 0, 0);
-				setEnd(endZero);
-
-				getPoints();
-			});
-	}, []);
+		getPoints();
+	}, [serverTime]);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
 		try {

@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { useLocation, useNavigate } from "react-router-dom";
 import type Activity from "./types/Activity";
@@ -223,8 +223,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 						border: "1px solid #ddd",
 						borderRadius: "8px",
 						backgroundColor: "#fdfdfd",
-					}}
-				>
+					}}>
 					Scadenza
 					<div
 						style={{

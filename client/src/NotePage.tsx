@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Note, { type ListItem } from "./types/Note";
@@ -9,7 +9,6 @@ import { marked } from "marked";
 import { Privacy } from "./types/Privacy";
 import SearchForm from "./SearchForm";
 import User from "./types/User";
-
 
 const baseNote: Note = {
 	id: "",
@@ -65,7 +64,8 @@ export default function NotePage(): React.JSX.Element {
 	async function getCurrentUser(): Promise<Promise<any> | null> {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
-			if (!res.ok) { // Controlla se la risposta non è ok
+			if (!res.ok) {
+				// Controlla se la risposta non è ok
 				setMessage("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
@@ -117,7 +117,8 @@ export default function NotePage(): React.JSX.Element {
 				console.log(item);
 				//crea l'attività nella lista delle attività
 
-				if (item.endDate) { //se esiste una scadenza per l'item
+				if (item.endDate) {
+					//se esiste una scadenza per l'item
 					//controlla se esiste già un'attività con lo stesso titolo
 					const res2 = await fetch(`${SERVER_API}/activities/by-title/${item.text}`);
 					const data = await res2.json();
@@ -366,7 +367,12 @@ export default function NotePage(): React.JSX.Element {
 														handleUpdateTextItem(e, l);
 													}}
 												/>
-												<div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+												<div
+													style={{
+														display: "flex",
+														alignItems: "center",
+														flexDirection: "column",
+													}}>
 													{l.endDate ? (
 														<>
 															<label style={{ margin: "0" }}>
@@ -379,13 +385,17 @@ export default function NotePage(): React.JSX.Element {
 																	}
 																	onChange={(
 																		e: React.ChangeEvent<HTMLInputElement>
-																	): void => handleUpdateDateItem(e, l)}
+																	): void =>
+																		handleUpdateDateItem(e, l)
+																	}
 																/>
 															</label>
 															<button
 																onClick={(
 																	e: React.MouseEvent<HTMLButtonElement>
-																): void => handleRemoveDateItem(e, l)}>
+																): void =>
+																	handleRemoveDateItem(e, l)
+																}>
 																Rimuovi Scadenza
 															</button>
 														</>
@@ -402,8 +412,7 @@ export default function NotePage(): React.JSX.Element {
 													onClick={(
 														e: React.MouseEvent<HTMLButtonElement>
 													): void => handleRemoveItem(e, l)}
-													style={{ backgroundColor: "#d64545" }}
-												>
+													style={{ backgroundColor: "#d64545" }}>
 													Elimina Item
 												</button>
 											</div>
@@ -411,59 +420,104 @@ export default function NotePage(): React.JSX.Element {
 									) : (
 										<>
 											<div className="note-to-do-container">
-												<div style={{ display: "flex", alignItems: "center" }}>
+												<div
+													style={{
+														display: "flex",
+														alignItems: "center",
+													}}>
 													<input
 														id="todo-completed"
 														type="checkbox"
 														style={{ height: "15px", width: "15px" }}
 														checked={l.completed}
 														disabled={l.completed} // Disabilita il checkbox se è già completato
-														onChange={async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-															if (!l.completed) { // Permetti il cambiamento solo se non è già completato
+														onChange={async (
+															e: React.ChangeEvent<HTMLInputElement>
+														): Promise<void> => {
+															if (!l.completed) {
+																// Permetti il cambiamento solo se non è già completato
 																handleCheckboxChange(e, l);
 																try {
 																	//cerca l'attività con lo stesso titolo della nota
-																	const res = await fetch(`${SERVER_API}/activities/by-title/${l.text}`);
+																	const res = await fetch(
+																		`${SERVER_API}/activities/by-title/${l.text}`
+																	);
 																	const data = await res.json();
 																	const activity = data.value;
-																	console.log("ATTIVITA DA COMPLETARE:", activity);
+																	console.log(
+																		"ATTIVITA DA COMPLETARE:",
+																		activity
+																	);
 
 																	//completa l'attività trovata
-																	const res2 = await fetch(`${SERVER_API}/activities/completeActivity`, {
-																		method: "POST",
-																		headers: { "Content-Type": "application/json" },
-																		body: JSON.stringify({
-																			activity_id: activity._id,
-																		}),
-																	});
-																	console.log("ATTIVITA COMPLETATA:", res2);
+																	const res2 = await fetch(
+																		`${SERVER_API}/activities/completeActivity`,
+																		{
+																			method: "POST",
+																			headers: {
+																				"Content-Type":
+																					"application/json",
+																			},
+																			body: JSON.stringify({
+																				activity_id:
+																					activity._id,
+																			}),
+																		}
+																	);
+																	console.log(
+																		"ATTIVITA COMPLETATA:",
+																		res2
+																	);
 
 																	// Aggiorna la nota nel database per rendere permanente il completed=true
-																	const updateNoteRes = await fetch(`${SERVER_API}/notes/${id}`, {
-																		method: "PUT",
-																		headers: { "Content-Type": "application/json" },
-																		body: JSON.stringify({
-																			...note,
-																			toDoList: note.toDoList.map(item =>
-																				item.id === l.id
-																					? { ...item, completed: true }
-																					: item
-																			)
-																		}),
-																	});
-																	console.log("NOTA AGGIORNATA:", updateNoteRes);
+																	const updateNoteRes =
+																		await fetch(
+																			`${SERVER_API}/notes/${id}`,
+																			{
+																				method: "PUT",
+																				headers: {
+																					"Content-Type":
+																						"application/json",
+																				},
+																				body: JSON.stringify(
+																					{
+																						...note,
+																						toDoList:
+																							note.toDoList.map(
+																								(
+																									item
+																								) =>
+																									item.id ===
+																									l.id
+																										? {
+																												...item,
+																												completed:
+																													true,
+																										  }
+																										: item
+																							),
+																					}
+																				),
+																			}
+																		);
+																	console.log(
+																		"NOTA AGGIORNATA:",
+																		updateNoteRes
+																	);
 
 																	if (!updateNoteRes.ok) {
-																		console.error("Errore nell'aggiornamento permanente della nota");
+																		console.error(
+																			"Errore nell'aggiornamento permanente della nota"
+																		);
 																	} else {
 																		// Aggiorna lo stato locale
 																		refreshNote(); // Ricarica la nota per avere i dati aggiornati
 																	}
-
-
-
 																} catch (e) {
-																	console.error("Errore durante il completamento dell'attività:", e);
+																	console.error(
+																		"Errore durante il completamento dell'attività:",
+																		e
+																	);
 																}
 															}
 														}}
@@ -482,21 +536,30 @@ export default function NotePage(): React.JSX.Element {
 														Stato:{" "}
 													</span>
 													<span style={{ fontStyle: "italic" }}>
-														{l.completed ? "Completato" : "Non completato"}
+														{l.completed
+															? "Completato"
+															: "Non completato"}
 													</span>
 												</div>
-												<div style={{ display: "flex", alignItems: "center" }}>
+												<div
+													style={{
+														display: "flex",
+														alignItems: "center",
+													}}>
 													{l.endDate ? (
 														<div>
 															<span style={{ fontWeight: "300" }}>
 																Scadenza:{" "}
 															</span>
 															<span style={{ fontStyle: "italic" }}>
-																{new Date(l.endDate).toLocaleString("it-IT", {
-																	day: "2-digit",
-																	month: "2-digit",
-																	year: "numeric",
-																})}
+																{new Date(l.endDate).toLocaleString(
+																	"it-IT",
+																	{
+																		day: "2-digit",
+																		month: "2-digit",
+																		year: "numeric",
+																	}
+																)}
 															</span>
 														</div>
 													) : (
@@ -514,8 +577,7 @@ export default function NotePage(): React.JSX.Element {
 										</>
 									)}
 								</div>
-							))
-						}
+							))}
 					</label>
 					{isEditing && <button onClick={handleAddItem}>Aggiungi Item</button>}
 					{/* render tags */}
@@ -613,7 +675,11 @@ export default function NotePage(): React.JSX.Element {
 							{isEditing ? (
 								<>
 									<button onClick={handleUpdateNote}>Aggiorna Nota</button>
-									<button style={{ backgroundColor: "#d64545" }} onClick={handleAbortChanges}>Annulla Modifiche</button>
+									<button
+										style={{ backgroundColor: "#d64545" }}
+										onClick={handleAbortChanges}>
+										Annulla Modifiche
+									</button>
 								</>
 							) : (
 								<button onClick={(): void => setIsEditing(true)}>

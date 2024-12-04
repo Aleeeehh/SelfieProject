@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { SERVER_API } from "./params/params";
+import { SERVER_API } from "./lib/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Notification from "./types/Notification";
 import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useRefresh } from "./TimeContext";
 
 const buttonStyle = {
 	backgroundColor: "white",
@@ -29,6 +30,8 @@ export default function Header(): React.JSX.Element {
 	//const [isChangingDate, setIsChangingDate] = useState(false);
 
 	const isLoggedIn = !!localStorage.getItem("loggedUserId");
+
+	const { triggerAction } = useRefresh();
 
 	/* const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
 		setCurrentDate(event.target.value);
@@ -143,6 +146,8 @@ export default function Header(): React.JSX.Element {
 
 			// Imposta la data corrente
 			setCurrentDate(newDate); // Imposta la data corrente
+
+			triggerAction();
 
 			// Invia la nuova data al server
 			await postCurrentDate(newDate); // Invia la nuova data al server
@@ -795,7 +800,8 @@ export default function Header(): React.JSX.Element {
 												return; // Non procedere se la data non è valida
 											}
 
-											setCurrentDate(parsedDate); // Aggiorna lo stato solo se la data è valida
+											setCurrentDate(parsedDate);
+											triggerAction(); // Aggiorna lo stato solo se la data è valida
 										}}
 										style={{ marginLeft: "10px" }}
 									/>
@@ -827,6 +833,7 @@ export default function Header(): React.JSX.Element {
 													Number(timeParts[1])
 												);
 												setCurrentDate(newDate); // Aggiorna lo stato con la nuova data e orario
+												triggerAction();
 											} else {
 												// Se il valore è vuoto, non fare nulla o gestisci come preferisci
 												console.warn("Orario non valido");
@@ -853,6 +860,7 @@ export default function Header(): React.JSX.Element {
 										const newDate = new Date(); // Ottieni la data corrente
 										await postCurrentDate(newDate); // Chiama postCurrentDate con la data corrente
 										setCurrentDate(newDate); // Aggiorna lo stato con la nuova data
+										triggerAction();
 										setShowTimeMachine(false); // Nascondi il time machine
 										// window.location.reload();
 									}}
