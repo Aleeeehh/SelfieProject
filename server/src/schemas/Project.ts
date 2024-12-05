@@ -15,6 +15,11 @@ const projectSchema = new mongoose.Schema(
 			ref: "User",
 			required: true,
 		},
+		accessListAccepted: {
+			type: [mongoose.Schema.Types.ObjectId],
+			ref: "User",
+			required: false,
+		},
 	},
 	{ timestamps: true }
 );
@@ -22,8 +27,8 @@ const projectSchema = new mongoose.Schema(
 export const ProjectSchema = mongoose.model("Project", projectSchema);
 
 export type ProjectDBSchema = {
-    title: string,
-    description: string,
-    owner: mongoose.Types.ObjectId,
-    accessList: mongoose.Types.ObjectId[],
+	title: string,
+	description: string,
+	owner: mongoose.Types.ObjectId,
+	accessList: mongoose.Types.ObjectId[],
 }

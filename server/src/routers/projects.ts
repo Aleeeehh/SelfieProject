@@ -122,6 +122,8 @@ router.get("/", async (req: Request, res: Response) => {
 				description: foundProject.description,
 				owner: foundProject.owner,
 				accessList: await getUsernameListFromIdList(foundProject.accessList),
+				accessListAccepted: foundProject.accessListAccepted ?
+					await getUsernameListFromIdList(foundProject.accessListAccepted) : [],
 				activityList: await getActivityList(foundProject._id, undefined),
 				note: projectNote,
 			};
@@ -293,6 +295,86 @@ router.get("/:id", async (req: Request, res: Response) => {
 	}
 });
 
+// Get projects where a specific user is owner or in accessListAccepted
+router.get("/accepted/:userId", async (req: Request, res: Response) => {
+	try {
+		const targetUserId = req.params.userId;
+
+		// Verifica che l'ID utente sia valido
+		if (!Types.ObjectId.isValid(targetUserId)) {
+			return res.status(400).json({
+				message: "Invalid user ID format",
+				status: ResponseStatus.BAD,
+			});
+		}
+
+		const userId = new mongoose.Types.ObjectId(targetUserId);
+
+		// Trova i progetti dove l'utente è owner o in accessListAccepted
+		const foundProjects = await ProjectSchema.find({
+			$or: [
+				{ owner: userId },
+				{ accessListAccepted: userId }
+			],
+		}).lean();
+
+		console.log("Found projects:", foundProjects);
+
+		// Costruisci la lista dei progetti con tutte le informazioni necessarie
+		const projectList: Project[] = [];
+		for (const foundProject of foundProjects) {
+			// Ottieni la nota del progetto
+			const foundProjectNote = await NoteSchema.findOne({
+				activityId: foundProject._id,
+			}).lean();
+
+			let projectNote: Note | undefined;
+			if (foundProjectNote) {
+				projectNote = {
+					id: foundProjectNote._id.toString(),
+					title: foundProjectNote.title,
+					text: foundProjectNote.text,
+					tags: foundProjectNote.tags,
+					privacy: foundProjectNote.privacy as Privacy,
+					accessList: await getUsernameListFromIdList(foundProjectNote.accessList),
+					createdAt: foundProjectNote.createdAt,
+					updatedAt: foundProjectNote.updatedAt,
+					owner: foundProjectNote.owner,
+				};
+			}
+
+			const project: Project = {
+				id: foundProject._id.toString(),
+				title: foundProject.title,
+				description: foundProject.description,
+				owner: foundProject.owner,
+				accessList: await getUsernameListFromIdList(foundProject.accessList),
+				accessListAccepted: foundProject.accessListAccepted ?
+					await getUsernameListFromIdList(foundProject.accessListAccepted) : [],
+				activityList: await getActivityList(foundProject._id, undefined),
+				note: projectNote,
+			};
+
+			projectList.push(project);
+		}
+
+		const response: ResponseBody = {
+			message: "success",
+			status: ResponseStatus.GOOD,
+			value: projectList,
+		};
+		return res.status(200).json(response);
+
+	} catch (error) {
+		console.error("Error fetching user projects:", error);
+		const response: ResponseBody = {
+			message: "Error fetching user projects",
+			status: ResponseStatus.BAD,
+		};
+		return res.status(500).json(response);
+	}
+});
+
 // insert a new project
 router.post("/", async (req: Request, res: Response) => {
 	try {
@@ -321,26 +403,10 @@ router.post("/", async (req: Request, res: Response) => {
 			description,
 			owner: req.user.id,
 			accessList: await getIdListFromUsernameList(accessList),
+			accessListAccepted: [],
 		});
 
 		const savedProject = await newProject.save();
-
-		// Send notification to users
-		for (const user of newProject.accessList) {
-			if (user.toString() === req.user.id) continue;
-
-			const notification: Notification = {
-				sender: req.user.id,
-				receiver: user,
-				type: NotificationType.PROJECT,
-				sentAt: new Date(Date.now()),
-				message: "Il progetto " + newProject.title + " e' stato creato",
-				read: false,
-				data: {},
-			};
-
-			await NotificationSchema.create(notification);
-		}
 
 		const response: ResponseBody = {
 			message: "success",
@@ -429,6 +495,72 @@ router.delete("/:id", async (req: Request, res: Response) => {
 	}
 });
 
+// Ottieni un progetto dal titolo
+router.get("/by-title/:title", async (req: Request, res: Response) => {
+	try {
+		const title = req.params.title;
+
+		if (!title) {
+			return res.status(400).json({
+				status: ResponseStatus.BAD,
+				message: "Titolo del progetto non fornito"
+			});
+		}
+
+		// Trova il progetto con il titolo specificato
+		const foundProject = await ProjectSchema.findOne({ title }).lean();
+
+		if (!foundProject) {
+			return res.status(404).json({
+				status: ResponseStatus.BAD,
+				message: `Progetto con titolo "${title}" non trovato`
+			});
+		}
+
+		// Verifica che l'utente corrente abbia accesso al progetto
+		if (!req.user || !req.user.id) {
+			return res.status(401).json({
+				status: ResponseStatus.BAD,
+				message: "Utente non autenticato"
+			});
+		}
+
+		const userId = new mongoose.Types.ObjectId(req.user.id);
+
+		// Verifica che l'utente sia il proprietario o nella lista di accesso
+		if (!foundProject.accessList.some(id => id.equals(userId)) &&
+			!foundProject.owner.equals(userId)) {
+			return res.status(403).json({
+				status: ResponseStatus.BAD,
+				message: "Non hai i permessi per accedere a questo progetto"
+			});
+		}
+
+		// Costruisci l'oggetto progetto con i dati necessari
+		const project: Project = {
+			id: foundProject._id.toString(),
+			title: foundProject.title,
+			description: foundProject.description,
+			owner: foundProject.owner,
+			accessList: await getUsernameListFromIdList(foundProject.accessList),
+			activityList: await getActivityList(foundProject._id, undefined),
+			note: undefined // Aggiungi la nota se necessario
+		};
+
+		return res.status(200).json({
+			status: ResponseStatus.GOOD,
+			value: project
+		});
+
+	} catch (error) {
+		console.error("Errore durante il recupero del progetto:", error);
+		return res.status(500).json({
+			status: ResponseStatus.BAD,
+			message: "Errore durante il recupero del progetto"
+		});
+	}
+});
+
 // update the project
 router.put("/:id", async (req: Request, res: Response) => {
 	try {
@@ -436,6 +568,8 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const title = req.body.title;
 		const description = req.body.description;
 		const accessList = req.body.accessList as string[]; // username list
+		const accessListAcceptedUser = req.body.accessListAcceptedUser; // nuovo campo per l'utente da aggiungere
+
 
 		if (!Types.ObjectId.isValid(id)) {
 			const resBody: ResponseBody = {
@@ -455,14 +589,52 @@ router.put("/:id", async (req: Request, res: Response) => {
 			console.log("Project not found");
 			return res.status(404).json(resBody);
 		}
+		/*
+				if (project.owner.toString() !== req.user?.id) {
+					const resBody: ResponseBody = {
+						message: "You are not the owner of this project",
+						status: ResponseStatus.BAD,
+					};
+					console.log("You are not the owner of this project");
+					return res.status(403).json(resBody);
+				}
+					*/
 
-		if (project.owner.toString() !== req.user?.id) {
-			const resBody: ResponseBody = {
-				message: "You are not the owner of this project",
-				status: ResponseStatus.BAD,
+		// Se c'è un utente da aggiungere alla accessListAccepted
+		if (accessListAcceptedUser) {
+			// Prima ottieni il progetto corrente per avere la lista esistente
+			const currentProject = await ProjectSchema.findById(id);
+			if (!currentProject) {
+				return res.status(404).json({
+					message: "Project not found",
+					status: ResponseStatus.BAD,
+				});
+			}
+
+			// Crea una nuova lista che include sia gli utenti esistenti che il nuovo
+			const updatedAccessListAccepted = [
+				...currentProject.accessListAccepted || [], // mantiene la lista esistente
+				new Types.ObjectId(accessListAcceptedUser)  // aggiunge il nuovo utente
+			];
+
+			// Aggiorna il progetto con la nuova lista completa
+			const updatedProject = await ProjectSchema.findByIdAndUpdate(
+				id,
+				{
+					$set: { // usa $set invece di $addToSet per aggiornare l'intera lista
+						accessListAccepted: updatedAccessListAccepted
+					}
+				},
+				{ new: true }
+			);
+
+			const response: ResponseBody = {
+				message: "success",
+				status: ResponseStatus.GOOD,
+				value: updatedProject?._id.toString(),
 			};
-			console.log("You are not the owner of this project");
-			return res.status(403).json(resBody);
+
+			return res.status(200).json(response);
 		}
 
 		var accestIdList: Types.ObjectId[] = [];

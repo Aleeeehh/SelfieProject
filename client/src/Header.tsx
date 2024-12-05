@@ -26,6 +26,7 @@ export default function Header(): React.JSX.Element {
 	const [notifications, setNotifications] = useState([] as Notification[]);
 	const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
 	const [user, setUser] = useState(null);
+	const [username, setUsername] = useState("");
 	const [profileImage, setProfileImage] = useState("");
 	//const [isChangingDate, setIsChangingDate] = useState(false);
 
@@ -274,6 +275,29 @@ export default function Header(): React.JSX.Element {
 		handleReadNotification(notification.id);
 	}
 
+	async function handleAddProject(notification: Notification): Promise<void> {
+		console.log("NOTIFICA DI PROGETTO:", notification);
+		let project;
+		//ottieni il progetto dal titolo
+		const res = await fetch(`${SERVER_API}/projects/by-title/${notification.data.project.title}`);
+		if (res.ok) {
+			const data = await res.json();
+			project = data.value;
+			console.log("Progetto trovato:", project);
+		}
+		//una volta ottenuto il progetto, aggiungi l'utente attuale alla accessListAccepted
+		console.log("ID PROGETTO:", project.id);
+		const res2 = await fetch(`${SERVER_API}/projects/${project.id}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ accessListAcceptedUser: notification.receiver }),
+		});
+
+		console.log("AccessListAccepted aggiornato:", res2);
+		handleReadNotification(notification.id);
+
+	}
+
 	async function handleAddSharedEvent(notification: Notification): Promise<void> {
 		console.log("NOTIFICA DI EVENTO CONDIVISO:", notification);
 
@@ -451,6 +475,10 @@ export default function Header(): React.JSX.Element {
 				return true;
 			}
 
+			if (notification && notification.type === "Progetto" && notification.read === false) {
+				return true;
+			}
+
 			if (notification && notification.data && notification.data.isInfiniteEvent === true) {
 				const eventDate = new Date(notification.data.date);
 				const currentDateSenzaOrario = new Date(
@@ -497,6 +525,7 @@ export default function Header(): React.JSX.Element {
 				) {
 					return true;
 				}
+
 			}
 
 			if (notification && notification.type === "message" && notification.read === false) {
@@ -545,7 +574,7 @@ export default function Header(): React.JSX.Element {
 
 			const data = await response.json();
 
-			// console.log("Notifications:", data);
+			console.log("Notifications:", data);
 			if (data.status === ResponseStatus.GOOD) {
 				setNotifications(data.value);
 			} else {
@@ -602,6 +631,8 @@ export default function Header(): React.JSX.Element {
 			const currentUser = await getCurrentUser();
 
 			setUser(currentUser.value._id.toString());
+			setUsername(currentUser.value.username);
+			console.log("Questo è il username dell'utente:", username);
 			setProfileImage(currentUser.value.profileImage);
 
 			// PINNA - BGN
@@ -811,9 +842,9 @@ export default function Header(): React.JSX.Element {
 										value={
 											currentDate
 												? currentDate
-														.toTimeString()
-														.split(" ")[0]
-														.slice(0, 5)
+													.toTimeString()
+													.split(" ")[0]
+													.slice(0, 5)
 												: ""
 										} // Imposta l'orario attuale come valore predefinito
 										onChange={(event): void => {
@@ -1109,9 +1140,9 @@ export default function Header(): React.JSX.Element {
 												(currentDate.getTime() >= eventDate.getTime() ||
 													(currentDate.getDate() >= eventDate.getDate() &&
 														currentDate.getMonth() >=
-															eventDate.getMonth() &&
+														eventDate.getMonth() &&
 														currentDate.getFullYear() >=
-															eventDate.getFullYear()))
+														eventDate.getFullYear()))
 											) {
 												return (
 													<div key={index}>
@@ -1635,6 +1666,108 @@ export default function Header(): React.JSX.Element {
 													</div>
 												);
 											}
+										}
+
+										else if (
+											notification.type === "Progetto" &&
+											notification.read === false &&
+											doNotDisturb === false &&
+											notification.receiver === user
+										) {
+											//const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+											//if (eventDate < currentDate) {
+											return (
+												<div key={index}>
+													Hai ricevuto un invito per un{" "}
+													<span
+														style={{
+															color: "purple",
+															fontWeight: "bold",
+														}}>
+														progetto
+													</span>
+													!
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																// Controlla se notification.id è definito
+																handleAddProject(
+																	notification
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-check"
+															style={{
+																color: "green",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di tick */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																// Controlla se notification.id è definito
+																handleReadNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-times"
+															style={{
+																color: "red",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																// Controlla se notification.id è definito
+																handleSnoozeNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-arrows-alt-h"
+															style={{
+																color: "lightblue",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+												</div>
+											);
+											//}
 										}
 
 										return null;

@@ -32,6 +32,7 @@ const baseProject: Project = {
 	accessList: [] as string[],
 	activityList: [] as Activity[],
 	note: baseNote,
+	accessListAccepted: [] as string[],
 };
 
 export default function ProjectPage(): React.JSX.Element {

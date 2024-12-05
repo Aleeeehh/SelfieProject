@@ -17,6 +17,7 @@ const baseProject: Project = {
 	owner: "",
 	accessList: [] as string[],
 	activityList: [] as Activity[],
+	accessListAccepted: [] as string[],
 };
 
 //TODO: aggiungere un bottone per uscire dalla creazione di una nota
@@ -24,15 +25,42 @@ const baseProject: Project = {
 export default function CreateProjectForm(): React.JSX.Element {
 	const [project, setProject] = React.useState(baseProject);
 	const [message, setMessage] = React.useState("");
+	const [currentDate, setCurrentDate] = React.useState(new Date());
 
 	const nav = useNavigate();
+
+	React.useEffect(() => {
+		fetchCurrentDate();
+	}, []);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
 		setProject({ ...project, [e.target.name]: e.target.value });
 	}
 
+	const fetchCurrentDate = async (): Promise<void> => {
+		try {
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			if (!response.ok) {
+				throw new Error("Errore nel recupero della data corrente");
+			}
+			const data = await response.json();
+			setCurrentDate(new Date(data.currentDate)); // Assicurati che il formato sia corretto
+
+			//ricarico la lista di attività
+			//const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
+
+			//const updatedActivities = await res2.json();
+			//setActivityList(updatedActivities.value);
+			//await loadActivities();
+			//await loadEvents();
+		} catch (error) {
+			console.error("Errore durante il recupero della data corrente:", error);
+		}
+	};
+
 	async function handleCreateProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+		fetchCurrentDate();
 
 		try {
 			const res = await fetch(`${SERVER_API}/projects`, {
@@ -44,6 +72,41 @@ export default function CreateProjectForm(): React.JSX.Element {
 				}),
 				headers: { "Content-Type": "application/json" },
 			});
+
+			for (const receiver of project.accessList) {
+				//ottengo l'id dell'utente
+				console.log("RECEIVER:", receiver);
+				console.log("RECEIVER:", receiver);
+
+				console.log("RECEIVER:", receiver);
+
+				const res3 = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+				const dataReceiverId = await res3.json();
+				const receiverId = dataReceiverId.id;
+				console.log("ID UTENTE RICEVUTO", dataReceiverId);
+				console.log("ID UTENTE RICEVUTO", dataReceiverId);
+
+				console.log("ID UTENTE RICEVUTO", receiverId);
+
+				console.log("ID UTENTE RICEVUTO", receiverId);
+
+
+				const res4 = await fetch(`${SERVER_API}/notifications`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						message: "Sei stato invitato ad un nuovo progetto",
+						mode: "Progetto",
+						receiver: receiverId, // Cambia il receiver per ogni membro della accessList
+						type: "Progetto",
+						data: {
+							date: currentDate, // data prima notifica
+							project: project, //progetto condiviso
+						},
+					}),
+				});
+				console.log("NOTIFICA INVIATA A", res4);
+			}
 
 			const resBody = (await res.json()) as ResponseBody;
 

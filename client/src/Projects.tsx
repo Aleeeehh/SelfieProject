@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ResponseStatus } from "./types/ResponseStatus";
 import ProjectList from "./ProjectList";
 import GanttDiagram from "./ProjectGantt";
+import type User from "./types/User";
 
 enum View {
 	LIST = "list",
@@ -32,19 +33,85 @@ export default function Projects(): React.JSX.Element {
 		return users;
 	}
 
+	async function getCurrentUser(): Promise<Promise<any> | null> {
+		try {
+			const res = await fetch(`${SERVER_API}/users`);
+			if (!res.ok) {
+				// Controlla se la risposta non è ok
+				setMessage("Utente non autenticato");
+				return null; // Restituisci null se non autenticato
+			}
+			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			const data: User = await res.json();
+			//console.log("Questo è il json della risposta", data);
+			return data;
+		} catch (e) {
+			setMessage("Impossibile recuperare l'utente corrente");
+			return null;
+		}
+	}
+
 	// On page load, get the events for the user
 	React.useEffect(() => {
 		(async (): Promise<void> => {
 			try {
-				const res = await fetch(`${SERVER_API}/projects`);
-				if (res.status !== 200) {
+				console.log("Entro nella project page");
+				console.log("Entro nella project page");
+				console.log("Entro nella project page");
+
+				const currentUser = await getCurrentUser();
+				if (!currentUser) {
 					nav("/login");
+					return;
 				}
+				const userId = currentUser.value._id.toString();
+				const username = currentUser.value.username;
+				console.log("DOPO CURRENT USER:", userId);
+
+				console.log("DOPO CURRENT USER:", userId);
+				console.log("DOPO CURRENT USER:", userId);
+				console.log("DOPO CURRENT USER:", userId);
+
+				const res = await fetch(`${SERVER_API}/projects`);
+				if (!res.ok) {
+					nav("/login");
+					return;
+				}
+				const data = await res.json();
+				const progetti = data.value;
+				console.log("Progetti trovati:", progetti);
+				console.log("Progetti trovati:", progetti);
+				console.log("Progetti trovati:", progetti);
+
+				let progettiDaVisualizzare: Project[] = [];
+
+				for (const progetto of progetti) {
+					console.log("Confronto:", {
+						userId: userId,
+						owner: progetto.owner,
+						accessListAccepted: progetto.accessListAccepted
+					});
+
+					if (
+						(progetto.accessListAccepted && progetto.accessListAccepted.includes(userId)) ||
+						progetto.owner.toString() === userId ||
+						progetto.owner.toString() === username ||
+						progetto.accessListAccepted.includes(username)
+					) {
+						progettiDaVisualizzare.push(progetto);
+					}
+				}
+
+				console.log("Progetti da visualizzare:", progettiDaVisualizzare);
+
+				setProjects(progettiDaVisualizzare);
+
+
 
 				const resBody = (await res.json()) as ResponseBody;
 
 				if (resBody.status === ResponseStatus.GOOD) {
-					setProjects(resBody.value);
+					setProjects(progettiDaVisualizzare);
 				} else {
 				}
 			} catch (e) {

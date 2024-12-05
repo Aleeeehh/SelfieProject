@@ -9,6 +9,7 @@ type Project = {
 	description: string;
 	owner: string | Types.ObjectId;
 	accessList: string[]; // username list
+	accessListAccepted?: string[]; // username list
 	activityList: Activity[];
 	createdAt?: Date;
 	updatedAt?: Date;

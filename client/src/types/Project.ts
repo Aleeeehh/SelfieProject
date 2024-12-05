@@ -9,6 +9,7 @@ type Project = {
 	owner: string;
 	accessList: string[]; // username list
 	activityList: Activity[];
+	accessListAccepted: string[]; // username list
 	createdAt?: Date;
 	updatedAt?: Date;
 	note?: Note;
