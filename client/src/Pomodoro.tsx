@@ -11,9 +11,14 @@ import User from "./types/User";
 import DatePicker from "react-datepicker"; //to create pomodoro events
 import SearchForm from "./SearchForm";
 import Mp3Player from "./MP3Player";
+import YouTubePlayer from "./YouTubePlayer";
 // import UserResult from "./types/UserResult";
 //import Time from "react-datepicker/dist/time";
 
+enum PLAYER_TYPE {
+	YOUTUBE = "YOUTUBE",
+	SOUND = "SOUND",
+}
 enum MESSAGE {
 	PRESS_START = "COMPILA I CAMPI E PREMI START!",
 	ERROR = "INSERISCI UN NUMERO INTERO PER I MINUTI DI STUDIO, DI PAUSA E PER I CICLI! (1-99)",
@@ -118,6 +123,8 @@ export default function Pomodoros(): React.JSX.Element {
 	const [shareConfig, setShareConfig] = React.useState(false); // Per condividere la configurazione del pomodoro
 	const [previousPomodoros, setPreviousPomodoros] = React.useState(false); // Per vedere i pomodori recenti
 	const [chooseMusic, setChooseMusic] = React.useState(false); // Per scegliere la musica
+
+	const [playerType, setPlayerType] = useState(PLAYER_TYPE.SOUND);
 
 	const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
@@ -1308,10 +1315,21 @@ export default function Pomodoros(): React.JSX.Element {
 						<div
 							className="music-container"
 							style={{ display: chooseMusic ? "block" : "none" }}>
-							<div style={{ marginBottom: "10px", fontWeight: "bold" }}>
-								Scegli che canzone vuoi ascoltare
-							</div>
-							<Mp3Player />
+							<select
+								value={playerType}
+								onChange={(e): void =>
+									setPlayerType(e.target.value as PLAYER_TYPE)
+								}>
+								<option value={PLAYER_TYPE.SOUND}>Mp3</option>
+								<option value={PLAYER_TYPE.YOUTUBE}>YouTube</option>
+							</select>
+							{playerType === PLAYER_TYPE.SOUND ? (
+								<>
+									<Mp3Player />
+								</>
+							) : (
+								<YouTubePlayer />
+							)}
 						</div>
 					</div>
 				</div>

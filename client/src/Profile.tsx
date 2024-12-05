@@ -1,5 +1,5 @@
 import React from "react";
-import { SERVER_API } from "./lib/params";
+import { profileImages, SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { useNavigate } from "react-router-dom";
 import User from "./types/User";
@@ -20,6 +20,12 @@ const emptyUser: User = {
 export default function Profile(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [user, setUser] = React.useState(emptyUser);
+	const [isEditing, setIsEditing] = React.useState(false);
+	const [changePassword, setChangePassword] = React.useState(false);
+
+	const [oldPassword, setOldPassword] = React.useState("");
+	const [newPassword, setNewPassword] = React.useState("");
+	const [confirmNewPassword, setConfirmNewPassword] = React.useState("");
 
 	const nav = useNavigate();
 	const isLoggedIn = localStorage.getItem("loggedUserId") !== null;
@@ -77,6 +83,44 @@ export default function Profile(): React.JSX.Element {
 		}
 	}
 
+	async function handleUpdate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+
+		const newData = {
+			firstName: user.firstName,
+			lastName: user.lastName,
+			profileImage: user.profileImage,
+			address: user.address,
+			birthday: new Date(user.birthday).toISOString().split("T")[0],
+			password: changePassword ? newPassword : undefined,
+			oldPassword: changePassword ? oldPassword : undefined,
+			confirmPassword: changePassword ? confirmNewPassword : undefined,
+		};
+
+		try {
+			const res = await fetch(`${SERVER_API}/users`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(newData),
+			});
+
+			const resBody = (await res.json()) as ResponseBody;
+			console.log(resBody);
+
+			if (resBody.status === ResponseStatus.GOOD) {
+				alert("Utente aggiornato correttamente!");
+				fetchUserData();
+				setIsEditing(false);
+			} else {
+				setMessage("Errore durante il tentativo di aggiornamento");
+			}
+		} catch (e) {
+			setMessage("Impossibile raggiungere il server");
+		}
+	}
+
 	return (
 		<div className="profile-body">
 			{message && <div>{message}</div>}
@@ -91,36 +135,183 @@ export default function Profile(): React.JSX.Element {
 						alt="Avatar"
 					/>
 				</div>
+				{isEditing && (
+					<div>
+						<label>Cambia Immagine di profilo</label>
+						<select
+							name="profileImage"
+							value={user.profileImage}
+							onChange={(e): void =>
+								setUser({ ...user, profileImage: e.target.value })
+							}>
+							{profileImages.map((image) => (
+								<option key={image.url} value={image.url}>
+									{image.name}
+								</option>
+							))}
+						</select>
+					</div>
+				)}
 				<div className="profile-header">
-					<h1>{`${user.firstName} ${user.lastName}`}</h1>
+					{!isEditing ? (
+						<h1>{`${user.firstName} ${user.lastName}`}</h1>
+					) : (
+						<div>
+							<div>
+								<label>Nome</label>
+								<input
+									type="text"
+									name="firstName"
+									value={user.firstName}
+									onChange={(e): void =>
+										setUser({ ...user, firstName: e.target.value })
+									}
+									required
+								/>
+							</div>
+
+							<div>
+								<label>Cognome</label>
+								<input
+									type="text"
+									name="lastName"
+									value={user.lastName}
+									onChange={(e): void =>
+										setUser({ ...user, lastName: e.target.value })
+									}
+									required
+								/>
+							</div>
+						</div>
+					)}
 					<p className="profile-username">@{user.username}</p>
 				</div>
 
 				<div className="profile-details">
 					<div>
 						<label>Data di nascita:</label>
-						<p>{new Date(user.birthday).toLocaleDateString()}</p>
+						{!isEditing ? (
+							<p>{new Date(user.birthday).toLocaleDateString()}</p>
+						) : (
+							<div>
+								<input
+									type="date"
+									className="btn border"
+									name="birthday"
+									value={new Date(user.birthday).toISOString().split("T")[0]}
+									onChange={(e): void =>
+										setUser({
+											...user,
+											birthday: new Date(e.target.value),
+										})
+									}
+									required
+								/>
+							</div>
+						)}
 					</div>
 					<div>
 						<label>Indirizzo:</label>
-						<p>{user.address}</p>
+						{!isEditing ? (
+							<p>{user.address}</p>
+						) : (
+							<div>
+								<label>Indirizzo</label>
+								<input
+									type="text"
+									name="address"
+									value={user.address}
+									onChange={(e): void =>
+										setUser({ ...user, address: e.target.value })
+									}
+									required
+								/>
+							</div>
+						)}
 					</div>
 				</div>
 
-				<div className="buttons">
-					<button
-						type="button"
-						className="btn btn-warning custom-btn"
-						onClick={handleLogout}>
-						EFFETTUA LOGOUT
-					</button>
+				{isEditing && (
+					<div className="profile-details">
+						<label>
+							Aggiorna password?
+							<input
+								type="checkbox"
+								name="updatePassword"
+								onChange={(e): void => setChangePassword(e.target.checked)}
+							/>
+						</label>
+						{changePassword && (
+							<div>
+								<label>Vecchia password</label>
+								<input
+									type="password"
+									name="oldPassword"
+									onChange={(e): void => setOldPassword(e.target.value)}
+								/>
+								<label>Nuova password</label>
+								<input
+									type="password"
+									name="newPassword"
+									onChange={(e): void => setNewPassword(e.target.value)}
+								/>
+								<label>Conferma Nuova password</label>
+								<input
+									type="password"
+									name="confirmNewPassword"
+									onChange={(e): void => setConfirmNewPassword(e.target.value)}
+								/>
+							</div>
+						)}
+					</div>
+				)}
 
-					<button
-						type="button"
-						className="btn btn-danger custom-btn"
-						onClick={handleDelete}>
-						ELIMINA ACCOUNT
-					</button>
+				<div className="buttons">
+					{!isEditing ? (
+						<>
+							<button
+								type="button"
+								className="btn btn-warning custom-btn"
+								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
+									e.preventDefault();
+									setIsEditing(true);
+								}}>
+								MODIFICA PROFILO
+							</button>
+
+							<button
+								type="button"
+								className="btn btn-warning custom-btn"
+								onClick={handleLogout}>
+								EFFETTUA LOGOUT
+							</button>
+
+							<button
+								type="button"
+								className="btn btn-danger custom-btn"
+								onClick={handleDelete}>
+								ELIMINA ACCOUNT
+							</button>
+						</>
+					) : (
+						<>
+							<button
+								type="button"
+								className="btn btn-warning custom-btn"
+								onClick={handleUpdate}>
+								AGGIORNA PROFILO
+							</button>
+							<button
+								type="button"
+								className="btn btn-warning custom-btn"
+								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
+									e.preventDefault();
+									setIsEditing(false);
+								}}>
+								ANNULLA
+							</button>
+						</>
+					)}
 				</div>
 			</div>
 		</div>
