@@ -5,7 +5,9 @@ import type { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import type Activity from "./types/Activity";
 
-const PREVIEW_CHARS = 200;
+const PREVIEW_CHARS = 100;
+const MAX_TITLE_CHARS = 17;
+
 export default function Activities(): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 	const [activities, setActivities] = React.useState([] as Activity[]);
@@ -77,7 +79,11 @@ export default function Activities(): React.JSX.Element {
 					{activities.map((activity) => (
 						<div className="card-activity">
 							<div className="card-activity-title">
-								<h3>{activity.title}</h3>
+								<h3>
+									{activity.title.length > MAX_TITLE_CHARS
+										? activity.title.substring(0, MAX_TITLE_CHARS) + "..."
+										: activity.title}
+								</h3>
 							</div>
 							<div className="card-activity-description">
 								<p>

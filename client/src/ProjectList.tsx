@@ -4,7 +4,10 @@ import type { ResponseBody } from "./types/ResponseBody";
 import type Project from "./types/Project";
 import { useNavigate } from "react-router-dom";
 
-const PREVIEW_CHARS = 200;
+const PREVIEW_CHARS = 100;
+const MAX_TITLE_CHARS = 17;
+const MAX_USERS_CHARS = 50;
+
 export default function ProjectList({ projects }: { projects: Project[] }): React.JSX.Element {
 	const [message, setMessage] = React.useState("");
 
@@ -48,7 +51,11 @@ export default function ProjectList({ projects }: { projects: Project[] }): Reac
 				{projects.map((project) => (
 					<div className="card-project">
 						<div className="card-project-title">
-							<h3>{project.title}</h3>
+							<h3>
+								{project.title.length > MAX_TITLE_CHARS
+									? project.title.substring(0, MAX_TITLE_CHARS) + "..."
+									: project.title}
+							</h3>
 						</div>
 						<div className="card-project-description">
 							<p>
@@ -58,8 +65,14 @@ export default function ProjectList({ projects }: { projects: Project[] }): Reac
 							</p>
 						</div>
 						<div className="card-project-users">
-							<p>Partecipanti:</p>
-							<p>{project.accessList.join(", ")}</p>
+							<p>
+								Partecipanti:{" "}
+								<i>
+									{(project.accessList.join(", ")).length > MAX_USERS_CHARS
+										? (project.accessList.join(", ")).substring(0, MAX_USERS_CHARS) + "..."
+										: project.accessList.join(", ")}
+								</i>
+							</p>
 						</div>
 						<div className="card-project-buttons">
 							<button

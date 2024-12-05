@@ -123,6 +123,7 @@
 	font-size: 20px !important;
 	font-family: "Times New Roman", Times, serif !important;
 	padding: 4px 4px !important;
+	border: 0 !important;
 }
 
 
@@ -182,7 +183,7 @@
 	font-weight: bold;
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 950px) {
 	.date-button, .selfie-title {
 		display: none !important;
 	}

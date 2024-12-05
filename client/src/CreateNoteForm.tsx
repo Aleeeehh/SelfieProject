@@ -207,7 +207,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 		});
 	}
 
-	function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
+	{/*function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
 		// e.preventDefault();
 
 		setNote({
@@ -216,7 +216,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 				i.id === item.id ? { ...i, completed: e.target.checked } : i
 			),
 		});
-	}
+	}*/}
 
 	return (
 		<>
@@ -250,69 +250,76 @@ export default function CreateNoteForm(): React.JSX.Element {
 					)}
 
 					{/* render to do list */}
-					<div className="note-list-container">
-						<label>
-							To Do List
-							{note.toDoList &&
-								note.toDoList.map((l) => (
-									<div key={l.id}>
+					<label>
+						To Do List
+						{note.toDoList &&
+							note.toDoList.map((l) => (
+								<div key={l.id}>
+									<div className="note-to-do-container-editing">
 										<input
 											type="text"
 											value={l.text}
+											style={{ width: "200px", marginBottom: "5px" }}
+											placeholder="Nuovo to-do item"
 											onChange={(
 												e: React.ChangeEvent<HTMLInputElement>
-											): void => handleUpdateTextItem(e, l)}
+											): void => {
+												handleUpdateTextItem(e, l);
+											}}
 										/>
-										<input
-											type="checkbox"
-											checked={l.completed}
-											onChange={(
-												e: React.ChangeEvent<HTMLInputElement>
-											): void => handleCheckboxChange(e, l)}
-										/>
-
-										{l.endDate ? (
-											<>
-												<label>
-													<input
-														type="date"
-														value={
-															new Date(l.endDate)
-																.toISOString()
-																.split("T")[0]
-														}
-														onChange={(
-															e: React.ChangeEvent<HTMLInputElement>
-														): void => handleUpdateDateItem(e, l)}
-													/>
-												</label>
+										<div
+											style={{
+												display: "flex",
+												alignItems: "center",
+												flexDirection: "column",
+											}}>
+											{l.endDate ? (
+												<>
+													<label style={{ margin: "0" }}>
+														<input
+															type="date"
+															value={
+																new Date(l.endDate)
+																	.toISOString()
+																	.split("T")[0]
+															}
+															onChange={(
+																e: React.ChangeEvent<HTMLInputElement>
+															): void =>
+																handleUpdateDateItem(e, l)
+															}
+														/>
+													</label>
+													<button
+														onClick={(
+															e: React.MouseEvent<HTMLButtonElement>
+														): void =>
+															handleRemoveDateItem(e, l)
+														}>
+														Rimuovi Scadenza
+													</button>
+												</>
+											) : (
 												<button
 													onClick={(
 														e: React.MouseEvent<HTMLButtonElement>
-													): void => handleRemoveDateItem(e, l)}>
-													Rimuovi Scadenza
+													): void => handleAddDateItem(e, l)}>
+													Aggiungi Scadenza
 												</button>
-											</>
-										) : (
-											<button
-												onClick={(
-													e: React.MouseEvent<HTMLButtonElement>
-												): void => handleAddDateItem(e, l)}>
-												Aggiungi Scadenza
-											</button>
-										)}
-
+											)}
+										</div>
 										<button
 											onClick={(
 												e: React.MouseEvent<HTMLButtonElement>
-											): void => handleRemoveItem(e, l)}>
-											Elimina
+											): void => handleRemoveItem(e, l)}
+											style={{ backgroundColor: "#d64545" }}>
+											Elimina Item
 										</button>
 									</div>
-								))}
-						</label>
-						<button onClick={handleAddItem}>Aggiungi Item</button>
-					</div>
+								</div>
+							))}
+					</label>
+					<button onClick={handleAddItem}>Aggiungi Item</button>
 
 					{/* render tags */}
 					<label>

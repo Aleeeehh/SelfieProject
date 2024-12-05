@@ -64,11 +64,13 @@
 	text-align: justify;
 	font-size: 0.9em;
 	flex-grow: 1;
+	overflow-x: scroll;
 }
 
 .card-project-users {
-	display: grid;
+	display: flex;
 	padding: 5px;
+	text-align: center;
 }
 
 .card-project-buttons {
