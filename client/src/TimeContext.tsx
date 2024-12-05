@@ -6,8 +6,6 @@ const TimeContext = createContext({ serverTime: new Date().getTime(), triggerAct
 export const TimeProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
 	const [serverTime, setServerTime] = React.useState<number>(new Date().getTime());
 
-	console.log(serverTime);
-
 	const triggerAction = (): void => {
 		// Perform the action here
 
