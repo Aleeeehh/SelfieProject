@@ -291,9 +291,8 @@ export default function Calendar(): React.JSX.Element {
 											0
 										);
 										return totMin;
-									})(event.event.startTime, event.event.endTime)}&id=${
-										event.event._id
-									}`}
+									})(event.event.startTime, event.event.endTime)}&id=${event.event._id
+										}`}
 									style={{
 										textDecoration: "none",
 										color: "inherit",
@@ -386,9 +385,8 @@ export default function Calendar(): React.JSX.Element {
 													0
 												);
 												return totMin;
-											})(event.event.startTime, event.event.endTime)}&id=${
-												event.event._id
-											}`}
+											})(event.event.startTime, event.event.endTime)}&id=${event.event._id
+												}`}
 											style={{
 												textDecoration: "none",
 												color: "inherit",
@@ -420,24 +418,24 @@ export default function Calendar(): React.JSX.Element {
 												var nameToDisplay =
 													event.name.length > (isSameDay ? 10 : 15)
 														? `${event.name.substring(
-																0,
-																isSameDay ? 10 : 15
-														  )}...`
+															0,
+															isSameDay ? 10 : 15
+														)}...`
 														: event.name;
 												nameToDisplay =
 													event.name.length > (isAllDayEvent ? 15 : 10)
 														? `${event.name.substring(
-																0,
-																isAllDayEvent ? 15 : 10
-														  )}...`
+															0,
+															isAllDayEvent ? 15 : 10
+														)}...`
 														: event.name;
 
 												const timeToDisplay =
 													isSameDay && !isAllDayEvent
 														? startTimeOrario.toLocaleTimeString([], {
-																hour: "2-digit",
-																minute: "2-digit",
-														  })
+															hour: "2-digit",
+															minute: "2-digit",
+														})
 														: null;
 												/*console.log("Start Time Ore:", startTimeOrario.getHours());
 												console.log("Start Time minuti:", startTimeOrario.getMinutes());
@@ -483,23 +481,23 @@ export default function Calendar(): React.JSX.Element {
 												var nameToDisplay =
 													event.name.length > (isSameDay ? 10 : 15)
 														? `${event.name.substring(
-																0,
-																isSameDay ? 10 : 15
-														  )}...`
+															0,
+															isSameDay ? 10 : 15
+														)}...`
 														: event.name;
 												nameToDisplay =
 													event.name.length > (isAllDayEvent ? 15 : 10)
 														? `${event.name.substring(
-																0,
-																isAllDayEvent ? 15 : 10
-														  )}...`
+															0,
+															isAllDayEvent ? 15 : 10
+														)}...`
 														: event.name;
 												const timeToDisplay =
 													isSameDay && !isAllDayEvent
 														? startTimeOrario.toLocaleTimeString([], {
-																hour: "2-digit",
-																minute: "2-digit",
-														  })
+															hour: "2-digit",
+															minute: "2-digit",
+														})
 														: null;
 												/*console.log("Start Time Ore:", startTimeOrario.getHours());
 												console.log("Start Time minuti:", startTimeOrario.getMinutes());
@@ -558,7 +556,7 @@ export default function Calendar(): React.JSX.Element {
 													const end = new Date(endTime);
 													const totMin = Math.max(
 														(end.getTime() - start.getTime()) /
-															(1000 * 60),
+														(1000 * 60),
 														0
 													);
 													return totMin;
@@ -1051,6 +1049,9 @@ export default function Calendar(): React.JSX.Element {
 
 	function toggleAddNotification(): void {
 		setAddNotification(!addNotification);
+		if (notificationRepeat === true) {
+			setNotificationRepeat(false);
+		}
 	}
 
 	function toggleTodayActivitiesMode(): void {
@@ -3420,9 +3421,9 @@ export default function Calendar(): React.JSX.Element {
 							style={{
 								display:
 									createEvent ||
-									createActivity ||
-									createRisorsa ||
-									createNonDisturbare
+										createActivity ||
+										createRisorsa ||
+										createNonDisturbare
 										? "flex"
 										: "none",
 								margin: create ? "0" : "1em 0",
@@ -3639,12 +3640,12 @@ export default function Calendar(): React.JSX.Element {
 															value={
 																startTime
 																	? `${startTime
-																			.getHours()
-																			.toString()
-																			.padStart(
-																				2,
-																				"0"
-																			)}:${startTime
+																		.getHours()
+																		.toString()
+																		.padStart(
+																			2,
+																			"0"
+																		)}:${startTime
 																			.getMinutes()
 																			.toString()
 																			.padStart(2, "0")}`
@@ -3712,9 +3713,9 @@ export default function Calendar(): React.JSX.Element {
 																.getHours()
 																.toString()
 																.padStart(2, "0")}:${endTime
-																.getMinutes()
-																.toString()
-																.padStart(2, "0")}`}
+																	.getMinutes()
+																	.toString()
+																	.padStart(2, "0")}`}
 															onChange={(
 																e: React.ChangeEvent<HTMLInputElement>
 															): void => {
@@ -3844,8 +3845,8 @@ export default function Calendar(): React.JSX.Element {
 																{option === 0
 																	? "Mai"
 																	: option >= 60
-																	? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-																	: `Ogni ${option} minuti`}
+																		? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+																		: `Ogni ${option} minuti`}
 															</option>
 														)
 													)}
@@ -4032,9 +4033,9 @@ export default function Calendar(): React.JSX.Element {
 														.getHours()
 														.toString()
 														.padStart(2, "0")}:${endTime
-														.getMinutes()
-														.toString()
-														.padStart(2, "0")}`}
+															.getMinutes()
+															.toString()
+															.padStart(2, "0")}`}
 													onChange={(
 														e: React.ChangeEvent<HTMLInputElement>
 													): void => {
@@ -4121,8 +4122,8 @@ export default function Calendar(): React.JSX.Element {
 																{option === 0
 																	? "Mai"
 																	: option >= 60
-																	? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-																	: `Ogni ${option} minuti`}
+																		? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+																		: `Ogni ${option} minuti`}
 															</option>
 														)
 													)}
@@ -4421,12 +4422,12 @@ export default function Calendar(): React.JSX.Element {
 															value={
 																startTime
 																	? `${startTime
-																			.getHours()
-																			.toString()
-																			.padStart(
-																				2,
-																				"0"
-																			)}:${startTime
+																		.getHours()
+																		.toString()
+																		.padStart(
+																			2,
+																			"0"
+																		)}:${startTime
 																			.getMinutes()
 																			.toString()
 																			.padStart(2, "0")}`
@@ -4494,9 +4495,9 @@ export default function Calendar(): React.JSX.Element {
 																.getHours()
 																.toString()
 																.padStart(2, "0")}:${endTime
-																.getMinutes()
-																.toString()
-																.padStart(2, "0")}`}
+																	.getMinutes()
+																	.toString()
+																	.padStart(2, "0")}`}
 															onChange={(
 																e: React.ChangeEvent<HTMLInputElement>
 															): void => {
@@ -4657,16 +4658,16 @@ export default function Calendar(): React.JSX.Element {
 												{hasEventsForDay(day + 1) && ( //true se ci sono eventi
 													<span
 														className="calendar-event-dot"
-														/*style={{
-														position: 'absolute', // Posiziona il pallino in modo assoluto
-														bottom: '3px', // Posiziona il pallino sotto il bottone
-														left: '32%', // Centra orizzontalmente
-														transform: 'translateX(-50%)', // Centra il pallino
-														width: '8px',
-														height: '8px',
-														borderRadius: '50%',
-														backgroundColor: 'lightgray', // Colore del pallino
-													}} */
+													/*style={{
+													position: 'absolute', // Posiziona il pallino in modo assoluto
+													bottom: '3px', // Posiziona il pallino sotto il bottone
+													left: '32%', // Centra orizzontalmente
+													transform: 'translateX(-50%)', // Centra il pallino
+													width: '8px',
+													height: '8px',
+													borderRadius: '50%',
+													backgroundColor: 'lightgray', // Colore del pallino
+												}} */
 													/>
 												)}
 											</div>
@@ -5120,16 +5121,16 @@ export default function Calendar(): React.JSX.Element {
 													{hasEventsForDay(day + 1) && ( //true se ci sono eventi
 														<span
 															className="calendar-event-dot"
-															/*style={{
-															position: 'absolute', // Posiziona il pallino in modo assoluto
-															bottom: '3px', // Posiziona il pallino sotto il bottone
-															left: '32%', // Centra orizzontalmente
-															transform: 'translateX(-50%)', // Centra il pallino
-															width: '8px',
-															height: '8px',
-															borderRadius: '50%',
-															backgroundColor: 'lightgray', // Colore del pallino
-														}} */
+														/*style={{
+														position: 'absolute', // Posiziona il pallino in modo assoluto
+														bottom: '3px', // Posiziona il pallino sotto il bottone
+														left: '32%', // Centra orizzontalmente
+														transform: 'translateX(-50%)', // Centra il pallino
+														width: '8px',
+														height: '8px',
+														borderRadius: '50%',
+														backgroundColor: 'lightgray', // Colore del pallino
+													}} */
 														/>
 													)}
 												</div>
@@ -5203,17 +5204,17 @@ export default function Calendar(): React.JSX.Element {
 																position: "absolute", // Assicurati che sia posizionato correttamente
 																color:
 																	new Date(currentDate) >
-																	new Date(event.event.endTime)
+																		new Date(event.event.endTime)
 																		? "rgba(209, 150, 150, 1)"
 																		: "red", // Colore più chiaro se currentDate è maggiore di endTime
 																borderColor:
 																	new Date(currentDate) >
-																	new Date(event.event.endTime)
+																		new Date(event.event.endTime)
 																		? "rgba(209, 150, 150, 1)"
 																		: "red",
 																backgroundColor:
 																	new Date(currentDate) >
-																	new Date(event.event.endTime)
+																		new Date(event.event.endTime)
 																		? "rgba(249, 67, 67, 0.2)"
 																		: "rgba(249, 67, 67, 0.5)", // Colore di sfondo più chiaro
 																marginLeft: `${event.marginLeft}%`,
@@ -5236,7 +5237,7 @@ export default function Calendar(): React.JSX.Element {
 																			const totMin = Math.max(
 																				(end.getTime() -
 																					start.getTime()) /
-																					(1000 * 60),
+																				(1000 * 60),
 																				0
 																			);
 																			return totMin;
@@ -5244,7 +5245,7 @@ export default function Calendar(): React.JSX.Element {
 																			event.event.startTime,
 																			event.event.endTime
 																		) // Passa startTime e endTime
-																	}&id=${event.event._id}`} // Passa l'id dell'evento
+																		}&id=${event.event._id}`} // Passa l'id dell'evento
 																	style={{
 																		textDecoration: "none",
 																		color: "inherit",
@@ -5280,14 +5281,13 @@ export default function Calendar(): React.JSX.Element {
 															(event.event.isRisorsa &&
 																showRisorse)) && (
 															<div
-																className={`evento ${
-																	event.event.title ===
+																className={`evento ${event.event.title ===
 																	"Non disturbare"
-																		? "non-disturbare"
-																		: event.event.isRisorsa
+																	? "non-disturbare"
+																	: event.event.isRisorsa
 																		? "brown"
 																		: "blue"
-																}`}
+																	}`}
 																style={{
 																	top: `${event.top}px`, // Imposta la posizione verticale
 																	height: `${event.height}px`, // Imposta l'altezza dell'evento
@@ -5295,60 +5295,60 @@ export default function Calendar(): React.JSX.Element {
 																	position: "absolute", // Assicurati che sia posizionato correttamente
 																	color:
 																		event.event.title ===
-																		"Non disturbare"
+																			"Non disturbare"
 																			? "rgba(128, 138, 136, 1)"
 																			: event.event.isRisorsa
-																			? "rgba(166, 93, 41, 0.48)"
-																			: new Date(
+																				? "rgba(166, 93, 41, 0.48)"
+																				: new Date(
 																					currentDate
-																			  ) >
-																			  new Date(
-																					event.event.endTime
-																			  )
-																			? "rgba(135, 190, 196, 0.8)"
-																			: "rgb(155, 223, 212)",
+																				) >
+																					new Date(
+																						event.event.endTime
+																					)
+																					? "rgba(135, 190, 196, 0.8)"
+																					: "rgb(155, 223, 212)",
 																	borderColor:
 																		event.event.title ===
-																		"Non disturbare"
+																			"Non disturbare"
 																			? "white"
 																			: event.event.isRisorsa
-																			? "rgba(166, 93, 41, 0.48)"
-																			: new Date(
+																				? "rgba(166, 93, 41, 0.48)"
+																				: new Date(
 																					currentDate
-																			  ) >
-																			  new Date(
-																					event.event.endTime
-																			  )
-																			? "rgba(135, 190, 196, 0.8)"
-																			: "rgb(155, 223, 212)",
+																				) >
+																					new Date(
+																						event.event.endTime
+																					)
+																					? "rgba(135, 190, 196, 0.8)"
+																					: "rgb(155, 223, 212)",
 																	backgroundColor:
 																		event.event.title ===
-																		"Non disturbare"
+																			"Non disturbare"
 																			? new Date(
-																					currentDate
-																			  ) >
-																			  new Date(
+																				currentDate
+																			) >
+																				new Date(
 																					event.event.endTime
-																			  )
+																				)
 																				? "rgba(128, 138, 136, 0.2)"
 																				: "rgba(128, 138, 136, 0.4)"
 																			: event.event.isRisorsa
-																			? new Date(
+																				? new Date(
 																					currentDate
-																			  ) >
-																			  new Date(
-																					event.event.endTime
-																			  )
-																				? "rgba(139, 69, 19, 0.2)"
-																				: "rgba(139, 69, 19, 0.5)"
-																			: new Date(
+																				) >
+																					new Date(
+																						event.event.endTime
+																					)
+																					? "rgba(139, 69, 19, 0.2)"
+																					: "rgba(139, 69, 19, 0.5)"
+																				: new Date(
 																					currentDate
-																			  ) >
-																			  new Date(
-																					event.event.endTime
-																			  )
-																			? "rgba(155, 223, 212, 0.2)"
-																			: "rgba(155, 223, 212, 0.5)",
+																				) >
+																					new Date(
+																						event.event.endTime
+																					)
+																					? "rgba(155, 223, 212, 0.2)"
+																					: "rgba(155, 223, 212, 0.5)",
 																	marginLeft: `${event.marginLeft}%`,
 																	cursor: "default",
 																}}>
@@ -5365,34 +5365,34 @@ export default function Calendar(): React.JSX.Element {
 																	{(!event.event.isRisorsa ||
 																		(event.event.isRisorsa &&
 																			isAdmin)) && (
-																		<i
-																			className="bi bi-trash"
-																			style={{
-																				bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																				right: "50%", // Posiziona l'icona a 10px dal lato destro
-																				fontSize: "1.5rem",
-																				margin: 0,
-																				padding: 0,
-																				color:
-																					event.event
-																						.title ===
-																					"Non disturbare"
-																						? "rgba(128, 138, 136, 1)"
-																						: event
+																			<i
+																				className="bi bi-trash"
+																				style={{
+																					bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																					right: "50%", // Posiziona l'icona a 10px dal lato destro
+																					fontSize: "1.5rem",
+																					margin: 0,
+																					padding: 0,
+																					color:
+																						event.event
+																							.title ===
+																							"Non disturbare"
+																							? "rgba(128, 138, 136, 1)"
+																							: event
 																								.event
 																								.isRisorsa
-																						? "rgba(166, 93, 41, 0.48)"
-																						: new Date(
-																								currentDate
-																						  ) >
-																						  new Date(
-																								event.event.endTime
-																						  )
-																						? "rgba(135, 190, 196, 0.8)"
-																						: "rgb(155, 223, 212)",
-																				cursor: "pointer",
-																			}}></i>
-																	)}
+																								? "rgba(166, 93, 41, 0.48)"
+																								: new Date(
+																									currentDate
+																								) >
+																									new Date(
+																										event.event.endTime
+																									)
+																									? "rgba(135, 190, 196, 0.8)"
+																									: "rgb(155, 223, 212)",
+																					cursor: "pointer",
+																				}}></i>
+																		)}
 																</div>
 															</div>
 														)
