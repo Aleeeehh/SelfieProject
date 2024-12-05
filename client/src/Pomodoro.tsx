@@ -10,6 +10,7 @@ import User from "./types/User";
 
 import DatePicker from "react-datepicker"; //to create pomodoro events
 import SearchForm from "./SearchForm";
+import SearchFormResource from "./SearchFormResource";
 import Mp3Player from "./MP3Player";
 import YouTubePlayer from "./YouTubePlayer";
 // import UserResult from "./types/UserResult";
@@ -118,6 +119,17 @@ export default function Pomodoros(): React.JSX.Element {
 	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
 	const [addEvent, setAddEvent] = React.useState(false); // Per creare un evento
 	const [repeatEvent, setRepeatEvent] = React.useState(false); // Per creare un evento ripetuto
+	const [addNotification, setAddNotification] = React.useState(false);
+	const [notificationRepeat, setNotificationRepeat] = React.useState(false);
+	const [notificationTime, setNotificationTime] = React.useState(0);
+	const [notificationRepeatTime, setNotificationRepeatTime] = React.useState(0);
+	const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
+	const [shareEvent, setShareEvent] = React.useState(false);
+	const [messageShareRisorsa, setMessageShareRisorsa] = React.useState("");
+	const [accessList, setAccessList] = React.useState([] as string[]);
+
+
+	const [message, setMessage] = React.useState("");
 	const [until, setUntil] = React.useState(false); // Per creare un evento fino a una certa data
 	const [selectedValue, setSelectedValue] = React.useState("Data"); // Per selezionare la frequenza dell'evento
 	const [shareConfig, setShareConfig] = React.useState(false); // Per condividere la configurazione del pomodoro
@@ -874,6 +886,20 @@ export default function Pomodoros(): React.JSX.Element {
 	function toggleAddEvent(): void {
 		setAddEvent(!addEvent);
 		setRepeatEvent(false);
+		setAddNotification(false);
+		setShareEvent(false);
+		setSendInviteEvent(false);
+		setNotificationRepeat(false);
+		setNotificationRepeatTime(0);
+		setUntil(false);
+		//setFrequency(Frequency.ONCE);
+		setUsers([]);
+		setAccessList([]);
+		setMessageShareRisorsa("");
+		setSelectedValue("Data");
+		pomEvent.untilDate = null;
+		pomEvent.location = "";
+		pomEvent.isInfinite = false;
 	}
 
 	function toggleSelectFrequency(e: React.ChangeEvent<HTMLSelectElement>): void {
@@ -957,540 +983,936 @@ export default function Pomodoros(): React.JSX.Element {
 		setChooseMusic(!chooseMusic);
 	}
 
+	function toggleAddNotification(): void {
+		setAddNotification(!addNotification);
+		if (notificationRepeat === true) {
+			setNotificationRepeat(false);
+		}
+	}
+
+	const getValidRepeatOptions = (time: number): number[] => {
+		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
+		return options.filter((option) => option !== time && (time % option === 0 || option === 0)); // Filtra solo i divisori, escludendo il numero stesso
+	};
+
+	function toggleSendInviteEvent(): void {
+		setSendInviteEvent(!sendInviteEvent);
+	}
+
+	async function handleSendInviteEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+		if (!(users.length > 0)) {
+			setMessage("Nessun utente selezionato");
+			return;
+		}
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("ENTRO NELLA HANDLESENDINVITE");
+		console.log("Questo è il receiver:", users[0]);
+
+		//const currentUser = await getCurrentUser();
+
+		//const ownerr = currentUser.value.username;
+
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+
+		let newNotification;
+		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
+		const data = await res.json();
+		const receiver = data.id;
+
+		if (addNotification) {
+			const notificationDate = new Date(pomEvent.startTime);
+			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+			console.log("Questa è la data di inizio evento:", pomEvent.startTime);
+			console.log("Questa è la data della notifica:", notificationDate);
+			var message = "";
+			if (notificationTime < 60) {
+				message = "Inizio evento " + pomEvent.title + " tra " + notificationTime + " minuti!";
+			} else {
+				message = "Inizio evento " + pomEvent.title + " tra " + notificationTime / 60 + " ore!";
+			}
+
+			if (notificationTime == 0) {
+				message = "Evento " + pomEvent.title + " iniziato!";
+			}
+
+			var repeatTime = notificationRepeatTime;
+			var repeatedNotification = false;
+			if (repeatTime > 0) {
+				repeatedNotification = true;
+			}
+
+			newNotification = {
+				message: message,
+				mode: "event",
+				receiver: receiver,
+				type: "event",
+				data: {
+					date: notificationDate, //data prima notifica
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+					frequencyEvent: pomEvent.frequency,
+					isInfiniteEvent: pomEvent.isInfinite,
+					repetitionsEvent: pomEvent.repetitions,
+					untilDateEvent: pomEvent.untilDate,
+				},
+			};
+		}
+
+		const newEvent = {
+			idEventoNotificaCondiviso,
+			owner: receiver,
+			title: pomEvent.title,
+			startTime: pomEvent.startTime.toISOString(),
+			endTime: pomEvent.endTime.toISOString(),
+			untilDate: pomEvent.untilDate,
+			isInfinite: pomEvent.isInfinite,
+			frequency: pomEvent.frequency,
+			location: pomEvent.location,
+			repetitions: pomEvent.repetitions,
+		};
+
+		const res3 = await fetch(`${SERVER_API}/notifications`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				message: "Hai ricevuto un invito per un evento",
+				mode: "event",
+				receiver: receiver,
+				type: "message",
+				data: {
+					date: new Date(), //data prima notifica
+					event: newEvent,
+					notification: newNotification,
+				},
+			}),
+		});
+		console.log("Notifica creata:", res3);
+
+		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
+
+		if (resBody.status === ResponseStatus.GOOD) {
+			//alert("Invito inviato correttamente");
+			setUsers([]);
+		} else {
+			alert(resBody.message);
+		}
+
+		//toggleCreateEvent();
+		setSendInviteEvent(false);
+	}
+
+	{/*function toggleCreateEvent(): void {
+		if (!createEvent) {
+			// Usa l'ora corrente o l'ora di startTime
+			const currentHours = startTime.getHours();
+			const currentMinutes = startTime.getMinutes();
+			const endHours = endTime.getHours();
+			const endMinutes = endTime.getMinutes();
+
+			// Imposta startTime con day, meseCorrente, year e l'ora corrente
+			var initialStartTime = new Date(
+				year,
+				meseCorrente,
+				day,
+				currentHours,
+				currentMinutes,
+				0,
+				0
+			);
+			setStartTime(initialStartTime);
+
+			// Imposta endTime a 30 minuti dopo startTime
+			var initialEndTime = new Date(year, meseCorrente, day, endHours, endMinutes, 0, 0);
+			if ((initialEndTime.getTime() - initialStartTime.getTime()) / (1000 * 60) < 30) {
+				initialEndTime = new Date(initialStartTime); // Crea un nuovo oggetto Date
+				initialEndTime.setMinutes(initialStartTime.getMinutes() + 30);
+			}
+			setEndTime(initialEndTime);
+		}
+		setAddTitle(true);
+		setRepeatEvent(false);
+		setAddNotification(false);
+		setShareEvent(false);
+		setAllDayEvent(false);
+		setSendInviteEvent(false);
+		setNotificationRepeat(false);
+		setNotificationRepeatTime(0);
+		setUntil(false);
+		setTitle("");
+		setLocation("");
+		setCreateEvent(!createEvent);
+		setFrequency(Frequency.ONCE);
+		setUsers([]);
+		setAccessList([]);
+		setMessageEvent("");
+		setMessageActivity("");
+		setMessageNotDisturb("");
+		setMessageRisorsa("");
+		setMessageShareRisorsa("");
+	}*/}
+
+	function toggleShareEvent(): void {
+		setShareEvent(!shareEvent);
+	}
+
+	async function handleAddUserEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+		console.log("Utente ", users[0], " aggiunto all'access list dell'evento");
+		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
+		const data = await res.json();
+		const idUser = data.id;
+
+		const risorsa = users[0];
+		const startTime = pomEvent.startTime;
+		const endTime = pomEvent.endTime;
+
+		const resRisorsa = await fetch(`${SERVER_API}/risorsa/checkResourceAvailability`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ risorsa, startTime, endTime }),
+		});
+		const dataRisorsa = await resRisorsa.json();
+		if (!dataRisorsa.isAvailable) {
+			//alert("La risorsa non è disponibile per l'orario selezionato");
+			setMessageShareRisorsa("Risorsa non disponibile!");
+			return;
+		} else {
+			setMessageShareRisorsa("");
+		}
+		setAccessList([...accessList, idUser]);
+	}
+
 	return (
 		<>
 			<audio id="ring" src="/images/ring.mp3"></audio>
-			<div className="background">
-				{addEvent && (
-					<div className="overlay">
-						<div className="create-event-container col-2">
-							<form
-								className="create-event-form-overlay"
-								style={{ overflowY: "auto", maxHeight: "600px" }}>
-								<h4 style={{ textAlign: "center" }}>
-									ORGANIZZA UN EVENTO POMODORO
-								</h4>
-								<button
-									className="btn btn-primary"
-									style={{
-										backgroundColor: "bisque",
-										color: "black",
-										border: "0",
+			<div className="pomodoro-page-container">
+				{addEvent ? (
+					<div className="create-event-container">
+						<form>
+							<h4 style={{ textAlign: "center" }}>
+								CREA UN EVENTO POMODORO
+							</h4>
+							<button
+								className="btn btn-primary"
+								style={{
+									backgroundColor: "bisque",
+									color: "black",
+									border: "0",
+								}}
+								onClick={toggleAddEvent}>
+								Chiudi
+							</button>
+
+							<label htmlFor="allDayEvent">
+								<input
+									type="checkbox"
+									name="repeatEvent"
+									onClick={(): void =>{
+										setRepeatEvent(!repeatEvent);
+										setUntil(false);
 									}}
-									onClick={toggleAddEvent}>
-									CHIUDI
-								</button>
+									style={{
+										marginLeft: "5px",
+										marginRight: "3px",
+										marginTop: "3px",
+									}}
+								/>
+								Evento ripetuto
+							</label>
+							{repeatEvent && (
+								<>
+									<div className="flex" style={{ marginRight: "10px" }}>
+										Ripeti l'evento
+										<label htmlFor="repeatEvent">
+											<select
+												className="btn border"
+												name="repetitionType"
+												onChange={toggleSelectFrequency}
+												style={{
+													marginLeft: "5px",
+													marginRight: "3px",
+													marginTop: "3px",
+												}}>
+												<option value="Once">Una volta</option>
+												<option value="Daily">Ogni giorno</option>
+												<option value="Weekly">Ogni settimana</option>
+												<option value="Monthly">Ogni mese </option>
+												<option value="Yearly">Ogni anno</option>
+											</select>
+										</label>
+									</div>
 
-								<label htmlFor="allDayEvent">
-									<input
-										type="checkbox"
-										name="repeatEvent"
-										onClick={(): void => setRepeatEvent(!repeatEvent)}
-										style={{
-											marginLeft: "5px",
-											marginRight: "3px",
-											marginTop: "3px",
-										}}
-									/>
-									Evento ripetuto
-								</label>
-								{repeatEvent && (
-									<>
-										<div className="flex" style={{ marginRight: "10px" }}>
-											Ripeti l'evento
-											<label htmlFor="repeatEvent">
-												<select
-													className="btn border"
-													name="repetitionType"
-													onChange={toggleSelectFrequency}
-													style={{
-														marginLeft: "5px",
-														marginRight: "3px",
-														marginTop: "3px",
-													}}>
-													<option value="Once">Una volta</option>
-													<option value="Daily">Ogni giorno</option>
-													<option value="Weekly">Ogni settimana</option>
-													<option value="Monthly">Ogni mese </option>
-													<option value="Yearly">Ogni anno</option>
-												</select>
-											</label>
-										</div>
-
-										{until && (
+									{until && (
+										<div>
 											<div>
-												<div>
-													<div
-														className="flex"
-														style={{ marginRight: "10px" }}>
-														Fino a
-														<select
-															className="btn border"
-															onChange={toggleSelectUntil}
-															defaultValue="Data"
-															style={{ border: "1px solid black" }}>
-															<option value="Data">Data</option>
-															<option value="Ripetizioni">
-																Ripetizioni
-															</option>
-															<option value="Infinito">
-																Infinito
-															</option>
-														</select>
-													</div>
+												<div
+													className="flex"
+													style={{ marginRight: "10px" }}>
+													Fino a
+													<select
+														className="btn border"
+														onChange={toggleSelectUntil}
+														defaultValue="Data"
+														style={{ border: "1px solid black" }}>
+														<option value="Data">
+															Data
+														</option>
+														<option value="Ripetizioni">
+															Ripetizioni
+														</option>
+														<option value="Infinito">
+															Infinito
+														</option>
+													</select>
+												</div>
 
-													{selectedValue === "Data" && (
-														<DatePicker
+												{selectedValue === "Data" && (
+													<DatePicker
+														className="btn border"
+														name="finoAData"
+														selected={pomEvent.untilDate} // Il DatePicker sarà vuoto se untilDate è null
+														onChange={(date: Date | null): void => {
+															if (date) {
+																date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
+																setPomEvent({
+																	...pomEvent,
+																	untilDate: date,
+																});
+															}
+														}}
+														placeholderText="Seleziona una data"
+													/>
+												)}
+
+												{selectedValue === "Ripetizioni" && (
+													<div>
+														<input
 															className="btn border"
-															name="finoAData"
-															selected={pomEvent.untilDate} // Il DatePicker sarà vuoto se untilDate è null
-															onChange={(date: Date | null): void => {
-																if (date) {
-																	date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
+															type="number"
+															min="1"
+															onChange={(
+																e: React.ChangeEvent<HTMLInputElement>
+															): void => {
+																setPomEvent({
+																	...pomEvent,
+																	repetitions: Number(
+																		e.target.value
+																	),
+																});
+																setPomEvent({
+																	...pomEvent,
+																	untilDate: null,
+																});
+
+																if (
+																	pomEvent.repetitions < 1 ||
+																	isNaN(pomEvent.repetitions)
+																) {
 																	setPomEvent({
 																		...pomEvent,
-																		untilDate: date,
+																		repetitions: 1,
 																	});
 																}
-															}}
-															placeholderText="Seleziona una data"
-														/>
-													)}
-
-													{selectedValue === "Ripetizioni" && (
-														<div>
-															<input
-																className="btn border"
-																type="number"
-																min="1"
-																onChange={(
-																	e: React.ChangeEvent<HTMLInputElement>
-																): void => {
-																	setPomEvent({
-																		...pomEvent,
-																		repetitions: Number(
-																			e.target.value
-																		),
-																	});
-																	setPomEvent({
-																		...pomEvent,
-																		untilDate: null,
-																	});
-
-																	if (
-																		pomEvent.repetitions < 1 ||
-																		isNaN(pomEvent.repetitions)
-																	) {
-																		setPomEvent({
-																			...pomEvent,
-																			repetitions: 1,
-																		});
-																	}
-																	console.log(
-																		"Numero ripetizione dell'evento: ",
-																		pomEvent.repetitions
-																	);
-																}}></input>
-														</div>
-													)}
-												</div>
+																console.log(
+																	"Numero ripetizione dell'evento: ",
+																	pomEvent.repetitions
+																);
+															}}></input>
+													</div>
+												)}
 											</div>
-										)}
-									</>
-								)}
+										</div>
+									)}
+								</>
+							)}
 
-								<label htmlFor="startTime">
-									Data Inizio
-									<div>
-										<DatePicker
-											className="btn border createEventinput"
-											name="startTime"
-											selected={pomEvent.startTime}
-											onChange={(date: Date | null): void => {
-												if (date) {
-													// Aggiorna la data mantenendo l'orario attuale
-													const newDate = new Date(pomEvent.startTime);
-													newDate.setFullYear(
-														date.getFullYear(),
-														date.getMonth(),
-														date.getDate()
-													);
-													setPomEvent({
-														...pomEvent,
-														startTime: newDate,
-													});
-												}
-											}}
-										/>
-									</div>
-									<div>
-										<input
-											className="btn border createEventinput"
-											type="time"
-											value={`${pomEvent.startTime
-												.getHours()
-												.toString()
-												.padStart(2, "0")}:${pomEvent.startTime
-												.getMinutes()
-												.toString()
-												.padStart(2, "0")}`}
-											onChange={(
-												e: React.ChangeEvent<HTMLInputElement>
-											): void => {
-												const [hours, minutes] = e.target.value.split(":");
-												const newDate = new Date(pomEvent.startTime); // Crea un nuovo oggetto Date basato su startTime
-												newDate.setHours(
-													Number(hours),
-													Number(minutes),
-													0,
-													0
-												); // Imposta l'orario
+							<label htmlFor="startTime">
+								Data Inizio
+								<div>
+									<DatePicker
+										className="btn border createEventinput"
+										name="startTime"
+										selected={pomEvent.startTime}
+										onChange={(date: Date | null): void => {
+											if (date) {
+												// Aggiorna la data mantenendo l'orario attuale
+												const newDate = new Date(pomEvent.startTime);
+												newDate.setFullYear(
+													date.getFullYear(),
+													date.getMonth(),
+													date.getDate()
+												);
 												setPomEvent({
 													...pomEvent,
 													startTime: newDate,
-												}); // Imposta il nuovo oggetto Date
-											}}
-										/>
-									</div>
-								</label>
+												});
+											}
+										}}
+									/>
+								</div>
+								<div>
+									<input
+										className="btn border createEventinput"
+										type="time"
+										value={`${pomEvent.startTime
+											.getHours()
+											.toString()
+											.padStart(2, "0")}:${pomEvent.startTime
+											.getMinutes()
+											.toString()
+											.padStart(2, "0")}`}
+										onChange={(
+											e: React.ChangeEvent<HTMLInputElement>
+										): void => {
+											const [hours, minutes] = e.target.value.split(":");
+											const newDate = new Date(pomEvent.startTime); // Crea un nuovo oggetto Date basato su startTime
+											newDate.setHours(
+												Number(hours),
+												Number(minutes),
+												0,
+												0
+											); // Imposta l'orario
+											setPomEvent({
+												...pomEvent,
+												startTime: newDate,
+											}); // Imposta il nuovo oggetto Date
+										}}
+									/>
+								</div>
+							</label>
 
-								<label htmlFor="endTime">
-									Data Fine
-									<div>
-										<DatePicker
-											className="btn border createEventinput"
-											name="endTime"
-											selected={pomEvent.endTime}
-											onChange={(date: Date | null): void => {
-												if (date) {
-													// Aggiorna la data mantenendo l'orario attuale
-													const newDate = new Date(pomEvent.endTime);
-													newDate.setFullYear(
-														date.getFullYear(),
-														date.getMonth(),
-														date.getDate()
-													);
-													setPomEvent({
-														...pomEvent,
-														endTime: newDate,
-													});
-												}
-											}}
-										/>
-									</div>
-									<div>
-										<input
-											className="btn border createEventinput"
-											type="time"
-											value={`${pomEvent.endTime
-												.getHours()
-												.toString()
-												.padStart(2, "0")}:${pomEvent.endTime
-												.getMinutes()
-												.toString()
-												.padStart(2, "0")}`}
-											onChange={(
-												e: React.ChangeEvent<HTMLInputElement>
-											): void => {
-												const [hours, minutes] = e.target.value.split(":");
+							<label htmlFor="endTime">
+								Data Fine
+								<div>
+									<DatePicker
+										className="btn border createEventinput"
+										name="endTime"
+										selected={pomEvent.endTime}
+										onChange={(date: Date | null): void => {
+											if (date) {
+												// Aggiorna la data mantenendo l'orario attuale
 												const newDate = new Date(pomEvent.endTime);
-												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+												newDate.setFullYear(
+													date.getFullYear(),
+													date.getMonth(),
+													date.getDate()
+												);
 												setPomEvent({
 													...pomEvent,
 													endTime: newDate,
-												}); // Imposta il nuovo oggetto Date
-											}}
-										/>
-									</div>
-								</label>
-
-								<label htmlFor="location">
-									Luogo
-									<div>
-										<input
-											className="btn border createEventinput"
-											type="text"
-											name="location"
-											value={pomEvent.location}
-											onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-												setPomEvent({
-													...pomEvent,
-													location: e.target.value,
-												})
+												});
 											}
-										/>
-									</div>
-								</label>
-								{eventMessage && (
-									<div className="error-message">
-										{eventMessage}
-									</div>
-								)}
-								<button
-									className="btn btn-primary"
+										}}
+									/>
+								</div>
+								<div>
+									<input
+										className="btn border createEventinput"
+										type="time"
+										value={`${pomEvent.endTime
+											.getHours()
+											.toString()
+											.padStart(2, "0")}:${pomEvent.endTime
+											.getMinutes()
+											.toString()
+											.padStart(2, "0")}`}
+										onChange={(
+											e: React.ChangeEvent<HTMLInputElement>
+										): void => {
+											const [hours, minutes] = e.target.value.split(":");
+											const newDate = new Date(pomEvent.endTime);
+											newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+											setPomEvent({
+												...pomEvent,
+												endTime: newDate,
+											}); // Imposta il nuovo oggetto Date
+										}}
+									/>
+								</div>
+							</label>
+
+							<label htmlFor="location">
+								Luogo
+								<div>
+									<input
+										className="btn border createEventinput"
+										type="text"
+										name="location"
+										value={pomEvent.location}
+										onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+											setPomEvent({
+												...pomEvent,
+												location: e.target.value,
+											})
+										}
+									/>
+								</div>
+							</label>
+							<label htmlFor="allDayEvent">
+								<input
+									type="checkbox"
+									name="addNotification"
+									onClick={toggleAddNotification}
 									style={{
-										backgroundColor: "bisque",
-										color: "black",
-										border: "0",
+										marginLeft: "5px",
+										marginRight: "3px",
+										marginTop: "3px",
 									}}
-									onClick={handleCreateEvent}>
-									CREA EVENTO
-								</button>
-							</form>
-						</div>
-					</div>
-				)}
+								/>
+								Aggiungi notifica
+							</label>
 
-				<div className="top-container">
-					<div className={addEvent ? "hidden" : "actions-container"}>
-						<header>
-							<h1 className="title">POMODORO TIMER</h1>
-						</header>
-
-						<div className="buttons-container">
-							<button
-								className="add-event-button"
-								onClick={toggleAddEvent}
-								disabled={data.activeTimer}>
-								Crea evento Pomodoro
-							</button>
-							<button
-								className="previous-pomodoros-button"
-								onClick={togglePreviousPomodoros}>
-								Visualizza ultimi Pomodoro
-							</button>
-							<button className="share-config-button" onClick={toggleShareConfig}>
-								<a style={{ textDecoration: "none", color: "inherit" }}>
-									Condividi configurazione
-								</a>
-							</button>
-							<button className="music-button" onClick={toggleChooseMusic}>
-								Scegli la tua musica
-							</button>
-						</div>
-
-						<div
-							className="preview"
-							style={{ display: previousPomodoros ? "flex" : "none" }}>
-							<div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
-							{tomatoList.slice(-3).map((pomodoro, index) => (
-								<button
-									className="previous-pomodoros"
-									key={index}
-									onClick={(): void =>
-										setData({
-											...data,
-											studyTime: pomodoro.studyTime,
-											pauseTime: pomodoro.pauseTime,
-											cycles: pomodoro.cycles,
-										})
-									}>
-									{pomodoro.studyTime} min - {pomodoro.pauseTime} min -{" "}
-									{pomodoro.cycles} cicli
-									<br />
-								</button>
-							))}
-						</div>
-
-						<div
-							className="send-invite-container"
-							style={{ display: shareConfig ? "block" : "none" }}>
-							<div style={{ marginBottom: "10px", fontWeight: "bold" }}>
-								Invia la configurazione del Pomodoro ad un amico
-							</div>
-							{users.length > 0}
-							<SearchForm onItemClick={handleSelectUser} list={users} />
-							<button
-								onClick={handleSendInvite}
-								className="btn btn-primary send-invite-button"
-								style={{
-									backgroundColor: "lightcoral",
-									color: "white",
-									border: "0",
-								}}>
-								Invia Invito
-							</button>
-						</div>
-
-						<div
-							className="music-container"
-							style={{ display: chooseMusic ? "block" : "none" }}>
-							<select
-								value={playerType}
-								onChange={(e): void =>
-									setPlayerType(e.target.value as PLAYER_TYPE)
-								}>
-								<option value={PLAYER_TYPE.SOUND}>Mp3</option>
-								<option value={PLAYER_TYPE.YOUTUBE}>YouTube</option>
-							</select>
-							{playerType === PLAYER_TYPE.SOUND ? (
-								<>
-									<Mp3Player />
-								</>
-							) : (
-								<YouTubePlayer />
+							{addNotification && (
+								<label htmlFor="notificationTime">
+									Quanto tempo prima mandare la notifica
+									<select
+										id="notificationTimeSelect"
+										className="btn border"
+										onChange={(
+											e: React.ChangeEvent<HTMLSelectElement>
+										): void => {
+											setNotificationTime(Number(e.target.value));
+											if (Number(e.target.value) > 0) {
+												setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+											} else if (Number(e.target.value) === 0) {
+												setNotificationRepeat(false);
+											}
+										}}
+										style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+									>
+										{pomEvent.isInfinite ? (
+											<option value="0">All'ora d'inizio</option> // Solo questa opzione se isInfinite è true
+										) : (
+											<>
+												<option value="0">
+													All'ora d'inizio
+												</option>
+												<option value="5">
+													5 minuti prima
+												</option>
+												<option value="10">
+													10 minuti prima
+												</option>
+												<option value="15">
+													15 minuti prima
+												</option>
+												<option value="30">
+													30 minuti prima
+												</option>
+												<option value="60">1 ora prima</option>
+												<option value="120">2 ore prima</option>
+												<option value="1440">
+													Un giorno prima
+												</option>
+												<option value="2880">
+													2 giorni prima
+												</option>
+											</>
+										)}
+									</select>
+								</label>
 							)}
-						</div>
-					</div>
-				</div>
 
-				<div className="body-container">
-					<div className={addEvent ? "hidden" : "pomodoro-container"}>
-						<div ref={pomodoroRef} className="pomodoro">
-							<img src="/images/tomato.png" alt="tomato.png" />
-							<div className="timer">
-								{data.activeTimer
-									? `${pad(data.minutes)}:${pad(data.seconds)}`
-									: ""}
-							</div>
-						</div>
+							{notificationRepeat && !pomEvent.isInfinite && (
+								<label htmlFor="notificationRepeatTime">
+									Quanto tempo ripetere la notifica
+									<select
+										className="btn border"
+										name="notificationRepeatTime"
+										onChange={(
+											e: React.ChangeEvent<HTMLSelectElement>
+										): void => {
+											setNotificationRepeatTime(
+												Number(e.target.value)
+											);
+										}}>
+										{getValidRepeatOptions(notificationTime).map(
+											(option) => (
+												<option key={option} value={option}>
+													{option === 0
+														? "Mai"
+														: option >= 60
+															? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+															: `Ogni ${option} minuti`}
+												</option>
+											)
+										)}
+									</select>
+								</label>
+							)}
 
-						<div>
-							<h4 className="status">{data.status}</h4>
+							<label htmlFor="allDayEvent">
+								<input
+									type="checkbox"
+									onClick={toggleSendInviteEvent}
+									style={{
+										marginLeft: "5px",
+										marginRight: "3px",
+										marginTop: "3px",
+									}}
+								/>
+								Invia evento ad utente
+							</label>
 
-							<div>
-								<button
-									type="button"
-									className="btn btn-success start-button"
-									onClick={handleSavePomodoroConfig}
-									disabled={data.activeTimer}>
-									START
-								</button>
+							{sendInviteEvent && (
+								<div
+									id="send-invite"
+									className="send-invite-container"
+									style={{
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "center",
+										justifyContent: "center",
+									}}>
+									<div>
+										Scegli l'utente al quale inviare la notifica
+									</div>
+									{users.length > 0}
+									<SearchForm
+										onItemClick={handleSelectUser}
+										list={users}
+									/>
+									{message && <div className="error-message">{message}</div>}
+									<button
+										onClick={handleSendInviteEvent}
+										className="btn btn-primary send-invite-button"
+										style={{
+											backgroundColor: "bisque",
+											color: "black",
+											border: "0",
+											marginBottom: "10px",
+										}}>
+										Invia Invito
+									</button>
+								</div>
+							)}
 
-								<button
-									type="button"
-									className="btn btn-danger stop-button"
-									onClick={stopProcess}
-									disabled={!data.activeTimer}>
-									STOP
-								</button>
-							</div>
+							<label htmlFor="allDayEvent">
+								<input
+									type="checkbox"
+									onClick={toggleShareEvent}
+									style={{
+										marginLeft: "5px",
+										marginRight: "3px",
+										marginTop: "3px",
+									}}
+								/>
+								Condividi evento
+							</label>
 
-							<br />
+							{shareEvent && (
+								<div
+									id="send-invite"
+									className="send-invite-container"
+									style={{
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "center",
+										justifyContent: "center",
+									}}>
+									<div style={{ textAlign: "center" }}>
+										Scegli l'utente o la risorsa con cui condividere
+										l'evento
+									</div>
+									{users.length > 0}
+									<SearchFormResource
+										onItemClick={handleSelectUser}
+										list={users}
+									/>
+									{messageShareRisorsa && (
+										<div className="error-message">
+											{messageShareRisorsa}
+										</div>
+									)}
 
-							<div className="commands-container" style={{ width: "100%" }}>
-								<button
-									type="button"
-									className="bg-warning skip-phase-button"
-									onClick={nextPhase}
-									disabled={!data.activeTimer}>
-									SALTA FASE
-								</button>
-
-								<button
-									type="button"
-									className="bg-warning skip-cycle-button"
-									onClick={nextCycle}
-									disabled={!data.activeTimer}>
-									SALTA CICLO
-								</button>
-
-								<button
-									type="button"
-									className="bg-warning repeat-cycle-button"
-									onClick={repeatCycle}
-									disabled={!data.activeTimer}>
-									RIPETI CICLO
-								</button>
-							</div>
-						</div>
-					</div>
-
-					<div className={addEvent ? "hidden" : "config-container"}>
-						<div className="paragraph">{data.message}</div>
-
-						<div className="pannello studyTime">
-							<label htmlFor="inputStudy">Minuti di studio</label>
-							<input
-								name="inputStudy"
-								type="number"
-								placeholder="Enter the time"
-								className="inputStudyTime"
-								id="inputStudy"
-								value={data.studyTime}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({
-										...data,
-										studyTime: parseInt(e.target.value),
-									})
-								}
-								disabled={data.activeTimer}
-							/>
-						</div>
-
-						<div className="pannello breakTime">
-							<label htmlFor="inputPause">Minuti di pausa</label>
-							<input
-								name="inputPause"
-								type="number"
-								placeholder="Enter the time"
-								id="inputPause"
-								value={data.pauseTime}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({
-										...data,
-										pauseTime: parseInt(e.target.value),
-									})
-								}
-								disabled={data.activeTimer}
-							/>
-						</div>
-
-						<div className="pannello studyCycles">
-							<label htmlFor="inputCycles">Numero di cicli</label>
-							<input
-								name="inputCycles"
-								type="number"
-								placeholder="Enter the study cycles"
-								id="inputCycles"
-								value={data.cycles}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void =>
-									setData({
-										...data,
-										cycles: parseInt(e.target.value),
-									})
-								}
-								disabled={data.activeTimer}
-							/>
-						</div>
-
-						<div className="pannello totMinutes">
-							<label htmlFor="totMinutes">Minuti totali</label>
-							<input
-								name="totMinutes"
-								type="number"
-								placeholder="Enter the total minutes"
-								value={data.totMinutes}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void => {
-									setData({
-										...data,
-										totMinutes: parseInt(e.target.value),
-									});
-									proposalsMinutes();
+									<button
+										onClick={handleAddUserEvent}
+										className="btn btn-primary send-invite-button"
+										style={{
+											backgroundColor: "bisque",
+											color: "black",
+											border: "0",
+											marginBottom: "10px",
+										}}>
+										Condividi
+									</button>
+								</div>
+							)}
+							{eventMessage && (
+								<div className="error-message">
+									{eventMessage}
+								</div>
+							)}
+							<button
+								className="btn btn-primary"
+								style={{
+									backgroundColor: "bisque",
+									color: "black",
+									border: "0",
 								}}
-								disabled={data.activeTimer}
-							/>
+								onClick={handleCreateEvent}>
+								Crea evento
+							</button>
+						</form>
+					</div>
+				) : (
+					<>
+
+						<div className="top-container">
+							<div className="actions-container">
+								<header>
+									<h1 className="title">POMODORO TIMER</h1>
+								</header>
+
+								<div className="buttons-container">
+									<button
+										className="add-event-button"
+										onClick={toggleAddEvent}
+										disabled={data.activeTimer}>
+										Crea evento Pomodoro
+									</button>
+									<button
+										className="previous-pomodoros-button"
+										onClick={togglePreviousPomodoros}>
+										Visualizza ultimi Pomodoro
+									</button>
+									<button className="share-config-button" onClick={toggleShareConfig}>
+										<a style={{ textDecoration: "none", color: "inherit" }}>
+											Condividi configurazione
+										</a>
+									</button>
+									<button className="music-button" onClick={toggleChooseMusic}>
+										Scegli la tua musica
+									</button>
+								</div>
+
+								<div
+									className="preview"
+									style={{ display: previousPomodoros ? "flex" : "none" }}>
+									<div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
+									{tomatoList.slice(-3).map((pomodoro, index) => (
+										<button
+											className="previous-pomodoros"
+											key={index}
+											onClick={(): void =>
+												setData({
+													...data,
+													studyTime: pomodoro.studyTime,
+													pauseTime: pomodoro.pauseTime,
+													cycles: pomodoro.cycles,
+												})
+											}>
+											{pomodoro.studyTime} min - {pomodoro.pauseTime} min -{" "}
+											{pomodoro.cycles} cicli
+											<br />
+										</button>
+									))}
+								</div>
+
+								<div
+									className="send-invite-container"
+									style={{ display: shareConfig ? "block" : "none" }}>
+									<div style={{ marginBottom: "10px", fontWeight: "bold" }}>
+										Invia la configurazione del Pomodoro ad un amico
+									</div>
+									{users.length > 0}
+									<SearchForm onItemClick={handleSelectUser} list={users} />
+									<button
+										onClick={handleSendInvite}
+										className="btn btn-primary send-invite-button"
+										style={{
+											backgroundColor: "lightcoral",
+											color: "white",
+											border: "0",
+										}}>
+										Invia Invito
+									</button>
+								</div>
+
+								<div
+									className="music-container"
+									style={{ display: chooseMusic ? "block" : "none" }}>
+									<select
+										value={playerType}
+										onChange={(e): void =>
+											setPlayerType(e.target.value as PLAYER_TYPE)
+										}>
+										<option value={PLAYER_TYPE.SOUND}>Mp3</option>
+										<option value={PLAYER_TYPE.YOUTUBE}>YouTube</option>
+									</select>
+									{playerType === PLAYER_TYPE.SOUND ? (
+										<>
+											<Mp3Player />
+										</>
+									) : (
+										<YouTubePlayer />
+									)}
+								</div>
+							</div>
 						</div>
 
-						<div className="pannello totHours">
-							<label htmlFor="totHours">Ore totali</label>
-							<input
-								name="totHours"
-								type="number"
-								placeholder="Enter the total hours"
-								value={data.totHours}
-								onChange={(e: ChangeEvent<HTMLInputElement>): void => {
-									setData({
-										...data,
-										totHours: parseInt(e.target.value),
-									});
-									proposalsHours();
-								}}
-								disabled={data.activeTimer}
-							/>
+						<div className="body-container">
+							<div className="pomodoro-container">
+								<div ref={pomodoroRef} className="pomodoro">
+									<img src="/images/tomato.png" alt="tomato.png" />
+									<div className="timer">
+										{data.activeTimer
+											? `${pad(data.minutes)}:${pad(data.seconds)}`
+											: ""}
+									</div>
+								</div>
+
+								<div>
+									<h4 className="status">{data.status}</h4>
+
+									<div>
+										<button
+											type="button"
+											className="btn btn-success start-button"
+											onClick={handleSavePomodoroConfig}
+											disabled={data.activeTimer}>
+											START
+										</button>
+
+										<button
+											type="button"
+											className="btn btn-danger stop-button"
+											onClick={stopProcess}
+											disabled={!data.activeTimer}>
+											STOP
+										</button>
+									</div>
+
+									<br />
+
+									<div className="commands-container" style={{ width: "100%" }}>
+										<button
+											type="button"
+											className="bg-warning skip-phase-button"
+											onClick={nextPhase}
+											disabled={!data.activeTimer}>
+											SALTA FASE
+										</button>
+
+										<button
+											type="button"
+											className="bg-warning skip-cycle-button"
+											onClick={nextCycle}
+											disabled={!data.activeTimer}>
+											SALTA CICLO
+										</button>
+
+										<button
+											type="button"
+											className="bg-warning repeat-cycle-button"
+											onClick={repeatCycle}
+											disabled={!data.activeTimer}>
+											RIPETI CICLO
+										</button>
+									</div>
+								</div>
+							</div>
+
+							<div className={addEvent ? "hidden" : "config-container"}>
+								<div className="paragraph">{data.message}</div>
+
+								<div className="pannello studyTime">
+									<label htmlFor="inputStudy">Minuti di studio</label>
+									<input
+										name="inputStudy"
+										type="number"
+										placeholder="Enter the time"
+										className="inputStudyTime"
+										id="inputStudy"
+										value={data.studyTime}
+										onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+											setData({
+												...data,
+												studyTime: parseInt(e.target.value),
+											})
+										}
+										disabled={data.activeTimer}
+									/>
+								</div>
+
+								<div className="pannello breakTime">
+									<label htmlFor="inputPause">Minuti di pausa</label>
+									<input
+										name="inputPause"
+										type="number"
+										placeholder="Enter the time"
+										id="inputPause"
+										value={data.pauseTime}
+										onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+											setData({
+												...data,
+												pauseTime: parseInt(e.target.value),
+											})
+										}
+										disabled={data.activeTimer}
+									/>
+								</div>
+
+								<div className="pannello studyCycles">
+									<label htmlFor="inputCycles">Numero di cicli</label>
+									<input
+										name="inputCycles"
+										type="number"
+										placeholder="Enter the study cycles"
+										id="inputCycles"
+										value={data.cycles}
+										onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+											setData({
+												...data,
+												cycles: parseInt(e.target.value),
+											})
+										}
+										disabled={data.activeTimer}
+									/>
+								</div>
+
+								<div className="pannello totMinutes">
+									<label htmlFor="totMinutes">Minuti totali</label>
+									<input
+										name="totMinutes"
+										type="number"
+										placeholder="Enter the total minutes"
+										value={data.totMinutes}
+										onChange={(e: ChangeEvent<HTMLInputElement>): void => {
+											setData({
+												...data,
+												totMinutes: parseInt(e.target.value),
+											});
+											proposalsMinutes();
+										}}
+										disabled={data.activeTimer}
+									/>
+								</div>
+
+								<div className="pannello totHours">
+									<label htmlFor="totHours">Ore totali</label>
+									<input
+										name="totHours"
+										type="number"
+										placeholder="Enter the total hours"
+										value={data.totHours}
+										onChange={(e: ChangeEvent<HTMLInputElement>): void => {
+											setData({
+												...data,
+												totHours: parseInt(e.target.value),
+											});
+											proposalsHours();
+										}}
+										disabled={data.activeTimer}
+									/>
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
+					</>
+				)}
 			</div>
 		</>
 	);

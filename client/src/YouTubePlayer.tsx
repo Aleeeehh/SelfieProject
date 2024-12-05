@@ -39,7 +39,21 @@ export default function YouTubePlayer(): React.JSX.Element {
 					Inserisci l'URL del video YouTube:
 					<input type="text" value={videoUrl} onChange={handleUrlChange} />
 				</label>
-				<button onClick={updateVideo}>Play</button>
+				<button
+					onClick={updateVideo}
+					style={{
+						border: "0",
+						padding: "0.5em 1em",
+						borderRadius: "8px",
+						backgroundColor: "#4a90e2",
+						color: "white",
+						fontWeight: "bold",
+						cursor: "pointer",
+						transition: "background-color 0.3s ease",
+					}}
+				>
+					Play
+				</button>
 			</div>
 			<div id="youtube-div-container" />
 		</div>

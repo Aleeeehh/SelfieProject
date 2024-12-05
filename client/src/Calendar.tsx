@@ -5,7 +5,7 @@ import { ResponseBody } from "./types/ResponseBody";
 import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SERVER_API } from "./lib/params";
-import { getDaysInMonth, startOfMonth, getDay } from "date-fns"; //funzioni di date-fns
+import { getDaysInMonth, startOfMonth, getDay, /*set*/ } from "date-fns"; //funzioni di date-fns
 import { ResponseStatus } from "./types/ResponseStatus";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -1118,15 +1118,22 @@ export default function Calendar(): React.JSX.Element {
 		setAddTitle(true);
 		setRepeatEvent(false);
 		setAddNotification(false);
+		setShareEvent(false);
 		setAllDayEvent(false);
+		setSendInviteEvent(false);
 		setNotificationRepeat(false);
 		setNotificationRepeatTime(0);
 		setUntil(false);
 		setTitle("");
+		setLocation("");
 		setCreateEvent(!createEvent);
 		setFrequency(Frequency.ONCE);
 		setUsers([]);
 		setAccessList([]);
+		setMessageEvent("");
+		setMessageActivity("");
+		setMessageNotDisturb("");
+		setMessageRisorsa("");
 		setMessageShareRisorsa("");
 	}
 
@@ -1181,7 +1188,11 @@ export default function Calendar(): React.JSX.Element {
 		setShareEvent(false);
 		setUsers([]);
 		setAccessList([]);
+		setMessageNotDisturb("");
 		setMessageShareRisorsa("");
+		setMessageEvent("");
+		setMessageActivity("");
+		setMessageRisorsa("");
 	}
 
 	function toggleCreateRisorsa(): void {
@@ -1202,6 +1213,10 @@ export default function Calendar(): React.JSX.Element {
 		setUsers([]);
 		setAccessList([]);
 		setMessageShareRisorsa("");
+		setMessageEvent("");
+		setMessageNotDisturb("");
+		setMessageRisorsa("");
+		setMessageActivity("");
 	}
 
 	function toggleCreate(): void {
@@ -1254,7 +1269,13 @@ export default function Calendar(): React.JSX.Element {
 		setShareActivity(false);
 		setUsers([]);
 		setAccessList([]);
+		setTitle("");
+		setDescription("");
+		setMessageActivity("");
 		setMessageShareRisorsa("");
+		setMessageEvent("");
+		setMessageNotDisturb("");
+		setMessageRisorsa("");
 	}
 
 	const handleScroll = (e: React.WheelEvent<HTMLDivElement>): void => {
@@ -4586,10 +4607,10 @@ export default function Calendar(): React.JSX.Element {
 							)}
 
 							{createRisorsa && (
-								<div className="create-event-container">
+								<div className="creation-event-container">
 									<button
 										className="btn btn-primary"
-										style={{
+										style={{	
 											backgroundColor: "bisque",
 											color: "black",
 											border: "0",
@@ -4793,7 +4814,9 @@ export default function Calendar(): React.JSX.Element {
 																	borderRadius: "10px",
 																	width: "100%",
 																}}>
-																<h4>{activity.title}</h4>
+																<h4 className="overflow-adhoc">
+																	{activity.title}
+																</h4>
 																<p>
 																	Scadenza:{" "}
 																	{new Date(
@@ -4806,7 +4829,7 @@ export default function Calendar(): React.JSX.Element {
 																		minute: "2-digit",
 																	})}
 																</p>
-																<p>
+																<p className="overflow-adhoc">
 																	Descrizione:{" "}
 																	{activity.description}
 																</p>
@@ -4981,7 +5004,9 @@ export default function Calendar(): React.JSX.Element {
 																borderRadius: "10px",
 																width: "100%",
 															}}>
-															<h4>{activity.title}</h4>
+															<h4 className="overflow-adhoc">
+																{activity.title}
+															</h4>
 															<p>
 																Scadenza:{" "}
 																{new Date(
@@ -4994,7 +5019,7 @@ export default function Calendar(): React.JSX.Element {
 																	minute: "2-digit",
 																})}
 															</p>
-															<p>
+															<p className="overflow-adhoc">
 																Descrizione: {activity.description}
 															</p>
 															<span
