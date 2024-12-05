@@ -35,10 +35,10 @@ export default function ActivityForm({
 	const [activity, setActivity] = React.useState<Activity>(
 		inputActivity
 			? {
-					...inputActivity,
-					// start: new Date(inputActivity.start || ""),
-					deadline: new Date(inputActivity.deadline),
-			  }
+				...inputActivity,
+				// start: new Date(inputActivity.start || ""),
+				deadline: new Date(inputActivity.deadline),
+			}
 			: baseActivity
 	);
 
@@ -56,6 +56,10 @@ export default function ActivityForm({
 
 		// create the new activity here (inside the component)
 		console.log("Creating activity: ", JSON.stringify(activity));
+
+		for (const user of activity.accessList) {
+			console.log("utente nell'accessList: ", user);
+		}
 
 		const res = await fetch(`${SERVER_API}/activities`, {
 			method: "POST",
@@ -187,9 +191,9 @@ export default function ActivityForm({
 							.getHours()
 							.toString()
 							.padStart(2, "0")}:${new Date(activity.deadline)
-							.getMinutes()
-							.toString()
-							.padStart(2, "0")}`}
+								.getMinutes()
+								.toString()
+								.padStart(2, "0")}`}
 						onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 							const [hours, minutes] = e.target.value.split(":");
 							const newDate = new Date(activity.deadline);
@@ -254,8 +258,8 @@ export default function ActivityForm({
 								{option === 0
 									? "Mai"
 									: option >= 60
-									? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-									: `Ogni ${option} minuti`}
+										? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+										: `Ogni ${option} minuti`}
 							</option>
 						))}
 					</select>

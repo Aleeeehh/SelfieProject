@@ -65,6 +65,7 @@ router.get("/", async (req: Request, res: Response) => {
 				deadline: activity.deadline,
 				completed: activity.completed,
 				accessList: await getUsernameListFromIdList(activity.accessList),
+				//accessListAccepted: await getUsernameListFromIdList(activity.accessListAccepted) : nul,
 				projectId: activity.projectId || null,
 				next: activity.next || null,
 				// status: activity.status as ActivityStatus | null,

@@ -4,6 +4,7 @@ import type { ResponseBody } from "./types/ResponseBody";
 // import { useNavigate } from "react-router-dom";
 import { ResponseStatus } from "./types/ResponseStatus";
 import type Activity from "./types/Activity";
+import type User from "./types/User";
 
 const PREVIEW_CHARS = 100;
 const MAX_TITLE_CHARS = 17;
@@ -48,13 +49,46 @@ export default function Activities(): React.JSX.Element {
 		return projects;
 	}
 
-	function updateActivities(): void {
-		fetch(`${SERVER_API}/activities`)
+	async function getCurrentUser(): Promise<Promise<any> | null> {
+		try {
+			const res = await fetch(`${SERVER_API}/users`);
+			if (!res.ok) {
+				// Controlla se la risposta non è ok
+				console.log("Utente non autenticato");
+				return null; // Restituisci null se non autenticato
+			}
+			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			const data: User = await res.json();
+			//console.log("Questo è il json della risposta", data);
+			return data;
+		} catch (e) {
+			console.log("Impossibile recuperare l'utente corrente");
+			return null;
+		}
+	}
+
+	async function updateActivities(): Promise<void> {
+		const currentUser = await getCurrentUser();
+		const userId = currentUser.value._id.toString();
+		fetch(`${SERVER_API}/activities/owner?owner=${userId}`)
 			.then((res) => res.json())
-			.then((data) => {
+			.then(async (data) => {
+
+				console.log("ID utente corrente:", userId);
 				if (data.status === ResponseStatus.GOOD) {
-					setActivities(data.value as Activity[]);
-					console.log(data.value);
+					const activities = data.value;
+					console.log("Attività trovate:", activities);
+					/*
+					let attivitàDaMostrare = [];
+					for (const activity of activities) {
+						if (activity.owner === userId || activity.accessListAccepted.includes(userId)) {
+							attivitàDaMostrare.push(activity);
+						}
+					}
+					*/
+
+					setActivities(activities as Activity[]);
+					console.log("Attività da mostrare:", activities);
 				} else {
 					console.log(data.message || "Errore nel caricamento delle attività");
 					// nav("/projects");
@@ -107,9 +141,11 @@ export default function Activities(): React.JSX.Element {
 		<>
 			{/* {message && <div>{message}</div>} */}
 			<div className="activities-container">
+				{/*
 				<a href={`/activities/new`} style={{ marginTop: "1em" }}>
 					<button>Crea nuova attività</button>
 				</a>
+				*/}
 				<div
 					style={{
 						display: "flex",
@@ -211,13 +247,13 @@ export default function Activities(): React.JSX.Element {
 										{activity.title.length > MAX_TITLE_CHARS
 											? activity.title.substring(0, MAX_TITLE_CHARS) + "..."
 											: activity.title}
-										</h3>
+									</h3>
 								</div>
 								<div className="card-activity-description">
 									<p>
 										{activity.description.length > PREVIEW_CHARS
 											? activity.description.substring(0, PREVIEW_CHARS) +
-											  "..."
+											"..."
 											: activity.description}
 									</p>
 								</div>
