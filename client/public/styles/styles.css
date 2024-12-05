@@ -27,6 +27,14 @@ body {
 	text-align: justify;
 }
 
+.error-message {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: red;
+	padding: 5px;
+}
+
 a {
 	text-decoration: none !important;
 }

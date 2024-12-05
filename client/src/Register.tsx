@@ -215,7 +215,7 @@ export default function Register(): React.JSX.Element {
 								required
 							/>
 						</div>
-						{message && <div>{message}</div>}
+						{message && <div className="error-message">{message}</div>}
 
 						<button onClick={handleRegister}>Registrati</button>
 					</form>

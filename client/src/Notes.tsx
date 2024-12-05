@@ -11,7 +11,7 @@ const MAX_TITLE_CHARS = 17;
 
 export default function Notes(): React.JSX.Element {
 	const [noteList, setNoteList] = React.useState([] as Note[]);
-	const [message, setMessage] = React.useState("");
+	//const [message, setMessage] = React.useState("");
 
 	const nav = useNavigate();
 	// On page load, get the notes for the user
@@ -30,7 +30,7 @@ export default function Notes(): React.JSX.Element {
 			} else {
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			console.log("Impossibile raggiungere il server");
 		}
 	}
 
@@ -70,10 +70,10 @@ export default function Notes(): React.JSX.Element {
 				alert("Nota duplicata correttamente");
 				getAllNotes();
 			} else {
-				setMessage(data.message || "Errore durante la duplicazione della nota");
+				alert(data.message || "Errore durante la duplicazione della nota");
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			alert("Impossibile raggiungere il server");
 		}
 	}
 
@@ -92,10 +92,10 @@ export default function Notes(): React.JSX.Element {
 				alert("Nota eliminata correttamente");
 				getAllNotes();
 			} else {
-				setMessage(data.message || "Errore durante l'eliminazione della nota");
+				alert(data.message || "Errore durante l'eliminazione della nota");
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			alert("Impossibile raggiungere il server");
 		}
 	}
 
@@ -208,7 +208,7 @@ export default function Notes(): React.JSX.Element {
 						</a>
 					))}
 				</div>
-				{message && <div>{message}</div>}
+				{/*message && <div>{message}</div>*/}
 			</div>
 	);
 }

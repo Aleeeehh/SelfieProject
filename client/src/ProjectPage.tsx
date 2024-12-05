@@ -301,6 +301,7 @@ export default function ProjectPage(): React.JSX.Element {
 					</div>
 					{isOwner && (
 						<>
+							{message && <div className="error-message">{message}</div>}
 							{isEditing ? (
 								<button
 									style={{ backgroundColor: "green" }}
@@ -320,8 +321,6 @@ export default function ProjectPage(): React.JSX.Element {
 					)}
 				</div>
 			</div>
-
-			{message && <div>{message}</div>}
 		</>
 	);
 }

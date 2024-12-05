@@ -41,12 +41,12 @@ export default function Profile(): React.JSX.Element {
 				const data = (await res.json()) as ResponseBody;
 				setUser(data.value);
 			} else {
-				setMessage("Errore nel caricamento dei dati utente");
+				console.log("Errore nel caricamento dei dati utente");
 				nav("/login");
 			}
 		} catch (e) {
 			console.log(e);
-			setMessage("Impossibile raggiungere il server");
+			console.log("Impossibile raggiungere il server");
 		}
 	}
 
@@ -123,7 +123,6 @@ export default function Profile(): React.JSX.Element {
 
 	return (
 		<div className="profile-body">
-			{message && <div>{message}</div>}
 			<div className="profile-container">
 				<div className="profile-avatar">
 					<img
@@ -135,30 +134,31 @@ export default function Profile(): React.JSX.Element {
 						alt="Avatar"
 					/>
 				</div>
-				{isEditing && (
-					<div>
-						<label>Cambia Immagine di profilo</label>
-						<select
-							name="profileImage"
-							value={user.profileImage}
-							onChange={(e): void =>
-								setUser({ ...user, profileImage: e.target.value })
-							}>
-							{profileImages.map((image) => (
-								<option key={image.url} value={image.url}>
-									{image.name}
-								</option>
-							))}
-						</select>
-					</div>
-				)}
 				<div className="profile-header">
 					{!isEditing ? (
-						<h1>{`${user.firstName} ${user.lastName}`}</h1>
+						<>
+							<h1>{`${user.firstName} ${user.lastName}`}</h1>
+							<p className="profile-username">@{user.username}</p>
+						</>
 					) : (
-						<div>
-							<div>
-								<label>Nome</label>
+						<>
+							<label className="eighty-percent">Cambia Immagine di profilo:
+								<select
+									name="profileImage"
+									value={user.profileImage}
+									style={{ outline: "0" }}
+									onChange={(e): void =>
+										setUser({ ...user, profileImage: e.target.value })
+									}>
+									{profileImages.map((image) => (
+										<option key={image.url} value={image.url}>
+											{image.name}
+										</option>
+									))}
+								</select>
+							</label>
+
+							<label className="eighty-percent">Nome:
 								<input
 									type="text"
 									name="firstName"
@@ -168,10 +168,9 @@ export default function Profile(): React.JSX.Element {
 									}
 									required
 								/>
-							</div>
+							</label>
 
-							<div>
-								<label>Cognome</label>
+							<label className="eighty-percent">Cognome:
 								<input
 									type="text"
 									name="lastName"
@@ -181,22 +180,27 @@ export default function Profile(): React.JSX.Element {
 									}
 									required
 								/>
-							</div>
-						</div>
+							</label>
+						</>
 					)}
-					<p className="profile-username">@{user.username}</p>
 				</div>
 
 				<div className="profile-details">
-					<div>
-						<label>Data di nascita:</label>
-						{!isEditing ? (
-							<p>{new Date(user.birthday).toLocaleDateString()}</p>
-						) : (
-							<div>
+					{!isEditing ? (
+						<>
+							<label className="eighty-percent">Data di nascita:
+								<p>{new Date(user.birthday).toLocaleDateString()}</p>
+							</label>
+							<label className="eighty-percent">Indirizzo:
+								<p>{user.address}</p>
+							</label>
+						</>
+					) : (
+						<>
+							<label className="eighty-percent" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>Data di nascita:
 								<input
 									type="date"
-									className="btn border"
+									className="btn profile-date-input"
 									name="birthday"
 									value={new Date(user.birthday).toISOString().split("T")[0]}
 									onChange={(e): void =>
@@ -207,16 +211,8 @@ export default function Profile(): React.JSX.Element {
 									}
 									required
 								/>
-							</div>
-						)}
-					</div>
-					<div>
-						<label>Indirizzo:</label>
-						{!isEditing ? (
-							<p>{user.address}</p>
-						) : (
-							<div>
-								<label>Indirizzo</label>
+							</label>
+							<label className="eighty-percent">Indirizzo:
 								<input
 									type="text"
 									name="address"
@@ -226,9 +222,9 @@ export default function Profile(): React.JSX.Element {
 									}
 									required
 								/>
-							</div>
-						)}
-					</div>
+							</label>
+						</>
+					)}
 				</div>
 
 				{isEditing && (
@@ -242,26 +238,32 @@ export default function Profile(): React.JSX.Element {
 							/>
 						</label>
 						{changePassword && (
-							<div>
-								<label>Vecchia password</label>
-								<input
-									type="password"
-									name="oldPassword"
-									onChange={(e): void => setOldPassword(e.target.value)}
-								/>
-								<label>Nuova password</label>
-								<input
-									type="password"
-									name="newPassword"
-									onChange={(e): void => setNewPassword(e.target.value)}
-								/>
-								<label>Conferma Nuova password</label>
-								<input
-									type="password"
-									name="confirmNewPassword"
-									onChange={(e): void => setConfirmNewPassword(e.target.value)}
-								/>
-							</div>
+							<>
+								<label className="eighty-percent">Vecchia password:
+									<input
+										type="password"
+										name="oldPassword"
+										className="password-as-text"
+										onChange={(e): void => setOldPassword(e.target.value)}
+									/>
+								</label>
+								<label className="eighty-percent">Nuova password:
+									<input
+										type="password"
+										name="newPassword"
+										className="password-as-text"
+										onChange={(e): void => setNewPassword(e.target.value)}
+									/>
+								</label>
+								<label className="eighty-percent">Conferma Nuova password:
+									<input
+										type="password"
+										name="confirmNewPassword"
+										className="password-as-text"
+										onChange={(e): void => setConfirmNewPassword(e.target.value)}
+									/>
+								</label>
+							</>
 						)}
 					</div>
 				)}
@@ -295,6 +297,7 @@ export default function Profile(): React.JSX.Element {
 						</>
 					) : (
 						<>
+							{message && <div className="error-message">{message}</div>}
 							<button
 								type="button"
 								className="btn btn-warning custom-btn"
@@ -303,7 +306,7 @@ export default function Profile(): React.JSX.Element {
 							</button>
 							<button
 								type="button"
-								className="btn btn-warning custom-btn"
+								className="btn btn-danger custom-btn"
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
 									setIsEditing(false);

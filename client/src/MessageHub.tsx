@@ -19,7 +19,9 @@ function MessageHub(): React.JSX.Element {
 		id: localStorage.getItem("loggedUserId"),
 	};
 
-	const [message, setMessage] = React.useState("");
+	//const [message, setMessage] = React.useState("");
+	const [listMessage, setListMessage] = React.useState("");
+	const [chatMessage, setChatMessage] = React.useState("");
 
 	const nav = useNavigate();
 
@@ -45,7 +47,7 @@ function MessageHub(): React.JSX.Element {
 			} else {
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			console.log("Impossibile raggiungere il server");
 		}
 	}
 
@@ -75,13 +77,13 @@ function MessageHub(): React.JSX.Element {
 					const chats = updatedResBody.value as Chat[];
 					setActiveChat(chats.find((chat) => chat.id === activeChat.id)!);
 				} else {
-					setMessage("Errore nell'aggiornamento della chat; ricarica la pagina");
+					setChatMessage("Errore nell'aggiornamento della chat; ricarica la pagina");
 				}
 			} else {
-				setMessage("Impossibile inviare il messaggio: " + resBody.message);
+				setChatMessage("Impossibile inviare il messaggio: " + resBody.message);
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			setChatMessage("Impossibile raggiungere il server");
 		}
 	}
 
@@ -154,13 +156,13 @@ function MessageHub(): React.JSX.Element {
 					setChatList(resBody2.value as Chat[]);
 					setActiveChat(resBody2.value[0]);
 				} else {
-					setMessage("Impossibile recuperare le chat: " + resBody.message);
+					setListMessage("Impossibile recuperare le chat: " + resBody.message);
 				}
 			} else {
-				setMessage("Impossibile creare la chat: " + resBody.message);
+				setChatMessage("Impossibile creare la chat: " + resBody.message);
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			setListMessage("Impossibile raggiungere il server");
 		}
 	}
 
@@ -198,13 +200,13 @@ function MessageHub(): React.JSX.Element {
 					setChatList(resBody2.value as Chat[]);
 					setActiveChat(resBody2.value[0]);
 				} else {
-					setMessage("Impossibile recuperare le chat: " + resBody.message);
+					setListMessage("Impossibile recuperare le chat: " + resBody.message);
 				}
 			} else {
-				setMessage("Impossibile eliminare la chat: " + resBody.message);
+				setListMessage("Impossibile eliminare la chat: " + resBody.message);
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			setListMessage("Impossibile raggiungere il server");
 		}
 	}
 
@@ -213,6 +215,7 @@ function MessageHub(): React.JSX.Element {
 			<div className="chat-background">
 				<div className="chat-page-container">
 					<div className="chat-list-container">
+						{listMessage && <div className="error-message">{listMessage}</div>}
 						<button
 							className="create-chat-button"
 							onClick={(): void => setAddingChat(true)}>
@@ -311,6 +314,7 @@ function MessageHub(): React.JSX.Element {
 									</div>
 								))}
 						</div>
+						{chatMessage && (<div className="error-message">{chatMessage}</div>)}
 						<div className="chat-input-container">
 							<input
 								className="message-input"
@@ -327,7 +331,6 @@ function MessageHub(): React.JSX.Element {
 					</div>
 				</div>
 			</div>
-			{message && <div>{message}</div>}
 		</>
 	);
 }

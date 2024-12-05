@@ -69,7 +69,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 				}
 			})
 			.catch(() => {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 				// nav("/projects");
 			});
 	}
@@ -490,7 +490,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 						</div>
 					</>
 				)}
-				{message && <div>{message}</div>}
+				{message && <div className="error-message">{message}</div>}
 				<button
 					onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 						e.preventDefault();

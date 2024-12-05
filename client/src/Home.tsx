@@ -14,7 +14,7 @@ const HOME_MAX_TITLE_CHARS = 20;
 const HOME_MAX_TEXT_CHARS = 10;
 
 function Home(): React.JSX.Element {
-	const [message, setMessage] = React.useState("");
+	//const [message, setMessage] = React.useState("");
 	const [pomodoros, setPomodoros] = React.useState([] as Pomodoro[]);
 	const [notes, setNotes] = React.useState([] as Note[]);
 	const [events, setEvents] = React.useState([] as Event[]);
@@ -39,7 +39,7 @@ function Home(): React.JSX.Element {
 					// nav("/login");
 				}
 			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 			}
 
 			try {
@@ -54,7 +54,7 @@ function Home(): React.JSX.Element {
 					// nav("/login");
 				}
 			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 			}
 
 			try {
@@ -73,7 +73,7 @@ function Home(): React.JSX.Element {
 					// nav("/login");
 				}
 			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 			}
 
 			// get projects
@@ -90,7 +90,7 @@ function Home(): React.JSX.Element {
 					// nav("/login");
 				}
 			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 			}
 		})();
 	}, []);
@@ -100,7 +100,7 @@ function Home(): React.JSX.Element {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
 				// Controlla se la risposta non è ok
-				setMessage("Utente non autenticato");
+				console.log("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
 			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
@@ -108,7 +108,7 @@ function Home(): React.JSX.Element {
 			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
-			setMessage("Impossibile recuperare l'utente corrente");
+			console.log("Impossibile recuperare l'utente corrente");
 			return null;
 		}
 	}
@@ -130,10 +130,10 @@ function Home(): React.JSX.Element {
 				console.log("Eventi trovati:", eventi);
 			} else {
 				// await checkLoginStatus();
-				setMessage("Errore nel ritrovamento degli eventi");
+				console.log("Errore nel ritrovamento degli eventi");
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			console.log("Impossibile raggiungere il server");
 		}
 	}
 
@@ -166,7 +166,7 @@ function Home(): React.JSX.Element {
 
 	return (
 		<>
-			{message && <div>{message}</div>}
+			{/* {message && <div className="error-message">{message}</div>*/}
 
 			<div className="home-background">
 				<div className="home-container">

@@ -57,6 +57,11 @@ export default function Calendar(): React.JSX.Element {
 	const [file, setFile] = React.useState<File | null>(null);
 	const [createRisorsa, setCreateRisorsa] = React.useState(false);
 	const [messageRisorsa, setMessageRisorsa] = React.useState("");
+	const [messageExpImp, setMessageExpImp] = React.useState("");
+	const [messageEvent, setMessageEvent] = React.useState("");
+	const [messageActivity, setMessageActivity] = React.useState("");
+	const [messageNotDisturb, setMessageNotDisturb] = React.useState("");
+	const [messageShareRisorsa, setMessageShareRisorsa] = React.useState("");
 	const [showRisorse, setShowRisorse] = React.useState(true);
 	const [isAdmin, setIsAdmin] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
@@ -188,12 +193,12 @@ export default function Calendar(): React.JSX.Element {
 					setEventList(data.value);
 					console.log("QUESTA E' LA EVENTLIST::", eventList);
 				} else {
-					setMessage(
+					console.log(
 						"Errore nel ritrovamento degli eventi: nessun evento trovato nel database!"
 					);
 				}
 			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 			}
 		})();
 	}, []);
@@ -654,13 +659,13 @@ export default function Calendar(): React.JSX.Element {
 			a.click(); // Simula un clic per avviare il download
 			window.URL.revokeObjectURL(url); // Pulisce l'URL del blob
 		} else {
-			setMessage("Errore nel download del calendario");
+			setMessageExpImp("Errore nel download del calendario");
 		}
 	}
 
 	async function handleImportCalendar(): Promise<void> {
 		if (!file) {
-			console.log("Nessun file selezionato");
+			setMessageExpImp("Nessun file selezionato");
 			return;
 		}
 
@@ -681,7 +686,7 @@ export default function Calendar(): React.JSX.Element {
 		if (response.ok) {
 			console.log("Calendario importato con successo");
 		} else {
-			console.error("Errore durante l'importazione del calendario");
+			setMessageExpImp("Errore durante l'importazione del calendario");
 		}
 		loadEvents();
 		handleDateClick(day);
@@ -711,10 +716,10 @@ export default function Calendar(): React.JSX.Element {
 				setEventList(eventi);
 				//console.log("stampo data.values:", data.value);
 			} else {
-				setMessage("Errore nel ritrovamento degli eventi");
+				console.log("Errore nel ritrovamento degli eventi");
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			console.log("Impossibile raggiungere il server");
 		}
 	}
 
@@ -953,15 +958,16 @@ export default function Calendar(): React.JSX.Element {
 					setEventList(data.value);
 					console.log("stampo data.valuess:", data.value);
 				} else {
-					setMessage("Errore nel ritrovamento degli eventi");
+					console.log("Errore nel ritrovamento degli eventi");
 				}
 			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 			}
 		})();
 	}, []);
 
 	async function toggleShowRisorse(): Promise<void> {
+		setMessageRisorsa("");
 		setShowRisorse(!showRisorse);
 		await loadEvents();
 		handleDateClick(day);
@@ -1120,7 +1126,7 @@ export default function Calendar(): React.JSX.Element {
 		setFrequency(Frequency.ONCE);
 		setUsers([]);
 		setAccessList([]);
-		setMessageRisorsa("");
+		setMessageShareRisorsa("");
 	}
 
 	function toggleCreateNonDisturbare(): void {
@@ -1174,7 +1180,7 @@ export default function Calendar(): React.JSX.Element {
 		setShareEvent(false);
 		setUsers([]);
 		setAccessList([]);
-		setMessageRisorsa("");
+		setMessageShareRisorsa("");
 	}
 
 	function toggleCreateRisorsa(): void {
@@ -1194,7 +1200,7 @@ export default function Calendar(): React.JSX.Element {
 		setCreateRisorsa(!createRisorsa);
 		setUsers([]);
 		setAccessList([]);
-		setMessageRisorsa("");
+		setMessageShareRisorsa("");
 	}
 
 	function toggleCreate(): void {
@@ -1247,7 +1253,7 @@ export default function Calendar(): React.JSX.Element {
 		setShareActivity(false);
 		setUsers([]);
 		setAccessList([]);
-		setMessageRisorsa("");
+		setMessageShareRisorsa("");
 	}
 
 	const handleScroll = (e: React.WheelEvent<HTMLDivElement>): void => {
@@ -1935,7 +1941,7 @@ export default function Calendar(): React.JSX.Element {
 	async function handleSendInviteActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		if (!(users.length > 0)) {
-			console.log("Nessun utente selezionato");
+			setMessage("Nessun utente selezionato");
 			return;
 		}
 		console.log("ENTRO NELLA HANDLESENDINVITE");
@@ -2050,7 +2056,7 @@ export default function Calendar(): React.JSX.Element {
 	async function handleSendInviteEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		if (!(users.length > 0)) {
-			console.log("Nessun utente selezionato");
+			setMessage("Nessun utente selezionato");
 			return;
 		}
 		console.log("ENTRO NELLA HANDLESENDINVITE");
@@ -2180,10 +2186,10 @@ export default function Calendar(): React.JSX.Element {
 		const dataRisorsa = await resRisorsa.json();
 		if (!dataRisorsa.isAvailable) {
 			//alert("La risorsa non è disponibile per l'orario selezionato");
-			setMessageRisorsa("Risorsa non disponibile!");
+			setMessageShareRisorsa("Risorsa non disponibile!");
 			return;
 		} else {
-			setMessageRisorsa("");
+			setMessageShareRisorsa("");
 		}
 		setAccessList([...accessList, idUser]);
 	}
@@ -2311,7 +2317,7 @@ export default function Calendar(): React.JSX.Element {
 
 			return data;
 		} catch (e) {
-			setMessage("Errore nell'eliminazione dell'evento: " + e);
+			alert("Errore nell'eliminazione dell'evento: " + e);
 			return;
 		}
 	}
@@ -2448,7 +2454,7 @@ export default function Calendar(): React.JSX.Element {
 
 			return data;
 		} catch (e) {
-			setMessage("Errore nell'eliminazione dell'evento: " + e);
+			alert("Errore nell'eliminazione dell'evento: " + e);
 			return;
 		}
 	}
@@ -2554,7 +2560,7 @@ export default function Calendar(): React.JSX.Element {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
 				// Controlla se la risposta non è ok
-				setMessage("Utente non autenticato");
+				console.log("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
 			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
@@ -2562,7 +2568,7 @@ export default function Calendar(): React.JSX.Element {
 			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
-			setMessage("Impossibile recuperare l'utente corrente");
+			console.log("Impossibile recuperare l'utente corrente");
 			return null;
 		}
 	}
@@ -2574,12 +2580,12 @@ export default function Calendar(): React.JSX.Element {
 
 		//Validazione dell'input
 		if (!title || !startTime || !endTime || !location) {
-			setMessage("Tutti i campi dell'evento devono essere riempiti!");
+			setMessageEvent("Tutti i campi dell'evento devono essere riempiti!");
 			return;
 		}
 
 		if (startTime > endTime) {
-			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			setMessageEvent("La data di inizio non può essere collocata dopo la data di fine!");
 			return;
 		}
 
@@ -2588,7 +2594,7 @@ export default function Calendar(): React.JSX.Element {
 
 		//l'evento che creo dura almeno 30 minuti?
 		if ((end - start) / (1000 * 60) < 30) {
-			setMessage("L'evento deve durare almeno 30 minuti");
+			setMessageEvent("L'evento deve durare almeno 30 minuti");
 			return;
 		}
 		const currentUser = await getCurrentUser();
@@ -2804,7 +2810,7 @@ export default function Calendar(): React.JSX.Element {
 		if (!res.ok) {
 			const errorData = await res.json();
 			console.error("Error response:", errorData);
-			setMessage("Errore durante la creazione dell'evento: " + errorData.message);
+			setMessageEvent("Errore durante la creazione dell'evento: " + errorData.message);
 			return;
 		}
 
@@ -2835,11 +2841,21 @@ export default function Calendar(): React.JSX.Element {
 		console.log("ICAL:", data4);
 		setUsers([]);
 		setAccessList([]);
-		setMessageRisorsa("");
+		setMessageShareRisorsa("");
 	}
 
 	async function handleCreateRisorsa(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+		if (!title) {
+			setMessageRisorsa("Il nome della risorsa deve essere riempito!");
+			return;
+		}
+
+		if (!description) {
+			setMessageRisorsa("La risorsa necessita di una descrizione!");
+			return;
+		}
+
 		const response = await fetch(`${SERVER_API}/risorsa`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -2857,12 +2873,12 @@ export default function Calendar(): React.JSX.Element {
 		e.preventDefault();
 		//Validazione dell'input
 		if (!startTime || !endTime) {
-			setMessage("Tutti i campi dell'evento devono essere riempiti!");
+			setMessageNotDisturb("Tutti i campi dell'evento devono essere riempiti!");
 			return;
 		}
 
 		if (startTime > endTime) {
-			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			setMessageNotDisturb("La data di inizio non può essere collocata dopo la data di fine!");
 			return;
 		}
 
@@ -2871,7 +2887,7 @@ export default function Calendar(): React.JSX.Element {
 
 		//l'evento che creo dura almeno 30 minuti?
 		if ((end - start) / (1000 * 60) < 30) {
-			setMessage("L'evento deve durare almeno 30 minuti");
+			setMessageNotDisturb("L'evento deve durare almeno 30 minuti");
 			return;
 		}
 		const currentUser = await getCurrentUser();
@@ -2921,7 +2937,7 @@ export default function Calendar(): React.JSX.Element {
 		setCreateNonDisturbare(!createNonDisturbare);
 		setUsers([]);
 		setAccessList([]);
-		setMessageRisorsa("");
+		setMessageShareRisorsa("");
 	}
 
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -2929,13 +2945,18 @@ export default function Calendar(): React.JSX.Element {
 		const uniqueAccessList = [...new Set(accessList)];
 
 		if (!title) {
-			setMessage("Il titolo dell'attività deve essere riempito!");
+			setMessageActivity("Il titolo dell'attività deve essere riempito!");
+			return;
+		}
+
+		if (!description) {
+			setMessageActivity("L'attività necessita di una descrizione!");
 			return;
 		}
 
 		const dataInizio = new Date(year, meseCorrente, day);
 		if (dataInizio > endTime) {
-			setMessage("La data di inizio non può essere collocata dopo la data di fine!");
+			setMessageActivity("La data di inizio non può essere collocata dopo la data di fine!");
 			return;
 		}
 
@@ -3130,7 +3151,9 @@ export default function Calendar(): React.JSX.Element {
 		setAccessList([]);
 		setUsers([]);
 		setAccessList([]);
-		setMessageRisorsa("");
+		setMessageShareRisorsa("");
+		setTitle("");
+		setDescription("");
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
@@ -3269,11 +3292,11 @@ export default function Calendar(): React.JSX.Element {
 
 	function toggleDownloadImport(): void {
 		setShowDownloadImport(!showDownloadImport);
+		setMessageExpImp("");
 	}
 
 	return (
 		<>
-			{message && <div>{message}</div>}
 			<div className="calendar-background">
 				<div className="whole-calendar-container">
 					<div className="calendar-header">
@@ -3348,7 +3371,11 @@ export default function Calendar(): React.JSX.Element {
 
 					<div
 						className="calendar-top-container"
-						style={{ padding: showDownloadImport || create ? "1em" : "0" }}>
+						style={{ padding: showDownloadImport || create ? "1em" : "0" }}
+					>
+						{messageExpImp && (
+							<div className="error-message">{messageExpImp}</div>
+						)}
 						<div
 							className="download-import"
 							style={{ display: showDownloadImport ? "flex" : "none" }}>
@@ -3884,6 +3911,7 @@ export default function Calendar(): React.JSX.Element {
 													onItemClick={handleSelectUser}
 													list={users}
 												/>
+												{message && <div className="error-message">{message}</div>}
 												<button
 													onClick={handleSendInviteEvent}
 													className="btn btn-primary send-invite-button"
@@ -3921,7 +3949,7 @@ export default function Calendar(): React.JSX.Element {
 													alignItems: "center",
 													justifyContent: "center",
 												}}>
-												<div>
+												<div style={{ textAlign: "center" }}>
 													Scegli l'utente o la risorsa con cui condividere
 													l'evento
 												</div>
@@ -3930,9 +3958,9 @@ export default function Calendar(): React.JSX.Element {
 													onItemClick={handleSelectUser}
 													list={users}
 												/>
-												{messageRisorsa && (
-													<div style={{ color: "red" }}>
-														{messageRisorsa}
+												{messageShareRisorsa && (
+													<div className="error-message">
+														{messageShareRisorsa}
 													</div>
 												)}
 
@@ -3950,6 +3978,9 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										)}
 
+										{messageEvent && (
+											<div className="error-message">{messageEvent}</div>
+										)}
 										<button
 											className="btn btn-primary"
 											style={{
@@ -4162,6 +4193,7 @@ export default function Calendar(): React.JSX.Element {
 													onItemClick={handleSelectUser}
 													list={users}
 												/>
+												{message && (<div className="error-message">{message}</div>)}
 												<button
 													onClick={handleSendInviteActivity}
 													className="btn btn-primary send-invite-button"
@@ -4209,6 +4241,11 @@ export default function Calendar(): React.JSX.Element {
 													onItemClick={handleSelectUser}
 													list={users}
 												/>
+												{message && (
+													<div className="error-message">
+														{message}
+													</div>
+												)}
 												<button
 													onClick={handleAddUserActivity}
 													className="btn btn-primary send-invite-button"
@@ -4223,6 +4260,9 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										)}
 
+										{messageActivity && (
+											<div className="error-message">{messageActivity}</div>
+										)}
 										<button
 											className="btn btn-primary"
 											style={{
@@ -4527,6 +4567,9 @@ export default function Calendar(): React.JSX.Element {
 											)}
 										</label>
 
+										{messageNotDisturb && (
+											<div className="error-message">{messageNotDisturb}</div>
+										)}
 										<button
 											className="btn btn-primary"
 											style={{
@@ -4578,6 +4621,8 @@ export default function Calendar(): React.JSX.Element {
 												): void => setDescription(e.target.value)}
 											/>
 										</label>
+
+										{messageRisorsa && <div className="error-message">{messageRisorsa}</div>}
 										<button
 											className="btn btn-primary"
 											style={{

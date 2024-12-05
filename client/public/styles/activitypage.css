@@ -169,6 +169,7 @@ select {
     border: 1px solid #ddd;
     border-radius: 5px;
     margin-top: 5px;
+    outline-color: black;
 }
 
 input[type="checkbox"] {

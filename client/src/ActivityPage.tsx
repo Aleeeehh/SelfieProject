@@ -93,7 +93,7 @@ export default function ActivityPage(): React.JSX.Element {
 			})
 			.then(() => refreshProject())
 			.catch(() => {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 				// nav("/projects");
 			});
 	}
@@ -111,7 +111,7 @@ export default function ActivityPage(): React.JSX.Element {
 				}
 			})
 			.catch(() => {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 				// nav("/projects");
 			});
 	}
@@ -1084,6 +1084,7 @@ export default function ActivityPage(): React.JSX.Element {
 									)}
 								</>
 							)}
+							{message && <div className="error-message">{message}</div>}
 							<button
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
@@ -1114,8 +1115,6 @@ export default function ActivityPage(): React.JSX.Element {
 					</>
 				)}
 			</div>
-
-			{message && <div>{message}</div>}
 		</>
 	);
 }

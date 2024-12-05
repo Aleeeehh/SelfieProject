@@ -864,7 +864,7 @@ export default function Pomodoros(): React.JSX.Element {
 		const resBody: ResponseBody = (await res.json()) as ResponseBody;
 
 		if (resBody.status === ResponseStatus.GOOD) {
-			alert("Invito inviato correttamente");
+			console.log("Invito inviato correttamente");
 			setUsers([]);
 		} else {
 			alert(resBody.message);
@@ -1222,7 +1222,7 @@ export default function Pomodoros(): React.JSX.Element {
 									</div>
 								</label>
 								{eventMessage && (
-									<div style={{ color: "red", textAlign: "center" }}>
+									<div className="error-message">
 										{eventMessage}
 									</div>
 								)}

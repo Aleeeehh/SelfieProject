@@ -16,7 +16,7 @@ enum SORT {
 }
 
 export default function Activities(): React.JSX.Element {
-	const [message, setMessage] = React.useState("");
+	// const [message, setMessage] = React.useState("");
 	const [activities, setActivities] = React.useState([] as Activity[]);
 	const [userFilter, setUserFilter] = React.useState("");
 	const [projectFilter, setProjectFilter] = React.useState("");
@@ -64,7 +64,7 @@ export default function Activities(): React.JSX.Element {
 			})
 
 			.catch(() => {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 				// nav("/projects");
 			});
 	}
@@ -81,7 +81,7 @@ export default function Activities(): React.JSX.Element {
 		e.preventDefault();
 
 		if (!id) {
-			setMessage(
+			alert(
 				"Errore nel cancellamento dell'attività: id non trovato. Errore del server?"
 			);
 			return;
@@ -96,16 +96,16 @@ export default function Activities(): React.JSX.Element {
 			if (res.status === 200) {
 				updateActivities();
 			} else {
-				setMessage(resBody.message || "Errore nel cancellamento dell'attività");
+				alert(resBody.message || "Errore nel cancellamento dell'attività");
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			console.log("Impossibile raggiungere il server");
 		}
 	}
 
 	return (
 		<>
-			{message && <div>{message}</div>}
+			{/* {message && <div>{message}</div>} */}
 			<div className="activities-container">
 				<a href={`/activities/new`} style={{ marginTop: "1em" }}>
 					<button>Crea nuova attività</button>

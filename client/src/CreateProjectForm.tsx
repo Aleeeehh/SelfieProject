@@ -204,13 +204,13 @@ export default function CreateProjectForm(): React.JSX.Element {
 							))}
 						</div>
 					</label>
-
+					{message && <div className="error-message">{message}</div>}
 					{/* manage project */}
 					<button onClick={handleCreateProject}>Crea nuovo progetto</button>
 				</div>
 			</div>
 
-			{message && <div>{message}</div>}
+			
 		</>
 	);
 }

@@ -9,7 +9,7 @@ const MAX_TITLE_CHARS = 17;
 const MAX_USERS_CHARS = 50;
 
 export default function ProjectList({ projects }: { projects: Project[] }): React.JSX.Element {
-	const [message, setMessage] = React.useState("");
+	//const [message, setMessage] = React.useState("");
 
 	const nav = useNavigate();
 
@@ -22,7 +22,7 @@ export default function ProjectList({ projects }: { projects: Project[] }): Reac
 		e.preventDefault();
 
 		if (!id) {
-			setMessage("Errore nel cancellamento del progetto: id non trovato. Errore del server?");
+			alert("Errore nella cancellazione del progetto: id non trovato. Errore del server?");
 			return;
 		}
 
@@ -33,19 +33,19 @@ export default function ProjectList({ projects }: { projects: Project[] }): Reac
 			const resBody = (await res.json()) as ResponseBody;
 			console.log(resBody);
 			if (res.status === 200) {
-				alert("Progetto cancellato correttamente!");
+				console.log("Progetto cancellato correttamente!");
 				nav("/projects");
 			} else {
-				setMessage(resBody.message || "Errore nel cancellamento del progetto");
+				alert(resBody.message || "Errore nella cancellazione del progetto");
 			}
 		} catch (e) {
-			setMessage("Impossibile raggiungere il server");
+			alert("Impossibile raggiungere il server");
 		}
 	}
 
 	return (
 		<>
-			{message && <div>{message}</div>}
+			{/*message && <div className="error-message">{message}</div>*/}
 
 			<div className="projects-list">
 				{projects.map((project) => (

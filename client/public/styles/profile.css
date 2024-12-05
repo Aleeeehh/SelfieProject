@@ -22,6 +22,7 @@
     padding: 2rem;
     width: 100%;
     max-width: 450px;
+    min-width: 180px;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -30,11 +31,13 @@
 
 .profile-header {
     margin-bottom: 1.5rem;
-    text-align: center;
 }
 
 .avatar {
     margin-bottom: 20px;
+}
+.profile-avatar {
+    margin-bottom: 1em;
 }
 
 .profile-avatar img {
@@ -57,29 +60,50 @@
 .profile-details {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    width: 100%;
 }
 
-.profile-details div {
+.profile-details, .profile-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
+    gap: 1rem;
+    width: 100%;
     border-bottom: 1px solid #ddd;
     flex-direction: column;
 }
-
+/*
 .profile-details label {
     font-weight: bold;
     color: #333;
     font-size: 0.9rem;
-}
+}*/
 
 .profile-details p {
     color: #555;
     font-size: 0.9rem;
     margin-left: auto;
+}
+
+.eighty-percent {
+    width: 80% !important;
+}
+
+.password-as-text {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    outline-color: black;
+}
+
+.profile-date-input {
+    width: 150px;
+}
+
+.profile-date-input:focus {
+    border: none;
 }
 
 .buttons {
@@ -90,13 +114,13 @@
 }
 
 .custom-btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.9rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    width: 140px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    padding: 0.6rem 1.2rem !important;
+    font-size: 0.9rem !important;
+    font-weight: bold !important;
+    border: none !important;
+    border-radius: 8px !important;
+    width: 120px !important;
+    transition: background-color 0.3s ease, transform 0.2s ease !important;
 }
 
 .custom-btn.btn-warning {
@@ -121,6 +145,12 @@
     transform: scale(1.05);
 }
 
+@media screen and (max-width: 500px) {
+    .buttons {
+        flex-direction: column;
+    }
+}
+
 @media screen and (max-width: 400px) {
     .profile-avatar img {
         width: 150px;
@@ -128,9 +158,5 @@
 
     .profile-header h1 {
         font-size: 1.4rem;
-    }
-
-    .buttons {
-        flex-direction: column;
     }
 }

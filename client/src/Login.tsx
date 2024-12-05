@@ -8,7 +8,7 @@ export default function Login(): React.JSX.Element {
 	const [password, setPassword] = React.useState("");
 	const [clearPswd, setClearPswd] = React.useState(false);
 	const [message, setMessage] = React.useState("");
-	const [errorMessage, setErrorMessage] = React.useState("");
+	//const [errorMessage, setErrorMessage] = React.useState("");
 
 	const nav = useNavigate();
 
@@ -25,10 +25,10 @@ export default function Login(): React.JSX.Element {
 		try {
 			const success = await login(username, password);
 			if (success) {
-				setMessage("Utente authenticato");
+				console.log("Utente authenticato");
 				nav("/");
 			} else {
-				setErrorMessage("Credenziali errate");
+				setMessage("Credenziali errate");
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
@@ -43,7 +43,6 @@ export default function Login(): React.JSX.Element {
 						<img src={`/images/avatar.png`} alt="Avatar" />
 					</div>
 					<div className="login-header">
-						{message && <div>{message}</div>}
 						<h2>Bentornato in SELFIE!</h2>
 						<p>Accedi per continuare la tua esperienza</p>
 					</div>
@@ -84,8 +83,8 @@ export default function Login(): React.JSX.Element {
 								style={{ cursor: "pointer", marginLeft: "8px" }}></i>
 						</div>
 
-						<p className="error-message">{errorMessage}</p>
-
+						{/*<p className="error-message">{errorMessage}</p>*/}
+						{message && <div className="error-message">{message}</div>}
 						<button onClick={handleLogin}>Login</button>
 					</form>
 					<p className="login-message">

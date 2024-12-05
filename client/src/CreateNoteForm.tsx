@@ -46,7 +46,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
 				// Controlla se la risposta non è ok
-				setMessage("Utente non autenticato");
+				console.log("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
 			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
@@ -54,7 +54,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
-			setMessage("Impossibile recuperare l'utente corrente");
+			console.log("Impossibile recuperare l'utente corrente");
 			return null;
 		}
 	}
@@ -389,7 +389,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 							</>
 						)}
 					</label>
-					{message && <div>{message}</div>}
+					{message && <div className="error-message">{message}</div>}
 
 					<button style={{ backgroundColor: "blue" }} onClick={handleCreateNote}>
 						Crea Nota

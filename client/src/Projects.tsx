@@ -14,7 +14,7 @@ enum View {
 }
 
 export default function Projects(): React.JSX.Element {
-	const [message, setMessage] = React.useState("");
+	//const [message, setMessage] = React.useState("");
 	const [projects, setProjects] = React.useState([] as Project[]);
 	const [view, setView] = React.useState<View>(View.LIST);
 	const [filter, setFilter] = React.useState(""); // username utente filtro
@@ -38,7 +38,7 @@ export default function Projects(): React.JSX.Element {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
 				// Controlla se la risposta non è ok
-				setMessage("Utente non autenticato");
+				console.log("Utente non autenticato");
 				return null; // Restituisci null se non autenticato
 			}
 			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
@@ -46,7 +46,7 @@ export default function Projects(): React.JSX.Element {
 			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
-			setMessage("Impossibile recuperare l'utente corrente");
+			console.log("Impossibile recuperare l'utente corrente");
 			return null;
 		}
 	}
@@ -115,14 +115,14 @@ export default function Projects(): React.JSX.Element {
 				} else {
 				}
 			} catch (e) {
-				setMessage("Impossibile raggiungere il server");
+				console.log("Impossibile raggiungere il server");
 			}
 		})();
 	}, []);
 
 	return (
 		<div className="projects-container">
-			{message && <div>{message}</div>}
+			{/*message && <div className="error-message">{message}</div>*/}
 			<a href={`/projects/new`} className="projects-filter">
 				<button>Crea nuovo progetto</button>
 			</a>
