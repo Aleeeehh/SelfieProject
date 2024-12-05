@@ -1,9 +1,7 @@
 import React from "react";
 
 export default function YouTubePlayer(): React.JSX.Element {
-	const [videoUrl, setVideoUrl] = React.useState(
-		`https://www.youtube.com/watch?v=3TP4c4YZs_c&t=1s`
-	);
+	const [videoUrl, setVideoUrl] = React.useState(`https://www.youtube.com/watch?v=sjkrrmBnpGE`);
 
 	function handleUrlChange(e: React.ChangeEvent<HTMLInputElement>): void {
 		setVideoUrl(e.target.value);

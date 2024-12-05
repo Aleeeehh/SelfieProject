@@ -75,7 +75,7 @@ export default function ProjectPage(): React.JSX.Element {
 
 	// On page load or when time changes, get the project data
 	React.useEffect(() => {
-		refreshProject();
+		if (!isEditing) refreshProject();
 	}, [serverTime]);
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
