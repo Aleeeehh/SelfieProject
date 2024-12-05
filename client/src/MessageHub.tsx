@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 // import UserResult from "./types/UserResult";
 import SearchForm from "./SearchForm";
 import type Chat from "./types/Chat";
@@ -13,7 +13,6 @@ function MessageHub(): React.JSX.Element {
 	const [chatList, setChatList] = React.useState([] as Chat[]);
 	const [input, setInput] = React.useState("");
 	const [addingChat, setAddingChat] = React.useState(false);
-	const [deletingChat, setDeletingChat] = React.useState(false);
 	const loggedUser = {
 		username: localStorage.getItem("loggedUserName"),
 		id: localStorage.getItem("loggedUserId"),
@@ -23,7 +22,7 @@ function MessageHub(): React.JSX.Element {
 	const [listMessage, setListMessage] = React.useState("");
 	const [chatMessage, setChatMessage] = React.useState("");
 
-	const nav = useNavigate();
+	// const nav = useNavigate();
 
 	const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
@@ -37,14 +36,14 @@ function MessageHub(): React.JSX.Element {
 		try {
 			const res = await fetch(`${SERVER_API}/chats`);
 			if (res.status !== 200) {
-				nav("/login");
-			}
-
-			const resBody = (await res.json()) as ResponseBody;
-
-			if (resBody.status === ResponseStatus.GOOD) {
-				setChatList(resBody.value);
+				// nav("/login");
 			} else {
+				const resBody = (await res.json()) as ResponseBody;
+
+				if (resBody.status === ResponseStatus.GOOD) {
+					setChatList(resBody.value);
+				} else {
+				}
 			}
 		} catch (e) {
 			console.log("Impossibile raggiungere il server");
@@ -154,6 +153,7 @@ function MessageHub(): React.JSX.Element {
 				const resBody2 = (await chats.json()) as ResponseBody;
 				if (res.status === 200) {
 					setChatList(resBody2.value as Chat[]);
+
 					setActiveChat(resBody2.value[0]);
 				} else {
 					setListMessage("Impossibile recuperare le chat: " + resBody.message);
@@ -166,22 +166,16 @@ function MessageHub(): React.JSX.Element {
 		}
 	}
 
-	async function deleteChat(
-		e: React.ChangeEvent<HTMLSelectElement>,
-		username: string
-	): Promise<void> {
+	async function deleteChat(e: React.MouseEvent<HTMLButtonElement>, chat: Chat): Promise<void> {
 		e.preventDefault();
 
-		const foundChat = chatList.find(
-			(chat) => chat.firstUser === username || chat.secondUser === username
-		);
-
-		if (!foundChat) {
-			alert("Chat con utente '" + username + "' non trovata, impossibile eliminare");
+		if (!chat.id) {
+			console.log("Chat non trovata");
+			return;
 		}
 
 		try {
-			const res = await fetch(`${SERVER_API}/chats/${foundChat?.id}`, {
+			const res = await fetch(`${SERVER_API}/chats/${chat?.id || "null"}`, {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
@@ -198,7 +192,6 @@ function MessageHub(): React.JSX.Element {
 				const resBody2 = (await chats.json()) as ResponseBody;
 				if (res.status === 200) {
 					setChatList(resBody2.value as Chat[]);
-					setActiveChat(resBody2.value[0]);
 				} else {
 					setListMessage("Impossibile recuperare le chat: " + resBody.message);
 				}
@@ -219,7 +212,7 @@ function MessageHub(): React.JSX.Element {
 						<button
 							className="create-chat-button"
 							onClick={(): void => setAddingChat(true)}>
-							Crea una nuova chat
+							Nuova chat
 						</button>
 						{addingChat && (
 							<>
@@ -248,28 +241,16 @@ function MessageHub(): React.JSX.Element {
 									onClick={(): void => setActiveChat(chat)}>
 									Chat
 								</button>
+								<button
+									className="chat-select-button"
+									style={{ backgroundColor: "red" }}
+									onClick={(
+										e: React.MouseEvent<HTMLButtonElement>
+									): Promise<void> => deleteChat(e, chat)}>
+									Elimina
+								</button>
 							</div>
 						))}
-						<button
-							className="delete-chat-button"
-							onClick={(): void => setDeletingChat(true)}>
-							Elimina una chat
-						</button>
-						{deletingChat && (
-							<>
-								<SearchForm
-									onItemClick={(e, user: string): void => {
-										deleteChat(e, user);
-									}}
-									list={[]}
-								/>
-								<button
-									className="chat-close-button"
-									onClick={(): void => setDeletingChat(false)}>
-									Chiudi
-								</button>
-							</>
-						)}
 					</div>
 					<div className="chat-container">
 						<div className="chat-header">
@@ -298,9 +279,8 @@ function MessageHub(): React.JSX.Element {
 										}>
 										<div className="message-text">{message.text}</div>
 										<div className="message-info">
-											<span>from {message.username}</span>
+											<span>Da {message.username} - </span>
 											<span>
-												at{" "}
 												{message.createdAt
 													? new Date(
 															message.createdAt
