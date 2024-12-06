@@ -801,7 +801,7 @@ export default function Pomodoros(): React.JSX.Element {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				owner: currentUser.value.username,
+				owner: currentUser.value._id.toString(),
 				title: pomEvent.title,
 				startTime: pomEvent.startTime.toISOString(),
 				endTime: pomEvent.endTime.toISOString(),
@@ -1210,7 +1210,7 @@ export default function Pomodoros(): React.JSX.Element {
 								<input
 									type="checkbox"
 									name="repeatEvent"
-									onClick={(): void =>{
+									onClick={(): void => {
 										setRepeatEvent(!repeatEvent);
 										setUntil(false);
 									}}
@@ -1361,9 +1361,9 @@ export default function Pomodoros(): React.JSX.Element {
 											.getHours()
 											.toString()
 											.padStart(2, "0")}:${pomEvent.startTime
-											.getMinutes()
-											.toString()
-											.padStart(2, "0")}`}
+												.getMinutes()
+												.toString()
+												.padStart(2, "0")}`}
 										onChange={(
 											e: React.ChangeEvent<HTMLInputElement>
 										): void => {
@@ -1416,9 +1416,9 @@ export default function Pomodoros(): React.JSX.Element {
 											.getHours()
 											.toString()
 											.padStart(2, "0")}:${pomEvent.endTime
-											.getMinutes()
-											.toString()
-											.padStart(2, "0")}`}
+												.getMinutes()
+												.toString()
+												.padStart(2, "0")}`}
 										onChange={(
 											e: React.ChangeEvent<HTMLInputElement>
 										): void => {
