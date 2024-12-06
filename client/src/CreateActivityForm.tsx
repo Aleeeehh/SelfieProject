@@ -6,6 +6,7 @@ import type Activity from "./types/Activity";
 import { AdvancementType } from "./types/Activity";
 import type Project from "./types/Project";
 import SearchForm from "./SearchForm";
+import type User from "./types/User";
 
 // const baseActivity: Activity = {
 // 	id: "",
@@ -117,10 +118,46 @@ export default function CreateActivityForm(): React.JSX.Element {
 		});
 	}
 
-	function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): void {
+	async function getCurrentUser(): Promise<Promise<any> | null> {
+		try {
+			const res = await fetch(`${SERVER_API}/users`);
+			if (!res.ok) {
+				// Controlla se la risposta non è ok
+				console.log("Utente non autenticato");
+				return null; // Restituisci null se non autenticato
+			}
+			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
+			const data: User = await res.json();
+			//console.log("Questo è il json della risposta", data);
+			return data;
+		} catch (e) {
+			console.log("Impossibile recuperare l'utente corrente");
+			return null;
+		}
+	}
+
+	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
 		console.log("Creating activity: ", JSON.stringify(activity));
+
+		console.log("AccessList: ", activity.accessList);
+		//converti tutti gli username degli utenti dell'accessList in id
+		let accessListIds: string[] = [];
+		for (const user of activity.accessList) {
+			const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${user}`);
+			const data = await res.json();
+			accessListIds.push(data.id);
+		}
+		console.log("AccessListIds: ", accessListIds);
+
+		const currentUser = await getCurrentUser();
+		const owner = currentUser?.value._id.toString();
+		accessListIds.push(owner); //aggiungo l'owner all'accessList
+
+		let accessListAccepted: string[] = [];
+		accessListAccepted.push(owner);
+
 
 		fetch(`${SERVER_API}/activities/${activity.id}`, {
 			method: "POST",
@@ -128,8 +165,8 @@ export default function CreateActivityForm(): React.JSX.Element {
 			body: JSON.stringify({
 				title: activity.title,
 				description: activity.description,
-				accessList: activity.accessList,
-				accessListAccepted: activity.accessList, //per ora accetta in automatico
+				accessList: accessListIds,
+				accessListAccepted: accessListAccepted, //per ora accetta in automatico
 				deadline: new Date(activity.deadline).toISOString().split("T")[0],
 				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
 
@@ -156,6 +193,35 @@ export default function CreateActivityForm(): React.JSX.Element {
 			.catch(() => {
 				setMessage("Impossibile raggiungere il server");
 			});
+
+
+		console.log("Creo le notifiche per gli utenti");
+		console.log("AccessList: ", activity.accessList);
+		//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
+		for (const receiver of activity.accessList) {
+
+			if (receiver !== activity.owner) { //posso mettere che la riceva anche l'owner magari
+				const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+				const data = await res.json();
+				const receiverId = data.id;
+				console.log("Questo è il receiver:", receiver);
+				const res4 = await fetch(`${SERVER_API}/notifications`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						message: "Hai ricevuto un invito per un'attività di un progetto",
+						mode: "activity",
+						receiver: receiverId, // Cambia il receiver per ogni membro della accessList
+						type: "ProjectActivity",
+						data: {
+							date: new Date(), // data prima notifica
+							activity: activity,
+						},
+					}),
+				});
+				console.log("Notifica creata per:", receiver, "Risposta:", res4);
+			}
+		}
 	}
 
 	// On page load, get the project data

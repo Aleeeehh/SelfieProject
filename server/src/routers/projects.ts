@@ -461,22 +461,24 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
 		const deletedProject = await ProjectSchema.findByIdAndDelete(id);
 
-		// Send notification to users
-		for (const user of project.accessList) {
-			if (user.toString() === req.user.id) continue;
-
-			const notification: Notification = {
-				sender: req.user.id,
-				receiver: user,
-				type: NotificationType.PROJECT,
-				sentAt: new Date(Date.now()),
-				message: "Il progetto " + project.title + " e' stato eliminato",
-				read: false,
-				data: {},
-			};
-
-			await NotificationSchema.create(notification);
-		}
+		/*
+				// Send notification to users
+				for (const user of project.accessList) {
+					if (user.toString() === req.user.id) continue;
+		
+					const notification: Notification = {
+						sender: req.user.id,
+						receiver: user,
+						type: NotificationType.PROJECT,
+						sentAt: new Date(Date.now()),
+						message: "Il progetto " + project.title + " e' stato eliminato",
+						read: false,
+						data: {},
+					};
+		
+					await NotificationSchema.create(notification);
+				}
+					*/ //AL MOMENTO LASCIO COMMENTATO PERCHE CREA PROBLEMI
 
 		const response: ResponseBody = {
 			message: "success",
