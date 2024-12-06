@@ -298,6 +298,51 @@ export default function Header(): React.JSX.Element {
 
 	}
 
+	async function handleAddProjectActivity(notification: Notification): Promise<void> {
+		const owner = await getCurrentUser();
+		const ownerId = owner.value._id.toString();
+		//ottieni l'attività dal titolo
+		const res = await fetch(`${SERVER_API}/activities/by-title/${notification.data.activity.title}`);
+		const data = await res.json();
+		const activity = data.value;
+		console.log("Attività trovata:", activity);
+		console.log("ID ATTIVITÀ:", activity._id);
+
+		//aggiungi l'utente corrente all'accessListAccepted dell'attività
+		const res2 = await fetch(`${SERVER_API}/activities/${activity._id}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ accessListAcceptedUser: notification.receiver }),
+		});
+		console.log("AccessListAccepted aggiornato:", res2);
+
+		//crea evento scadenza per l'attivitò del progetto, nel calendario dell'utente
+		//crea l'attività come evento sul calendario
+		const endTime = new Date(activity.deadline);
+
+		const startTime = new Date(endTime);
+		startTime.setHours(endTime.getHours() - 1);
+
+		const res3 = await fetch(`${SERVER_API}/events`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				owner: ownerId,
+				title: "Scadenza attività " + activity.title,
+				startTime: startTime.toISOString(),
+				endTime: endTime.toISOString(),
+				untilDate: null,
+				isInfinite: false,
+				frequency: "once",
+				location: activity.location,
+				repetitions: 1,
+			}),
+		});
+		console.log("Evento scadenza creato:", res3);
+
+		handleReadNotification(notification.id);
+	}
+
 	async function handleAddSharedEvent(notification: Notification): Promise<void> {
 		console.log("NOTIFICA DI EVENTO CONDIVISO:", notification);
 
@@ -472,6 +517,10 @@ export default function Header(): React.JSX.Element {
 			}
 			if (notification && notification.type === "pomodoro" && notification.read === false) {
 				// Includi anche il tipo "activity"
+				return true;
+			}
+
+			if (notification && notification.type === "ProjectActivity" && notification.read === false) {
 				return true;
 			}
 
@@ -1697,6 +1746,116 @@ export default function Header(): React.JSX.Element {
 															if (notification.id) {
 																// Controlla se notification.id è definito
 																handleAddProject(
+																	notification
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-check"
+															style={{
+																color: "green",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di tick */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																// Controlla se notification.id è definito
+																handleReadNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-times"
+															style={{
+																color: "red",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																// Controlla se notification.id è definito
+																handleSnoozeNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-arrows-alt-h"
+															style={{
+																color: "lightblue",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+												</div>
+											);
+											//}
+										}
+
+										else if (
+											notification.type === "ProjectActivity" &&
+											notification.read === false &&
+											doNotDisturb === false &&
+											notification.receiver === user
+										) {
+											//const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+											//if (eventDate < currentDate) {
+											return (
+												<div key={index}>
+													Hai ricevuto un invito per un'{" "}
+													<span
+														style={{
+															color: "orange",
+															fontWeight: "bold",
+														}}>
+														attività
+													</span>
+													{" "}di un{" "}
+													<span
+														style={{
+															color: "purple",
+															fontWeight: "bold",
+														}}>
+														progetto
+													</span>
+													!
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																// Controlla se notification.id è definito
+																handleAddProjectActivity(
 																	notification
 																);
 															} else {
