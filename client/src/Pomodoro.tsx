@@ -433,6 +433,18 @@ export default function Pomodoros(): React.JSX.Element {
 								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
 								eventPomodoro
 							);
+							console.log(
+								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
+								eventPomodoro
+							);
+							console.log(
+								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
+								eventPomodoro
+							);
+							console.log(
+								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
+								eventPomodoro
+							);
 
 							// Aggiungere il tempo rimanente all'evento trovato
 							const updatedEndTime = new Date(eventPomodoro.endTime);
@@ -440,14 +452,13 @@ export default function Pomodoros(): React.JSX.Element {
 
 							// Effettuare una richiesta PUT per aggiornare l'evento
 							const updateRes = await fetch(
-								`${SERVER_API}/events/${eventPomodoro._id}`,
+								`${SERVER_API}/events/${eventPomodoro.idEventoNotificaCondiviso}`,
 								{
 									method: "PUT",
 									headers: {
 										"Content-Type": "application/json",
 									},
 									body: JSON.stringify({
-										...eventPomodoro,
 										endTime: updatedEndTime,
 									}),
 								}

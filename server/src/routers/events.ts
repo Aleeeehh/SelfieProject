@@ -1172,10 +1172,12 @@ router.put("/:id", async (req: Request, res: Response) => {
     const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as
         | string[]
         | undefined; // username list
-
+    const inputEndTime = req.body.endTime as Date | undefined;
     try {
-        // TODO: validate param
-        // TODO: validate body fields
+        console.log("ENTRO NELLA PUT CON inputEndTime:", inputEndTime);
+        console.log("Entro nella PUT con inputEndTime:", inputEndTime);
+        console.log("Entro nella PUT con inputEndTime:", inputEndTime);
+        console.log("Entro nella PUT con inputEndTime:", inputEndTime);
 
         const foundEvents = await EventSchema.find({
             idEventoNotificaCondiviso: idEventoNotificaCondiviso,
@@ -1206,6 +1208,17 @@ router.put("/:id", async (req: Request, res: Response) => {
             await EventSchema.updateMany(
                 { idEventoNotificaCondiviso: idEventoNotificaCondiviso },
                 { accessListAccepted: updatedAccessListAccepted }
+            );
+        }
+
+        if (inputEndTime) {
+            console.log("AGGIORNO LA ENDTIME:", inputEndTime);
+            console.log("AGGIORNO LA ENDTIME:", inputEndTime);
+            console.log("AGGIORNO LA ENDTIME:", inputEndTime);
+            console.log("AGGIORNO LA ENDTIME:", inputEndTime);
+            await EventSchema.updateMany(
+                { idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+                { endTime: inputEndTime }
             );
         }
 
