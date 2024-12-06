@@ -10,7 +10,7 @@ import User from "./types/User";
 
 import DatePicker from "react-datepicker"; //to create pomodoro events
 import SearchForm from "./SearchForm";
-import SearchFormResource from "./SearchFormResource";
+//import SearchFormResource from "./SearchFormResource";
 import Mp3Player from "./MP3Player";
 import YouTubePlayer from "./YouTubePlayer";
 // import UserResult from "./types/UserResult";
@@ -59,14 +59,16 @@ type PomodoroData = {
 };
 
 type PomodoroEvent = {
+	idEventoCondiviso: string;
+	owner: string;
 	title: string;
 	startTime: Date;
 	endTime: Date;
 	untilDate: Date | null;
 	isInfinite: boolean;
-	frequency: Frequency;
-	repetitions: number;
+	frequency: string;
 	location: string;
+	repetitions: number;
 };
 
 const initialState: PomodoroData = {
@@ -85,17 +87,17 @@ const initialState: PomodoroData = {
 };
 
 const initialPomEvent: PomodoroEvent = {
+	idEventoCondiviso: "",
+	owner: "",
 	title: "Pomodoro Session",
 	startTime: new Date(),
 	endTime: new Date(),
 	untilDate: null,
 	isInfinite: false,
-	frequency: Frequency.ONCE,
-	repetitions: 1,
+	frequency: "once",
 	location: "",
+	repetitions: 1,
 };
-
-//TODO: aggiornare in tempo reale i pomodori recenti
 
 export default function Pomodoros(): React.JSX.Element {
 	// get the value of the query parameters to initialize the pomodoro
@@ -118,20 +120,20 @@ export default function Pomodoros(): React.JSX.Element {
 	const [initialCycles, setInitialCycles] = React.useState(0); // Per calcolare i cicli rimanenti
 	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
 	const [addEvent, setAddEvent] = React.useState(false); // Per creare un evento
-	const [repeatEvent, setRepeatEvent] = React.useState(false); // Per creare un evento ripetuto
-	const [addNotification, setAddNotification] = React.useState(false);
-	const [notificationRepeat, setNotificationRepeat] = React.useState(false);
-	const [notificationTime, setNotificationTime] = React.useState(0);
-	const [notificationRepeatTime, setNotificationRepeatTime] = React.useState(0);
-	const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
-	const [shareEvent, setShareEvent] = React.useState(false);
-	const [messageShareRisorsa, setMessageShareRisorsa] = React.useState("");
-	const [accessList, setAccessList] = React.useState([] as string[]);
+	//const [repeatEvent, setRepeatEvent] = React.useState(false); // Per creare un evento ripetuto
+	//const [addNotification, setAddNotification] = React.useState(false);
+	//const [notificationRepeat, setNotificationRepeat] = React.useState(false);
+	//const [notificationTime, setNotificationTime] = React.useState(0);
+	//const [notificationRepeatTime, setNotificationRepeatTime] = React.useState(0);
+	//const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
+	//const [shareEvent, setShareEvent] = React.useState(false);
+	//const [messageShareRisorsa, setMessageShareRisorsa] = React.useState("");
+	//const [accessList, setAccessList] = React.useState([] as string[]);
 
 
 	const [message, setMessage] = React.useState("");
-	const [until, setUntil] = React.useState(false); // Per creare un evento fino a una certa data
-	const [selectedValue, setSelectedValue] = React.useState("Data"); // Per selezionare la frequenza dell'evento
+	//const [until, setUntil] = React.useState(false); // Per creare un evento fino a una certa data
+	//const [selectedValue, setSelectedValue] = React.useState("Data"); // Per selezionare la frequenza dell'evento
 	const [shareConfig, setShareConfig] = React.useState(false); // Per condividere la configurazione del pomodoro
 	const [previousPomodoros, setPreviousPomodoros] = React.useState(false); // Per vedere i pomodori recenti
 	const [chooseMusic, setChooseMusic] = React.useState(false); // Per scegliere la musica
@@ -797,14 +799,20 @@ export default function Pomodoros(): React.JSX.Element {
 		}
 
 		const currentUser = await getCurrentUser();
+		const owner = currentUser.value._id.toString();
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+		
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
-				owner: currentUser.value.username,
+				idEventoNotificaCondiviso,
+				owner: owner,
 				title: pomEvent.title,
 				startTime: pomEvent.startTime.toISOString(),
 				endTime: pomEvent.endTime.toISOString(),
+				accessList: [], // Usa uniqueAccessList invece di accessList
+				accessListAccepted: [owner],
 				untilDate: pomEvent.untilDate,
 				isInfinite: pomEvent.isInfinite,
 				frequency: pomEvent.frequency,
@@ -818,13 +826,13 @@ export default function Pomodoros(): React.JSX.Element {
 		if (!res.ok) {
 			const errorData = await res.json();
 			console.error("Error response:", errorData);
-			setEventMessage("ERRORE DURANTE LA CREAZIONE DELL'EVENTO: " + errorData.message);
+			setEventMessage("Errore durante la creazione dell'evento: " + errorData.message);
 			return;
 		}
 
 		const data: ResponseBody = (await res.json()) as ResponseBody;
 
-		setEventMessage(data.message || "UNDEFINED ERROR");
+		setEventMessage(data.message || "Undefined error");
 
 		window.location.reload();
 
@@ -858,7 +866,7 @@ export default function Pomodoros(): React.JSX.Element {
 	async function handleSendInvite(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		if (!(users.length > 0)) {
-			console.log("Nessun utente selezionato");
+			setMessage("Nessun utente selezionato");
 			return;
 		}
 
@@ -885,24 +893,24 @@ export default function Pomodoros(): React.JSX.Element {
 
 	function toggleAddEvent(): void {
 		setAddEvent(!addEvent);
-		setRepeatEvent(false);
-		setAddNotification(false);
-		setShareEvent(false);
-		setSendInviteEvent(false);
-		setNotificationRepeat(false);
-		setNotificationRepeatTime(0);
-		setUntil(false);
+		//setRepeatEvent(false);
+		//setAddNotification(false);
+		//setShareEvent(false);
+		//setSendInviteEvent(false);
+		//setNotificationRepeat(false);
+		//setNotificationRepeatTime(0);
+		//setUntil(false);
 		//setFrequency(Frequency.ONCE);
 		setUsers([]);
-		setAccessList([]);
-		setMessageShareRisorsa("");
-		setSelectedValue("Data");
+		//setAccessList([]);
+		//setMessageShareRisorsa("");
+		//setSelectedValue("Data");
 		pomEvent.untilDate = null;
 		pomEvent.location = "";
 		pomEvent.isInfinite = false;
 	}
 
-	function toggleSelectFrequency(e: React.ChangeEvent<HTMLSelectElement>): void {
+	{/*function toggleSelectFrequency(e: React.ChangeEvent<HTMLSelectElement>): void {
 		setPomEvent((prevPomEvent) => {
 			let { frequency, untilDate } = prevPomEvent;
 			console.log("toggleSelectFrequency", e.target.value);
@@ -969,7 +977,7 @@ export default function Pomodoros(): React.JSX.Element {
 				isInfinite,
 			} as PomodoroEvent;
 		});
-	}
+	}*/}
 
 	function togglePreviousPomodoros(): void {
 		setPreviousPomodoros(!previousPomodoros);
@@ -982,7 +990,7 @@ export default function Pomodoros(): React.JSX.Element {
 	function toggleChooseMusic(): void {
 		setChooseMusic(!chooseMusic);
 	}
-
+	{/*
 	function toggleAddNotification(): void {
 		setAddNotification(!addNotification);
 		if (notificationRepeat === true) {
@@ -1104,7 +1112,7 @@ export default function Pomodoros(): React.JSX.Element {
 		setSendInviteEvent(false);
 	}
 
-	{/*function toggleCreateEvent(): void {
+	function toggleCreateEvent(): void {
 		if (!createEvent) {
 			// Usa l'ora corrente o l'ora di startTime
 			const currentHours = startTime.getHours();
@@ -1152,7 +1160,7 @@ export default function Pomodoros(): React.JSX.Element {
 		setMessageNotDisturb("");
 		setMessageRisorsa("");
 		setMessageShareRisorsa("");
-	}*/}
+	}
 
 	function toggleShareEvent(): void {
 		setShareEvent(!shareEvent);
@@ -1183,7 +1191,7 @@ export default function Pomodoros(): React.JSX.Element {
 			setMessageShareRisorsa("");
 		}
 		setAccessList([...accessList, idUser]);
-	}
+	}*/}
 
 	return (
 		<>
@@ -1206,7 +1214,7 @@ export default function Pomodoros(): React.JSX.Element {
 								Chiudi
 							</button>
 
-							<label htmlFor="allDayEvent">
+							{/*<label htmlFor="allDayEvent">
 								<input
 									type="checkbox"
 									name="repeatEvent"
@@ -1327,7 +1335,7 @@ export default function Pomodoros(): React.JSX.Element {
 										</div>
 									)}
 								</>
-							)}
+							)}*/}
 
 							<label htmlFor="startTime">
 								Data Inizio
@@ -1451,6 +1459,7 @@ export default function Pomodoros(): React.JSX.Element {
 									/>
 								</div>
 							</label>
+							{/*
 							<label htmlFor="allDayEvent">
 								<input
 									type="checkbox"
@@ -1640,7 +1649,7 @@ export default function Pomodoros(): React.JSX.Element {
 										Condividi
 									</button>
 								</div>
-							)}
+							)}*/}
 							{eventMessage && (
 								<div className="error-message">
 									{eventMessage}
@@ -1720,6 +1729,7 @@ export default function Pomodoros(): React.JSX.Element {
 									</div>
 									{users.length > 0}
 									<SearchForm onItemClick={handleSelectUser} list={users} />
+									{message && <div className="error-message">{message}</div>}
 									<button
 										onClick={handleSendInvite}
 										className="btn btn-primary send-invite-button"

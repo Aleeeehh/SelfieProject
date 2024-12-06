@@ -38,7 +38,7 @@
 	flex-direction: column;
 	justify-content: space-around;
 	position: absolute;
-	top: 12%;
+	top: 100%;
 	left: 50%;
 	transform: translateX(-50%);
 	background-color: white;

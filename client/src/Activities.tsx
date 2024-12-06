@@ -146,15 +146,7 @@ export default function Activities(): React.JSX.Element {
 					<button>Crea nuova attività</button>
 				</a>
 				*/}
-				<div
-					style={{
-						display: "flex",
-						flexDirection: "row",
-						justifyContent: "center",
-						gap: "1em",
-						alignItems: "center",
-						flexWrap: "wrap",
-					}}>
+				<div className="sort-label-container">
 					<div className="sort-label">
 						<div style={{ color: "black" }}>Filtra per progetto:</div>
 						<select
@@ -258,9 +250,12 @@ export default function Activities(): React.JSX.Element {
 									</p>
 								</div>
 								<div className="card-activity-buttons">
-									<a href={`/activities/${activity.id}`}>
-										<button>Visualizza</button>
-									</a>
+									<button
+										onClick={(): void =>
+											window.location.assign(`/activities/${activity.id}`)
+										}>
+										Visualizza
+									</button>
 									{activity.owner === userId && (
 										<button
 											style={{ backgroundColor: "#ff6b6b" }}

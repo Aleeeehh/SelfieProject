@@ -62,6 +62,16 @@ export default function CreateProjectForm(): React.JSX.Element {
 		e.preventDefault();
 		fetchCurrentDate();
 
+		if (project.title === "") {
+			setMessage("Inserire un titolo valido");
+			return;
+		}
+
+		if (project.description === "") {
+			setMessage("Inserire una descrizione valida");
+			return;
+		}
+
 		try {
 			const res = await fetch(`${SERVER_API}/projects`, {
 				method: "POST",
@@ -112,7 +122,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 
 			if (resBody.status === ResponseStatus.GOOD) {
 				const newNoteId: string = resBody.value;
-				alert("Progetto creato correttamente!");
+				console.log("Progetto creato correttamente!");
 
 				// redirect to update page of the created note
 				nav(`/projects/${newNoteId}`);

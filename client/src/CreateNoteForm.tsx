@@ -62,6 +62,16 @@ export default function CreateNoteForm(): React.JSX.Element {
 	async function handleCreateNote(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
+		if (note.title === "") {
+			setMessage("Inserire un titolo valido");
+			return;
+		}
+
+		if (note.text === "") {
+			setMessage("Inserire un testo valido");
+			return;
+		}
+
 		try {
 			//genera un idEventoNotificaCondiviso
 			//const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
@@ -106,7 +116,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 
 			if (resBody.status === ResponseStatus.GOOD) {
 				const newNoteId: string = resBody.value;
-				alert("Nota creata correttamente!");
+				console.log("Nota creata correttamente!");
 
 				// redirect to update page of the created note
 				nav(`/notes/${newNoteId}`);
@@ -391,7 +401,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 					</label>
 					{message && <div className="error-message">{message}</div>}
 
-					<button style={{ backgroundColor: "blue" }} onClick={handleCreateNote}>
+					<button onClick={handleCreateNote}>
 						Crea Nota
 					</button>
 				</div>

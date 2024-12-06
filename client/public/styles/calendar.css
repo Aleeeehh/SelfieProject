@@ -304,8 +304,7 @@
 }
 
 .overflow-adhoc {
-	overflow-x: scroll;
-	overflow-y: hidden;
+	overflow: hidden;
 }
 
 @media screen and (max-width: 310px) {

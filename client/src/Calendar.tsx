@@ -62,6 +62,7 @@ export default function Calendar(): React.JSX.Element {
 	const [messageActivity, setMessageActivity] = React.useState("");
 	const [messageNotDisturb, setMessageNotDisturb] = React.useState("");
 	const [messageShareRisorsa, setMessageShareRisorsa] = React.useState("");
+	const [messageSend, setMessageSend] = React.useState("");
 	const [showRisorse, setShowRisorse] = React.useState(true);
 	const [isAdmin, setIsAdmin] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
@@ -137,7 +138,7 @@ export default function Calendar(): React.JSX.Element {
 	>([]);
 	const [location, setLocation] = React.useState("");
 	const [meseCorrente, setMeseCorrente] = React.useState(new Date().getMonth()); //inizializzazione mese corrente
-	const [message, setMessage] = React.useState("");
+	const [messageShareActivity, setMessageShareActivity] = React.useState("");
 	const [day, setDay] = React.useState(new Date().getDate());
 	const [activeButton, setActiveButton] = React.useState(0);
 	const [year, setYear] = React.useState(new Date().getFullYear());
@@ -1130,6 +1131,7 @@ export default function Calendar(): React.JSX.Element {
 		setFrequency(Frequency.ONCE);
 		setUsers([]);
 		setAccessList([]);
+		setMessageSend("");
 		setMessageEvent("");
 		setMessageActivity("");
 		setMessageNotDisturb("");
@@ -1190,9 +1192,11 @@ export default function Calendar(): React.JSX.Element {
 		setAccessList([]);
 		setMessageNotDisturb("");
 		setMessageShareRisorsa("");
+		setMessageShareActivity("");
 		setMessageEvent("");
 		setMessageActivity("");
 		setMessageRisorsa("");
+		setMessageSend("");
 	}
 
 	function toggleCreateRisorsa(): void {
@@ -1217,6 +1221,8 @@ export default function Calendar(): React.JSX.Element {
 		setMessageNotDisturb("");
 		setMessageRisorsa("");
 		setMessageActivity("");
+		setMessageSend("");
+		setMessageShareActivity("");
 	}
 
 	function toggleCreate(): void {
@@ -1271,6 +1277,7 @@ export default function Calendar(): React.JSX.Element {
 		setAccessList([]);
 		setTitle("");
 		setDescription("");
+		setMessageSend("");
 		setMessageActivity("");
 		setMessageShareRisorsa("");
 		setMessageEvent("");
@@ -1963,7 +1970,7 @@ export default function Calendar(): React.JSX.Element {
 	async function handleSendInviteActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		if (!(users.length > 0)) {
-			setMessage("Nessun utente selezionato");
+			setMessageSend("Nessun utente selezionato");
 			return;
 		}
 		console.log("ENTRO NELLA HANDLESENDINVITE");
@@ -2078,7 +2085,7 @@ export default function Calendar(): React.JSX.Element {
 	async function handleSendInviteEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		if (!(users.length > 0)) {
-			setMessage("Nessun utente selezionato");
+			setMessageSend("Nessun utente selezionato");
 			return;
 		}
 		console.log("ENTRO NELLA HANDLESENDINVITE");
@@ -2178,10 +2185,15 @@ export default function Calendar(): React.JSX.Element {
 
 		toggleCreateEvent();
 		setSendInviteEvent(false);
+		setMessageSend("");
 	}
 
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+		if (!(users.length > 0)) {
+			setMessageShareActivity("Nessun utente selezionato");
+			return;
+		}
 		console.log("Utente ", users[0], " aggiunto all'access list dell'attività");
 
 		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
@@ -2193,6 +2205,10 @@ export default function Calendar(): React.JSX.Element {
 
 	async function handleAddUserEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+		if (!(users.length > 0)) {
+			setMessageShareRisorsa("Inserire un nome valido");
+			return;
+		}
 		console.log("Utente ", users[0], " aggiunto all'access list dell'evento");
 		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
 		const data = await res.json();
@@ -2218,18 +2234,22 @@ export default function Calendar(): React.JSX.Element {
 
 	function toggleShareActivity(): void {
 		setShareActivity(!shareActivity);
+		setMessageShareActivity("");
 	}
 
 	function toggleShareEvent(): void {
 		setShareEvent(!shareEvent);
+		setMessageShareRisorsa("");
 	}
 
 	function toggleSendInviteActivity(): void {
 		setSendInviteActivity(!sendInviteActivity);
+		setMessageSend("");
 	}
 
 	function toggleSendInviteEvent(): void {
 		setSendInviteEvent(!sendInviteEvent);
+		setMessageSend("");
 	}
 
 	async function handleDeleteEvent(id: string, groupId: string): Promise<void> {
@@ -2852,7 +2872,7 @@ export default function Calendar(): React.JSX.Element {
 		const startT = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
 		const endT = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
 		setStartTime(startT);
-
+		setMessageSend("");
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
@@ -2887,6 +2907,7 @@ export default function Calendar(): React.JSX.Element {
 		setCreateRisorsa(!createRisorsa);
 		setTitle("");
 		setDescription("");
+		setMessageRisorsa("");
 	}
 
 	async function handleCreateNonDisturbare(
@@ -2959,7 +2980,7 @@ export default function Calendar(): React.JSX.Element {
 		setCreateNonDisturbare(!createNonDisturbare);
 		setUsers([]);
 		setAccessList([]);
-		setMessageShareRisorsa("");
+		setMessageNotDisturb("");
 	}
 
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -3168,14 +3189,15 @@ export default function Calendar(): React.JSX.Element {
 		setAddNotification(false);
 		setNotificationTime(0);
 		setNotificationRepeatTime(0);
+		setMessageShareActivity("");
 		setSendInviteActivity(false);
 		setShareActivity(false);
 		setAccessList([]);
 		setUsers([]);
 		setAccessList([]);
-		setMessageShareRisorsa("");
 		setTitle("");
 		setDescription("");
+		setMessageSend("");
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
@@ -3933,7 +3955,7 @@ export default function Calendar(): React.JSX.Element {
 													onItemClick={handleSelectUser}
 													list={users}
 												/>
-												{message && <div className="error-message">{message}</div>}
+												{messageSend && <div className="error-message">{messageSend}</div>}
 												<button
 													onClick={handleSendInviteEvent}
 													className="btn btn-primary send-invite-button"
@@ -3985,7 +4007,6 @@ export default function Calendar(): React.JSX.Element {
 														{messageShareRisorsa}
 													</div>
 												)}
-
 												<button
 													onClick={handleAddUserEvent}
 													className="btn btn-primary send-invite-button"
@@ -4215,7 +4236,7 @@ export default function Calendar(): React.JSX.Element {
 													onItemClick={handleSelectUser}
 													list={users}
 												/>
-												{message && (<div className="error-message">{message}</div>)}
+												{messageSend && <div className="error-message">{messageSend}</div>}
 												<button
 													onClick={handleSendInviteActivity}
 													className="btn btn-primary send-invite-button"
@@ -4263,9 +4284,9 @@ export default function Calendar(): React.JSX.Element {
 													onItemClick={handleSelectUser}
 													list={users}
 												/>
-												{message && (
+												{messageShareActivity && (
 													<div className="error-message">
-														{message}
+														{messageShareActivity}
 													</div>
 												)}
 												<button

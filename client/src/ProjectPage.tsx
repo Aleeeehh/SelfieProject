@@ -85,6 +85,16 @@ export default function ProjectPage(): React.JSX.Element {
 	async function handleUpdateProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
+		if (project.title === "") {
+			setMessage("Inserire un titolo valido");
+			return;
+		}
+
+		if (project.description === "") {
+			setMessage("Inserire una descrizione valida");
+			return;
+		}
+
 		// TODO: validate inputs (not empty, max length)
 		try {
 			const res = await fetch(`${SERVER_API}/projects/${id}`, {
@@ -101,7 +111,7 @@ export default function ProjectPage(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Progetto aggiornato correttamente!");
+				console.log("Progetto aggiornato correttamente!");
 
 				await refreshProject();
 
@@ -114,6 +124,7 @@ export default function ProjectPage(): React.JSX.Element {
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
 		}
+		setMessage("");
 	}
 
 	async function handleDeleteProject(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -129,7 +140,7 @@ export default function ProjectPage(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Progetto cancellato correttamente!");
+				console.log("Progetto cancellato correttamente!");
 				nav("/projects");
 			} else {
 				setMessage(resBody.message || "Errore della cancellazione del progetto");
@@ -137,6 +148,7 @@ export default function ProjectPage(): React.JSX.Element {
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
 		}
+		setMessage("");
 	}
 
 	function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
@@ -145,6 +157,7 @@ export default function ProjectPage(): React.JSX.Element {
 		}
 
 		setIsEditing(!isEditing);
+		setMessage("");
 	}
 
 	function addUser(e: React.ChangeEvent<HTMLSelectElement>, user: string): void {
@@ -206,7 +219,7 @@ export default function ProjectPage(): React.JSX.Element {
 					)}
 					{/* render access list */}
 					<label>
-						Utenti partecipanti al progetto
+						Utenti partecipanti al progetto:
 						{isEditing && (
 							<div className="project-users-form">
 								<label>
@@ -236,14 +249,14 @@ export default function ProjectPage(): React.JSX.Element {
 									</div>
 								))
 							) : (
-								<div>Nessun partecipante</div>
+								<div style={{ fontWeight: "normal" }}>Nessun partecipante</div>
 							)}
 						</div>
 					</label>
 					{/* render activity list */}
 					<div className="project-activities-container">
 						<label className="project-activities-label">
-							Attività legate al progetto
+							Attività legate al progetto:
 							{project.activityList &&
 								(project.activityList.length ? (
 									project.activityList.map((a) => (
@@ -287,7 +300,7 @@ export default function ProjectPage(): React.JSX.Element {
 										</div>
 									))
 								) : (
-									<div>Nessuna attività</div>
+									<div style={{ fontWeight: "normal" }}>Nessuna attività</div>
 								))}
 						</label>
 

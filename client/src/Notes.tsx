@@ -67,7 +67,7 @@ export default function Notes(): React.JSX.Element {
 			console.log(data);
 
 			if (data.status === ResponseStatus.GOOD) {
-				alert("Nota duplicata correttamente");
+				console.log("Nota duplicata correttamente");
 				getAllNotes();
 			} else {
 				alert(data.message || "Errore durante la duplicazione della nota");
@@ -89,7 +89,7 @@ export default function Notes(): React.JSX.Element {
 			console.log(data);
 
 			if (data.status === ResponseStatus.GOOD) {
-				alert("Nota eliminata correttamente");
+				console.log("Nota eliminata correttamente");
 				getAllNotes();
 			} else {
 				alert(data.message || "Errore durante l'eliminazione della nota");

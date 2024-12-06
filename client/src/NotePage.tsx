@@ -97,6 +97,16 @@ export default function NotePage(): React.JSX.Element {
 	async function handleUpdateNote(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
+		if (note.title === "") {
+			setMessage("Inserire un titolo valido");
+			return;
+		}
+
+		if (note.text === "") {
+			setMessage("Inserire un testo valido");
+			return;
+		}
+
 		// TODO: validate inputs (not empty, max length)
 		try {
 			const res = await fetch(`${SERVER_API}/notes/${id}`, {
@@ -149,7 +159,7 @@ export default function NotePage(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Nota aggiornata correttamente!");
+				console.log("Nota aggiornata correttamente!");
 				refreshNote();
 				setIsEditing(false);
 			} else {
@@ -158,6 +168,7 @@ export default function NotePage(): React.JSX.Element {
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
 		}
+		setMessage("");
 	}
 	async function handleDeleteNote(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
@@ -172,7 +183,7 @@ export default function NotePage(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Nota cancellata correttamente!");
+				console.log("Nota cancellata correttamente!");
 				nav("/notes");
 			} else {
 				setMessage("Errore della cancellazione della nota");
@@ -293,6 +304,7 @@ export default function NotePage(): React.JSX.Element {
 
 		setIsEditing(false);
 		setIsPreview(false);
+		setMessage("");
 	}
 
 	return (
@@ -627,7 +639,7 @@ export default function NotePage(): React.JSX.Element {
 					{/* render privacy */}
 					<label>
 						Privacy: {note.privacy}
-						{note.privacy === Privacy.PROTECTED &&
+						{!isEditing &&note.privacy === Privacy.PROTECTED &&
 							note.accessList.map((user) => <div>{user}</div>)}
 						{isEditing && (
 							<>
@@ -648,10 +660,10 @@ export default function NotePage(): React.JSX.Element {
 												list={note.accessList}
 											/>
 										)}
-										<div>
+										<div className="tags-container">
 											{note.accessList.map((user) => (
 												<>
-													<div>{user}</div>
+													{/*<div>{user}</div>
 													{isEditing && (
 														<button
 															onClick={(
@@ -659,7 +671,24 @@ export default function NotePage(): React.JSX.Element {
 															): void => RemoveUser(e, user)}>
 															X
 														</button>
-													)}
+													)*/}
+													<div className="project-user-box">
+														{user}
+														{isEditing && (
+															<button
+																style={{
+																	marginLeft: "0.5em",
+																	padding: "0",
+																	backgroundColor: "#d64545",
+																}}
+																className="project-user-delete"
+																onClick={(
+																	e: React.MouseEvent<HTMLButtonElement>
+																): void => RemoveUser(e, user)}>
+																X
+															</button>
+														)}
+													</div>
 												</>
 											))}
 										</div>
