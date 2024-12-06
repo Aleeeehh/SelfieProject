@@ -645,6 +645,13 @@ router.post("/", async (req: Request, res: Response) => {
             }
 
             if (frequency === "once") {
+                console.log("ENTRO DOVE VOLEVO ENTRARE");
+                console.log("ENTRO DOVE VOLEVO ENTRARE");
+                console.log("ENTRO DOVE VOLEVO ENTRARE");
+                console.log("ENTRO DOVE VOLEVO ENTRARE");
+                console.log("ENTRO DOVE VOLEVO ENTRARE");
+                console.log("ENTRO DOVE VOLEVO ENTRARE");
+
                 const event: Event = {
                     id: "1",
                     groupId,

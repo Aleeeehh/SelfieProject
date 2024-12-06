@@ -337,10 +337,15 @@ export default function Pomodoros(): React.JSX.Element {
 
 				if (timeToAdd >= 30) {
 					const currentUser = await getCurrentUser();
-					const owner = currentUser.value.username;
+					const owner = currentUser.value._id.toString();
 					const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 					const date = await res.json();
-					console.log("Eventi trovati:", data);
+					console.log("Eventi trovati nella handleLeftTime:", data);
+					console.log("Eventi trovati nella handleLeftTime:", data);
+					console.log("Eventi trovati nella handleLeftTime:", data);
+					console.log("Eventi trovati nella handleLeftTime:", data);
+					console.log("Eventi trovati nella handleLeftTime:", data);
+
 
 					// Creo una variabile per il pomodoro attuale
 					const currentPomodoro = date.value.find((event: any) => {
@@ -353,6 +358,18 @@ export default function Pomodoros(): React.JSX.Element {
 					);
 
 					if (date.status === ResponseStatus.GOOD) {
+						console.log("ENTRO NELL'IF");
+						console.log("ENTRO NELL'IF");
+
+						console.log("ENTRO NELL'IF");
+
+						console.log("ENTRO NELL'IF");
+						console.log("ENTRO NELL'IF");
+						console.log("ENTRO NELL'IF");
+						console.log("ENTRO NELL'IF");
+						console.log("ENTRO NELL'IF");
+						console.log("ENTRO NELL'IF");
+
 						setEventList(date.value);
 						console.log(eventList); // Senza questa riga c'è un warning
 						console.log("stampo data.values:", date.value);
@@ -400,6 +417,9 @@ export default function Pomodoros(): React.JSX.Element {
 									endTime: correctedEndTime.toISOString(),
 									location: currentPomodoro.location,
 									frequency: Frequency.ONCE,
+									untilDate: null,
+									isInfinite: false,
+									repetitions: 1,
 								}),
 							});
 
@@ -801,7 +821,7 @@ export default function Pomodoros(): React.JSX.Element {
 		const currentUser = await getCurrentUser();
 		const owner = currentUser.value._id.toString();
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
-		
+
 		const res = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
