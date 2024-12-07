@@ -135,6 +135,8 @@ client/build/
 # server
 server/dist
 server/build
+server/webapp
 
 # node modules
 **/*/node_modules
+

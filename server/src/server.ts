@@ -133,10 +133,10 @@ server.use("/js", express.static(path.join(dirname, "build", "js")));
 server.use("/css", express.static(path.join(dirname, "build", "css")));
 server.use("/img", express.static(path.join(dirname, "build", "media")));
 
-server.use(express.static(path.join(dirname, "build")));
+server.use(express.static(path.join(dirname, "webapp", "build")));
 
 server.get("*", (_: Request, res: Response) => {
-	res.sendFile(path.join(dirname, "build", "index.html"));
+	res.sendFile(path.join(dirname, "webapp", "build", "index.html"));
 });
 
 // TODO: Use authentication for DB
