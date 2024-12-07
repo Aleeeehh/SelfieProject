@@ -1,10 +1,10 @@
 import { Request, Response, Router } from "express";
-import { ResponseBody } from "../types/ResponseBody.ts";
-import { ResponseStatus } from "../types/ResponseStatus.ts";
-import { validDateString } from "../lib.ts";
-import NoteSchema from "../schemas/Note.ts";
-import NoteItemSchema from "../schemas/NoteList.ts";
-import type { ListItem } from "../types/Note.ts";
+import { ResponseBody } from "../types/ResponseBody.js";
+import { ResponseStatus } from "../types/ResponseStatus.js";
+import { validDateString } from "../lib.js";
+import NoteSchema from "../schemas/Note.js";
+import NoteItemSchema from "../schemas/NoteList.js";
+import type { ListItem } from "../types/Note.js";
 import { Types } from "mongoose";
 
 const router: Router = Router();

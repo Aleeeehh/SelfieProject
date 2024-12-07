@@ -1,17 +1,17 @@
 import { Request, Response, Router } from "express";
-import type { ResponseBody } from "../types/ResponseBody.ts";
-import { ResponseStatus } from "../types/ResponseStatus.ts";
-import { ProjectSchema } from "../schemas/Project.ts";
-import type Project from "../types/Project.ts";
-import NoteSchema from "../schemas/Note.ts";
-import type Note from "../types/Note.ts";
-// import type UserResult from "../types/UserResult.ts";
-import UserSchema from "../schemas/User.ts";
+import type { ResponseBody } from "../types/ResponseBody.js";
+import { ResponseStatus } from "../types/ResponseStatus.js";
+import { ProjectSchema } from "../schemas/Project.js";
+import type Project from "../types/Project.js";
+import NoteSchema from "../schemas/Note.js";
+import type Note from "../types/Note.js";
+// import type UserResult from "../types/UserResult.js";
+import UserSchema from "../schemas/User.js";
 import mongoose, { Types } from "mongoose";
-import type { Privacy } from "../types/Privacy.ts";
-import { getActivityList, getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.ts";
-import NotificationSchema, { NotificationType } from "../schemas/Notification.ts";
-import type Notification from "../types/Notification.ts";
+import type { Privacy } from "../types/Privacy.js";
+import { getActivityList, getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.js";
+import NotificationSchema, { NotificationType } from "../schemas/Notification.js";
+import type Notification from "../types/Notification.js";
 
 const router: Router = Router();
 
@@ -122,8 +122,9 @@ router.get("/", async (req: Request, res: Response) => {
 				description: foundProject.description,
 				owner: foundProject.owner,
 				accessList: await getUsernameListFromIdList(foundProject.accessList),
-				accessListAccepted: foundProject.accessListAccepted ?
-					await getUsernameListFromIdList(foundProject.accessListAccepted) : [],
+				accessListAccepted: foundProject.accessListAccepted
+					? await getUsernameListFromIdList(foundProject.accessListAccepted)
+					: [],
 				activityList: await getActivityList(foundProject._id, undefined),
 				note: projectNote,
 			};
@@ -312,10 +313,7 @@ router.get("/accepted/:userId", async (req: Request, res: Response) => {
 
 		// Trova i progetti dove l'utente è owner o in accessListAccepted
 		const foundProjects = await ProjectSchema.find({
-			$or: [
-				{ owner: userId },
-				{ accessListAccepted: userId }
-			],
+			$or: [{ owner: userId }, { accessListAccepted: userId }],
 		}).lean();
 
 		console.log("Found projects:", foundProjects);
@@ -349,8 +347,9 @@ router.get("/accepted/:userId", async (req: Request, res: Response) => {
 				description: foundProject.description,
 				owner: foundProject.owner,
 				accessList: await getUsernameListFromIdList(foundProject.accessList),
-				accessListAccepted: foundProject.accessListAccepted ?
-					await getUsernameListFromIdList(foundProject.accessListAccepted) : [],
+				accessListAccepted: foundProject.accessListAccepted
+					? await getUsernameListFromIdList(foundProject.accessListAccepted)
+					: [],
 				activityList: await getActivityList(foundProject._id, undefined),
 				note: projectNote,
 			};
@@ -364,7 +363,6 @@ router.get("/accepted/:userId", async (req: Request, res: Response) => {
 			value: projectList,
 		};
 		return res.status(200).json(response);
-
 	} catch (error) {
 		console.error("Error fetching user projects:", error);
 		const response: ResponseBody = {
@@ -505,7 +503,7 @@ router.get("/by-title/:title", async (req: Request, res: Response) => {
 		if (!title) {
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
-				message: "Titolo del progetto non fornito"
+				message: "Titolo del progetto non fornito",
 			});
 		}
 
@@ -515,7 +513,7 @@ router.get("/by-title/:title", async (req: Request, res: Response) => {
 		if (!foundProject) {
 			return res.status(404).json({
 				status: ResponseStatus.BAD,
-				message: `Progetto con titolo "${title}" non trovato`
+				message: `Progetto con titolo "${title}" non trovato`,
 			});
 		}
 
@@ -523,18 +521,20 @@ router.get("/by-title/:title", async (req: Request, res: Response) => {
 		if (!req.user || !req.user.id) {
 			return res.status(401).json({
 				status: ResponseStatus.BAD,
-				message: "Utente non autenticato"
+				message: "Utente non autenticato",
 			});
 		}
 
 		const userId = new mongoose.Types.ObjectId(req.user.id);
 
 		// Verifica che l'utente sia il proprietario o nella lista di accesso
-		if (!foundProject.accessList.some(id => id.equals(userId)) &&
-			!foundProject.owner.equals(userId)) {
+		if (
+			!foundProject.accessList.some((id) => id.equals(userId)) &&
+			!foundProject.owner.equals(userId)
+		) {
 			return res.status(403).json({
 				status: ResponseStatus.BAD,
-				message: "Non hai i permessi per accedere a questo progetto"
+				message: "Non hai i permessi per accedere a questo progetto",
 			});
 		}
 
@@ -546,19 +546,18 @@ router.get("/by-title/:title", async (req: Request, res: Response) => {
 			owner: foundProject.owner,
 			accessList: await getUsernameListFromIdList(foundProject.accessList),
 			activityList: await getActivityList(foundProject._id, undefined),
-			note: undefined // Aggiungi la nota se necessario
+			note: undefined, // Aggiungi la nota se necessario
 		};
 
 		return res.status(200).json({
 			status: ResponseStatus.GOOD,
-			value: project
+			value: project,
 		});
-
 	} catch (error) {
 		console.error("Errore durante il recupero del progetto:", error);
 		return res.status(500).json({
 			status: ResponseStatus.BAD,
-			message: "Errore durante il recupero del progetto"
+			message: "Errore durante il recupero del progetto",
 		});
 	}
 });
@@ -571,7 +570,6 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const description = req.body.description;
 		const accessList = req.body.accessList as string[]; // username list
 		const accessListAcceptedUser = req.body.accessListAcceptedUser; // nuovo campo per l'utente da aggiungere
-
 
 		if (!Types.ObjectId.isValid(id)) {
 			const resBody: ResponseBody = {
@@ -615,17 +613,18 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 			// Crea una nuova lista che include sia gli utenti esistenti che il nuovo
 			const updatedAccessListAccepted = [
-				...currentProject.accessListAccepted || [], // mantiene la lista esistente
-				new Types.ObjectId(accessListAcceptedUser)  // aggiunge il nuovo utente
+				...(currentProject.accessListAccepted || []), // mantiene la lista esistente
+				new Types.ObjectId(accessListAcceptedUser), // aggiunge il nuovo utente
 			];
 
 			// Aggiorna il progetto con la nuova lista completa
 			const updatedProject = await ProjectSchema.findByIdAndUpdate(
 				id,
 				{
-					$set: { // usa $set invece di $addToSet per aggiornare l'intera lista
-						accessListAccepted: updatedAccessListAccepted
-					}
+					$set: {
+						// usa $set invece di $addToSet per aggiornare l'intera lista
+						accessListAccepted: updatedAccessListAccepted,
+					},
 				},
 				{ new: true }
 			);
@@ -669,10 +668,10 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		// Send notification to users
 		for (const user of project.accessList) {
-			if (user.toString() === req.user.id) continue;
+			if (user.toString() === req.user!.id) continue;
 
 			const notification: Notification = {
-				sender: req.user.id,
+				sender: req.user!.id,
 				receiver: user,
 				type: NotificationType.PROJECT,
 				sentAt: new Date(Date.now()),

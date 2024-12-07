@@ -3,7 +3,7 @@ import NotificationSchema from "../schemas/Notification.js";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import type Notification from "../types/Notification.js";
-import UserSchema from "../schemas/User.ts";
+import UserSchema from "../schemas/User.js";
 const router = express.Router();
 
 // Definisci l'interfaccia per il tuo oggetto di notifica
@@ -489,32 +489,32 @@ router.post("/", async (req: Request, res: Response) => {
 			for (let i = 1; i <= 5; i++) {
 				// Aggiungi 5 notifiche
 				let displayTime: string; // Cambiato var in let
-				let timeUnit: string; // Cambiato var in let
+				// let timeUnit: string; // Cambiato var in let
 
 				switch (i) {
 					case 1:
 						displayTime = "1 ora..";
-						timeUnit = "ora";
+						//timeUnit = "ora";
 						break;
 					case 2:
 						displayTime = "12 ore..";
-						timeUnit = "ore";
+						//timeUnit = "ore";
 						break;
 					case 3:
 						displayTime = "1 giorno..";
-						timeUnit = "giorno";
+						//timeUnit = "giorno";
 						break;
 					case 4:
 						displayTime = "2 giorni..";
-						timeUnit = "giorni";
+						//timeUnit = "giorni";
 						break;
 					case 5:
 						displayTime = "3 giorni o più..";
-						timeUnit = "giorni";
+						//timeUnit = "giorni";
 						break;
 					default:
 						displayTime = "tempo non specificato"; // Valore di default
-						timeUnit = "giorni"; // Valore di default
+					//timeUnit = "giorni"; // Valore di default
 				}
 
 				// Crea un nuovo messaggio per la notifica
@@ -523,14 +523,14 @@ router.post("/", async (req: Request, res: Response) => {
 					i === 1
 						? 60
 						: i === 2
-							? 720
-							: i === 3
-								? 1440
-								: i === 4
-									? 2880
-									: i === 5
-										? 4320
-										: 0; // Aggiunto il caso per i=5
+						? 720
+						: i === 3
+						? 1440
+						: i === 4
+						? 2880
+						: i === 5
+						? 4320
+						: 0; // Aggiunto il caso per i=5
 
 				const anotherNotification: Notification = {
 					data: {

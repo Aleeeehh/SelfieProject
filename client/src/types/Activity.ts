@@ -1,5 +1,5 @@
 import type Note from "./Note.js";
-// import type UserResult from "./UserResult.ts";
+// import type UserResult from "./UserResult.js";
 
 type Activity = {
 	id?: string;

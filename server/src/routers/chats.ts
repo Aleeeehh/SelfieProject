@@ -5,8 +5,8 @@ import UserSchema from "../schemas/User.js";
 import { Types } from "mongoose";
 import { MessageSchema, ChatSchema } from "../schemas/Chat.js";
 // import UserResult from "../types/UserResult.js";
-import type Message from "../types/Message.ts";
-import type Chat from "../types/Chat.ts";
+import type Message from "../types/Message.js";
+import type Chat from "../types/Chat.js";
 
 const router: Router = Router();
 

@@ -7,8 +7,8 @@ import { default as notificationRouter } from "./notifications.js";
 import { default as chatsRouter } from "./chats.js";
 import { default as activityRouter } from "./activity.js";
 import { default as currentDateRouter } from "./currentDate.js";
-import { default as listsRouter } from "./lists.ts";
-import { default as risorsaRouter } from "./risorsa.ts";
+import { default as listsRouter } from "./lists.js";
+import { default as risorsaRouter } from "./risorsa.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import { Request, Response, Router, NextFunction } from "express";
 

@@ -13,7 +13,7 @@ import { ObjectId } from "mongodb";
 import { Privacy } from "../types/Privacy.js";
 import NoteItemSchema from "../schemas/NoteList.js";
 import type { ListItem } from "../types/Note.js";
-import { getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.ts";
+import { getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.js";
 
 const router: Router = Router();
 
@@ -600,7 +600,7 @@ router.put("/:noteId/complete-item/:itemId", async (req: Request, res: Response)
 		if (!foundNote) {
 			return res.status(404).json({
 				status: ResponseStatus.BAD,
-				message: `Nota con id ${noteId} non trovata`
+				message: `Nota con id ${noteId} non trovata`,
 			});
 		}
 
@@ -608,20 +608,20 @@ router.put("/:noteId/complete-item/:itemId", async (req: Request, res: Response)
 		const updatedItem = await NoteItemSchema.findOneAndUpdate(
 			{
 				_id: itemId,
-				noteId: noteId
+				noteId: noteId,
 			},
 			{
-				completed: true
+				completed: true,
 			},
 			{
-				new: true
+				new: true,
 			}
 		);
 
 		if (!updatedItem) {
 			return res.status(404).json({
 				status: ResponseStatus.BAD,
-				message: `Item con id ${itemId} non trovato nella nota ${noteId}`
+				message: `Item con id ${itemId} non trovato nella nota ${noteId}`,
 			});
 		}
 
@@ -629,10 +629,10 @@ router.put("/:noteId/complete-item/:itemId", async (req: Request, res: Response)
 		await NoteSchema.updateOne(
 			{
 				_id: noteId,
-				"toDoList.id": itemId
+				"toDoList.id": itemId,
 			},
 			{
-				$set: { "toDoList.$.completed": true }
+				$set: { "toDoList.$.completed": true },
 			}
 		);
 
@@ -641,14 +641,13 @@ router.put("/:noteId/complete-item/:itemId", async (req: Request, res: Response)
 		return res.status(200).json({
 			status: ResponseStatus.GOOD,
 			message: "Item completato con successo",
-			value: updatedItem
+			value: updatedItem,
 		});
-
 	} catch (e) {
 		console.error("Errore durante il completamento dell'item:", e);
 		return res.status(500).json({
 			status: ResponseStatus.BAD,
-			message: "Errore durante il completamento dell'item"
+			message: "Errore durante il completamento dell'item",
 		});
 	}
 });

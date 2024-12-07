@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
-import type Note from "./Note.ts";
-import type Activity from "./Activity.ts";
-// import type UserResult from "./UserResult.ts";
+import type Note from "./Note.js";
+import type Activity from "./Activity.js";
+// import type UserResult from "./UserResult.js";
 
 type Project = {
 	id?: string | Types.ObjectId;

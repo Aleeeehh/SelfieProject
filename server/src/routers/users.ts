@@ -314,7 +314,7 @@ router.post("/usernames", checkAuthentication, async (req: Request, res: Respons
 	}
 });
 
-router.get("/allUsernames", checkAuthentication, async (req: Request, res: Response) => {
+router.get("/allUsernames", checkAuthentication, async (_: Request, res: Response) => {
 	try {
 		// Se l'input è vuoto, restituisci tutti gli usernames
 		const foundUsers = await UserSchema.find().lean();
@@ -361,7 +361,7 @@ router.get("/getIdByUsername", async (req: Request, res: Response) => {
 	return res.json({ id: foundUser?._id.toString() });
 });
 
-router.get("/allIds", checkAuthentication, async (req: Request, res: Response) => {
+router.get("/allIds", checkAuthentication, async (_: Request, res: Response) => {
 	try {
 		// Se l'input è vuoto, restituisci tutti gli usernames
 		const foundUsers = await UserSchema.find().lean();

@@ -1,4 +1,4 @@
-import UserSchema from "./schemas/User.ts";
+import UserSchema from "./schemas/User.js";
 
 // Valid date: YYYY-MM-DD
 export function validDateString(dateStr: string) {

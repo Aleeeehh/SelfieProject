@@ -7,10 +7,10 @@ import mongoose from "mongoose";
 import { ObjectId } from "mongodb";
 import { ActivitySchema } from "../schemas/Activity.js";
 import type Activity from "../types/Activity.js";
-import { validDateString } from "../lib.ts";
-import { ProjectSchema } from "../schemas/Project.ts";
+import { validDateString } from "../lib.js";
+import { ProjectSchema } from "../schemas/Project.js";
 import { AdvancementType } from "../types/Activity.js";
-import { getActivityList, getStatusForActivity, getUsernameListFromIdList } from "./lib.ts";
+import { getActivityList, getStatusForActivity, getUsernameListFromIdList } from "./lib.js";
 // import { validDateString } from "../lib.js";
 
 const router: Router = Router();
@@ -177,32 +177,29 @@ router.get("/title/:id", async (req: Request, res: Response) => {
 		if (!Types.ObjectId.isValid(activityId)) {
 			return res.status(400).json({
 				status: ResponseStatus.BAD,
-				message: "ID attività non valido"
+				message: "ID attività non valido",
 			});
 		}
 
 		// Trova l'attività e seleziona solo il campo title
-		const activity = await ActivitySchema.findById(activityId)
-			.select('title')
-			.lean();
+		const activity = await ActivitySchema.findById(activityId).select("title").lean();
 
 		if (!activity) {
 			return res.status(404).json({
 				status: ResponseStatus.BAD,
-				message: `Attività con id ${activityId} non trovata`
+				message: `Attività con id ${activityId} non trovata`,
 			});
 		}
 
 		return res.status(200).json({
 			status: ResponseStatus.GOOD,
-			value: activity.title
+			value: activity.title,
 		});
-
 	} catch (e) {
 		console.error("Errore durante il recupero del titolo dell'attività:", e);
 		return res.status(500).json({
 			status: ResponseStatus.BAD,
-			message: "Errore durante il recupero del titolo dell'attività"
+			message: "Errore durante il recupero del titolo dell'attività",
 		});
 	}
 });
@@ -215,12 +212,12 @@ router.get("/by-title/:title", async (req: Request, res: Response) => {
 
 		return res.status(200).json({
 			status: ResponseStatus.GOOD,
-			value: activity
+			value: activity,
 		});
 	} catch (e) {
 		return res.status(500).json({
 			status: ResponseStatus.BAD,
-			message: "Errore durante la ricerca dell'attività"
+			message: "Errore durante la ricerca dell'attività",
 		});
 	}
 });
@@ -762,11 +759,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const isValidObjectId = Types.ObjectId.isValid(activityId);
 		const query = isValidObjectId
 			? {
-				$or: [
-					{ _id: new Types.ObjectId(activityId) },
-					{ idEventoNotificaCondiviso: activityId },
-				],
-			}
+					$or: [
+						{ _id: new Types.ObjectId(activityId) },
+						{ idEventoNotificaCondiviso: activityId },
+					],
+			  }
 			: { idEventoNotificaCondiviso: activityId };
 
 		const foundActivity = await ActivitySchema.findOne(query).lean();
@@ -977,11 +974,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const result = await ActivitySchema.findOneAndUpdate(
 			isValidObjectId
 				? {
-					$or: [
-						{ _id: new Types.ObjectId(activityId) },
-						{ idEventoNotificaCondiviso: activityId },
-					],
-				}
+						$or: [
+							{ _id: new Types.ObjectId(activityId) },
+							{ idEventoNotificaCondiviso: activityId },
+						],
+				  }
 				: { idEventoNotificaCondiviso: activityId },
 			updatedActivity
 		);

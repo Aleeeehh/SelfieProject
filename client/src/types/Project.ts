@@ -1,6 +1,6 @@
 import type Note from "./Note.js";
 import type Activity from "./Activity.js";
-// import type UserResult from "./UserResult.ts";
+// import type UserResult from "./UserResult.js";
 
 type Project = {
 	id?: string;

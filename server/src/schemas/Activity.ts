@@ -1,5 +1,5 @@
 import mongoose, { type Types } from "mongoose";
-import { AdvancementType } from "../types/Activity.ts";
+import { AdvancementType } from "../types/Activity.js";
 
 // "status" è un parametro derivato parzialmente: gli unici parametri
 // "selezionabili" sono [Attiva (actor) | Completa (actor) | Riattivata (owner)],

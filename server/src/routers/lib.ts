@@ -1,8 +1,8 @@
 import type { Types } from "mongoose";
-import UserSchema from "../schemas/User.ts";
-import type Activity from "../types/Activity.ts";
-import { ActivitySchema } from "../schemas/Activity.ts";
-import { ActivityStatus, AdvancementType } from "../types/Activity.ts";
+import UserSchema from "../schemas/User.js";
+import type Activity from "../types/Activity.js";
+import { ActivitySchema } from "../schemas/Activity.js";
+import { ActivityStatus, AdvancementType } from "../types/Activity.js";
 
 // 30 days
 const MAX_TIME_BEFORE_ABANDON = 30 * 24 * 60 * 60 * 1000;

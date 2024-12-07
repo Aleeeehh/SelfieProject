@@ -1,6 +1,6 @@
+import "dotenv/config";
 import express, { Application, ErrorRequestHandler, Request, Response } from "express";
 import session from "express-session";
-import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import { default as apiRouter } from "./routers/api.js";
@@ -19,16 +19,29 @@ import MongoStore from "connect-mongo";
 import UserSchema from "./schemas/User.js";
 import * as argon2 from "argon2";
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
 // Connect to database
 // const DB_USER = "";
 //const DB_PSWD = "";
-const DB_HOST = "127.0.0.1";
-const DB_PORT = "27017";
+const DB_HOST = process.env.DB_HOST || "127.0.0.1";
+const DB_PORT = process.env.DB_PORT || "27017";
 const DB_APP_NAME = "selfie_db";
 const DB_SESSION = "SessionDB";
-const SESSION_SECRET = "secret";
+const SESSION_SECRET = process.env.SESSION_SECRET || "secret";
 
-const dbConnectionString = `mongodb://${DB_HOST}:${DB_PORT}`;
+const DB_USER = process.env.DB_USER || "user";
+const DB_PSWD = process.env.DB_PSWD || "user";
+
+// Determine if authentication should be used
+const useAuth = process.env.DB_AUTH === "true";
+
+const dbConnectionString = useAuth
+	? `mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}`
+	: `mongodb://${DB_HOST}:${DB_PORT}`;
+
+console.log(dbConnectionString);
 
 // store of sessions
 const store = MongoStore.create({
@@ -39,9 +52,6 @@ const store = MongoStore.create({
 store.on("error", function (error: ErrorRequestHandler) {
 	console.log({ type: "Database", error: error });
 });
-
-// import env file
-dotenv.config();
 
 const server: Application = express();
 const PORT = process.env.PORT || 8000;
@@ -134,22 +144,62 @@ server.get("*", (_: Request, res: Response) => {
 	res.sendFile(path.join(dirname, "build", "index.html"));
 });
 
-// TODO: Use authentication for DB
-// mongoose.connect(`mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}/${DB_APP_NAME}`);
-mongoose
-	.connect(dbConnectionString + `/${DB_APP_NAME}`)
-	.then(() => createDummyUsers())
-	//.then(() => createDummyEvents())
-	//.then(() => createDummyNotes())
-	.then(() => createDummyPomodoros())
-	.then(() => createCurrentDate())
-//.then(() => createDummyProject());
+// // TODO: Use authentication for DB
+// // mongoose.connect(`mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}/${DB_APP_NAME}`);
+// mongoose
+// 	.connect(dbConnectionString + `/${DB_APP_NAME}`)
+// 	.then(() => createDummyUsers())
+// 	//.then(() => createDummyEvents())
+// 	//.then(() => createDummyNotes())
+// 	.then(() => createDummyPomodoros())
+// 	.then(() => createCurrentDate());
+// //.then(() => createDummyProject());
 
-mongoose.set("sanitizeFilter", true); // sanitize from NoSQLite
-mongoose.set("strictQuery", true); // only schema fields are saved in database!!!
+// mongoose.set("sanitizeFilter", true); // sanitize from NoSQLite
+// mongoose.set("strictQuery", true); // only schema fields are saved in database!!!
+
+// const db = mongoose.connection;
+// db.on("error", console.error.bind(console, "connection error:"));
+
+mongoose.set("sanitizeFilter", true); // Sanitize filters to avoid NoSQL injection
+mongoose.set("strictQuery", true); // Only allow schema-defined fields to be saved
 
 const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
+
+// Retry Configuration
+const maxRetries = 10;
+const retryDelay = 5000; // 5 seconds
+
+const connectWithRetry = async (attempt = 1) => {
+	try {
+		console.log(`Database connection attempt ${attempt}/${maxRetries}...`);
+		await mongoose.connect(`${dbConnectionString}/${DB_APP_NAME}`);
+		console.log("Database connection successful");
+
+		// Proceed with initial application setup
+		await createDummyUsers();
+		// await createDummyEvents();
+		// await createDummyNotes();
+		await createDummyPomodoros();
+		await createCurrentDate();
+		// await createDummyProject();
+	} catch (error) {
+		console.error(`Database connection failed: ${error}`);
+		if (attempt < maxRetries) {
+			console.log(`Retrying in ${retryDelay / 1000} seconds...`);
+			setTimeout(() => connectWithRetry(attempt + 1), retryDelay);
+		} else {
+			console.error("Max retries reached. Unable to connect to the database.");
+			process.exit(1); // Exit the server on failure
+		}
+	}
+};
+
+// Handle database errors
+db.on("error", console.error.bind(console, "Connection error:"));
+
+// Start the connection process
+connectWithRetry();
 
 // Start the server
 server.listen(PORT, () => {
