@@ -22,7 +22,7 @@
 
 body {
 	/*background-image: url("/images/background.png"); */
-	background-color: rgb(165, 159, 159) !important;
+	background-color: lightgray !important;
 	padding: 0;
 	margin: 0;
 	text-align: justify;
