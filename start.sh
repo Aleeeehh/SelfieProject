@@ -1,4 +1,4 @@
-rm -r server/build
+rm -rf server/webapp
 cd client
 npm install
 npm run build

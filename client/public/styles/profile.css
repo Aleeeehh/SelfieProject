@@ -8,8 +8,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-   /* background-image: url('/images/background.png');
-    background-position: center;*/
     height: 100%;
     padding: 2rem;
     font-family: Arial, sans-serif;
@@ -36,6 +34,7 @@
 .avatar {
     margin-bottom: 20px;
 }
+
 .profile-avatar {
     margin-bottom: 1em;
 }
@@ -62,7 +61,8 @@
     flex-direction: column;
 }
 
-.profile-details, .profile-header {
+.profile-details,
+.profile-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -72,6 +72,7 @@
     border-bottom: 1px solid #ddd;
     flex-direction: column;
 }
+
 /*
 .profile-details label {
     font-weight: bold;

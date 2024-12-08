@@ -1,10 +1,6 @@
 /* SINGLE NOTE PAGE */
 
 .note-background {
-    /*background-image: url('/images/background.png');
-    background-repeat: repeat;
-    width: 100vw;
-    height: 100%;*/
     display: flex;
     justify-content: center;
     align-items: center;
@@ -265,10 +261,6 @@ input[type="checkbox"] {
 /* NOTES PAGE */
 
 .note-background {
-    /* background-image: url('/images/background.png');
-    background-repeat: repeat;
-    width: 100vw;
-    height: 100%;*/
     display: flex;
     justify-content: center;
     align-items: center;

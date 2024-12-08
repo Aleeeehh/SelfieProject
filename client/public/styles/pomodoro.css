@@ -1,8 +1,4 @@
 .pomodoro-page-container {
-	/*background-image: url('/images/background.png');
-	background-repeat: repeat;
-	width: 100vw;
-	height: 100%;*/
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -284,32 +280,6 @@ h1 {
 .createEventinput {
 	background-color: white;
 }
-/*
-.create-event-form-overlay {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	background-color: rgb(238, 234, 228);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-	padding: 1rem;
-	z-index: 1000;
-	width: 500px;
-	border-radius: 15px;
-}*/
-/*
-.overlay {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-image: url('/images/background.png');
-	z-index: 1000;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}*/
 
 .hidden {
 	display: none;

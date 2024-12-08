@@ -10,10 +10,6 @@ body {
 }*/
 
 .activity-background {
-    /*background-image: url('/images/background.png');
-    background-repeat: repeat;
-    width: 100vw;
-    height: 100%;*/
     display: flex;
     justify-content: center;
     align-items: center;
@@ -27,7 +23,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: rgb(238, 234, 228);
+    /*background-color: rgb(238, 234, 228);*/
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     padding: 2em;
     border-radius: 15px;
@@ -232,10 +228,6 @@ div[message] {
 /* ACTIVITIES PAGE */
 
 .activities-container {
-    /*background-image: url('/images/background.png');
-    background-repeat: repeat;
-    width: 100vw;
-    height: 100%;*/
     display: flex;
     justify-content: center;
     align-items: center;

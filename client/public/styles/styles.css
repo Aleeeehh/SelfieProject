@@ -21,9 +21,10 @@
 /* All files */
 
 body {
-    background-image: url("/images/background.png");
-    padding: 0; 
-    margin: 0;
+	/*background-image: url("/images/background.png"); */
+	background-color: rgb(165, 159, 159) !important;
+	padding: 0;
+	margin: 0;
 	text-align: justify;
 }
 
@@ -42,12 +43,15 @@ a {
 a.header-home:link {
 	color: #000000 !important;
 }
+
 a.header-home:visited {
 	color: #000000 !important;
 }
+
 a.header-home:hover {
 	color: #000000 !important;
 }
+
 a.header-home:active {
 	color: #000000 !important;
 }
