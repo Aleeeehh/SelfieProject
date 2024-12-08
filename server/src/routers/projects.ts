@@ -638,7 +638,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 			return res.status(200).json(response);
 		}
 
-		var accestIdList: Types.ObjectId[] = [];
+		var accessIdList: Types.ObjectId[] = [];
 		for (let i = 0; i < accessList.length; i++) {
 			const foundUser = await UserSchema.findOne({
 				username: accessList[i],
@@ -653,7 +653,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 				return res.status(400).json(resBody);
 			}
 
-			accestIdList.push(foundUser._id);
+			accessIdList.push(foundUser._id);
 		}
 
 		const updatedProject = await ProjectSchema.findByIdAndUpdate(
@@ -661,15 +661,46 @@ router.put("/:id", async (req: Request, res: Response) => {
 			{
 				title,
 				description,
-				accessList: accestIdList,
+				accessList: accessIdList,
 			},
 			{ new: true }
 		);
 
+		//se è stata modificata l'accessList, devo inviare una notifica ai membri nuovi dell'accessList
+		if (accessList) {
+			const previousAccessList = project.accessList;
+			console.log("ACCESS LIST PRECEDENTE:", previousAccessList);
+
+			// Converti le stringhe in ObjectId per il confronto
+			const newMembers = accessIdList.filter(member =>
+				!previousAccessList.includes(new Types.ObjectId(member))
+			);
+			console.log("NUOVI MEMBRI:", newMembers);
+
+			//invio una notifica a tutti i nuovi membri
+			for (const member of newMembers) {
+				const notification: Notification = {
+					sender: req.user!.id,
+					receiver: member,
+					type: "Progetto",
+					sentAt: new Date(Date.now()),
+					message: "Sei stato aggiunto al progetto " + project.title,
+					read: false,
+					data: {
+						date: new Date(Date.now()),
+						project: project,
+					},
+				};
+
+				await NotificationSchema.create(notification);
+			}
+		}
+
+		/*
 		// Send notification to users
 		for (const user of project.accessList) {
 			if (user.toString() === req.user!.id) continue;
-
+	
 			const notification: Notification = {
 				sender: req.user!.id,
 				receiver: user,
@@ -679,9 +710,10 @@ router.put("/:id", async (req: Request, res: Response) => {
 				read: false,
 				data: {},
 			};
-
+	
 			await NotificationSchema.create(notification);
 		}
+			*/ //AL MOMENTO LASCIO COMMENTATO PERCHE CREA PROBLEMI
 
 		const response: ResponseBody = {
 			message: "success",

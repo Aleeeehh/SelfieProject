@@ -173,11 +173,22 @@ export default function Register(): React.JSX.Element {
 									type="date"
 									className="btn border"
 									name="birthday"
-									value={
-										data.birthday.toISOString().split("T")[0] ||
-										new Date(Date.now()).toISOString().split("T")[0]
-									}
-									onChange={handleChange}
+									value={data.birthday?.toISOString().split("T")[0] || ""}  // Aggiungi optional chaining e fallback vuoto
+									onChange={(e): void => {
+										const inputDate = e.target.value;
+										const parsedDate = new Date(inputDate);
+
+										// Controlla se la data è valida
+										if (isNaN(parsedDate.getTime())) {
+											console.error("Data non valida:", inputDate);
+											return; // Non procedere se la data non è valida
+										}
+
+
+										e.preventDefault(); // Previeni il comportamento di default
+
+										handleChange(e);
+									}}
 									required
 								/>
 							</div>

@@ -258,9 +258,12 @@ export default function ActivityPage(): React.JSX.Element {
 		refreshActivity();
 		setIsEditing(false);
 	}
+
 	// On page load, get the project data
 	React.useEffect(() => {
-		refreshActivity();
+		if (!isEditing) {
+			refreshActivity();
+		}
 	}, [serverTime]);
 
 	React.useEffect(() => {
@@ -466,18 +469,23 @@ export default function ActivityPage(): React.JSX.Element {
 							</div>
 
 							{/* render dates */}
-							<div className="activity-dates">
-								<div>
-									Data di inizio:{" "}
-									{new Date(activity.start || "").toLocaleString("it-IT", {
-										day: "2-digit",
-										month: "2-digit",
-										year: "numeric",
-										hour: "2-digit",
-										minute: "2-digit",
-									})}
-								</div>
-							</div>
+							{activity.start && (
+								<>
+									<div className="activity-dates">
+										<div>
+											Data di inizio:{" "}
+											{new Date(activity.start || "").toLocaleString("it-IT", {
+												day: "2-digit",
+												month: "2-digit",
+												year: "numeric",
+												hour: "2-digit",
+												minute: "2-digit",
+											})}
+										</div>
+									</div>
+								</>
+							)}
+
 							<div className="activity-dates">
 								<div>
 									Da completare entro:{" "}
@@ -714,11 +722,11 @@ export default function ActivityPage(): React.JSX.Element {
 													.getHours()
 													.toString()
 													.padStart(2, "0")}:${new Date(
-													activity.start || ""
-												)
-													.getMinutes()
-													.toString()
-													.padStart(2, "0")}`}
+														activity.start || ""
+													)
+														.getMinutes()
+														.toString()
+														.padStart(2, "0")}`}
 												onChange={(
 													e: React.ChangeEvent<HTMLInputElement>
 												): void => {
@@ -796,9 +804,9 @@ export default function ActivityPage(): React.JSX.Element {
 												.getHours()
 												.toString()
 												.padStart(2, "0")}:${new Date(activity.deadline)
-												.getMinutes()
-												.toString()
-												.padStart(2, "0")}`}
+													.getMinutes()
+													.toString()
+													.padStart(2, "0")}`}
 											onChange={(
 												e: React.ChangeEvent<HTMLInputElement>
 											): void => {
@@ -1114,7 +1122,7 @@ export default function ActivityPage(): React.JSX.Element {
 						</div>
 					</>
 				)}
-			</div>
+			</div >
 		</>
 	);
 }

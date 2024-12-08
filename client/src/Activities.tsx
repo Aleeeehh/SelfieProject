@@ -113,6 +113,14 @@ export default function Activities(): React.JSX.Element {
 		id: string | undefined
 	): Promise<void> {
 		e.preventDefault();
+		console.log("ID ATTIVITA DA ELIMINARE:", id);
+		console.log("ID ATTIVITA DA ELIMINARE:", id);
+		console.log("ID ATTIVITA DA ELIMINARE:", id);
+		console.log("ID ATTIVITA DA ELIMINARE:", id);
+		console.log("ID ATTIVITA DA ELIMINARE:", id);
+		console.log("ID ATTIVITA DA ELIMINARE:", id);
+
+
 
 		if (!id) {
 			alert(
@@ -252,7 +260,7 @@ export default function Activities(): React.JSX.Element {
 								<div className="card-activity-buttons">
 									<button
 										onClick={(): void =>
-											window.location.assign(`/activities/${activity.id}`)
+											window.location.assign(`/activities/${(activity as any)._id}`)
 										}>
 										Visualizza
 									</button>
@@ -261,7 +269,13 @@ export default function Activities(): React.JSX.Element {
 											style={{ backgroundColor: "#ff6b6b" }}
 											onClick={async (
 												e: React.MouseEvent<HTMLButtonElement>
-											): Promise<void> => handleDelete(e, activity.id)}>
+											): Promise<void> => {
+												console.log("attività da eliminare: ", activity);
+												console.log("attività da eliminare: ", activity);
+												console.log("attività da eliminare: ", activity);
+												console.log("attività da eliminare: ", activity);
+												handleDelete(e, (activity as any)._id);
+											}}>
 											Cancella
 										</button>
 									)}
