@@ -1386,12 +1386,24 @@ export default function Calendar(): React.JSX.Element {
 							).getTime();
 
 							// Calcola la posizione e l'altezza per ogni evento
-							var topPosition =
-								53.7 * oraInizioEvento + 54 * (minutiInizioEvento / 60); // Posizione inizio evento
-							var eventHeight =
-								53.7 * (oraFineEvento - oraInizioEvento) +
-								54 * (minutiFineEvento / 60) -
-								54 * (minutiInizioEvento / 60); // Altezza dell'evento
+							let topPosition = 0;
+							let eventHeight = 0;
+							if (!isSafari) {
+								topPosition =
+									53.7 * oraInizioEvento + 54 * (minutiInizioEvento / 60); // Posizione inizio evento
+								eventHeight =
+									53.7 * (oraFineEvento - oraInizioEvento) +
+									54 * (minutiFineEvento / 60) -
+									54 * (minutiInizioEvento / 60); // Altezza dell'evento
+							}
+
+							if (isSafari) {
+								topPosition = 53 * oraInizioEvento + 53 * (minutiInizioEvento / 60); //53 in entrambi è ok per day
+								eventHeight =
+									53 * (oraFineEvento - oraInizioEvento) +
+									54 * (minutiFineEvento / 60) -
+									54 * (minutiInizioEvento / 60); // Altezza dell'evento
+							}
 
 							//console.log("Questa è la data corrente:", currentDate);
 							//console.log("Questa è la data di inizio evento:", eventStartDate);
@@ -5317,28 +5329,27 @@ export default function Calendar(): React.JSX.Element {
 														>
 															<div style={{ color: "red" }}>
 																<Link
-																	to={`/pomodoro?duration=${
-																		((
-																			startTime,
+																	to={`/pomodoro?duration=${((
+																		startTime,
+																		endTime
+																	): number => {
+																		const start = new Date(
+																			startTime
+																		);
+																		const end = new Date(
 																			endTime
-																		): number => {
-																			const start = new Date(
-																				startTime
-																			);
-																			const end = new Date(
-																				endTime
-																			);
-																			const totMin = Math.max(
-																				(end.getTime() -
-																					start.getTime()) /
-																				(1000 * 60),
-																				0
-																			);
-																			return totMin;
-																		})(
-																			event.event.startTime,
-																			event.event.endTime
-																		)
+																		);
+																		const totMin = Math.max(
+																			(end.getTime() -
+																				start.getTime()) /
+																			(1000 * 60),
+																			0
+																		);
+																		return totMin;
+																	})(
+																		event.event.startTime,
+																		event.event.endTime
+																	)
 																		}&id=${event.event._id}`}
 																	style={{
 																		textDecoration: "none",
