@@ -193,21 +193,23 @@ function MessageHub(): React.JSX.Element {
 										? chat.firstUser
 										: chat.secondUser}
 								</div>
-								<button
-									className="chat-select-button"
-									onClick={(): void => setActiveChat(chat)}
-								>
-									Chat
-								</button>
-								<button
-									className="chat-select-button"
-									style={{ backgroundColor: "red" }}
-									onClick={(
-										e: React.MouseEvent<HTMLButtonElement>
-									): Promise<void> => deleteChat(e, chat)}
-								>
-									Elimina
-								</button>
+								<div style={{ display: "flex", gap: "0.5em" }}>
+									<button
+										className="chat-select-button"
+										onClick={(): void => setActiveChat(chat)}
+									>
+										Chat
+									</button>
+									<button
+										className="chat-select-button"
+										style={{ backgroundColor: "red" }}
+										onClick={(
+											e: React.MouseEvent<HTMLButtonElement>
+										): Promise<void> => deleteChat(e, chat)}
+									>
+										Elimina
+									</button>
+								</div>
 							</div>
 						))}
 					</div>

@@ -82,6 +82,7 @@
 
 .chat-list-item {
 	display: flex;
+	flex-direction: column;
 	justify-content: space-between;
 	align-items: center;
 	padding: 0.5rem 0;
