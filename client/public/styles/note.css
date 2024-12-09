@@ -21,10 +21,11 @@
 }
 
 .note-page-title {
-    position: relative;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 0.5em;
     font-size: 1.8em;
     font-weight: bold;
     color: #333;
@@ -38,10 +39,6 @@
 }
 
 .note-close-link {
-    position: absolute;
-    right: 1em;
-    top: 50%;
-    transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -255,9 +252,6 @@ input[type="checkbox"] {
 }
 
 
-
-
-
 /* NOTES PAGE */
 
 .note-background {
@@ -376,7 +370,6 @@ input[type="checkbox"] {
 .card-note-actions {
     display: flex;
     justify-content: space-evenly;
-    /* Distribuisco i pulsanti in modo uniforme */
     padding: 0.5em 1em 1em;
     gap: 0.5em;
 }

@@ -50,10 +50,8 @@
 
 .notification-dot {
 	position: absolute;
-	top: -5px;
-	/* Posiziona il pallino sopra il pulsante */
-	right: -5px;
-	/* Posiziona il pallino a destra del pulsante */
+	top: -5px;/* Posiziona il pallino sopra il pulsante */
+	right: -5px;/* Posiziona il pallino a destra del pulsante */
 	width: 15px;
 	height: 15px;
 	border-radius: 50%;
@@ -68,10 +66,8 @@
 
 .notification-dot-gray {
 	position: absolute;
-	top: -5px;
-	/* Posiziona il pallino sopra il pulsante */
-	right: -5px;
-	/* Posiziona il pallino a destra del pulsante */
+	top: -5px;/* Posiziona il pallino sopra il pulsante */
+	right: -5px;/* Posiziona il pallino a destra del pulsante */
 	width: 15px;
 	height: 15px;
 	border-radius: 50%;
