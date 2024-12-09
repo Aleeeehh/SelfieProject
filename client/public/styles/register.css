@@ -21,12 +21,12 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: lightgray;
+    /* background-color: lightgray;*/
     z-index: -1;
 }
 
 .registration-background {
-    background-color: lightgray;
+    /*background-color: lightgray;*/
     display: flex;
     justify-content: center;
     align-items: center;
@@ -51,7 +51,7 @@
 .registration-avatar img {
     width: 200px;
     border-radius: 50%;
-    border: 2px solid #4CAF50;
+    border: 3px solid #7DCFB6;
 }
 
 .registration-header {

@@ -40,11 +40,10 @@ export default function Login(): React.JSX.Element {
 			<div className="login-background">
 				<div className="login-container">
 					<div className="login-avatar">
-						<img src={`/images/avatar.png`} alt="Avatar" />
+						<img src={`/images/logo.jpeg`} alt="Avatar" />
 					</div>
 					<div className="login-header">
-						<h2>Bentornato in SELFIE!</h2>
-						<p>Accedi per continuare la tua esperienza</p>
+						<h2>Benvenuto in SELFIE!</h2>
 					</div>
 					<form className="login-form">
 						<div>
