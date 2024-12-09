@@ -125,6 +125,26 @@ export default function NotePage(): React.JSX.Element {
 					const data = await res2.json();
 					const activity = data.value;
 
+					//crea l'evento scadenza dell'attività
+					//crea l'attività come evento sul calendario
+					const res = await fetch(`${SERVER_API}/events`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							idEventoNotificaCondiviso: item.id,
+							owner: owner,
+							title: "Scadenza " + item.text,
+							startTime: new Date(item.endDate.getTime() - 60 * 60 * 1000).toISOString(),
+							endTime: item.endDate.toISOString(),
+							untilDate: null,
+							isInfinite: false,
+							frequency: "once",
+							location: "",
+							repetitions: 1,
+						}),
+					});
+					console.log(res);
+
 					console.log("ATTIVITA TROVATA LEGATA ALL'ITEM:", activity);
 					if (!activity) {
 						console.log("CREO ATTIVITA' PER L'ITEM APPENA AGGIUNTO");
