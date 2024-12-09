@@ -4,7 +4,7 @@ import { ResponseBody } from "./types/ResponseBody";
 import Pomodoro from "./types/Pomodoro";
 import Note from "./types/Note";
 import { Event } from "./types/Event";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ResponseStatus } from "./types/ResponseStatus";
 import User from "./types/User";
 import type Project from "./types/Project";
@@ -25,6 +25,8 @@ function Home(): React.JSX.Element {
 	const [numProjects, setNumProjects] = React.useState(4);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 	const [currentDate, setCurrentDate] = React.useState(new Date());
+
+	const nav = useNavigate();
 
 
 	const fetchCurrentDate = async (): Promise<void> => {
@@ -53,8 +55,8 @@ function Home(): React.JSX.Element {
 					const resBody = (await res.json()) as ResponseBody;
 					setPomodoros(resBody.value as Pomodoro[]);
 				} else {
-					// await checkLoginStatus();
-					// nav("/login");
+					await checkLoginStatus();
+					nav("/login");
 				}
 			} catch (e) {
 				console.log("Impossibile raggiungere il server");
@@ -68,8 +70,8 @@ function Home(): React.JSX.Element {
 
 					setNotes(resBody.value as Note[]);
 				} else {
-					// await checkLoginStatus();
-					// nav("/login");
+					await checkLoginStatus();
+					nav("/login");
 				}
 			} catch (e) {
 				console.log("Impossibile raggiungere il server");
@@ -135,8 +137,8 @@ function Home(): React.JSX.Element {
 					setEvents(eventiFiltrati);
 					console.log("stampo events:", events);
 				} else {
-					// await checkLoginStatus();
-					// nav("/login");
+					await checkLoginStatus();
+					nav("/login");
 				}
 			} catch (e) {
 				console.log("Impossibile raggiungere il server");
@@ -153,7 +155,7 @@ function Home(): React.JSX.Element {
 				} else {
 					console.log("Error getting projects: " + (await res.json()).message);
 					await checkLoginStatus();
-					// nav("/login");
+					nav("/login");
 				}
 			} catch (e) {
 				console.log("Impossibile raggiungere il server");

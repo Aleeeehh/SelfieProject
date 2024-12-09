@@ -208,7 +208,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 				</div>
 			</div>
 
-			
+
 		</>
 	);
 }

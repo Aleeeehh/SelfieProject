@@ -1,9 +1,9 @@
 import React from "react";
 import { SERVER_API } from "./lib/params";
-import type { ResponseBody } from "./types/ResponseBody";
+//import type { ResponseBody } from "./types/ResponseBody";
 import type Project from "./types/Project";
 import { useNavigate } from "react-router-dom";
-import { ResponseStatus } from "./types/ResponseStatus";
+//import { ResponseStatus } from "./types/ResponseStatus";
 import ProjectList from "./ProjectList";
 import GanttDiagram from "./ProjectGantt";
 import type User from "./types/User";
@@ -51,73 +51,59 @@ export default function Projects(): React.JSX.Element {
 		}
 	}
 
-	// On page load, get the events for the user
-	React.useEffect(() => {
-		(async (): Promise<void> => {
-			try {
-				console.log("Entro nella project page");
-				console.log("Entro nella project page");
-				console.log("Entro nella project page");
 
-				const currentUser = await getCurrentUser();
-				if (!currentUser) {
-					nav("/login");
-					return;
-				}
-				const userId = currentUser.value._id.toString();
-				const username = currentUser.value.username;
-				console.log("DOPO CURRENT USER:", userId);
+	const loadProjects = async (): Promise<void> => {
+		try {
+			console.log("Entro nella project page");
 
-				console.log("DOPO CURRENT USER:", userId);
-				console.log("DOPO CURRENT USER:", userId);
-				console.log("DOPO CURRENT USER:", userId);
-
-				const res = await fetch(`${SERVER_API}/projects`);
-				if (!res.ok) {
-					nav("/login");
-					return;
-				}
-				const data = await res.json();
-				const progetti = data.value;
-				console.log("Progetti trovati:", progetti);
-				console.log("Progetti trovati:", progetti);
-				console.log("Progetti trovati:", progetti);
-
-				let progettiDaVisualizzare: Project[] = [];
-
-				for (const progetto of progetti) {
-					console.log("Confronto:", {
-						userId: userId,
-						owner: progetto.owner,
-						accessListAccepted: progetto.accessListAccepted
-					});
-
-					if (
-						(progetto.accessListAccepted && progetto.accessListAccepted.includes(userId)) ||
-						progetto.owner.toString() === userId ||
-						progetto.owner.toString() === username ||
-						progetto.accessListAccepted.includes(username)
-					) {
-						progettiDaVisualizzare.push(progetto);
-					}
-				}
-
-				console.log("Progetti da visualizzare:", progettiDaVisualizzare);
-
-				setProjects(progettiDaVisualizzare);
-
-
-
-				const resBody = (await res.json()) as ResponseBody;
-
-				if (resBody.status === ResponseStatus.GOOD) {
-					setProjects(progettiDaVisualizzare);
-				} else {
-				}
-			} catch (e) {
-				console.log("Impossibile raggiungere il server");
+			const currentUser = await getCurrentUser();
+			if (!currentUser) {
+				nav("/login");
+				return;
 			}
-		})();
+			const userId = currentUser.value._id.toString();
+			const username = currentUser.value.username;
+			console.log("DOPO CURRENT USER:", userId);
+
+			const res = await fetch(`${SERVER_API}/projects`);
+			if (!res.ok) {
+				nav("/login");
+				return;
+			}
+			const data = await res.json();
+			const progetti = data.value;
+			console.log("Progetti trovati:", progetti);
+
+			let progettiDaVisualizzare: Project[] = [];
+
+			for (const progetto of progetti) {
+				console.log("Confronto:", {
+					userId: userId,
+					owner: progetto.owner,
+					accessListAccepted: progetto.accessListAccepted
+				});
+
+				if (
+					(progetto.accessListAccepted && progetto.accessListAccepted.includes(userId)) ||
+					progetto.owner.toString() === userId ||
+					progetto.owner.toString() === username ||
+					progetto.accessListAccepted.includes(username)
+				) {
+					progettiDaVisualizzare.push(progetto);
+				}
+			}
+
+			console.log("Progetti da visualizzare:", progettiDaVisualizzare);
+			setProjects(progettiDaVisualizzare);
+
+		} catch (e) {
+			console.log("Impossibile raggiungere il server");
+		}
+	};
+
+
+	React.useEffect(() => {
+		loadProjects();
 	}, []);
 
 	return (
@@ -166,6 +152,7 @@ export default function Projects(): React.JSX.Element {
 							if (!filter) return true;
 							else return project.accessList.includes(filter);
 						})}
+						onProjectDelete={loadProjects}
 					/>
 				) : (
 					<GanttDiagram

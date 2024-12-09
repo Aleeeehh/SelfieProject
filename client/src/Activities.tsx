@@ -5,6 +5,7 @@ import type { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import type Activity from "./types/Activity";
 import type User from "./types/User";
+import { useNavigate } from "react-router-dom";
 
 const PREVIEW_CHARS = 100;
 const MAX_TITLE_CHARS = 17;
@@ -23,6 +24,8 @@ export default function Activities(): React.JSX.Element {
 	const [sortFilter, setSortFilter] = React.useState<SORT>(SORT.PROJECT);
 
 	const userId = localStorage.getItem("loggedUserId");
+
+	const nav = useNavigate();
 
 
 	function getAllUsers(): string[] {
@@ -63,31 +66,31 @@ export default function Activities(): React.JSX.Element {
 	}
 
 	async function updateActivities(): Promise<void> {
-		const currentUser = await getCurrentUser();
-		const userId = currentUser.value._id.toString();
-		fetch(`${SERVER_API}/activities/owner?owner=${userId}`)
-			.then((res) => res.json())
-			.then(async (data) => {
+		try {
+			const currentUser = await getCurrentUser();
+			if (!currentUser) {
+				nav("/login");
+				return;
+			}
+			const userId = currentUser.value._id.toString();
 
-				console.log("ID utente corrente:", userId);
-				if (data.status === ResponseStatus.GOOD) {
-					const activities = data.value;
-					console.log("Attività trovate:", activities);
-					setActivities(activities as Activity[]);
-					console.log("Attività da mostrare:", activities);
-				} else {
-					console.log(data.message || "Errore nel caricamento delle attività");
-				}
-
-				console.log("Getting all project names");
-			})
-
-			.catch(() => {
-				console.log("Impossibile raggiungere il server");
-			});
+			const res = await fetch(`${SERVER_API}/activities/owner?owner=${userId}`);
+			const data = await res.json();
+			console.log("ID utente corrente:", userId);
+			if (data.status === ResponseStatus.GOOD) {
+				const activities = data.value;
+				console.log("Attività trovate:", activities);
+				setActivities(activities as Activity[]);
+				console.log("Attività da mostrare:", activities);
+			} else {
+				console.log(data.message || "Errore nel caricamento delle attività");
+			}
+		} catch (error) {
+			console.log("Impossibile raggiungere il server");
+		}
 	}
 
-	// On page load, get the events for the user
+	// On page load, get the activities for the user
 	React.useEffect(() => {
 		updateActivities();
 	}, []);
@@ -154,7 +157,7 @@ export default function Activities(): React.JSX.Element {
 							))}
 						</select>
 					</div>
-					
+
 					{/* Filter for user */}
 					<div className="sort-label">
 						<div>Filtra per utente: </div>

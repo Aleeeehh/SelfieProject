@@ -8,12 +8,15 @@ const PREVIEW_CHARS = 100;
 const MAX_TITLE_CHARS = 17;
 const MAX_USERS_CHARS = 50;
 
-export default function ProjectList({ projects }: { projects: Project[] }): React.JSX.Element {
+export default function ProjectList({ projects, onProjectDelete }: { projects: Project[], onProjectDelete: () => void }): React.JSX.Element {
 	//const [message, setMessage] = React.useState("");
+
 
 	const nav = useNavigate();
 
 	const userId = localStorage.getItem("loggedUserId");
+
+
 
 	async function handleDelete(
 		e: React.MouseEvent<HTMLButtonElement>,
@@ -34,7 +37,8 @@ export default function ProjectList({ projects }: { projects: Project[] }): Reac
 			console.log(resBody);
 			if (res.status === 200) {
 				console.log("Progetto cancellato correttamente!");
-				nav("/projects");
+				nav("/projects", { replace: true });
+				onProjectDelete();
 			} else {
 				alert(resBody.message || "Errore nella cancellazione del progetto");
 			}

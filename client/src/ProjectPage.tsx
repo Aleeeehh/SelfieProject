@@ -78,6 +78,11 @@ export default function ProjectPage(): React.JSX.Element {
 		if (!isEditing) refreshProject();
 	}, [serverTime]);
 
+	// On page load, get the note for the user
+	React.useEffect(() => {
+		refreshProject();
+	}, []);
+
 	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void {
 		setProject({ ...project, [e.target.name]: e.target.value });
 	}
@@ -141,7 +146,9 @@ export default function ProjectPage(): React.JSX.Element {
 
 			if (resBody.status === ResponseStatus.GOOD) {
 				console.log("Progetto cancellato correttamente!");
-				nav("/projects");
+				nav("/projects", { replace: true });
+				//window.location.reload();
+
 			} else {
 				setMessage(resBody.message || "Errore della cancellazione del progetto");
 			}

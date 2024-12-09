@@ -400,8 +400,8 @@ router.post("/", async (req: Request, res: Response) => {
 			title,
 			description,
 			owner: req.user.id,
-			accessList: await getIdListFromUsernameList(accessList),
-			accessListAccepted: [],
+			accessList: [req.user.id, ...(await getIdListFromUsernameList(accessList))],
+			accessListAccepted: [req.user.id],
 		});
 
 		const savedProject = await newProject.save();
