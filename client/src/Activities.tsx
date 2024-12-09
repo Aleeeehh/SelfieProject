@@ -26,6 +26,11 @@ export default function Activities(): React.JSX.Element {
 	const [users, setUsers] = React.useState<string[]>([]);
 	const [usernameToId, setUsernameToId] = React.useState<{ [key: string]: string }>({});
 
+	const [projectTitles, setProjectTitles] = React.useState<string[]>([]);
+	const [projectIdToTitle, setProjectIdToTitle] = React.useState<{ [key: string]: string }>({});
+
+
+
 
 
 	const userId = localStorage.getItem("loggedUserId");
@@ -41,6 +46,18 @@ export default function Activities(): React.JSX.Element {
 		} catch (e) {
 			console.log("Impossibile recuperare l'username dell'utente");
 			return userId; // fallback all'ID in caso di errore
+		}
+	}
+
+	// Aggiungi questa nuova funzione
+	async function getProjectTitleById(projectId: string): Promise<string> {
+		try {
+			const res = await fetch(`${SERVER_API}/projects/${projectId}`);
+			const data = await res.json();
+			return data.value.title;
+		} catch (e) {
+			console.log("Impossibile recuperare il titolo del progetto");
+			return projectId; // fallback all'ID in caso di errore
 		}
 	}
 
@@ -68,15 +85,33 @@ export default function Activities(): React.JSX.Element {
 		setUsernameToId(mapping); // Salva la mappatura nello state
 		return users;
 	}
+	// Aggiungi questo useEffect
+	React.useEffect(() => {
+		getAllProjects().then(setProjectTitles);
+	}, [activities]);
 
-	function getAllProjectNames(): string[] {
-		const projects: string[] = [];
+	async function getAllProjects(): Promise<string[]> {
+		const titles: string[] = [];
+		const mapping: { [key: string]: string } = {};
+		const projectPromises: Promise<void>[] = [];
+
 		activities.forEach((act) => {
-			if (act.projectId && !projects.includes(act.projectId)) {
-				projects.push(act.projectId);
+			// Verifica che projectId sia una stringa valida
+			if (act.projectId && typeof act.projectId === 'string' && !mapping[act.projectId]) {
+				projectPromises.push(
+					getProjectTitleById(act.projectId).then(title => {
+						if (!titles.includes(title)) {
+							titles.push(title);
+							mapping[act.projectId as string] = title; // Type assertion
+						}
+					})
+				);
 			}
 		});
-		return projects;
+
+		await Promise.all(projectPromises);
+		setProjectIdToTitle(mapping);
+		return titles;
 	}
 
 	async function getCurrentUser(): Promise<Promise<any> | null> {
@@ -179,14 +214,30 @@ export default function Activities(): React.JSX.Element {
 						<select
 							className="sort-select"
 							onChange={(e): void => {
-								console.log(e.target.value);
-								setProjectFilter(e.target.value);
+								const selectedTitle = e.target.value;
+								if (selectedTitle === "") {
+									setProjectFilter("");
+								} else if (selectedTitle === "no-project") {
+									setProjectFilter("no-project");
+								} else {
+									// Trova l'ID del progetto corrispondente al titolo selezionato
+									const projectId = Object.keys(projectIdToTitle).find(
+										key => projectIdToTitle[key] === selectedTitle
+									) || "";
+									setProjectFilter(projectId);
+								}
 							}}
-							value={projectFilter}>
+							value={
+								projectFilter === ""
+									? ""
+									: projectFilter === "no-project"
+										? "no-project"
+										: projectIdToTitle[projectFilter] || ""
+							}>
 							<option value="">Tutti</option>
 							<option value="no-project">Senza progetto</option>
-							{getAllProjectNames().map((project) => (
-								<option value={project}>{project}</option>
+							{projectTitles.map((title) => (
+								<option key={title} value={title}>{title}</option>
 							))}
 						</select>
 					</div>
