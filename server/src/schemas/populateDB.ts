@@ -32,7 +32,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
+				profileImage: profileImages[0],
 			},
 			{
 				id: "",
@@ -42,7 +42,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
+				profileImage: profileImages[1],
 			},
 			{
 				id: "",
@@ -52,7 +52,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
+				profileImage: profileImages[2],
 			},
 			{
 				id: "",
@@ -62,7 +62,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
+				profileImage: profileImages[3],
 			},
 			{
 				id: "",
@@ -72,7 +72,7 @@ export async function createDummyUsers() {
 				lastName: "testLName",
 				birthday: new Date(),
 				address: "via falsa 1234",
-				profileImage: profileImages[Math.floor(Math.random() * profileImages.length)],
+				profileImage: profileImages[4],
 			},
 		];
 

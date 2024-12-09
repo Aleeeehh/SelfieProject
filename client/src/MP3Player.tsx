@@ -4,7 +4,12 @@ import { useState } from "react";
 const mp3Files = [
 	{ value: "gigi", label: "L'Amour Toujours" },
 	{ value: "astronomia", label: "Astronomia" },
-	// ... more options
+	{ value: "acquarium", label: "Acquarium" },
+	{ value: "tomato", label: "Tomato" },
+	{ value: "dreamland", label: "Dreamland" },
+	{ value: "backgrounds", label: "Backgrounds" },
+	{ value: "moon", label: "Moon" },
+	{ value: "things", label: "Things" },
 ];
 
 export default function Mp3Player(): React.JSX.Element {
