@@ -241,7 +241,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 				const newEvent = {
 					idEventoNotificaCondiviso,
-					owner,
+					owner: receiver,
 					title: "Scadenza " + activity.title,
 					startTime: activity.start?.toISOString() || new Date().toISOString(),
 					endTime: activity.deadline.toISOString(),

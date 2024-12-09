@@ -11,6 +11,8 @@ import { validDateString } from "../lib.js";
 import { ProjectSchema } from "../schemas/Project.js";
 import { AdvancementType } from "../types/Activity.js";
 import { getActivityList, getStatusForActivity, getUsernameListFromIdList } from "./lib.js";
+import NotificationSchema from "../schemas/Notification.js";
+import type Notification from "../types/Notification.js";
 // import { validDateString } from "../lib.js";
 
 const router: Router = Router();
@@ -759,11 +761,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const isValidObjectId = Types.ObjectId.isValid(activityId);
 		const query = isValidObjectId
 			? {
-					$or: [
-						{ _id: new Types.ObjectId(activityId) },
-						{ idEventoNotificaCondiviso: activityId },
-					],
-			  }
+				$or: [
+					{ _id: new Types.ObjectId(activityId) },
+					{ idEventoNotificaCondiviso: activityId },
+				],
+			}
 			: { idEventoNotificaCondiviso: activityId };
 
 		const foundActivity = await ActivitySchema.findOne(query).lean();
@@ -974,14 +976,86 @@ router.put("/:id", async (req: Request, res: Response) => {
 		const result = await ActivitySchema.findOneAndUpdate(
 			isValidObjectId
 				? {
-						$or: [
-							{ _id: new Types.ObjectId(activityId) },
-							{ idEventoNotificaCondiviso: activityId },
-						],
-				  }
+					$or: [
+						{ _id: new Types.ObjectId(activityId) },
+						{ idEventoNotificaCondiviso: activityId },
+					],
+				}
 				: { idEventoNotificaCondiviso: activityId },
 			updatedActivity
 		);
+
+
+		// send notification to new access list users
+		if (inputAccessList) {
+			console.log("L'accessList è stata modificata");
+
+			const previousAccessList = foundActivity.accessList.map(id => id.toString());
+			const updatedAccessListIds = updatedAccessList.map(id => id.toString());
+
+			// Ottieni solo i membri che non erano presenti nella lista precedente
+			const newMembers = updatedAccessListIds.filter(
+				memberId => !previousAccessList.includes(memberId)
+			);
+
+			console.log("ACCESS LIST PRECEDENTE:", previousAccessList);
+			console.log("AccessList aggiornata:", updatedAccessListIds);
+			console.log("NUOVI MEMBRI DELL'ACCESS LIST:", newMembers);
+
+
+			for (const member of newMembers) {
+
+				if (projectId) { //se l'attività fa parte di un progetto
+					const notification: Notification = {
+						sender: req.user!.id,
+						receiver: member,
+						type: "ProjectActivity",
+						sentAt: new Date(Date.now()),
+						message: "Sei stato aggiunto alla attività di un progetto",
+						read: false,
+						data: {
+							date: new Date(Date.now()),
+							activity: foundActivity,
+						},
+					}
+					await NotificationSchema.create(notification);
+				};
+
+				if (!projectId) { //se l'attività non fa parte di un progetto
+					const newEvent = {
+						idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso,
+						owner: member,
+						title: "Scadenza " + foundActivity.title,
+						startTime: foundActivity.start?.toISOString() || new Date().toISOString(),
+						endTime: foundActivity.deadline.toISOString(),
+						untilDate: null,
+						isInfinite: false,
+						frequency: "once",
+						location: "",
+						repetitions: 1,
+					};
+
+					const notification: Notification = {
+						sender: req.user!.id,
+						receiver: member,
+						type: "shareActivity",
+						sentAt: new Date(Date.now()),
+						message: "Hai ricevuto un'attività condivisa",
+						read: false,
+						data: {
+							idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso,
+							date: new Date(Date.now()),
+							activity: foundActivity,
+							event: newEvent,
+							notification: null,
+						},
+					}
+					await NotificationSchema.create(notification);
+				}
+			}
+		}
+
+
 		if (projectId && inputNext) {
 			// set prev next to null, and update to new next
 			const foundPreviuosNext = await ActivitySchema.findById(foundActivity.next).lean();

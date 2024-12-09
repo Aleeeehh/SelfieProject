@@ -148,6 +148,7 @@ export default function ActivityPage(): React.JSX.Element {
 			};
 		});
 	}
+	/*
 
 	function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
 		e.preventDefault();
@@ -159,6 +160,7 @@ export default function ActivityPage(): React.JSX.Element {
 			};
 		});
 	}
+		*/
 
 	function handleUpdateActivity(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
@@ -730,6 +732,7 @@ export default function ActivityPage(): React.JSX.Element {
 											activity.accessList.map((u) => (
 												<div className="activity-user-box">
 													{u}
+													{/*
 													{isOwner && (
 														<button
 															style={{
@@ -744,6 +747,7 @@ export default function ActivityPage(): React.JSX.Element {
 															X
 														</button>
 													)}
+														*/}
 												</div>
 											))
 										) : (
