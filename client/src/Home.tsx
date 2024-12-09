@@ -24,8 +24,26 @@ function Home(): React.JSX.Element {
 	const [numNotes, setNumNotes] = React.useState(4);
 	const [numProjects, setNumProjects] = React.useState(4);
 	const [eventList, setEventList] = React.useState<Event[]>([]);
+	const [currentDate, setCurrentDate] = React.useState(new Date());
 
-	// const nav = useNavigate();
+
+	const fetchCurrentDate = async (): Promise<void> => {
+		try {
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			if (!response.ok) {
+				throw new Error("Errore nel recupero della data corrente");
+			}
+			const data = await response.json();
+			console.log("Questa è la data corrente in fetchCurrentDate:", data.currentDate);
+			setCurrentDate(new Date(data.currentDate));
+		} catch (error) {
+			console.error("Errore durante il recupero della data corrente:", error);
+		}
+	};
+
+	React.useEffect(() => {
+		fetchCurrentDate();
+	}, []);
 
 	React.useEffect(() => {
 		(async (): Promise<void> => {
@@ -60,13 +78,61 @@ function Home(): React.JSX.Element {
 			try {
 				const currentUser = await getCurrentUser();
 				const owner = currentUser.value._id.toString();
-				console.log("Questo è l'owner:", owner);
+				//console.log("Questo è l'owner:", owner);
+
+				const dataCorrente = currentDate;
 
 				const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 				const data = await res.json();
 				var eventi = data.value;
+				let eventiFiltrati = [];
+
+				const normalizeDate = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+				for (const event of eventi) {
+					const eventStartDate = new Date(event.startTime);
+					const eventEndDate = new Date(event.endTime);
+					const currentDate = new Date(dataCorrente);
+
+					const normalizedEventStartDate = normalizeDate(eventStartDate);
+					const normalizedEventEndDate = normalizeDate(eventEndDate);
+					const normalizedCurrentDate = normalizeDate(currentDate);
+
+					// Evento singolo che è oggi o futuro
+					const isSameDayEvent = normalizedEventStartDate >= normalizedCurrentDate ||
+						(normalizedEventStartDate <= normalizedCurrentDate && normalizedEventEndDate >= normalizedCurrentDate);
+
+					// Eventi ricorrenti
+					const isDailyInfiniteEvent =
+						event.frequency === "day" &&
+						event.isInfinite === true;
+
+					const isMonthlyInfiniteEvent =
+						event.frequency === "month" &&
+						event.isInfinite === true &&
+						eventStartDate.getDate() === currentDate.getDate();
+
+					const isWeeklyInfiniteEvent =
+						event.frequency === "week" &&
+						event.isInfinite === true &&
+						eventStartDate.getDay() === currentDate.getDay();
+
+					const isYearlyInfiniteEvent =
+						event.frequency === "year" &&
+						event.isInfinite === true &&
+						eventStartDate.getDate() === currentDate.getDate() &&
+						eventStartDate.getMonth() === currentDate.getMonth();
+
+					if (isSameDayEvent || isDailyInfiniteEvent || isMonthlyInfiniteEvent ||
+						isWeeklyInfiniteEvent || isYearlyInfiniteEvent) {
+						eventiFiltrati.push(event);
+					}
+				}
+				// ... rest of the code ...
+				console.log("Questi sono gli eventi filtrati:", eventiFiltrati);
+
 				if (res.status === 200) {
-					setEvents(eventi);
+					setEvents(eventiFiltrati);
 					console.log("stampo events:", events);
 				} else {
 					// await checkLoginStatus();
@@ -113,6 +179,24 @@ function Home(): React.JSX.Element {
 		}
 	}
 
+	// Combina i due useEffect in uno solo
+	React.useEffect(() => {
+		// Funzione che esegue entrambe le operazioni in sequenza
+		const updateDateAndEvents = async (): Promise<void> => {
+			await fetchCurrentDate();  // Prima aggiorna la data
+			loadEvents();             // Poi carica gli eventi
+		};
+
+		// Esegui subito
+		updateDateAndEvents();
+
+		// Imposta l'intervallo
+		const interval = setInterval(updateDateAndEvents, 1000);
+
+		// Cleanup
+		return () => clearInterval(interval);
+	}, []);
+
 	async function loadEvents(): Promise<void> {
 		try {
 			const currentUser = await getCurrentUser();
@@ -123,11 +207,61 @@ function Home(): React.JSX.Element {
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 			const data = await res.json();
 			var eventi = data.value;
-			//console.log("Eventi trovati:", data);
+			// Ottieni la data corrente direttamente dal server
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			const dateData = await response.json();
+			const dataCorrente = new Date(dateData.currentDate);
+			console.log("Questa è la data corrente in loadEvents:", dataCorrente);
+			console.log("EVENTI TROVATI:", eventi);
+			let eventiFiltrati = [];
+
+			const normalizeDate = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+			for (const event of eventi) {
+				const eventStartDate = new Date(event.startTime);
+				const eventEndDate = new Date(event.endTime);
+				const currentDate = new Date(dataCorrente);
+
+				const normalizedEventStartDate = normalizeDate(eventStartDate);
+				const normalizedEventEndDate = normalizeDate(eventEndDate);
+				const normalizedCurrentDate = normalizeDate(currentDate);
+
+				// Evento singolo che è oggi o futuro
+				const isSameDayEvent = normalizedEventStartDate >= normalizedCurrentDate ||
+					(normalizedEventStartDate <= normalizedCurrentDate && normalizedEventEndDate >= normalizedCurrentDate);
+
+				// Eventi ricorrenti
+				const isDailyInfiniteEvent =
+					event.frequency === "day" &&
+					event.isInfinite === true;
+
+				const isMonthlyInfiniteEvent =
+					event.frequency === "month" &&
+					event.isInfinite === true &&
+					eventStartDate.getDate() === currentDate.getDate();
+
+				const isWeeklyInfiniteEvent =
+					event.frequency === "week" &&
+					event.isInfinite === true &&
+					eventStartDate.getDay() === currentDate.getDay();
+
+				const isYearlyInfiniteEvent =
+					event.frequency === "year" &&
+					event.isInfinite === true &&
+					eventStartDate.getDate() === currentDate.getDate() &&
+					eventStartDate.getMonth() === currentDate.getMonth();
+
+				if (isSameDayEvent || isDailyInfiniteEvent || isMonthlyInfiniteEvent ||
+					isWeeklyInfiniteEvent || isYearlyInfiniteEvent) {
+					eventiFiltrati.push(event);
+				}
+			}
+
+			console.log("EVENTI FILTRATI:", eventiFiltrati);
 
 			if (data.status === ResponseStatus.GOOD) {
-				setEventList(eventi);
-				console.log("Eventi trovati:", eventi);
+				setEventList(eventiFiltrati);
+				//console.log("Eventi trovati:", eventi);
 			} else {
 				// await checkLoginStatus();
 				console.log("Errore nel ritrovamento degli eventi");
@@ -194,9 +328,9 @@ function Home(): React.JSX.Element {
 											<div className="preview-calendar-card-title">
 												{event.title.length > HOME_MAX_TITLE_CHARS
 													? event.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: event.title}
 											</div>
 											<div>
@@ -278,15 +412,15 @@ function Home(): React.JSX.Element {
 											<div className="preview-note-card-title">
 												{note.title.length > HOME_MAX_TITLE_CHARS
 													? note.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: note.title}
 											</div>
 											<div className="preview-note-card-text">
 												{note.text.length > HOME_MAX_TEXT_CHARS
 													? note.text.substring(0, HOME_MAX_TEXT_CHARS) +
-													  "..."
+													"..."
 													: note.text}
 											</div>
 										</div>
@@ -321,17 +455,17 @@ function Home(): React.JSX.Element {
 											<div className="preview-projects-card-title">
 												{project.title.length > HOME_MAX_TITLE_CHARS
 													? project.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
 													: project.title}
 											</div>
 											<div className="preview-projects-card-text">
 												{project.description.length > HOME_MAX_TEXT_CHARS
 													? project.description.substring(
-															0,
-															HOME_MAX_TEXT_CHARS
-													  ) + "..."
+														0,
+														HOME_MAX_TEXT_CHARS
+													) + "..."
 													: project.description}
 											</div>
 										</div>
