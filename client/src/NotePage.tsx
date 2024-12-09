@@ -146,7 +146,7 @@ export default function NotePage(): React.JSX.Element {
 								deadline: item.endDate?.toISOString(),
 								accessList: [owner],
 								accessListAccepted: [owner],
-								description: "Item in ToDoList di una nota",
+								description: "Un item contenuto nella ToDoList di una nota",
 								owner: owner,
 							}),
 						});
@@ -312,7 +312,7 @@ export default function NotePage(): React.JSX.Element {
 			<div className="note-background">
 				<div className="note-container">
 					<div className="note-page-title">
-						<div 
+						<div
 							style={{
 								width: "100%",
 								display: "flex",
@@ -450,94 +450,45 @@ export default function NotePage(): React.JSX.Element {
 														type="checkbox"
 														style={{ height: "15px", width: "15px" }}
 														checked={l.completed}
-														disabled={l.completed} // Disabilita il checkbox se è già completato
-														onChange={async (
-															e: React.ChangeEvent<HTMLInputElement>
-														): Promise<void> => {
+														disabled={l.completed}
+														onChange={async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
 															if (!l.completed) {
-																// Permetti il cambiamento solo se non è già completato
 																handleCheckboxChange(e, l);
 																try {
-																	//cerca l'attività con lo stesso titolo della nota
-																	const res = await fetch(
-																		`${SERVER_API}/activities/by-title/${l.text}`
-																	);
-																	const data = await res.json();
-																	const activity = data.value;
-																	console.log(
-																		"ATTIVITA DA COMPLETARE:",
-																		activity
-																	);
+																	// Se l'item ha una scadenza, cerca e aggiorna l'attività correlata
+																	if (l.endDate) {
+																		const res = await fetch(`${SERVER_API}/activities/by-title/${l.text}`);
+																		const data = await res.json();
+																		const activity = data.value;
 
-																	//completa l'attività trovata
-																	const res2 = await fetch(
-																		`${SERVER_API}/activities/completeActivity`,
-																		{
-																			method: "POST",
-																			headers: {
-																				"Content-Type":
-																					"application/json",
-																			},
-																			body: JSON.stringify({
-																				activity_id:
-																					activity._id,
-																			}),
+																		if (activity) {
+																			await fetch(`${SERVER_API}/activities/completeActivity`, {
+																				method: "POST",
+																				headers: { "Content-Type": "application/json" },
+																				body: JSON.stringify({ activity_id: activity._id }),
+																			});
 																		}
-																	);
-																	console.log(
-																		"ATTIVITA COMPLETATA:",
-																		res2
-																	);
+																	}
 
-																	// Aggiorna la nota nel database per rendere permanente il completed=true
-																	const updateNoteRes =
-																		await fetch(
-																			`${SERVER_API}/notes/${id}`,
-																			{
-																				method: "PUT",
-																				headers: {
-																					"Content-Type":
-																						"application/json",
-																				},
-																				body: JSON.stringify(
-																					{
-																						...note,
-																						toDoList:
-																							note.toDoList.map(
-																								(
-																									item
-																								) =>
-																									item.id ===
-																									l.id
-																										? {
-																												...item,
-																												completed:
-																													true,
-																										  }
-																										: item
-																							),
-																					}
-																				),
-																			}
-																		);
-																	console.log(
-																		"NOTA AGGIORNATA:",
-																		updateNoteRes
-																	);
+																	// Aggiorna sempre la nota nel database, indipendentemente dall'esistenza dell'attività
+																	const updateNoteRes = await fetch(`${SERVER_API}/notes/${id}`, {
+																		method: "PUT",
+																		headers: { "Content-Type": "application/json" },
+																		body: JSON.stringify({
+																			...note,
+																			toDoList: note.toDoList.map((item) =>
+																				item.id === l.id ? { ...item, completed: true } : item
+																			),
+																		}),
+																	});
 
 																	if (!updateNoteRes.ok) {
-																		console.error(
-																			"Errore nell'aggiornamento permanente della nota"
-																		);
+																		console.error("Errore nell'aggiornamento permanente della nota");
 																	} else {
-																		// Aggiorna lo stato locale
-																		refreshNote(); // Ricarica la nota per avere i dati aggiornati
+																		refreshNote();
 																	}
 																} catch (e) {
-																	console.error(
-																		"Errore durante il completamento dell'attività:",
-																		e
-																	);
+																	console.error("Errore durante il completamento dell'item:", e);
 																}
 															}
 														}}
@@ -647,7 +598,7 @@ export default function NotePage(): React.JSX.Element {
 					{/* render privacy */}
 					<label>
 						Privacy: {note.privacy}
-						{!isEditing &&note.privacy === Privacy.PROTECTED &&
+						{!isEditing && note.privacy === Privacy.PROTECTED &&
 							note.accessList.map((user) => <div>{user}</div>)}
 						{isEditing && (
 							<>

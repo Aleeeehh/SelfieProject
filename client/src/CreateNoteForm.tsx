@@ -92,6 +92,28 @@ export default function CreateNoteForm(): React.JSX.Element {
 
 				if (item.endDate) {
 					//se esiste una scadenza per l'item
+
+					//crea l'evento scadenza dell'attività
+					//crea l'attività come evento sul calendario
+					const res = await fetch(`${SERVER_API}/events`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							idEventoNotificaCondiviso: item.id,
+							owner: owner,
+							title: "Scadenza " + item.text,
+							startTime: new Date(item.endDate.getTime() - 60 * 60 * 1000).toISOString(),
+							endTime: item.endDate.toISOString(),
+							untilDate: null,
+							isInfinite: false,
+							frequency: "once",
+							location: "",
+							repetitions: 1,
+						}),
+					});
+					console.log(res);
+
+					//crea l'attività nella lista delle attività
 					const res2 = await fetch(`${SERVER_API}/activities`, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
@@ -101,7 +123,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 							deadline: item.endDate?.toISOString(),
 							accessList: [owner],
 							accessListAccepted: [owner],
-							description: "Item in ToDoList di una nota",
+							description: "Un item contenuto nella ToDoList di una nota",
 							owner: owner,
 						}),
 					});
@@ -230,7 +252,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 			<div className="note-background">
 				<div className="note-container">
 					<div className="note-page-title">
-						<div 
+						<div
 							style={{
 								width: "100%",
 								display: "flex",
