@@ -2952,7 +2952,7 @@ export default function Calendar(): React.JSX.Element {
 				untilDate: untilDate,
 				isInfinite: isInfinite,
 				frequency: frequency,
-				location: "Non disturbare",
+				location: "",
 				repetitions: repetitions,
 			}),
 		});
