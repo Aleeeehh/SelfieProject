@@ -123,6 +123,7 @@ export default function Activities(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 			console.log(resBody);
 			if (res.status === 200) {
+				setActivities(prev => prev.filter(activity => (activity as any)._id !== id));
 				updateActivities();
 			} else {
 				alert(resBody.message || "Errore nel cancellamento dell'attività");
@@ -135,11 +136,10 @@ export default function Activities(): React.JSX.Element {
 	return (
 		<>
 			<div className="activities-container">
-				{/*
 				<a href={`/activities/new`} style={{ marginTop: "1em" }}>
 					<button>Crea nuova attività</button>
 				</a>
-				*/}
+
 				<div className="sort-label-container">
 					<div className="sort-label">
 						<div style={{ color: "black" }}>Filtra per progetto:</div>

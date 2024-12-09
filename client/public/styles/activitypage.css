@@ -21,6 +21,16 @@
     transition: transform 0.2s;
 }
 
+.activities-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1.5em;
+    width: 100%;
+    justify-content: center;
+    padding: 2em 1em;
+}
+
 .activity-container>* {
     width: 100%;
 }
@@ -225,6 +235,7 @@ div[message] {
 
 .activities-container>a>button {
     background-color: rgb(249, 205, 140);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     color: black;
     font-weight: bold;
     border: none;
@@ -232,16 +243,6 @@ div[message] {
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-}
-
-.activities-list {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 1.5em;
-    width: 100%;
-    justify-content: center;
-    padding: 2em 1em;
 }
 
 .card-activity {
