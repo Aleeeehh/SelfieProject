@@ -179,17 +179,18 @@ export default function ProjectPage(): React.JSX.Element {
 				};
 			});
 	}
-
-	function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
-		e.preventDefault();
-
-		setProject((prevProj) => {
-			return {
-				...prevProj,
-				accessList: prevProj.accessList.filter((u) => u !== username),
-			};
-		});
-	}
+	/*
+		function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
+			e.preventDefault();
+	
+			setProject((prevProj) => {
+				return {
+					...prevProj,
+					accessList: prevProj.accessList.filter((u) => u !== username),
+				};
+			});
+		}
+			*/
 
 	return (
 		<>
@@ -239,6 +240,7 @@ export default function ProjectPage(): React.JSX.Element {
 								project.accessList.map((u) => (
 									<div className="project-user-box">
 										{u}
+										{/*
 										{isEditing && (
 											<button
 												style={{
@@ -253,6 +255,7 @@ export default function ProjectPage(): React.JSX.Element {
 												X
 											</button>
 										)}
+											*/}
 									</div>
 								))
 							) : (

@@ -153,11 +153,20 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 		const currentUser = await getCurrentUser();
 		const owner = currentUser?.value._id.toString();
-		accessListIds.push(owner); //aggiungo l'owner all'accessList
+		accessListIds = [...new Set([...accessListIds, owner])];
+
 
 		let accessListAccepted: string[] = [];
 		accessListAccepted.push(owner);
 
+		console.log("questo è il projectID:", projectId);
+		console.log("questo è il projectID:", projectId);
+		console.log("questo è il projectID:", projectId);
+		console.log("questo è il projectID:", projectId);
+		console.log("questo è il projectID:", projectId);
+		//se non si msotra projectid, usa start come parametro per distinzione attività di progetto e attività normale
+
+		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
 		fetch(`${SERVER_API}/activities/${activity.id}`, {
 			method: "POST",
@@ -166,9 +175,9 @@ export default function CreateActivityForm(): React.JSX.Element {
 				title: activity.title,
 				description: activity.description,
 				accessList: accessListIds,
-				accessListAccepted: accessListAccepted, //per ora accetta in automatico
+				accessListAccepted: accessListAccepted,
 				deadline: new Date(activity.deadline).toISOString().split("T")[0],
-				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
+				idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 
 				// project related fields
 				projectId: projectId,
@@ -194,32 +203,81 @@ export default function CreateActivityForm(): React.JSX.Element {
 				setMessage("Impossibile raggiungere il server");
 			});
 
+		if (projectId) { //se l'attività è legata ad un progetto, invia notifiche "project activity" agli utenti dell'attività
 
-		console.log("Creo le notifiche per gli utenti");
-		console.log("AccessList: ", activity.accessList);
-		//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
-		for (const receiver of activity.accessList) {
+			console.log("Creo le notifiche per gli utenti");
+			console.log("AccessList: ", activity.accessList);
+			//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
+			for (const receiver of activity.accessList) {
 
-			if (receiver !== activity.owner) { //posso mettere che la riceva anche l'owner magari
-				const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
-				const data = await res.json();
-				const receiverId = data.id;
-				console.log("Questo è il receiver:", receiver);
-				const res4 = await fetch(`${SERVER_API}/notifications`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						message: "Hai ricevuto un invito per un'attività di un progetto",
-						mode: "activity",
-						receiver: receiverId, // Cambia il receiver per ogni membro della accessList
-						type: "ProjectActivity",
-						data: {
-							date: new Date(), // data prima notifica
-							activity: activity,
-						},
-					}),
-				});
-				console.log("Notifica creata per:", receiver, "Risposta:", res4);
+				if (receiver !== activity.owner) { //posso mettere che la riceva anche l'owner magari
+					const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+					const data = await res.json();
+					const receiverId = data.id;
+					console.log("Questo è il receiver:", receiver);
+					const res4 = await fetch(`${SERVER_API}/notifications`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							message: "Hai ricevuto un invito per un'attività di un progetto",
+							mode: "activity",
+							receiver: receiverId, // Cambia il receiver per ogni membro della accessList
+							type: "ProjectActivity",
+							data: {
+								date: new Date(), // data prima notifica
+								activity: activity,
+							},
+						}),
+					});
+					console.log("Notifica creata per:", receiver, "Risposta:", res4);
+				}
+			}
+		}
+
+		//se projectId è null, manda notifiche "activity" agli utenti dell'attività
+
+		if (!projectId) {
+			for (const receiver of activity.accessList) {
+
+				const newEvent = {
+					idEventoNotificaCondiviso,
+					owner: receiver,
+					title: "Scadenza " + activity.title,
+					startTime: activity.start?.toISOString() || new Date().toISOString(),
+					endTime: activity.deadline.toISOString(),
+					untilDate: null,
+					isInfinite: false,
+					frequency: "once",
+					location: "",
+					repetitions: 1,
+				};
+
+				if (receiver !== activity.owner) {
+
+					const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+					const data = await res.json();
+					const receiverId = data.id;
+
+					console.log("Questo è il receiver:", receiver);
+					const res4 = await fetch(`${SERVER_API}/notifications`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							message: "Hai ricevuto un attività condivisa",
+							mode: "activity",
+							receiver: receiverId, // Cambia il receiver per ogni membro della accessList
+							type: "shareActivity",
+							data: {
+								date: new Date(), // data prima notifica
+								idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+								activity: activity, //attività condivisa
+								event: newEvent, //evento scadenza dell'attività condivisa
+								notification: null,
+							},
+						}),
+					});
+					console.log("Notifica creata per:", receiver, "Risposta:", res4);
+				}
 			}
 		}
 	}

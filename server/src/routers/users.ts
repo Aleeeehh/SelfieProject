@@ -361,6 +361,21 @@ router.get("/getIdByUsername", async (req: Request, res: Response) => {
 	return res.json({ id: foundUser?._id.toString() });
 });
 
+router.get("/getUsernameById", async (req: Request, res: Response) => {
+	const userId = req.query.userId as string;
+
+	console.log("User ID:", userId);
+
+	const foundUser = await UserSchema.findById(userId).lean();
+	console.log("Questo è l'utente trovato:", foundUser);
+
+	if (!foundUser) {
+		return res.status(404).json({ message: "User not found" });
+	}
+
+	return res.json({ username: foundUser.username });
+});
+
 router.get("/allIds", checkAuthentication, async (_: Request, res: Response) => {
 	try {
 		// Se l'input è vuoto, restituisci tutti gli usernames

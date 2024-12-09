@@ -179,7 +179,7 @@ export default function Header(): React.JSX.Element {
 		// Aggiungi il receiver alla accessListAccepted dell'attività
 
 		const res = await fetch(
-			`${SERVER_API}/activities/${notification.data.activity.idEventoNotificaCondiviso}`,
+			`${SERVER_API}/activities/${notification.data.idEventoNotificaCondiviso}`,
 			{
 				method: "PUT",
 				headers: { "Content-Type": "application/json" },
@@ -219,6 +219,7 @@ export default function Header(): React.JSX.Element {
 		console.log("NOTIFICA DI PROGETTO:", notification);
 		let project;
 		// Ottieni il progetto dal titolo
+		console.log("titolo progetto notifica:", notification.data.project.title);
 		const res = await fetch(`${SERVER_API}/projects/by-title/${notification.data.project.title}`);
 		if (res.ok) {
 			const data = await res.json();
@@ -1108,11 +1109,11 @@ export default function Header(): React.JSX.Element {
 												return (
 													<div key={index}>
 														Evento{" "}
-														<span style={{color: "lightblue"}}>
+														<span style={{ color: "lightblue" }}>
 															infinito
 														</span>{" "}
 														in data corrente, alle ore{" "}
-														<span style={{fontWeight: "bold"}}>
+														<span style={{ fontWeight: "bold" }}>
 															{String(eventDate.getHours()).padStart(
 																2,
 																"0"
