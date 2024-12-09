@@ -23,20 +23,49 @@ export default function Activities(): React.JSX.Element {
 	const [projectFilter, setProjectFilter] = React.useState("");
 	const [sortFilter, setSortFilter] = React.useState<SORT>(SORT.PROJECT);
 
+	const [users, setUsers] = React.useState<string[]>([]);
+	const [usernameToId, setUsernameToId] = React.useState<{ [key: string]: string }>({});
+
+
+
 	const userId = localStorage.getItem("loggedUserId");
 
 	const nav = useNavigate();
 
 
-	function getAllUsers(): string[] {
+	async function getUsernameById(userId: string): Promise<string> {
+		try {
+			const res = await fetch(`${SERVER_API}/users/getUsernameById?userId=${userId}`);
+			const data = await res.json();
+			return data.username;
+		} catch (e) {
+			console.log("Impossibile recuperare l'username dell'utente");
+			return userId; // fallback all'ID in caso di errore
+		}
+	}
+
+	async function getAllUsers(): Promise<string[]> {
 		const users: string[] = [];
+		const mapping: { [key: string]: string } = {};
+		const userPromises: Promise<void>[] = [];
+
 		activities.forEach((act) => {
-			act.accessList.forEach((user) => {
-				if (!users.includes(user)) {
-					users.push(user);
+			act.accessList.forEach((userId) => {
+				if (!users.includes(userId)) {
+					userPromises.push(
+						getUsernameById(userId).then(username => {
+							if (!users.includes(username)) {
+								users.push(username);
+								mapping[username] = userId; // Salva la mappatura username -> ID
+							}
+						})
+					);
 				}
 			});
 		});
+
+		await Promise.all(userPromises);
+		setUsernameToId(mapping); // Salva la mappatura nello state
 		return users;
 	}
 
@@ -94,6 +123,10 @@ export default function Activities(): React.JSX.Element {
 	React.useEffect(() => {
 		updateActivities();
 	}, []);
+
+	React.useEffect(() => {
+		getAllUsers().then(setUsers);
+	}, [activities]);
 
 	async function handleDelete(
 		e: React.MouseEvent<HTMLButtonElement>,
@@ -169,7 +202,7 @@ export default function Activities(): React.JSX.Element {
 								setUserFilter(e.target.value);
 							}}>
 							<option value="">Tutti</option>
-							{getAllUsers().map((user) => (
+							{users.map((user) => (
 								<option value={user}>{user}</option>
 							))}
 						</select>
@@ -199,7 +232,7 @@ export default function Activities(): React.JSX.Element {
 						})
 						.filter((act) => {
 							if (!userFilter) return true;
-							return act.accessList.includes(userFilter);
+							return act.accessList.includes(usernameToId[userFilter]);
 						})
 						.sort((a, b) => {
 							switch (sortFilter) {
