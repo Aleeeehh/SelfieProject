@@ -182,7 +182,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 			.then((res) => res.json())
 			.then((data) => {
 				if (data.status === ResponseStatus.GOOD) {
-					alert("Attività creata con successo");
+					console.log("Attività creata con successo");
 					if (projectId) nav(`/projects/${projectId}`);
 					else nav(`/activities/${data.value}`);
 				} else {
@@ -497,6 +497,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 								<input
 									type="date"
 									name="start"
+									className="activity-date-input"
 									onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 										setActivity({
 											...activity,
