@@ -5,7 +5,6 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import Note, { type ListItem } from "./types/Note";
 import { useNavigate } from "react-router-dom";
 import { marked } from "marked";
-// import UserResult from "./types/UserResult";
 import { Privacy } from "./types/Privacy";
 import SearchForm from "./SearchForm";
 import User from "./types/User";
@@ -20,8 +19,6 @@ const baseNote: Note = {
 	accessList: [] as string[],
 	toDoList: [] as ListItem[],
 };
-
-//TODO: aggiungere un bottone per uscire dalla creazione di una nota
 
 export default function CreateNoteForm(): React.JSX.Element {
 	const [note, setNote] = React.useState(baseNote as Note);
@@ -233,10 +230,18 @@ export default function CreateNoteForm(): React.JSX.Element {
 			<div className="note-background">
 				<div className="note-container">
 					<div className="note-page-title">
-						{"Crea una nuova nota"}
-						<a href="/notes" className="note-close-link">
-							X
-						</a>
+						<div 
+							style={{
+								width: "100%",
+								display: "flex",
+								justifyContent: "center",
+							}}
+						>
+							<a href="/notes" className="note-close-link">
+								X
+							</a>
+						</div>
+						<p>Crea una nuova nota</p>
 					</div>
 
 					{/* render title and text */}

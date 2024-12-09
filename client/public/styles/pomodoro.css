@@ -250,15 +250,13 @@ h1 {
 		filter: hue-rotate(60deg);
 	}
 
-	/* Inizio dell'animazione: colore rosso */
+	/* Inizio dell'animazione: colore verde */
 	100% {
 		filter: hue-rotate(0deg);
 	}
 
-	/* Fine dell'animazione: colore verde */
+	/* Fine dell'animazione: colore rosso */
 }
-
-
 
 
 .create-event-container {
@@ -296,14 +294,6 @@ h1 {
 .music-container {
 	margin: 1em;
 }
-
-
-
-
-
-
-
-/*Media query per responsiveness*/
 
 @media screen and (max-width: 900px) {
 	.preview {

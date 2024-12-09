@@ -2,8 +2,6 @@ import React from "react";
 import { SERVER_API } from "./lib/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { useNavigate, useParams } from "react-router-dom";
-// import { marked } from "marked";
-// import UserResult from "./types/UserResult";
 import type Activity from "./types/Activity";
 import { ActivityStatus, AdvancementType } from "./types/Activity";
 import type Project from "./types/Project";
@@ -12,18 +10,6 @@ import SearchForm from "./SearchForm";
 import { getActivityStatus } from "./lib/helpers";
 import { useRefresh } from "./TimeContext";
 
-// const baseActivity: Activity = {
-// 	id: "",
-// 	title: "",
-// 	description: "",
-// 	deadline: new Date(),
-// 	owner: "",
-// 	accessList: [] as string[],
-// 	completed: false,
-// 	// start: new Date(),
-// };
-
-//TODO: aggiungere un bottone per uscire dalla creazione di una nota
 const dummyActivity: Activity = {
 	id: "",
 	owner: "",
@@ -52,10 +38,6 @@ export default function ActivityPage(): React.JSX.Element {
 	const [isOwner, setIsOwner] = React.useState(false);
 
 	const { serverTime } = useRefresh();
-
-	// handle share activity
-	// const [shareActivity, setShareActivity] = React.useState(false);
-	// const [shareList, setShareList] = React.useState([] as string[]); // username list
 
 	const loggedUser = {
 		username: localStorage.getItem("loggedUserName"),
@@ -94,7 +76,6 @@ export default function ActivityPage(): React.JSX.Element {
 			.then(() => refreshProject())
 			.catch(() => {
 				console.log("Impossibile raggiungere il server");
-				// nav("/projects");
 			});
 	}
 
@@ -107,12 +88,10 @@ export default function ActivityPage(): React.JSX.Element {
 					console.log("Progetto: ", data.value);
 				} else {
 					console.log(data.message || "Errore nel caricamento del progetto");
-					// nav("/projects");
 				}
 			})
 			.catch(() => {
 				console.log("Impossibile raggiungere il server");
-				// nav("/projects");
 			});
 	}
 
@@ -213,7 +192,7 @@ export default function ActivityPage(): React.JSX.Element {
 			.then((res) => res.json())
 			.then((data) => {
 				if (data.status === ResponseStatus.GOOD) {
-					alert("Attività modificata con successo");
+					console.log("Attività modificata con successo");
 					refreshActivity();
 					setIsEditing(false);
 				} else {
@@ -240,7 +219,7 @@ export default function ActivityPage(): React.JSX.Element {
 			.then((res) => res.json())
 			.then((data) => {
 				if (data.status === ResponseStatus.GOOD) {
-					alert("Attività eliminata correttamente");
+					console.log("Attività eliminata correttamente");
 					nav("/activities");
 				} else {
 					console.log(data.message || "Errore durante l'eliminazione");
@@ -272,50 +251,8 @@ export default function ActivityPage(): React.JSX.Element {
 		}
 	}, [serverTime, activity.projectId]);
 
-	// share activity handlers
-	// function handleAddUserToShareList(
-	//     e: React.ChangeEvent<HTMLSelectElement>
-	// ): void {
-	//     e.preventDefault();
-	//     // only one user at a time
-	//     const username = e.target.value;
-	//     if (!activity.accessList.includes(username)) {
-	//         setShareList([username]);
-	//     }
-	// }
-
-	// async function handleShareActivity(
-	//     e: React.MouseEvent<HTMLButtonElement>
-	// ): Promise<void> {
-	//     e.preventDefault();
-	//
-	//     fetch(`${SERVER_API}/activities/${activity.id}/share`, {
-	//         method: "POST",
-	//         headers: { "Content-Type": "application/json" },
-	//         body: JSON.stringify({
-	//             userList: shareList,
-	//             activityId: activity.id,
-	//         }),
-	//     })
-	//         .then((res) => res.json())
-	//         .then((data) => {
-	//             if (data.status === ResponseStatus.GOOD) {
-	//                 alert("Attività condivisa correttamente");
-	//                 setShareActivity(false);
-	//                 setShareList([]);
-	//             } else {
-	//                 console.log(
-	//                     data.message || "Errore durante la condivisione"
-	//                 );
-	//                 setMessage(
-	//                     data.message || "Errore durante la condivisione"
-	//                 );
-	//             }
-	//         });
-
 	// TODO: ADD NOTIFICATION IN BACKEND!!
 	// TODO: ADD EVENT IN BACKEND!!
-	// }
 
 	function findParentActivity(): Activity | undefined {
 		if (!project) return undefined;
@@ -389,66 +326,6 @@ export default function ActivityPage(): React.JSX.Element {
 								<a href="/activities" className="activity-close-link">
 									X
 								</a>
-								{/* isOwner && (
-                                    <>
-                                        <label htmlFor="allDayEvent">
-                                            <button
-                                                name="addNotification"
-                                                onClick={(): void =>
-                                                    setShareActivity(
-                                                        !shareActivity
-                                                    )
-                                                }
-                                                style={{
-                                                    marginLeft: "5px",
-                                                    marginRight: "3px",
-                                                    marginTop: "3px",
-                                                }}
-                                            >
-                                                Condividi
-                                            </button>
-                                        </label>
-                                        {shareActivity && (
-                                            <div
-                                                id="send-invite"
-                                                className="send-invite-container"
-                                                style={{
-                                                    display: "flex",
-                                                    flexDirection: "column",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                }}
-                                            >
-                                                <div>
-                                                    Scegli l'utente con il quale
-                                                    condividere l'attività
-                                                </div>
-
-                                                <SearchForm
-                                                    onItemClick={
-                                                        handleAddUserToShareList
-                                                    }
-                                                    list={shareList}
-                                                />
-                                                <button
-                                                    onClick={
-                                                        handleShareActivity
-                                                    }
-                                                    className="btn btn-primary send-invite-button"
-                                                    style={{
-                                                        backgroundColor:
-                                                            "bisque",
-                                                        color: "black",
-                                                        border: "0",
-                                                        marginBottom: "10px",
-                                                    }}
-                                                >
-                                                    Condividi
-                                                </button>
-                                            </div>
-                                        )}{" "}
-                                    </>
-                                )*/}
 							</div>
 
 							{/* render title */}
@@ -631,6 +508,7 @@ export default function ActivityPage(): React.JSX.Element {
 				) : (
 					<>
 						<div className="activity-container">
+
 							{/* Render updating activity*/}
 							<div id="title-2" className="activity-page-title">
 								Modifica attività
@@ -638,6 +516,7 @@ export default function ActivityPage(): React.JSX.Element {
 									X
 								</a>
 							</div>
+
 							{/* render title */}
 							<label className="activity-title">
 								Titolo
@@ -649,6 +528,7 @@ export default function ActivityPage(): React.JSX.Element {
 									disabled={!isUser}
 								/>
 							</label>
+
 							{/* render description */}
 							<label className="activity-description">
 								Descrizione
@@ -812,7 +692,7 @@ export default function ActivityPage(): React.JSX.Element {
 											): void => {
 												const [hours, minutes] = e.target.value.split(":");
 												const newDate = new Date(activity.deadline);
-												newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+												newDate.setHours(Number(hours), Number(minutes));
 												setActivity({
 													...activity,
 													deadline: newDate,
@@ -831,9 +711,10 @@ export default function ActivityPage(): React.JSX.Element {
 									name="completed"
 									checked={activity.completed}
 									onChange={handleCheckboxChange}
-									disabled={!isUser} // only user can change completed
+									disabled={!isUser}
 								/>
 							</label>
+
 							{/* render access list */}
 							<div className="activity-participants">
 								<label>
@@ -871,6 +752,7 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 								</label>
 							</div>
+
 							{/* render project inputs */}
 							{/* render project */}
 							{project && activity.projectId && (
@@ -890,47 +772,6 @@ export default function ActivityPage(): React.JSX.Element {
 											Status: <b>{getActivityStatus(serverTime, activity)}</b>
 										</div>
 									</div>
-
-									{/* render start date */}
-									{/* <label
-										htmlFor="start"
-										className="activity-vertical"
-										style={{
-											display: "flex",
-											flexDirection: "row",
-											flexWrap: "wrap",
-											alignItems: "center",
-											marginBottom: "15px",
-											padding: "10px",
-											border: "1px solid #ddd",
-											borderRadius: "8px",
-											backgroundColor: "#fdfdfd",
-										}}>
-										Data di Inizio
-										<div
-											style={{
-												display: "flex",
-												flexFlow: "wrap",
-												alignItems: "center",
-												gap: "0.5em",
-											}}>
-											<input
-												type="date"
-												name="start"
-												value={new Date(
-													activity.start || Date.now()
-												).getTime()}
-												onChange={(
-													e: React.ChangeEvent<HTMLInputElement>
-												): void => {
-													setActivity({
-														...activity,
-														start: new Date(e.target.value),
-													});
-												}}
-											/>
-										</div>
-									</label> */}
 
 									{/* render advancement type */}
 									<div className="activity-advancementType">
@@ -1050,7 +891,7 @@ export default function ActivityPage(): React.JSX.Element {
 											name="milestone"
 											checked={activity.milestone || false}
 											onChange={handleCheckboxChange}
-											disabled={!isOwner} // only owner can change milestone
+											disabled={!isOwner}
 										/>
 									</label>
 
@@ -1062,7 +903,7 @@ export default function ActivityPage(): React.JSX.Element {
 											name="active"
 											checked={activity.active || false}
 											onChange={handleCheckboxChange}
-											disabled={!isUser} // only user can change completed
+											disabled={!isUser}
 										/>
 									</label>
 
@@ -1074,7 +915,7 @@ export default function ActivityPage(): React.JSX.Element {
 											name="abandoned"
 											checked={activity.abandoned || false}
 											onChange={handleCheckboxChange}
-											disabled={!isUser} // only user can change abandoned
+											disabled={!isUser}
 										/>
 									</label>
 

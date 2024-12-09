@@ -19,12 +19,10 @@ import Activities from "./Activities";
 import CreateProjectForm from "./CreateProjectForm";
 import CreateActivityForm from "./CreateActivityForm";
 import CreateNoteForm from "./CreateNoteForm";
-//import "bootstrap/dist/css/bootstrap.min.css";
 
 function App(): React.JSX.Element {
 	return (
 		<div id="body-container">
-			{/* <BrowserRouter> */}
 			<WithLayout>
 				<Routes>
 					<Route path="/">
@@ -34,7 +32,6 @@ function App(): React.JSX.Element {
 						<Route path="pomodoro" element={<Pomodoro />} />
 						<Route path="profile" element={<Profile />} />
 						<Route path="register" element={<Register />} />
-						{/* Route notes/new creates the new page for note*/}
 						<Route path="chat" element={<MessageHub />} />
 						<Route path="notes" element={<Notes />} />
 						<Route path="notes/new" element={<CreateNoteForm />} />
@@ -45,13 +42,10 @@ function App(): React.JSX.Element {
 						<Route path="activities" element={<Activities />} />
 						<Route path="activities/new" element={<CreateActivityForm />} />
 						<Route path="activities/:id" element={<ActivityPage />} />
-
-						{/* {<Route path="*" element={<Navigate to="/" replace />} />} */}
 					</Route>
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</WithLayout>
-			{/* </BrowserRouter> */}
 		</div>
 	);
 }

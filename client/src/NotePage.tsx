@@ -312,10 +312,18 @@ export default function NotePage(): React.JSX.Element {
 			<div className="note-background">
 				<div className="note-container">
 					<div className="note-page-title">
-						{isEditing ? "Modifica nota" : note.title}
-						<a href="/notes" className="note-close-link">
-							X
-						</a>
+						<div 
+							style={{
+								width: "100%",
+								display: "flex",
+								justifyContent: "center",
+							}}
+						>
+							<a href="/notes" className="note-close-link">
+								X
+							</a>
+						</div>
+						<p>{isEditing ? "Modifica nota" : note.title}</p>
 					</div>
 					{/* render title and text */}
 					{isEditing ? (

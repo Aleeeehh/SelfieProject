@@ -4,8 +4,6 @@ import { SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { useNavigate } from "react-router-dom";
-// import { marked } from "marked";
-// import UserResult from "./types/UserResult";
 import SearchForm from "./SearchForm";
 import type Project from "./types/Project";
 import type Activity from "./types/Activity";
@@ -19,8 +17,6 @@ const baseProject: Project = {
 	activityList: [] as Activity[],
 	accessListAccepted: [] as string[],
 };
-
-//TODO: aggiungere un bottone per uscire dalla creazione di una nota
 
 export default function CreateProjectForm(): React.JSX.Element {
 	const [project, setProject] = React.useState(baseProject);
@@ -44,15 +40,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 				throw new Error("Errore nel recupero della data corrente");
 			}
 			const data = await response.json();
-			setCurrentDate(new Date(data.currentDate)); // Assicurati che il formato sia corretto
-
-			//ricarico la lista di attività
-			//const res2 = await fetch(`${SERVER_API}/activity`); // Assicurati che l'endpoint sia corretto
-
-			//const updatedActivities = await res2.json();
-			//setActivityList(updatedActivities.value);
-			//await loadActivities();
-			//await loadEvents();
+			setCurrentDate(new Date(data.currentDate));
 		} catch (error) {
 			console.error("Errore durante il recupero della data corrente:", error);
 		}
@@ -110,8 +98,8 @@ export default function CreateProjectForm(): React.JSX.Element {
 						receiver: receiverId, // Cambia il receiver per ogni membro della accessList
 						type: "Progetto",
 						data: {
-							date: currentDate, // data prima notifica
-							project: project, //progetto condiviso
+							date: currentDate,
+							project: project,
 						},
 					}),
 				});
@@ -168,6 +156,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 							X
 						</a>
 					</div>
+
 					{/* render title */}
 					<label htmlFor="title">
 						Titolo
@@ -215,7 +204,6 @@ export default function CreateProjectForm(): React.JSX.Element {
 						</div>
 					</label>
 					{message && <div className="error-message">{message}</div>}
-					{/* manage project */}
 					<button onClick={handleCreateProject}>Crea nuovo progetto</button>
 				</div>
 			</div>
