@@ -736,7 +736,10 @@ export default function Header(): React.JSX.Element {
 						className="btn secondary"
 						title="Time Machine"
 						style={{ ...buttonStyle, width: "45px" }}
-						onClick={(): void => setShowTimeMachine(!showTimeMachine)}
+						onClick={(): void => {
+							setShowTimeMachine(!showTimeMachine);
+							setShowNotifications(false);
+						}}
 					>
 						{/* Icona della clessidra */}
 						<i className="fas fa-hourglass"></i>
@@ -842,6 +845,7 @@ export default function Header(): React.JSX.Element {
 							width: "45px",
 						}}
 						onClick={(): void => {
+							setShowTimeMachine(false);
 							setShowNotifications(!showNotifications);
 							playNotificationSound();
 						}}>
