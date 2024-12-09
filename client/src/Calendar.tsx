@@ -66,7 +66,6 @@ export default function Calendar(): React.JSX.Element {
 	const [showRisorse, setShowRisorse] = React.useState(true);
 	const [isAdmin, setIsAdmin] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
-
 	//const [insertFile, setInsertFile] = React.useState(false);
 	const [description, setDescription] = React.useState("");
 	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
@@ -5280,24 +5279,22 @@ export default function Calendar(): React.JSX.Element {
 										</div>
 
 										<div className="orario" style={{ fontSize: "15.8px" }}>
-											<div
-												style={{ position: "relative", marginLeft: "10%" }}>
+											<div style={{ position: "relative", marginLeft: "10%" }}>
 												{eventPositions.map((event, index) =>
-													// Se event.type è true, rendi il div cliccabile, altrimenti mostra solo il div
 													!event.type ? (
 														<div
-															key={index} // Assicurati di fornire una chiave unica per ogni elemento
+															key={index}
 															className="evento red"
 															style={{
-																top: `${event.top}px`, // Imposta la posizione verticale
-																height: `${event.height}px`, // Imposta l'altezza dell'evento
+																top: `${event.top}px`,
+																height: `${event.height}px`,
 																width: `calc(95%/${event.width})`,
-																position: "absolute", // Assicurati che sia posizionato correttamente
+																position: "absolute",
 																color:
 																	new Date(currentDate) >
 																		new Date(event.event.endTime)
 																		? "rgba(209, 150, 150, 1)"
-																		: "red", // Colore più chiaro se currentDate è maggiore di endTime
+																		: "red",
 																borderColor:
 																	new Date(currentDate) >
 																		new Date(event.event.endTime)
@@ -5307,14 +5304,14 @@ export default function Calendar(): React.JSX.Element {
 																	new Date(currentDate) >
 																		new Date(event.event.endTime)
 																		? "rgba(249, 67, 67, 0.2)"
-																		: "rgba(249, 67, 67, 0.5)", // Colore di sfondo più chiaro
+																		: "rgba(249, 67, 67, 0.5)",
 																marginLeft: `${event.marginLeft}%`,
-																cursor: "default", // Imposta il cursore di default per l'intero evento
-															}}>
+																cursor: "default",
+															}}
+														>
 															<div style={{ color: "red" }}>
 																<Link
 																	to={`/pomodoro?duration=${
-																		// Funzione per calcolare la durata dell'evento e scriverlo come query param
 																		((
 																			startTime,
 																			endTime
@@ -5335,13 +5332,14 @@ export default function Calendar(): React.JSX.Element {
 																		})(
 																			event.event.startTime,
 																			event.event.endTime
-																		) // Passa startTime e endTime
-																		}&id=${event.event._id}`} // Passa l'id dell'evento
+																		)
+																		}&id=${event.event._id}`}
 																	style={{
 																		textDecoration: "none",
 																		color: "inherit",
 																		cursor: "pointer",
-																	}}>
+																	}}
+																>
 																	{event.name}
 																</Link>
 															</div>
@@ -5352,7 +5350,8 @@ export default function Calendar(): React.JSX.Element {
 																		event.event._id,
 																		event.event.groupId
 																	)
-																}>
+																}
+															>
 																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
 																<i
 																	className="bi bi-trash"
@@ -5364,7 +5363,8 @@ export default function Calendar(): React.JSX.Element {
 																		padding: 0,
 																		color: "red",
 																		cursor: "pointer",
-																	}}></i>
+																	}}
+																></i>
 															</div>
 														</div>
 													) : (
@@ -5380,10 +5380,10 @@ export default function Calendar(): React.JSX.Element {
 																		: "blue"
 																	}`}
 																style={{
-																	top: `${event.top}px`, // Imposta la posizione verticale
-																	height: `${event.height}px`, // Imposta l'altezza dell'evento
+																	top: `${event.top}px`,
+																	height: `${event.height}px`,
 																	width: `calc(95%/${event.width})`,
-																	position: "absolute", // Assicurati che sia posizionato correttamente
+																	position: "absolute",
 																	color:
 																		event.event.title ===
 																			"Non disturbare"
@@ -5442,7 +5442,8 @@ export default function Calendar(): React.JSX.Element {
 																					: "rgba(155, 223, 212, 0.5)",
 																	marginLeft: `${event.marginLeft}%`,
 																	cursor: "default",
-																}}>
+																}}
+															>
 																{event.name}
 																<div
 																	className="position-relative"
@@ -5451,7 +5452,8 @@ export default function Calendar(): React.JSX.Element {
 																			event.event._id,
 																			event.event.groupId
 																		)
-																	}>
+																	}
+																>
 																	{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
 																	{(!event.event.isRisorsa ||
 																		(event.event.isRisorsa &&
@@ -5482,7 +5484,8 @@ export default function Calendar(): React.JSX.Element {
 																									? "rgba(135, 190, 196, 0.8)"
 																									: "rgb(155, 223, 212)",
 																					cursor: "pointer",
-																				}}></i>
+																				}}
+																			></i>
 																		)}
 																</div>
 															</div>
@@ -5529,7 +5532,8 @@ export default function Calendar(): React.JSX.Element {
 											justifyContent: "center",
 											alignItems: "center",
 											gap: "0.5em",
-										}}>
+										}}
+									>
 										<button className="calendar-arrows" onClick={prevWeek}>
 											{"<<"}
 										</button>
@@ -5553,7 +5557,8 @@ export default function Calendar(): React.JSX.Element {
 												justifyContent: "space-between",
 												marginLeft: "auto",
 												marginRight: "auto",
-											}}>
+											}}
+										>
 											<div className="nome-data-week">
 												<div
 													style={{
@@ -5564,7 +5569,8 @@ export default function Calendar(): React.JSX.Element {
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}>
+													}}
+												>
 													Dom{" "}
 													{((): JSX.Element | null => {
 														const currentDayOfWeek = getDay(
@@ -5627,7 +5633,8 @@ export default function Calendar(): React.JSX.Element {
 														position: "relative",
 														overflowY: "auto",
 													}}
-													onWheel={handleScroll}>
+													onWheel={handleScroll}
+												>
 													{renderWeekEvents(weekEvents, 0)}
 
 													{/*{renderMonthEvents(monthEvents, 12)}
@@ -5669,7 +5676,8 @@ export default function Calendar(): React.JSX.Element {
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}>
+													}}
+												>
 													Lun{" "}
 													{getDay(new Date(year, meseCorrente, day)) ===
 														6 &&
@@ -5700,7 +5708,8 @@ export default function Calendar(): React.JSX.Element {
 														width: "calc(100% - 10px)",
 														flex: "1",
 													}}
-													onWheel={handleScroll}>
+													onWheel={handleScroll}
+												>
 													{renderWeekEvents(weekEvents, 1)}
 
 													<time>00:00</time>
@@ -5739,7 +5748,8 @@ export default function Calendar(): React.JSX.Element {
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}>
+													}}
+												>
 													Mar{" "}
 													{getDay(new Date(year, meseCorrente, day)) ===
 														6 &&
@@ -5769,7 +5779,8 @@ export default function Calendar(): React.JSX.Element {
 														width: "calc(100% - 10px)",
 														flex: "1",
 													}}
-													onWheel={handleScroll}>
+													onWheel={handleScroll}
+												>
 													{renderWeekEvents(weekEvents, 2)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -5807,7 +5818,8 @@ export default function Calendar(): React.JSX.Element {
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}>
+													}}
+												>
 													Mer{" "}
 													{getDay(new Date(year, meseCorrente, day)) ===
 														6 &&
@@ -5837,7 +5849,8 @@ export default function Calendar(): React.JSX.Element {
 														width: "calc(100% - 10px)",
 														flex: "1",
 													}}
-													onWheel={handleScroll}>
+													onWheel={handleScroll}
+												>
 													{renderWeekEvents(weekEvents, 3)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -5875,7 +5888,8 @@ export default function Calendar(): React.JSX.Element {
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}>
+													}}
+												>
 													Gio{" "}
 													{getDay(new Date(year, meseCorrente, day)) ===
 														6 &&
@@ -5905,7 +5919,8 @@ export default function Calendar(): React.JSX.Element {
 														width: "calc(100% - 10px)",
 														flex: "1",
 													}}
-													onWheel={handleScroll}>
+													onWheel={handleScroll}
+												>
 													{renderWeekEvents(weekEvents, 4)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -5943,7 +5958,8 @@ export default function Calendar(): React.JSX.Element {
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}>
+													}}
+												>
 													Ven{" "}
 													{getDay(new Date(year, meseCorrente, day)) ===
 														6 &&
@@ -5973,7 +5989,8 @@ export default function Calendar(): React.JSX.Element {
 														width: "calc(100% - 10px)",
 														flex: "1",
 													}}
-													onWheel={handleScroll}>
+													onWheel={handleScroll}
+												>
 													{renderWeekEvents(weekEvents, 5)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -6011,7 +6028,8 @@ export default function Calendar(): React.JSX.Element {
 														fontSize: "1em",
 														letterSpacing: "0.1em",
 														fontVariant: "small-caps",
-													}}>
+													}}
+												>
 													Sab{" "}
 													{getDay(new Date(year, meseCorrente, day)) ===
 														6 &&
@@ -6041,7 +6059,8 @@ export default function Calendar(): React.JSX.Element {
 														width: "calc(100% - 10px)",
 														flex: "1",
 													}}
-													onWheel={handleScroll}>
+													onWheel={handleScroll}
+												>
 													{renderWeekEvents(weekEvents, 6)}
 													<time>00:00</time>
 													<time>01:00</time>
@@ -6083,10 +6102,12 @@ export default function Calendar(): React.JSX.Element {
 											justifyContent: "center",
 											alignItems: "center",
 											gap: "0.5em",
-										}}>
+										}}
+									>
 										<button
 											className="calendar-arrows"
-											onClick={mesePrecedente}>
+											onClick={mesePrecedente}
+										>
 											{"<<"}
 										</button>
 										<div>
@@ -6094,7 +6115,8 @@ export default function Calendar(): React.JSX.Element {
 										</div>
 										<button
 											className="calendar-arrows"
-											onClick={meseSuccessivo}>
+											onClick={meseSuccessivo}
+										>
 											{">>"}
 										</button>
 									</div>
@@ -6117,7 +6139,9 @@ export default function Calendar(): React.JSX.Element {
 											}).map((_, index) => (
 												<div
 													key={index}
-													className="date-cell empty-cell"></div>
+													className="date-cell empty-cell"
+												>
+												</div>
 											))}
 
 											{/* Celle per i giorni del mese */}
@@ -6132,7 +6156,8 @@ export default function Calendar(): React.JSX.Element {
 													style={{
 														position: "relative",
 														minHeight: "100px",
-													}}>
+													}}
+												>
 													<div>{renderMonthEvents(monthEvents, day)}</div>
 													<button
 														onClick={(e): void => {
@@ -6140,7 +6165,8 @@ export default function Calendar(): React.JSX.Element {
 															dayMode(
 																e as React.MouseEvent<HTMLElement>
 															);
-														}}>
+														}}
+													>
 														{day + 1}
 													</button>
 												</div>
