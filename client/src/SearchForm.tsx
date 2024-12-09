@@ -1,7 +1,5 @@
 import React from "react";
 import { SERVER_API } from "./lib/params";
-//import { ResponseBody } from "./types/ResponseBody";
-// import UserResult from "./types/UserResult";
 
 type SearchFormProps = {
 	onItemClick: (e: React.ChangeEvent<HTMLSelectElement>, user: string) => void;
@@ -34,7 +32,6 @@ export default function SearchForm({ onItemClick, list }: SearchFormProps): Reac
 		const resBody = await res.json();
 		const utenti = resBody.value;
 
-		//console.log(display);
 		setSearchResults(utenti);
 	}
 

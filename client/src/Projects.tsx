@@ -1,9 +1,7 @@
 import React from "react";
 import { SERVER_API } from "./lib/params";
-//import type { ResponseBody } from "./types/ResponseBody";
 import type Project from "./types/Project";
 import { useNavigate } from "react-router-dom";
-//import { ResponseStatus } from "./types/ResponseStatus";
 import ProjectList from "./ProjectList";
 import GanttDiagram from "./ProjectGantt";
 import type User from "./types/User";
@@ -14,10 +12,9 @@ enum View {
 }
 
 export default function Projects(): React.JSX.Element {
-	//const [message, setMessage] = React.useState("");
 	const [projects, setProjects] = React.useState([] as Project[]);
 	const [view, setView] = React.useState<View>(View.LIST);
-	const [filter, setFilter] = React.useState(""); // username utente filtro
+	const [filter, setFilter] = React.useState(""); // Username utente filtro
 
 	const nav = useNavigate();
 
@@ -37,13 +34,10 @@ export default function Projects(): React.JSX.Element {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
-				// Controlla se la risposta non è ok
 				console.log("Utente non autenticato");
-				return null; // Restituisci null se non autenticato
+				return null;
 			}
-			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
 			const data: User = await res.json();
-			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
 			console.log("Impossibile recuperare l'utente corrente");
@@ -108,7 +102,6 @@ export default function Projects(): React.JSX.Element {
 
 	return (
 		<div className="projects-container">
-			{/*message && <div className="error-message">{message}</div>*/}
 			<a href={`/projects/new`} className="projects-filter">
 				<button>Crea nuovo progetto</button>
 			</a>

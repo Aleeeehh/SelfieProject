@@ -8,13 +8,10 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import Pomodoro from "./types/Pomodoro";
 import User from "./types/User";
 
-import DatePicker from "react-datepicker"; //to create pomodoro events
+import DatePicker from "react-datepicker";
 import SearchForm from "./SearchForm";
-//import SearchFormResource from "./SearchFormResource";
 import Mp3Player from "./MP3Player";
 import YouTubePlayer from "./YouTubePlayer";
-// import UserResult from "./types/UserResult";
-//import Time from "react-datepicker/dist/time";
 
 enum PLAYER_TYPE {
 	YOUTUBE = "YOUTUBE",
@@ -100,7 +97,6 @@ const initialPomEvent: PomodoroEvent = {
 };
 
 export default function Pomodoros(): React.JSX.Element {
-	// get the value of the query parameters to initialize the pomodoro
 	const [searchParams] = useSearchParams();
 	const cycles = Number(searchParams.get("cycles")) || initialState.cycles;
 	const studyTime = Number(searchParams.get("studyTime")) || initialState.studyTime;
@@ -114,29 +110,17 @@ export default function Pomodoros(): React.JSX.Element {
 	});
 
 	const [pomEvent, setPomEvent] = useState(initialPomEvent);
-	const [eventMessage, setEventMessage] = useState(""); // Per messaggi di errore degli eventi
-	const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]); // Per pomodori recenti
+	const [eventMessage, setEventMessage] = useState("");
+	const [tomatoList, setTomatoList] = React.useState([] as Pomodoro[]);
 	const [eventList, setEventList] = React.useState<Event[]>([]); // Per vedere gli eventi dello user attuale
-	const [initialCycles, setInitialCycles] = React.useState(0); // Per calcolare i cicli rimanenti
+	const [initialCycles, setInitialCycles] = React.useState(0);
 	const [users, setUsers] = React.useState([] as string[]); // NOTA: uso un array perchè il componente SearchForm ha bisogno di un array di utenti, non un singolo utente
-	const [addEvent, setAddEvent] = React.useState(false); // Per creare un evento
-	//const [repeatEvent, setRepeatEvent] = React.useState(false); // Per creare un evento ripetuto
-	//const [addNotification, setAddNotification] = React.useState(false);
-	//const [notificationRepeat, setNotificationRepeat] = React.useState(false);
-	//const [notificationTime, setNotificationTime] = React.useState(0);
-	//const [notificationRepeatTime, setNotificationRepeatTime] = React.useState(0);
-	//const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
-	//const [shareEvent, setShareEvent] = React.useState(false);
-	//const [messageShareRisorsa, setMessageShareRisorsa] = React.useState("");
-	//const [accessList, setAccessList] = React.useState([] as string[]);
-
+	const [addEvent, setAddEvent] = React.useState(false);
 
 	const [message, setMessage] = React.useState("");
-	//const [until, setUntil] = React.useState(false); // Per creare un evento fino a una certa data
-	//const [selectedValue, setSelectedValue] = React.useState("Data"); // Per selezionare la frequenza dell'evento
-	const [shareConfig, setShareConfig] = React.useState(false); // Per condividere la configurazione del pomodoro
-	const [previousPomodoros, setPreviousPomodoros] = React.useState(false); // Per vedere i pomodori recenti
-	const [chooseMusic, setChooseMusic] = React.useState(false); // Per scegliere la musica
+	const [shareConfig, setShareConfig] = React.useState(false);
+	const [previousPomodoros, setPreviousPomodoros] = React.useState(false);
+	const [chooseMusic, setChooseMusic] = React.useState(false);
 
 	const [playerType, setPlayerType] = useState(PLAYER_TYPE.SOUND);
 
@@ -144,24 +128,23 @@ export default function Pomodoros(): React.JSX.Element {
 
 	const nav = useNavigate();
 
-	//setup per ricevere la durata dell'evento pomodoro cliccando dall'evento sul calendario
-	const location = useLocation();
 
+	const location = useLocation();
+	//setup per ricevere la durata dell'evento pomodoro cliccando dall'evento sul calendario
 	const getDurationParam = (): number => {
-		const params = new URLSearchParams(location.search); // Ottieni i parametri della query
-		const duration = params.get("duration"); // Leggi il parametro "duration"
-		return duration ? parseInt(duration) : 0; // Restituisci la durata come numero, oppure 0 se non è definita
+		const params = new URLSearchParams(location.search);
+		const duration = params.get("duration");
+		return duration ? parseInt(duration) : 0;
 	};
 
 	const getIdParam = (): string => {
-		const params = new URLSearchParams(location.search); // Ottieni i parametri della query
-		const id = params.get("id"); // Leggi il parametro "duration"
-		return id ? id : ""; // Restituisci la durata come numero, oppure 0 se non è definita
+		const params = new URLSearchParams(location.search);
+		const id = params.get("id");
+		return id ? id : "";
 	};
 
-	const duration = getDurationParam(); // Ottieni la durata dal query param
-
-	const id = getIdParam(); // Ottieni l'id dell'evento dal query param
+	const duration = getDurationParam();
+	const id = getIdParam();
 
 	React.useEffect(() => {
 		(async (): Promise<void> => {
@@ -173,8 +156,6 @@ export default function Pomodoros(): React.JSX.Element {
 				// TODO: set session value as response
 				const data = (await res.json()) as ResponseBody;
 
-				//console.log(data);
-
 				if (data.status === ResponseStatus.GOOD) {
 					setTomatoList(data.value as Pomodoro[]);
 				} else {
@@ -183,8 +164,6 @@ export default function Pomodoros(): React.JSX.Element {
 			} catch (e) {
 				console.log("Impossibile raggiungere il server");
 			}
-
-			//Gestione della durata derivata dall'evento, se arrivo da un evento calendario imposto la sua durata come proposta
 			console.log("La durata dell'evento pomodoro è: " + duration);
 			if (duration !== 0) {
 				proposalsMinutes(duration);
@@ -200,8 +179,6 @@ export default function Pomodoros(): React.JSX.Element {
 			}
 			// TODO: set session value as response
 			const data = (await res.json()) as ResponseBody;
-
-			//console.log(data);
 
 			if (data.status === ResponseStatus.GOOD) {
 				setTomatoList(data.value as Pomodoro[]);
@@ -279,7 +256,6 @@ export default function Pomodoros(): React.JSX.Element {
 
 				if (resBody.status === ResponseStatus.GOOD) {
 					startProcess();
-					//await updateTomatoList();
 				} else {
 					console.log("Errore nel salvataggio della configurazione");
 				}
@@ -290,21 +266,6 @@ export default function Pomodoros(): React.JSX.Element {
 			setData({ ...data, message: MESSAGE.ERROR });
 		}
 	}
-
-	//Funzione per aggiornare la lista dei pomodori in tempo reale (non funziona al momento)
-
-	/*const updateTomatoList = async (): Promise<void> => {
-		try {
-			const response = await fetch(`${SERVER_API}/pomodoro`);
-			if (!response.ok) {
-				throw new Error('Failed to fetch pomodori');
-			}
-			const fetchedTomatoes = await response.json();
-			setTomatoList(fetchedTomatoes);
-		} catch (error) {
-			console.error(error);
-		}
-	};*/
 
 	function stopProcess(): void {
 		playRing();
@@ -371,12 +332,12 @@ export default function Pomodoros(): React.JSX.Element {
 						console.log("ENTRO NELL'IF");
 
 						setEventList(date.value);
-						console.log(eventList); // Senza questa riga c'è un warning
+						console.log(eventList);
 						console.log("stampo data.values:", date.value);
 
 						// Filtra solo gli eventi "Pomodoro Session" successivi all'orario di inizio del pomodoro attuale
 						const eventPomodoro = date.value.find((event: any) => {
-							const eventStartTime = new Date(event.startTime); // Converto l'orario di inizio in Date per la comparazione
+							const eventStartTime = new Date(event.startTime);
 							const eventId = event._id;
 							return (
 								event.title === "Pomodoro Session" &&
@@ -390,9 +351,9 @@ export default function Pomodoros(): React.JSX.Element {
 								"Nessun evento 'Pomodoro Session' trovato che soddisfi i criteri."
 							);
 
-							const newStartTime = new Date(currentPomodoro.startTime); // Usa lo stesso orario di inizio dell'evento attuale
+							const newStartTime = new Date(currentPomodoro.startTime);
 							const newEndTime = new Date(newStartTime);
-							newEndTime.setMinutes(newEndTime.getMinutes() + timeToAdd); // Calcolo l'orario di fine evento in base al tempo rimanente
+							newEndTime.setMinutes(newEndTime.getMinutes() + timeToAdd);
 
 							// Correggo il fuso orario degli orari
 							const correctedStartTime = new Date(
@@ -402,14 +363,12 @@ export default function Pomodoros(): React.JSX.Element {
 								newEndTime.getTime() + newEndTime.getTimezoneOffset() * 60000
 							);
 
-							// Imposto al giorno successivo il nuovo evento
 							correctedStartTime.setDate(correctedStartTime.getDate() + 1);
 							correctedEndTime.setDate(correctedEndTime.getDate() + 1);
 
 							const res = await fetch(`${SERVER_API}/events`, {
 								method: "POST",
 								headers: { "Content-Type": "application/json" },
-								// Nel body utilizzo lo stesso owner, startTime e location della Pomodoro Session attuale
 								body: JSON.stringify({
 									owner: currentPomodoro.owner,
 									title: "Pomodoro Session",
@@ -446,11 +405,9 @@ export default function Pomodoros(): React.JSX.Element {
 								eventPomodoro
 							);
 
-							// Aggiungere il tempo rimanente all'evento trovato
 							const updatedEndTime = new Date(eventPomodoro.endTime);
 							updatedEndTime.setMinutes(updatedEndTime.getMinutes() + timeToAdd);
 
-							// Effettuare una richiesta PUT per aggiornare l'evento
 							const updateRes = await fetch(
 								`${SERVER_API}/events/${eventPomodoro.idEventoNotificaCondiviso}`,
 								{
@@ -518,22 +475,20 @@ export default function Pomodoros(): React.JSX.Element {
 					seconds = 0;
 				} else {
 					if (studying) {
-						// End of study session, enter pause
 						console.log("Start pause session");
 						status = STATUS.PAUSE;
 						studying = false;
 						playRing();
-						startAnimation(false); // Passa false per l'animazione di pausa
+						startAnimation(false);
 						minutes = pauseTime;
 						seconds = 0;
 						cycles -= 1;
 					} else {
-						// End of pause session, start next study session
 						console.log("Start study session");
 						status = STATUS.STUDY;
 						studying = true;
 						playRing();
-						startAnimation(true); // Passa true per l'animazione di studio
+						startAnimation(true);
 						minutes = studyTime;
 						seconds = 0;
 					}
@@ -613,22 +568,20 @@ export default function Pomodoros(): React.JSX.Element {
 				seconds = 0;
 			} else {
 				if (studying) {
-					// End of study session, enter pause
 					console.log("Start pause session");
 					status = STATUS.PAUSE;
 					studying = false;
 					playRing();
-					startAnimation(false); // Passa false per l'animazione di pausa
+					startAnimation(false);
 					minutes = pauseTime;
 					seconds = 0;
 					cycles -= 1;
 				} else {
-					// End of pause session, start next study session
 					console.log("Start study session");
 					status = STATUS.STUDY;
 					studying = true;
 					playRing();
-					startAnimation(true); // Passa true per l'animazione di studio
+					startAnimation(true);
 					minutes = studyTime;
 					seconds = 0;
 				}
@@ -668,7 +621,7 @@ export default function Pomodoros(): React.JSX.Element {
 			status = STATUS.STUDY;
 			studying = true;
 			playRing();
-			startAnimation(true); // Passa true per l'animazione di studio
+			startAnimation(true);
 			minutes = studyTime;
 			seconds = 0;
 
@@ -809,7 +762,6 @@ export default function Pomodoros(): React.JSX.Element {
 	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
-		//Validazione dell'input
 		if (!pomEvent.title || !pomEvent.startTime || !pomEvent.endTime || !pomEvent.location) {
 			setEventMessage("TUTTI I CAMPI DEVONO ESSERE COMPILATI!");
 			return;
@@ -823,7 +775,6 @@ export default function Pomodoros(): React.JSX.Element {
 		const start = new Date(pomEvent.startTime).getTime();
 		const end = new Date(pomEvent.endTime).getTime();
 
-		//l'evento che creo dura almeno 30 minuti?
 		if ((end - start) / (1000 * 60) < 30) {
 			setEventMessage("LA DURATA DEVE ESSERE DI ALMENO 30 MINUTI");
 			return;
@@ -842,7 +793,7 @@ export default function Pomodoros(): React.JSX.Element {
 				title: pomEvent.title,
 				startTime: pomEvent.startTime.toISOString(),
 				endTime: pomEvent.endTime.toISOString(),
-				accessList: [], // Usa uniqueAccessList invece di accessList
+				accessList: [],
 				accessListAccepted: [owner],
 				untilDate: pomEvent.untilDate,
 				isInfinite: pomEvent.isInfinite,
@@ -875,9 +826,8 @@ export default function Pomodoros(): React.JSX.Element {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
-				// Controlla se la risposta non è ok
 				console.log("Utente non autenticato");
-				return null; // Restituisci null se non autenticato
+				return null;
 			}
 			console.log("Questa è la risposta alla GET per ottenere lo user", res);
 			const data: User = await res.json();
@@ -924,91 +874,11 @@ export default function Pomodoros(): React.JSX.Element {
 
 	function toggleAddEvent(): void {
 		setAddEvent(!addEvent);
-		//setRepeatEvent(false);
-		//setAddNotification(false);
-		//setShareEvent(false);
-		//setSendInviteEvent(false);
-		//setNotificationRepeat(false);
-		//setNotificationRepeatTime(0);
-		//setUntil(false);
-		//setFrequency(Frequency.ONCE);
 		setUsers([]);
-		//setAccessList([]);
-		//setMessageShareRisorsa("");
-		//setSelectedValue("Data");
 		pomEvent.untilDate = null;
 		pomEvent.location = "";
 		pomEvent.isInfinite = false;
 	}
-
-	{/*function toggleSelectFrequency(e: React.ChangeEvent<HTMLSelectElement>): void {
-		setPomEvent((prevPomEvent) => {
-			let { frequency, untilDate } = prevPomEvent;
-			console.log("toggleSelectFrequency", e.target.value);
-			const frequenza = e.target.value;
-			if (frequenza !== "Once") {
-				toggleUntil(frequenza);
-			}
-			if (frequenza === "Once") {
-				frequency = Frequency.ONCE;
-				setUntil(false);
-			}
-			switch (frequenza) {
-				case "Daily":
-					frequency = Frequency.DAILY;
-					break;
-				case "Weekly":
-					frequency = Frequency.WEEKLY;
-					break;
-				case "Monthly":
-					frequency = Frequency.MONTHLY;
-					break;
-				case "Yearly":
-					frequency = Frequency.YEARLY;
-					break;
-			}
-			return {
-				...prevPomEvent,
-				frequency,
-				untilDate,
-			} as PomodoroEvent;
-		});
-	}
-
-	function toggleUntil(selectedValue: string): void {
-		console.log("toggleUntil", selectedValue);
-		setUntil(true);
-	}
-
-	function toggleSelectUntil(e: React.ChangeEvent<HTMLSelectElement>): void {
-		setPomEvent((prevPomEvent) => {
-			let { isInfinite } = prevPomEvent;
-			const valoreSelezionato = e.target.value;
-			console.log("toggleSelectUntil", valoreSelezionato);
-			switch (valoreSelezionato) {
-				case "Data":
-					console.log("selezionato data");
-					isInfinite = false;
-					setSelectedValue("Data");
-
-					break;
-				case "Ripetizioni":
-					console.log("selezionato ripetizioni");
-					isInfinite = false;
-					setSelectedValue("Ripetizioni");
-					break;
-				case "Infinito":
-					console.log("selezionato infinito");
-					setSelectedValue("Infinito");
-					isInfinite = true;
-					break;
-			}
-			return {
-				...prevPomEvent,
-				isInfinite,
-			} as PomodoroEvent;
-		});
-	}*/}
 
 	function togglePreviousPomodoros(): void {
 		setPreviousPomodoros(!previousPomodoros);
@@ -1021,208 +891,6 @@ export default function Pomodoros(): React.JSX.Element {
 	function toggleChooseMusic(): void {
 		setChooseMusic(!chooseMusic);
 	}
-	{/*
-	function toggleAddNotification(): void {
-		setAddNotification(!addNotification);
-		if (notificationRepeat === true) {
-			setNotificationRepeat(false);
-		}
-	}
-
-	const getValidRepeatOptions = (time: number): number[] => {
-		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
-		return options.filter((option) => option !== time && (time % option === 0 || option === 0)); // Filtra solo i divisori, escludendo il numero stesso
-	};
-
-	function toggleSendInviteEvent(): void {
-		setSendInviteEvent(!sendInviteEvent);
-	}
-
-	async function handleSendInviteEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
-		if (!(users.length > 0)) {
-			setMessage("Nessun utente selezionato");
-			return;
-		}
-		console.log("ENTRO NELLA HANDLESENDINVITE");
-		console.log("ENTRO NELLA HANDLESENDINVITE");
-		console.log("Questo è il receiver:", users[0]);
-
-		//const currentUser = await getCurrentUser();
-
-		//const ownerr = currentUser.value.username;
-
-		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
-
-		let newNotification;
-		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
-		const data = await res.json();
-		const receiver = data.id;
-
-		if (addNotification) {
-			const notificationDate = new Date(pomEvent.startTime);
-			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
-			console.log("Questa è la data di inizio evento:", pomEvent.startTime);
-			console.log("Questa è la data della notifica:", notificationDate);
-			var message = "";
-			if (notificationTime < 60) {
-				message = "Inizio evento " + pomEvent.title + " tra " + notificationTime + " minuti!";
-			} else {
-				message = "Inizio evento " + pomEvent.title + " tra " + notificationTime / 60 + " ore!";
-			}
-
-			if (notificationTime == 0) {
-				message = "Evento " + pomEvent.title + " iniziato!";
-			}
-
-			var repeatTime = notificationRepeatTime;
-			var repeatedNotification = false;
-			if (repeatTime > 0) {
-				repeatedNotification = true;
-			}
-
-			newNotification = {
-				message: message,
-				mode: "event",
-				receiver: receiver,
-				type: "event",
-				data: {
-					date: notificationDate, //data prima notifica
-					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
-					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
-					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
-					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
-					frequencyEvent: pomEvent.frequency,
-					isInfiniteEvent: pomEvent.isInfinite,
-					repetitionsEvent: pomEvent.repetitions,
-					untilDateEvent: pomEvent.untilDate,
-				},
-			};
-		}
-
-		const newEvent = {
-			idEventoNotificaCondiviso,
-			owner: receiver,
-			title: pomEvent.title,
-			startTime: pomEvent.startTime.toISOString(),
-			endTime: pomEvent.endTime.toISOString(),
-			untilDate: pomEvent.untilDate,
-			isInfinite: pomEvent.isInfinite,
-			frequency: pomEvent.frequency,
-			location: pomEvent.location,
-			repetitions: pomEvent.repetitions,
-		};
-
-		const res3 = await fetch(`${SERVER_API}/notifications`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				message: "Hai ricevuto un invito per un evento",
-				mode: "event",
-				receiver: receiver,
-				type: "message",
-				data: {
-					date: new Date(), //data prima notifica
-					event: newEvent,
-					notification: newNotification,
-				},
-			}),
-		});
-		console.log("Notifica creata:", res3);
-
-		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
-
-		if (resBody.status === ResponseStatus.GOOD) {
-			//alert("Invito inviato correttamente");
-			setUsers([]);
-		} else {
-			alert(resBody.message);
-		}
-
-		//toggleCreateEvent();
-		setSendInviteEvent(false);
-	}
-
-	function toggleCreateEvent(): void {
-		if (!createEvent) {
-			// Usa l'ora corrente o l'ora di startTime
-			const currentHours = startTime.getHours();
-			const currentMinutes = startTime.getMinutes();
-			const endHours = endTime.getHours();
-			const endMinutes = endTime.getMinutes();
-
-			// Imposta startTime con day, meseCorrente, year e l'ora corrente
-			var initialStartTime = new Date(
-				year,
-				meseCorrente,
-				day,
-				currentHours,
-				currentMinutes,
-				0,
-				0
-			);
-			setStartTime(initialStartTime);
-
-			// Imposta endTime a 30 minuti dopo startTime
-			var initialEndTime = new Date(year, meseCorrente, day, endHours, endMinutes, 0, 0);
-			if ((initialEndTime.getTime() - initialStartTime.getTime()) / (1000 * 60) < 30) {
-				initialEndTime = new Date(initialStartTime); // Crea un nuovo oggetto Date
-				initialEndTime.setMinutes(initialStartTime.getMinutes() + 30);
-			}
-			setEndTime(initialEndTime);
-		}
-		setAddTitle(true);
-		setRepeatEvent(false);
-		setAddNotification(false);
-		setShareEvent(false);
-		setAllDayEvent(false);
-		setSendInviteEvent(false);
-		setNotificationRepeat(false);
-		setNotificationRepeatTime(0);
-		setUntil(false);
-		setTitle("");
-		setLocation("");
-		setCreateEvent(!createEvent);
-		setFrequency(Frequency.ONCE);
-		setUsers([]);
-		setAccessList([]);
-		setMessageEvent("");
-		setMessageActivity("");
-		setMessageNotDisturb("");
-		setMessageRisorsa("");
-		setMessageShareRisorsa("");
-	}
-
-	function toggleShareEvent(): void {
-		setShareEvent(!shareEvent);
-	}
-
-	async function handleAddUserEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
-		console.log("Utente ", users[0], " aggiunto all'access list dell'evento");
-		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
-		const data = await res.json();
-		const idUser = data.id;
-
-		const risorsa = users[0];
-		const startTime = pomEvent.startTime;
-		const endTime = pomEvent.endTime;
-
-		const resRisorsa = await fetch(`${SERVER_API}/risorsa/checkResourceAvailability`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({ risorsa, startTime, endTime }),
-		});
-		const dataRisorsa = await resRisorsa.json();
-		if (!dataRisorsa.isAvailable) {
-			//alert("La risorsa non è disponibile per l'orario selezionato");
-			setMessageShareRisorsa("Risorsa non disponibile!");
-			return;
-		} else {
-			setMessageShareRisorsa("");
-		}
-		setAccessList([...accessList, idUser]);
-	}*/}
 
 	return (
 		<>
@@ -1241,132 +909,10 @@ export default function Pomodoros(): React.JSX.Element {
 									color: "black",
 									border: "0",
 								}}
-								onClick={toggleAddEvent}>
+								onClick={toggleAddEvent}
+							>
 								Chiudi
 							</button>
-
-							{/*<label htmlFor="allDayEvent">
-								<input
-									type="checkbox"
-									name="repeatEvent"
-									onClick={(): void => {
-										setRepeatEvent(!repeatEvent);
-										setUntil(false);
-									}}
-									style={{
-										marginLeft: "5px",
-										marginRight: "3px",
-										marginTop: "3px",
-									}}
-								/>
-								Evento ripetuto
-							</label>
-							{repeatEvent && (
-								<>
-									<div className="flex" style={{ marginRight: "10px" }}>
-										Ripeti l'evento
-										<label htmlFor="repeatEvent">
-											<select
-												className="btn border"
-												name="repetitionType"
-												onChange={toggleSelectFrequency}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-												}}>
-												<option value="Once">Una volta</option>
-												<option value="Daily">Ogni giorno</option>
-												<option value="Weekly">Ogni settimana</option>
-												<option value="Monthly">Ogni mese </option>
-												<option value="Yearly">Ogni anno</option>
-											</select>
-										</label>
-									</div>
-
-									{until && (
-										<div>
-											<div>
-												<div
-													className="flex"
-													style={{ marginRight: "10px" }}>
-													Fino a
-													<select
-														className="btn border"
-														onChange={toggleSelectUntil}
-														defaultValue="Data"
-														style={{ border: "1px solid black" }}>
-														<option value="Data">
-															Data
-														</option>
-														<option value="Ripetizioni">
-															Ripetizioni
-														</option>
-														<option value="Infinito">
-															Infinito
-														</option>
-													</select>
-												</div>
-
-												{selectedValue === "Data" && (
-													<DatePicker
-														className="btn border"
-														name="finoAData"
-														selected={pomEvent.untilDate} // Il DatePicker sarà vuoto se untilDate è null
-														onChange={(date: Date | null): void => {
-															if (date) {
-																date.setHours(12, 0, 0, 0); // Imposta l'orario a mezzogiorno
-																setPomEvent({
-																	...pomEvent,
-																	untilDate: date,
-																});
-															}
-														}}
-														placeholderText="Seleziona una data"
-													/>
-												)}
-
-												{selectedValue === "Ripetizioni" && (
-													<div>
-														<input
-															className="btn border"
-															type="number"
-															min="1"
-															onChange={(
-																e: React.ChangeEvent<HTMLInputElement>
-															): void => {
-																setPomEvent({
-																	...pomEvent,
-																	repetitions: Number(
-																		e.target.value
-																	),
-																});
-																setPomEvent({
-																	...pomEvent,
-																	untilDate: null,
-																});
-
-																if (
-																	pomEvent.repetitions < 1 ||
-																	isNaN(pomEvent.repetitions)
-																) {
-																	setPomEvent({
-																		...pomEvent,
-																		repetitions: 1,
-																	});
-																}
-																console.log(
-																	"Numero ripetizione dell'evento: ",
-																	pomEvent.repetitions
-																);
-															}}></input>
-													</div>
-												)}
-											</div>
-										</div>
-									)}
-								</>
-							)}*/}
 
 							<label htmlFor="startTime">
 								Data Inizio
@@ -1407,17 +953,17 @@ export default function Pomodoros(): React.JSX.Element {
 											e: React.ChangeEvent<HTMLInputElement>
 										): void => {
 											const [hours, minutes] = e.target.value.split(":");
-											const newDate = new Date(pomEvent.startTime); // Crea un nuovo oggetto Date basato su startTime
+											const newDate = new Date(pomEvent.startTime);
 											newDate.setHours(
 												Number(hours),
 												Number(minutes),
 												0,
 												0
-											); // Imposta l'orario
+											);
 											setPomEvent({
 												...pomEvent,
 												startTime: newDate,
-											}); // Imposta il nuovo oggetto Date
+											});
 										}}
 									/>
 								</div>
@@ -1463,11 +1009,11 @@ export default function Pomodoros(): React.JSX.Element {
 										): void => {
 											const [hours, minutes] = e.target.value.split(":");
 											const newDate = new Date(pomEvent.endTime);
-											newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+											newDate.setHours(Number(hours), Number(minutes));
 											setPomEvent({
 												...pomEvent,
 												endTime: newDate,
-											}); // Imposta il nuovo oggetto Date
+											});
 										}}
 									/>
 								</div>
@@ -1490,197 +1036,7 @@ export default function Pomodoros(): React.JSX.Element {
 									/>
 								</div>
 							</label>
-							{/*
-							<label htmlFor="allDayEvent">
-								<input
-									type="checkbox"
-									name="addNotification"
-									onClick={toggleAddNotification}
-									style={{
-										marginLeft: "5px",
-										marginRight: "3px",
-										marginTop: "3px",
-									}}
-								/>
-								Aggiungi notifica
-							</label>
-
-							{addNotification && (
-								<label htmlFor="notificationTime">
-									Quanto tempo prima mandare la notifica
-									<select
-										id="notificationTimeSelect"
-										className="btn border"
-										onChange={(
-											e: React.ChangeEvent<HTMLSelectElement>
-										): void => {
-											setNotificationTime(Number(e.target.value));
-											if (Number(e.target.value) > 0) {
-												setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-											} else if (Number(e.target.value) === 0) {
-												setNotificationRepeat(false);
-											}
-										}}
-										style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
-									>
-										{pomEvent.isInfinite ? (
-											<option value="0">All'ora d'inizio</option> // Solo questa opzione se isInfinite è true
-										) : (
-											<>
-												<option value="0">
-													All'ora d'inizio
-												</option>
-												<option value="5">
-													5 minuti prima
-												</option>
-												<option value="10">
-													10 minuti prima
-												</option>
-												<option value="15">
-													15 minuti prima
-												</option>
-												<option value="30">
-													30 minuti prima
-												</option>
-												<option value="60">1 ora prima</option>
-												<option value="120">2 ore prima</option>
-												<option value="1440">
-													Un giorno prima
-												</option>
-												<option value="2880">
-													2 giorni prima
-												</option>
-											</>
-										)}
-									</select>
-								</label>
-							)}
-
-							{notificationRepeat && !pomEvent.isInfinite && (
-								<label htmlFor="notificationRepeatTime">
-									Quanto tempo ripetere la notifica
-									<select
-										className="btn border"
-										name="notificationRepeatTime"
-										onChange={(
-											e: React.ChangeEvent<HTMLSelectElement>
-										): void => {
-											setNotificationRepeatTime(
-												Number(e.target.value)
-											);
-										}}>
-										{getValidRepeatOptions(notificationTime).map(
-											(option) => (
-												<option key={option} value={option}>
-													{option === 0
-														? "Mai"
-														: option >= 60
-															? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-															: `Ogni ${option} minuti`}
-												</option>
-											)
-										)}
-									</select>
-								</label>
-							)}
-
-							<label htmlFor="allDayEvent">
-								<input
-									type="checkbox"
-									onClick={toggleSendInviteEvent}
-									style={{
-										marginLeft: "5px",
-										marginRight: "3px",
-										marginTop: "3px",
-									}}
-								/>
-								Invia evento ad utente
-							</label>
-
-							{sendInviteEvent && (
-								<div
-									id="send-invite"
-									className="send-invite-container"
-									style={{
-										display: "flex",
-										flexDirection: "column",
-										alignItems: "center",
-										justifyContent: "center",
-									}}>
-									<div>
-										Scegli l'utente al quale inviare la notifica
-									</div>
-									{users.length > 0}
-									<SearchForm
-										onItemClick={handleSelectUser}
-										list={users}
-									/>
-									{message && <div className="error-message">{message}</div>}
-									<button
-										onClick={handleSendInviteEvent}
-										className="btn btn-primary send-invite-button"
-										style={{
-											backgroundColor: "bisque",
-											color: "black",
-											border: "0",
-											marginBottom: "10px",
-										}}>
-										Invia Invito
-									</button>
-								</div>
-							)}
-
-							<label htmlFor="allDayEvent">
-								<input
-									type="checkbox"
-									onClick={toggleShareEvent}
-									style={{
-										marginLeft: "5px",
-										marginRight: "3px",
-										marginTop: "3px",
-									}}
-								/>
-								Condividi evento
-							</label>
-
-							{shareEvent && (
-								<div
-									id="send-invite"
-									className="send-invite-container"
-									style={{
-										display: "flex",
-										flexDirection: "column",
-										alignItems: "center",
-										justifyContent: "center",
-									}}>
-									<div style={{ textAlign: "center" }}>
-										Scegli l'utente o la risorsa con cui condividere
-										l'evento
-									</div>
-									{users.length > 0}
-									<SearchFormResource
-										onItemClick={handleSelectUser}
-										list={users}
-									/>
-									{messageShareRisorsa && (
-										<div className="error-message">
-											{messageShareRisorsa}
-										</div>
-									)}
-
-									<button
-										onClick={handleAddUserEvent}
-										className="btn btn-primary send-invite-button"
-										style={{
-											backgroundColor: "bisque",
-											color: "black",
-											border: "0",
-											marginBottom: "10px",
-										}}>
-										Condividi
-									</button>
-								</div>
-							)}*/}
+							
 							{eventMessage && (
 								<div className="error-message">
 									{eventMessage}
@@ -1693,7 +1049,8 @@ export default function Pomodoros(): React.JSX.Element {
 									color: "black",
 									border: "0",
 								}}
-								onClick={handleCreateEvent}>
+								onClick={handleCreateEvent}
+							>
 								Crea evento
 							</button>
 						</form>
@@ -1711,12 +1068,14 @@ export default function Pomodoros(): React.JSX.Element {
 									<button
 										className="add-event-button"
 										onClick={toggleAddEvent}
-										disabled={data.activeTimer}>
+										disabled={data.activeTimer}
+									>
 										Crea evento Pomodoro
 									</button>
 									<button
 										className="previous-pomodoros-button"
-										onClick={togglePreviousPomodoros}>
+										onClick={togglePreviousPomodoros}
+									>
 										Visualizza ultimi Pomodoro
 									</button>
 									<button className="share-config-button" onClick={toggleShareConfig}>
@@ -1731,7 +1090,8 @@ export default function Pomodoros(): React.JSX.Element {
 
 								<div
 									className="preview"
-									style={{ display: previousPomodoros ? "flex" : "none" }}>
+									style={{ display: previousPomodoros ? "flex" : "none" }}
+								>
 									<div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
 									{tomatoList.slice(-3).map((pomodoro, index) => (
 										<button
@@ -1744,7 +1104,8 @@ export default function Pomodoros(): React.JSX.Element {
 													pauseTime: pomodoro.pauseTime,
 													cycles: pomodoro.cycles,
 												})
-											}>
+											}
+										>
 											{pomodoro.studyTime} min - {pomodoro.pauseTime} min -{" "}
 											{pomodoro.cycles} cicli
 											<br />
@@ -1754,7 +1115,8 @@ export default function Pomodoros(): React.JSX.Element {
 
 								<div
 									className="send-invite-container"
-									style={{ display: shareConfig ? "block" : "none" }}>
+									style={{ display: shareConfig ? "block" : "none" }}
+								>
 									<div style={{ marginBottom: "10px", fontWeight: "bold" }}>
 										Invia la configurazione del Pomodoro ad un amico
 									</div>
@@ -1768,19 +1130,22 @@ export default function Pomodoros(): React.JSX.Element {
 											backgroundColor: "lightcoral",
 											color: "white",
 											border: "0",
-										}}>
+										}}
+									>
 										Invia Invito
 									</button>
 								</div>
 
 								<div
 									className="music-container"
-									style={{ display: chooseMusic ? "block" : "none" }}>
+									style={{ display: chooseMusic ? "block" : "none" }}
+								>
 									<select
 										value={playerType}
 										onChange={(e): void =>
 											setPlayerType(e.target.value as PLAYER_TYPE)
-										}>
+										}
+									>
 										<option value={PLAYER_TYPE.SOUND}>Mp3</option>
 										<option value={PLAYER_TYPE.YOUTUBE}>YouTube</option>
 									</select>
@@ -1808,13 +1173,13 @@ export default function Pomodoros(): React.JSX.Element {
 
 								<div>
 									<h4 className="status">{data.status}</h4>
-
 									<div>
 										<button
 											type="button"
 											className="btn btn-success start-button"
 											onClick={handleSavePomodoroConfig}
-											disabled={data.activeTimer}>
+											disabled={data.activeTimer}
+										>
 											START
 										</button>
 
@@ -1822,7 +1187,8 @@ export default function Pomodoros(): React.JSX.Element {
 											type="button"
 											className="btn btn-danger stop-button"
 											onClick={stopProcess}
-											disabled={!data.activeTimer}>
+											disabled={!data.activeTimer}
+										>
 											STOP
 										</button>
 									</div>
@@ -1834,7 +1200,8 @@ export default function Pomodoros(): React.JSX.Element {
 											type="button"
 											className="bg-warning skip-phase-button"
 											onClick={nextPhase}
-											disabled={!data.activeTimer}>
+											disabled={!data.activeTimer}
+										>
 											SALTA FASE
 										</button>
 
@@ -1842,7 +1209,8 @@ export default function Pomodoros(): React.JSX.Element {
 											type="button"
 											className="bg-warning skip-cycle-button"
 											onClick={nextCycle}
-											disabled={!data.activeTimer}>
+											disabled={!data.activeTimer}
+										>
 											SALTA CICLO
 										</button>
 
@@ -1850,7 +1218,8 @@ export default function Pomodoros(): React.JSX.Element {
 											type="button"
 											className="bg-warning repeat-cycle-button"
 											onClick={repeatCycle}
-											disabled={!data.activeTimer}>
+											disabled={!data.activeTimer}
+										>
 											RIPETI CICLO
 										</button>
 									</div>

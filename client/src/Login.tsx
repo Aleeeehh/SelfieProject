@@ -8,7 +8,6 @@ export default function Login(): React.JSX.Element {
 	const [password, setPassword] = React.useState("");
 	const [clearPswd, setClearPswd] = React.useState(false);
 	const [message, setMessage] = React.useState("");
-	//const [errorMessage, setErrorMessage] = React.useState("");
 
 	const nav = useNavigate();
 
@@ -46,6 +45,7 @@ export default function Login(): React.JSX.Element {
 						<h2>Benvenuto in SELFIE!</h2>
 					</div>
 					<form className="login-form">
+
 						<div>
 							<label>Username</label>
 							<input
@@ -74,15 +74,16 @@ export default function Login(): React.JSX.Element {
 							style={{
 								alignItems: "center",
 								flexDirection: "row",
-							}}>
+							}}
+						>
 							Nascondi:
 							<i
 								className={`bi ${clearPswd ? "bi-eye" : "bi-eye-slash"}`}
 								onClick={(): void => setClearPswd(!clearPswd)}
-								style={{ cursor: "pointer", marginLeft: "8px" }}></i>
+								style={{ cursor: "pointer", marginLeft: "8px" }}
+							></i>
 						</div>
 
-						{/*<p className="error-message">{errorMessage}</p>*/}
 						{message && <div className="error-message">{message}</div>}
 						<button onClick={handleLogin}>Login</button>
 					</form>

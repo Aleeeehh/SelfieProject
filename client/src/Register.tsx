@@ -33,7 +33,6 @@ export default function Register(): React.JSX.Element {
 	const isLoggedIn = !!localStorage.getItem("loggedUserId");
 	const nav = useNavigate();
 
-	// Redireziona alla home se già loggato
 	React.useEffect(() => {
 		if (isLoggedIn) {
 			nav("/");
@@ -60,11 +59,9 @@ export default function Register(): React.JSX.Element {
 		}
 	}
 
-	// Funzione di registrazione
 	async function handleRegister(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
-		// Controlla che le password coincidano
 		if (data.password !== data.confirmPassword) {
 			setMessage("Le password non coincidono");
 			return;
@@ -178,14 +175,13 @@ export default function Register(): React.JSX.Element {
 										const inputDate = e.target.value;
 										const parsedDate = new Date(inputDate);
 
-										// Controlla se la data è valida
 										if (isNaN(parsedDate.getTime())) {
 											console.error("Data non valida:", inputDate);
-											return; // Non procedere se la data non è valida
+											return;
 										}
 
 
-										e.preventDefault(); // Previeni il comportamento di default
+										e.preventDefault();
 
 										handleChange(e);
 									}}
@@ -226,8 +222,8 @@ export default function Register(): React.JSX.Element {
 								required
 							/>
 						</div>
+						
 						{message && <div className="error-message">{message}</div>}
-
 						<button onClick={handleRegister}>Registrati</button>
 					</form>
 					<p className="registration-message">

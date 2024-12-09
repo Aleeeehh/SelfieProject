@@ -1,8 +1,5 @@
 import React from "react";
 import { SERVER_API } from "./lib/params";
-//import { set } from "date-fns";
-//import { ResponseBody } from "./types/ResponseBody";
-// import UserResult from "./types/UserResult";
 
 type SearchFormProps = {
 	onItemClick: (e: React.ChangeEvent<HTMLSelectElement>, user: string) => void;
@@ -35,16 +32,16 @@ export default function SearchFormResource({
 			}),
 		});
 
-		//acquisisci le risorse: (adesso le acquisisce tutt)
+		// Acquisisci le risorse: (adesso le acquisisce tutt)
 		const res2 = await fetch(`${SERVER_API}/risorsa?name=${e.target.value}`);
 		const data = await res2.json();
 		const risorse = data.risorse;
 
-		//per ogni risorsa
+		// Per ogni risorsa
 
 		const nomiRisorse: string[] = [];
 		for (const risorsa of risorse) {
-			nomiRisorse.push(`${risorsa.name} (Risorsa)`); // Modifica il nome come richiesto
+			nomiRisorse.push(`${risorsa.name} (Risorsa)`);
 		}
 
 		console.log(nomiRisorse);
@@ -55,12 +52,10 @@ export default function SearchFormResource({
 		const utenti: string[] = resBody.value;
 
 		const combinedResults = [
-			...utenti.map((user) => user), // Mantieni gli utenti come sono
-			...nomiRisorse, // Aggiungi le risorse modificate
+			...utenti.map((user) => user),
+			...nomiRisorse,
 		];
-
-		//console.log(display);
-
+		
 		setSearchResults(combinedResults);
 	}
 

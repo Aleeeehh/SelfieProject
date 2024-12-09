@@ -4,8 +4,6 @@ import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import Note, { type ListItem } from "./types/Note";
 import { useNavigate, useParams } from "react-router-dom";
-// import { marked } from "marked";
-// import UserResult from "./types/UserResult";
 import { Privacy } from "./types/Privacy";
 import SearchForm from "./SearchForm";
 import type Project from "./types/Project";
@@ -59,7 +57,7 @@ export default function ProjectPage(): React.JSX.Element {
 					setProject(data.value as Project);
 					console.log(data.value);
 
-					// then check if the user is the owner
+					// Controlla se l'utente è il proprietario
 					setIsOwner(data.value.owner === (loggedUser.id as string));
 				} else {
 					console.log(data.message || "Errore nel caricamento del progetto");
@@ -73,12 +71,10 @@ export default function ProjectPage(): React.JSX.Element {
 			});
 	}
 
-	// On page load or when time changes, get the project data
 	React.useEffect(() => {
 		if (!isEditing) refreshProject();
 	}, [serverTime]);
 
-	// On page load, get the note for the user
 	React.useEffect(() => {
 		refreshProject();
 	}, []);
@@ -147,7 +143,6 @@ export default function ProjectPage(): React.JSX.Element {
 			if (resBody.status === ResponseStatus.GOOD) {
 				console.log("Progetto cancellato correttamente!");
 				nav("/projects", { replace: true });
-				//window.location.reload();
 
 			} else {
 				setMessage(resBody.message || "Errore della cancellazione del progetto");
@@ -179,18 +174,6 @@ export default function ProjectPage(): React.JSX.Element {
 				};
 			});
 	}
-	/*
-		function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
-			e.preventDefault();
-	
-			setProject((prevProj) => {
-				return {
-					...prevProj,
-					accessList: prevProj.accessList.filter((u) => u !== username),
-				};
-			});
-		}
-			*/
 
 	return (
 		<>
@@ -202,6 +185,7 @@ export default function ProjectPage(): React.JSX.Element {
 							X
 						</a>
 					</div>
+
 					{/* render title */}
 					{isEditing ? (
 						<label htmlFor="title">
@@ -211,6 +195,7 @@ export default function ProjectPage(): React.JSX.Element {
 					) : (
 						<div className="project-title">{project.title}</div>
 					)}
+
 					{/* render description */}
 					{isEditing ? (
 						<label htmlFor="description">
@@ -225,6 +210,7 @@ export default function ProjectPage(): React.JSX.Element {
 					) : (
 						<div className="note-description">{project.description}</div>
 					)}
+
 					{/* render access list */}
 					<label>
 						Utenti partecipanti al progetto:
@@ -240,22 +226,6 @@ export default function ProjectPage(): React.JSX.Element {
 								project.accessList.map((u) => (
 									<div className="project-user-box">
 										{u}
-										{/*
-										{isEditing && (
-											<button
-												style={{
-													marginLeft: "0.5em",
-													padding: "0",
-													backgroundColor: "#d64545",
-												}}
-												className="project-user-delete"
-												onClick={(
-													e: React.MouseEvent<HTMLButtonElement>
-												): void => deleteUser(e, u)}>
-												X
-											</button>
-										)}
-											*/}
 									</div>
 								))
 							) : (
@@ -263,6 +233,7 @@ export default function ProjectPage(): React.JSX.Element {
 							)}
 						</div>
 					</label>
+
 					{/* render activity list */}
 					<div className="project-activities-container">
 						<label className="project-activities-label">
@@ -272,21 +243,21 @@ export default function ProjectPage(): React.JSX.Element {
 									project.activityList.map((a) => (
 										<div
 											key={"activity-" + a.id}
-											className="project-activity-item">
+											className="project-activity-item"
+										>
 											<a
 												href={`/activities/${a.id}`}
-												style={{ width: "100%" }}>
+												style={{ width: "100%" }}
+											>
 												{a.title} - {getActivityStatus(serverTime, a)}
 											</a>
 
 											{isEditing && (
 												<>
-													<a
-														href={`/activities/new?projectId=${project.id}&parent=${a.id}`}>
+													<a href={`/activities/new?projectId=${project.id}&parent=${a.id}`}>
 														<button>Aggiungi Sotto-Attività</button>
 													</a>
-													<a
-														href={`/activities/new?projectId=${project.id}&parent=${a.id}&next=${a.id}`}>
+													<a href={`/activities/new?projectId=${project.id}&parent=${a.id}&next=${a.id}`}>
 														<button>
 															Aggiungi Attività Precedente
 														</button>
@@ -297,21 +268,20 @@ export default function ProjectPage(): React.JSX.Element {
 											<div>
 												{a.children &&
 													a.children.map((c) => (
-														<div
-															style={{
-																backgroundColor: "gray",
-															}}>
+														<div style={{backgroundColor: "gray"}}>
 															<a href={`/activities/${c.id}`}>
 																Child - {c.title} - {c.status}
 															</a>
 														</div>
-													))}
+													))
+												}
 											</div>
 										</div>
 									))
 								) : (
 									<div style={{ fontWeight: "normal" }}>Nessuna attività</div>
-								))}
+								))
+							}
 						</label>
 
 						{isEditing && (
@@ -328,7 +298,8 @@ export default function ProjectPage(): React.JSX.Element {
 							{isEditing ? (
 								<button
 									style={{ backgroundColor: "green" }}
-									onClick={handleUpdateProject}>
+									onClick={handleUpdateProject}
+								>
 									Salva progetto
 								</button>
 							) : (
@@ -337,7 +308,8 @@ export default function ProjectPage(): React.JSX.Element {
 							{/* if is owner, can delete project (not new project) */}
 							<button
 								style={{ backgroundColor: "red" }}
-								onClick={handleDeleteProject}>
+								onClick={handleDeleteProject}
+							>
 								Cancella Progetto
 							</button>
 						</>

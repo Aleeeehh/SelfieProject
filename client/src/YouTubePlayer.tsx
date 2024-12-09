@@ -7,7 +7,7 @@ export default function YouTubePlayer(): React.JSX.Element {
 		setVideoUrl(e.target.value);
 	}
 
-	// Extract the video ID from the YouTube URL
+	// Estraggo l'ID del video dall'URL YouTube
 	const getYouTubeVideoId = (url: string): string | null => {
 		const match = url.match(
 			/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)|youtu\.be\/([^?&]+)/
@@ -24,7 +24,7 @@ export default function YouTubePlayer(): React.JSX.Element {
 				"youtube-div-container"
 			) as HTMLIFrameElement;
 
-			// insert iframe and remove old iframe
+			// Inserisco l'iframe e rimuovo il vecchio iframe
 			const iframe = document.createElement("iframe");
 			iframeContainer.replaceChildren(iframe);
 

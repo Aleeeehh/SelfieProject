@@ -5,7 +5,6 @@ import { ResponseStatus } from "./types/ResponseStatus";
 import Note, { type ListItem } from "./types/Note";
 import { useNavigate, useParams } from "react-router-dom";
 import { marked } from "marked";
-// import UserResult from "./types/UserResult";
 import { Privacy } from "./types/Privacy";
 import SearchForm from "./SearchForm";
 import User from "./types/User";
@@ -21,8 +20,6 @@ const baseNote: Note = {
 	toDoList: [] as ListItem[],
 };
 
-//TODO: aggiungere un bottone per uscire dalla creazione di una nota
-
 export default function NotePage(): React.JSX.Element {
 	const { id } = useParams();
 	const [note, setNote] = React.useState(baseNote as Note);
@@ -33,8 +30,6 @@ export default function NotePage(): React.JSX.Element {
 	const [deletedItems, setDeletedItems] = React.useState([] as string[]); // id list
 	const [count, setCount] = React.useState(0);
 	const nav = useNavigate();
-	//const [scadenzaItem, setScadenzaItem] = React.useState([] as string[]);
-	//const [titoloItem, setTitoloItem] = React.useState([] as string[]);
 
 	const loggedUser = {
 		username: localStorage.getItem("loggedUserName"),
@@ -65,13 +60,10 @@ export default function NotePage(): React.JSX.Element {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
-				// Controlla se la risposta non è ok
 				console.log("Utente non autenticato");
-				return null; // Restituisci null se non autenticato
+				return null;
 			}
-			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
 			const data: User = await res.json();
-			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
 			console.log("Impossibile recuperare l'utente corrente");
@@ -79,7 +71,6 @@ export default function NotePage(): React.JSX.Element {
 		}
 	}
 
-	// On page load, get the note for the user
 	React.useEffect(() => {
 		refreshNote();
 	}, []);
@@ -121,15 +112,15 @@ export default function NotePage(): React.JSX.Element {
 			const owner = currentUser.value._id.toString();
 			const todoList = note.toDoList;
 
-			//per ogni item della nota, controlla se esiste un'attività con lo stesso titolo, se
-			//non esiste, crea l'attività (significa che l'item è stato aggiunto con l'aggiornamento della nota)
+			// Per ogni item della nota, controlla se esiste un'attività con lo stesso titolo, se
+			// on esiste, crea l'attività (significa che l'item è stato aggiunto con l'aggiornamento della nota)
 			for (const item of todoList) {
 				console.log(item);
-				//crea l'attività nella lista delle attività
+				// Crea l'attività nella lista delle attività
 
 				if (item.endDate) {
-					//se esiste una scadenza per l'item
-					//controlla se esiste già un'attività con lo stesso titolo
+					// Se esiste una scadenza per l'item
+					// controlla se esiste già un'attività con lo stesso titolo
 					const res2 = await fetch(`${SERVER_API}/activities/by-title/${item.text}`);
 					const data = await res2.json();
 					const activity = data.value;
@@ -287,7 +278,6 @@ export default function NotePage(): React.JSX.Element {
 		});
 	}
 	function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
-		// e.preventDefault();
 		console.log(note.toDoList, item);
 		setNote({
 			...note,
@@ -325,6 +315,7 @@ export default function NotePage(): React.JSX.Element {
 						</div>
 						<p>{isEditing ? "Modifica nota" : note.title}</p>
 					</div>
+
 					{/* render title and text */}
 					{isEditing ? (
 						<>
@@ -367,6 +358,7 @@ export default function NotePage(): React.JSX.Element {
 							/>
 						</>
 					)}
+
 					{/* render to do list */}
 					<label>
 						To Do List
@@ -392,7 +384,8 @@ export default function NotePage(): React.JSX.Element {
 														display: "flex",
 														alignItems: "center",
 														flexDirection: "column",
-													}}>
+													}}
+												>
 													{l.endDate ? (
 														<>
 															<label style={{ margin: "0" }}>
@@ -415,7 +408,8 @@ export default function NotePage(): React.JSX.Element {
 																	e: React.MouseEvent<HTMLButtonElement>
 																): void =>
 																	handleRemoveDateItem(e, l)
-																}>
+																}
+															>
 																Rimuovi Scadenza
 															</button>
 														</>
@@ -423,7 +417,8 @@ export default function NotePage(): React.JSX.Element {
 														<button
 															onClick={(
 																e: React.MouseEvent<HTMLButtonElement>
-															): void => handleAddDateItem(e, l)}>
+															): void => handleAddDateItem(e, l)}
+														>
 															Aggiungi Scadenza
 														</button>
 													)}
@@ -432,7 +427,8 @@ export default function NotePage(): React.JSX.Element {
 													onClick={(
 														e: React.MouseEvent<HTMLButtonElement>
 													): void => handleRemoveItem(e, l)}
-													style={{ backgroundColor: "#d64545" }}>
+													style={{ backgroundColor: "#d64545" }}
+												>
 													Elimina Item
 												</button>
 											</div>
@@ -444,7 +440,8 @@ export default function NotePage(): React.JSX.Element {
 													style={{
 														display: "flex",
 														alignItems: "center",
-													}}>
+													}}
+												>
 													<input
 														id="todo-completed"
 														type="checkbox"
@@ -458,7 +455,7 @@ export default function NotePage(): React.JSX.Element {
 																// Permetti il cambiamento solo se non è già completato
 																handleCheckboxChange(e, l);
 																try {
-																	//cerca l'attività con lo stesso titolo della nota
+																	// Cerca l'attività con lo stesso titolo della nota
 																	const res = await fetch(
 																		`${SERVER_API}/activities/by-title/${l.text}`
 																	);
@@ -469,7 +466,7 @@ export default function NotePage(): React.JSX.Element {
 																		activity
 																	);
 
-																	//completa l'attività trovata
+																	// Completa l'attività trovata
 																	const res2 = await fetch(
 																		`${SERVER_API}/activities/completeActivity`,
 																		{
@@ -530,7 +527,6 @@ export default function NotePage(): React.JSX.Element {
 																			"Errore nell'aggiornamento permanente della nota"
 																		);
 																	} else {
-																		// Aggiorna lo stato locale
 																		refreshNote(); // Ricarica la nota per avere i dati aggiornati
 																	}
 																} catch (e) {
@@ -565,7 +561,8 @@ export default function NotePage(): React.JSX.Element {
 													style={{
 														display: "flex",
 														alignItems: "center",
-													}}>
+													}}
+												>
 													{l.endDate ? (
 														<div>
 															<span style={{ fontWeight: "300" }}>
@@ -600,6 +597,7 @@ export default function NotePage(): React.JSX.Element {
 							))}
 					</label>
 					{isEditing && <button onClick={handleAddItem}>Aggiungi Item</button>}
+
 					{/* render tags */}
 					<label>
 						Tags
@@ -636,7 +634,8 @@ export default function NotePage(): React.JSX.Element {
 												className="tag-delete"
 												onClick={(e: React.MouseEvent<HTMLElement>): void =>
 													deleteTag(e, tag)
-												}>
+												}
+											>
 												X
 											</button>
 										)}
@@ -644,6 +643,7 @@ export default function NotePage(): React.JSX.Element {
 								))}
 						</div>
 					</label>
+
 					{/* render privacy */}
 					<label>
 						Privacy: {note.privacy}
@@ -654,7 +654,8 @@ export default function NotePage(): React.JSX.Element {
 								<select
 									name="privacy"
 									value={note.privacy}
-									onChange={handlePrivacyChange}>
+									onChange={handlePrivacyChange}
+								>
 									<option value={Privacy.PUBLIC}>Pubblica</option>
 									<option value={Privacy.PROTECTED}>Accesso riservato</option>
 									<option value={Privacy.PRIVATE}>Privata</option>
@@ -671,15 +672,6 @@ export default function NotePage(): React.JSX.Element {
 										<div className="tags-container">
 											{note.accessList.map((user) => (
 												<>
-													{/*<div>{user}</div>
-													{isEditing && (
-														<button
-															onClick={(
-																e: React.MouseEvent<HTMLButtonElement>
-															): void => RemoveUser(e, user)}>
-															X
-														</button>
-													)*/}
 													<div className="project-user-box">
 														{user}
 														{isEditing && (
@@ -692,7 +684,8 @@ export default function NotePage(): React.JSX.Element {
 																className="project-user-delete"
 																onClick={(
 																	e: React.MouseEvent<HTMLButtonElement>
-																): void => RemoveUser(e, user)}>
+																): void => RemoveUser(e, user)}
+															>
 																X
 															</button>
 														)}
@@ -714,7 +707,8 @@ export default function NotePage(): React.JSX.Element {
 									<button onClick={handleUpdateNote}>Aggiorna Nota</button>
 									<button
 										style={{ backgroundColor: "#d64545" }}
-										onClick={handleAbortChanges}>
+										onClick={handleAbortChanges}
+									>
 										Annulla Modifiche
 									</button>
 								</>
@@ -727,7 +721,8 @@ export default function NotePage(): React.JSX.Element {
 							{!isEditing ? (
 								<button
 									style={{ backgroundColor: "red" }}
-									onClick={handleDeleteNote}>
+									onClick={handleDeleteNote}
+								>
 									Cancella Nota
 								</button>
 							) : (

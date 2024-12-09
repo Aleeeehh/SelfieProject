@@ -149,7 +149,8 @@ export default function Profile(): React.JSX.Element {
 									style={{ outline: "0" }}
 									onChange={(e): void =>
 										setUser({ ...user, profileImage: e.target.value })
-									}>
+									}
+								>
 									{profileImages.map((image) => (
 										<option key={image.url} value={image.url}>
 											{image.name}
@@ -197,7 +198,8 @@ export default function Profile(): React.JSX.Element {
 						</>
 					) : (
 						<>
-							<label className="eighty-percent" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>Data di nascita:
+							<label className="eighty-percent" style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+								Data di nascita:
 								<input
 									type="date"
 									className="btn profile-date-input"
@@ -212,7 +214,8 @@ export default function Profile(): React.JSX.Element {
 									required
 								/>
 							</label>
-							<label className="eighty-percent">Indirizzo:
+							<label className="eighty-percent">
+								Indirizzo:
 								<input
 									type="text"
 									name="address"
@@ -239,7 +242,8 @@ export default function Profile(): React.JSX.Element {
 						</label>
 						{changePassword && (
 							<>
-								<label className="eighty-percent">Vecchia password:
+								<label className="eighty-percent">
+									Vecchia password:
 									<input
 										type="password"
 										name="oldPassword"
@@ -247,7 +251,8 @@ export default function Profile(): React.JSX.Element {
 										onChange={(e): void => setOldPassword(e.target.value)}
 									/>
 								</label>
-								<label className="eighty-percent">Nuova password:
+								<label className="eighty-percent">
+									Nuova password:
 									<input
 										type="password"
 										name="newPassword"
@@ -255,7 +260,8 @@ export default function Profile(): React.JSX.Element {
 										onChange={(e): void => setNewPassword(e.target.value)}
 									/>
 								</label>
-								<label className="eighty-percent">Conferma Nuova password:
+								<label className="eighty-percent">
+									Conferma Nuova password:
 									<input
 										type="password"
 										name="confirmNewPassword"
@@ -277,21 +283,24 @@ export default function Profile(): React.JSX.Element {
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
 									setIsEditing(true);
-								}}>
+								}}
+							>
 								MODIFICA PROFILO
 							</button>
 
 							<button
 								type="button"
 								className="btn btn-warning custom-btn"
-								onClick={handleLogout}>
+								onClick={handleLogout}
+							>
 								EFFETTUA LOGOUT
 							</button>
 
 							<button
 								type="button"
 								className="btn btn-danger custom-btn"
-								onClick={handleDelete}>
+								onClick={handleDelete}
+							>
 								ELIMINA ACCOUNT
 							</button>
 						</>
@@ -301,7 +310,8 @@ export default function Profile(): React.JSX.Element {
 							<button
 								type="button"
 								className="btn btn-warning custom-btn"
-								onClick={handleUpdate}>
+								onClick={handleUpdate}
+							>
 								AGGIORNA PROFILO
 							</button>
 							<button
@@ -310,7 +320,8 @@ export default function Profile(): React.JSX.Element {
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
 									setIsEditing(false);
-								}}>
+								}}
+							>
 								ANNULLA
 							</button>
 						</>

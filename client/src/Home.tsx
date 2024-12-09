@@ -14,7 +14,6 @@ const HOME_MAX_TITLE_CHARS = 20;
 const HOME_MAX_TEXT_CHARS = 10;
 
 function Home(): React.JSX.Element {
-	//const [message, setMessage] = React.useState("");
 	const [pomodoros, setPomodoros] = React.useState([] as Pomodoro[]);
 	const [notes, setNotes] = React.useState([] as Note[]);
 	const [events, setEvents] = React.useState([] as Event[]);
@@ -80,7 +79,6 @@ function Home(): React.JSX.Element {
 			try {
 				const currentUser = await getCurrentUser();
 				const owner = currentUser.value._id.toString();
-				//console.log("Questo è l'owner:", owner);
 
 				const dataCorrente = currentDate;
 
@@ -130,7 +128,6 @@ function Home(): React.JSX.Element {
 						eventiFiltrati.push(event);
 					}
 				}
-				// ... rest of the code ...
 				console.log("Questi sono gli eventi filtrati:", eventiFiltrati);
 
 				if (res.status === 200) {
@@ -144,7 +141,6 @@ function Home(): React.JSX.Element {
 				console.log("Impossibile raggiungere il server");
 			}
 
-			// get projects
 			try {
 				const res = await fetch(`${SERVER_API}/projects`);
 				if (res.status === 200) {
@@ -167,13 +163,10 @@ function Home(): React.JSX.Element {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
-				// Controlla se la risposta non è ok
 				console.log("Utente non autenticato");
-				return null; // Restituisci null se non autenticato
+				return null;
 			}
-			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
 			const data: User = await res.json();
-			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
 			console.log("Impossibile recuperare l'utente corrente");
@@ -185,14 +178,12 @@ function Home(): React.JSX.Element {
 	React.useEffect(() => {
 		// Funzione che esegue entrambe le operazioni in sequenza
 		const updateDateAndEvents = async (): Promise<void> => {
-			await fetchCurrentDate();  // Prima aggiorna la data
-			loadEvents();             // Poi carica gli eventi
+			await fetchCurrentDate();
+			loadEvents();
 		};
 
-		// Esegui subito
 		updateDateAndEvents();
 
-		// Imposta l'intervallo
 		const interval = setInterval(updateDateAndEvents, 1000);
 
 		// Cleanup
@@ -202,7 +193,6 @@ function Home(): React.JSX.Element {
 	async function loadEvents(): Promise<void> {
 		try {
 			const currentUser = await getCurrentUser();
-			//console.log("Valore ottenuto:", currentUser);
 
 			const owner = currentUser.value._id.toString();
 			console.log("Questo è l'owner:", owner);
@@ -263,9 +253,7 @@ function Home(): React.JSX.Element {
 
 			if (data.status === ResponseStatus.GOOD) {
 				setEventList(eventiFiltrati);
-				//console.log("Eventi trovati:", eventi);
 			} else {
-				// await checkLoginStatus();
 				console.log("Errore nel ritrovamento degli eventi");
 			}
 		} catch (e) {
@@ -275,7 +263,6 @@ function Home(): React.JSX.Element {
 
 	React.useEffect(() => {
 		loadEvents();
-		//loadPomodoros();
 	}, []);
 
 	return (

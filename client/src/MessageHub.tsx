@@ -2,11 +2,8 @@ import React, { useRef } from "react";
 import { SERVER_API } from "./lib/params";
 import { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
-// import { useNavigate } from "react-router-dom";
-// import UserResult from "./types/UserResult";
 import SearchForm from "./SearchForm";
 import type Chat from "./types/Chat";
-// import Message from "./types/Message";
 
 function MessageHub(): React.JSX.Element {
 	const [activeChat, setActiveChat] = React.useState({} as Chat);
@@ -18,11 +15,8 @@ function MessageHub(): React.JSX.Element {
 		id: localStorage.getItem("loggedUserId"),
 	};
 
-	//const [message, setMessage] = React.useState("");
 	const [listMessage, setListMessage] = React.useState("");
 	const [chatMessage, setChatMessage] = React.useState("");
-
-	// const nav = useNavigate();
 
 	const lastMessageRef = useRef<HTMLDivElement | null>(null);
 
@@ -36,7 +30,6 @@ function MessageHub(): React.JSX.Element {
 		try {
 			const res = await fetch(`${SERVER_API}/chats`);
 			if (res.status !== 200) {
-				// nav("/login");
 			} else {
 				const resBody = (await res.json()) as ResponseBody;
 
@@ -86,42 +79,6 @@ function MessageHub(): React.JSX.Element {
 		}
 	}
 
-	/*React.useEffect(() => {
-        if (activeChat.id) {
-            console.log("Inizio polling per chat:", activeChat.id);
-            const interval = setInterval(() => {
-                console.log("Polling in esecuzione...");
-                updateChatMessages();
-            }, 5000);
-            return () => {
-                console.log("Interrompo polling per chat:", activeChat.id);
-                clearInterval(interval);
-            };
-        }
-        else {
-            return;
-        }
-    }, [activeChat]);
-    
-    
-    async function updateChatMessages(): Promise<void> {
-        try {
-            const res = await fetch(`${SERVER_API}/chats/${activeChat.id}`);
-            if (res.status === 200) {
-                const resBody = (await res.json()) as ResponseBody;
-                if (resBody.status === ResponseStatus.GOOD) {
-                    setActiveChat(resBody.value as Chat);
-                } else {
-                    setMessage("Errore aggiornando i messaggi.");
-                }
-            } else {
-                setMessage("Errore di connessione.");
-            }
-        } catch (error) {
-            setMessage("Impossibile raggiungere il server.");
-        }
-    }*/
-
 	async function addNewChat(
 		e: React.ChangeEvent<HTMLSelectElement>,
 		username: string
@@ -146,8 +103,6 @@ function MessageHub(): React.JSX.Element {
 
 			if (res.status === 200) {
 				console.log(resBody);
-
-				// Get updated chat list
 
 				const chats = await fetch(`${SERVER_API}/chats`);
 				const resBody2 = (await chats.json()) as ResponseBody;
@@ -211,7 +166,8 @@ function MessageHub(): React.JSX.Element {
 						{listMessage && <div className="error-message">{listMessage}</div>}
 						<button
 							className="create-chat-button"
-							onClick={(): void => setAddingChat(true)}>
+							onClick={(): void => setAddingChat(true)}
+						>
 							Nuova chat
 						</button>
 						{addingChat && (
@@ -224,7 +180,8 @@ function MessageHub(): React.JSX.Element {
 								/>
 								<button
 									className="chat-close-button"
-									onClick={(): void => setAddingChat(false)}>
+									onClick={(): void => setAddingChat(false)}
+								>
 									Chiudi
 								</button>
 							</>
@@ -238,7 +195,8 @@ function MessageHub(): React.JSX.Element {
 								</div>
 								<button
 									className="chat-select-button"
-									onClick={(): void => setActiveChat(chat)}>
+									onClick={(): void => setActiveChat(chat)}
+								>
 									Chat
 								</button>
 								<button
@@ -246,7 +204,8 @@ function MessageHub(): React.JSX.Element {
 									style={{ backgroundColor: "red" }}
 									onClick={(
 										e: React.MouseEvent<HTMLButtonElement>
-									): Promise<void> => deleteChat(e, chat)}>
+									): Promise<void> => deleteChat(e, chat)}
+								>
 									Elimina
 								</button>
 							</div>
@@ -276,7 +235,8 @@ function MessageHub(): React.JSX.Element {
 											index === activeChat.messageList.length - 1
 												? lastMessageRef
 												: null
-										}>
+										}
+									>
 										<div className="message-text">{message.text}</div>
 										<div className="message-info">
 											<span>Da {message.username} - </span>
@@ -304,7 +264,8 @@ function MessageHub(): React.JSX.Element {
 							<button
 								className="send-button"
 								onClick={handleSendMessage}
-								disabled={!input}>
+								disabled={!input}
+							>
 								Invia
 							</button>
 						</div>

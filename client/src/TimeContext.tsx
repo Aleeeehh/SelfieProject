@@ -7,9 +7,8 @@ export const TimeProvider = ({ children }: { children: React.ReactNode }): JSX.E
 	const [serverTime, setServerTime] = React.useState<number>(new Date().getTime());
 
 	const triggerAction = (): void => {
-		// Perform the action here
 
-		// Set the server time of the context
+		// Imposta il time server del contesto
 		fetch(`${SERVER_API}/currentDate`)
 			.then((res) => res.json())
 			.then((data) => {

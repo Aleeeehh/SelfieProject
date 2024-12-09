@@ -9,8 +9,6 @@ const MAX_TITLE_CHARS = 17;
 const MAX_USERS_CHARS = 50;
 
 export default function ProjectList({ projects, onProjectDelete }: { projects: Project[], onProjectDelete: () => void }): React.JSX.Element {
-	//const [message, setMessage] = React.useState("");
-
 
 	const nav = useNavigate();
 
@@ -49,8 +47,6 @@ export default function ProjectList({ projects, onProjectDelete }: { projects: P
 
 	return (
 		<>
-			{/*message && <div className="error-message">{message}</div>*/}
-
 			<div className="projects-list">
 				{projects.map((project) => (
 					<div className="card-project">

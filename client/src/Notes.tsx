@@ -11,10 +11,8 @@ const MAX_TITLE_CHARS = 17;
 
 export default function Notes(): React.JSX.Element {
 	const [noteList, setNoteList] = React.useState([] as Note[]);
-	//const [message, setMessage] = React.useState("");
 
 	const nav = useNavigate();
-	// On page load, get the notes for the user
 
 	async function getAllNotes(): Promise<void> {
 		try {
@@ -99,7 +97,6 @@ export default function Notes(): React.JSX.Element {
 		}
 	}
 
-	// TODO: sort up and down (not only one direction)
 	function sortBy(method: Order): void {
 		switch (method) {
 			case Order.NAME:
@@ -146,7 +143,8 @@ export default function Notes(): React.JSX.Element {
 							backgroundColor: "bisque",
 							color: "black",
 							boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4)",
-						}}>
+						}}
+					>
 						Crea nuova nota
 					</button>
 				</a>
@@ -154,7 +152,8 @@ export default function Notes(): React.JSX.Element {
 					Ordina per:
 					<select
 						className="sort-select"
-						onChange={(e): void => sortBy(e.target.value as Order)}>
+						onChange={(e): void => sortBy(e.target.value as Order)}
+					>
 						<option value={Order.NAME}>Titolo (A-Z)</option>
 						<option value={Order.NAME_DESC}>Titolo (Z-A)</option>
 						<option value={Order.LENGTH}>Più corta</option>
@@ -193,14 +192,16 @@ export default function Notes(): React.JSX.Element {
 									<button
 										onClick={(
 											e: React.MouseEvent<HTMLButtonElement>
-										): Promise<void> => handleDuplicate(e, note)}>
+										): Promise<void> => handleDuplicate(e, note)}
+									>
 										Duplica
 									</button>
 									<button
 										style={{ backgroundColor: "#ff6b6b" }}
 										onClick={(
 											e: React.MouseEvent<HTMLButtonElement>
-										): Promise<void> => handleDelete(e, note)}>
+										): Promise<void> => handleDelete(e, note)}
+									>
 										Cancella
 									</button>
 								</div>
@@ -208,7 +209,6 @@ export default function Notes(): React.JSX.Element {
 						</a>
 					))}
 				</div>
-				{/*message && <div>{message}</div>*/}
 			</div>
 	);
 }

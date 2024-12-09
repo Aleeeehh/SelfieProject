@@ -8,7 +8,6 @@ enum View {
 	MONTH = "Month",
 }
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
-// const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
 const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element => {
@@ -24,7 +23,7 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 	const getPoints = (): void => {
 		const points = [];
 
-		// generate points array from start to end, based on view
+		// Generate points array from start to end, based on view
 		if (view === View.DAY) {
 			for (let i = 0; i <= (end.getTime() - start.getTime()) / ONE_DAY; i++) {
 				const currDate = new Date(start.getTime() + i * ONE_DAY);
@@ -38,11 +37,11 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 				points.push(currDate.getTime());
 			}
 		} else if (view === View.MONTH) {
-			// get the first of the month of start
+			// Get the first of the month of start
 			start.setHours(0, 0, 0, 0);
 			start.setDate(1);
 
-			// get the last of the month of end
+			// Get the last of the month of end
 			end.setHours(0, 0, 0, 0);
 			end.setDate(1);
 			end.setMonth(end.getMonth() + 1);
@@ -61,23 +60,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 				: view === View.WEEK
 				? 7 * ONE_DAY
 				: THIRTY_DAYS + 2 * ONE_DAY
-		); // refreshProject()
+		);
 	};
-
-	/* const getTaskDays = (task: Activity): number[] => {
-		const startDate = new Date(task.start || Date.now());
-		startDate.setHours(0, 0, 0, 0);
-		const endDate = new Date(task.deadline);
-		endDate.setHours(0, 0, 0, 0);
-
-		const taskDays = [];
-		for (let i = 0; i <= (endDate.getTime() - startDate.getTime()) / ONE_DAY; i++) {
-			taskDays.push(startDate.getTime() + i * ONE_DAY);
-		}
-
-		console.log(taskDays);
-		return taskDays;
-	};*/
 
 	React.useEffect(() => {
 		const startZero = new Date(serverTime);
@@ -94,7 +78,6 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
 		try {
 			const inputDate = new Date(e.target.value);
-			// Ensure the date is valid and format it to YYYY-MM-DD
 			const formattedDate = inputDate.toISOString().split("T")[0];
 			if (e.target.name === "start") {
 				setStart(new Date(formattedDate));
@@ -128,7 +111,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 				<select
 					value={view}
 					onChange={(e): void => setView(e.target.value as View)}
-					style={{ width: "200px" }}>
+					style={{ width: "200px" }}
+				>
 					<option value={View.DAY}>Giorno</option>
 					<option value={View.WEEK}>Settimana</option>
 					<option value={View.MONTH}>Mese</option>
@@ -154,7 +138,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 										new Date(serverTime).getTime() + limit >= point
 											? { backgroundColor: "blueviolet" }
 											: {}
-									}>
+									}
+								>
 									{new Date(point).toISOString().split("T")[0]}
 								</th>
 							))}
@@ -203,7 +188,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 																			backgroundColor:
 																				"green",
 																	  }
-															}></div>
+															}
+														></div>
 													) : (
 														<div className="gantt-empty-cell"></div>
 													)}
@@ -214,7 +200,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 											task.children.map((child) => (
 												<tr
 													key={"row -" + task?.id + child?.id}
-													className="table-row">
+													className="table-row"
+												>
 													<td></td>
 													<td className="gantt-task-cell">
 														{child.title}
@@ -223,7 +210,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 														{child.accessList.map((u, i) => (
 															<div
 																key={i}
-																className="gantt-participant">
+																className="gantt-participant"
+															>
 																{u}
 															</div>
 														))}
@@ -231,7 +219,6 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 													{points.map((point, i) => (
 														<td key={i} className="day-cell">
 															{
-																/* getTaskDays(child).includes(day) */
 																new Date(child.start!).getTime() <=
 																	point &&
 																point <=
@@ -264,7 +251,8 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 																						backgroundColor:
 																							"green",
 																				  }
-																		}></div>
+																		}
+																	></div>
 																) : (
 																	<div className="gantt-empty-cell"></div>
 																)
