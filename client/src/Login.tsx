@@ -27,6 +27,7 @@ export default function Login(): React.JSX.Element {
 			if (success) {
 				console.log("Utente authenticato");
 				nav("/");
+				window.location.reload();
 			} else {
 				setMessage("Credenziali errate");
 			}

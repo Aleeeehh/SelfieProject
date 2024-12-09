@@ -145,6 +145,12 @@ export default function Calendar(): React.JSX.Element {
 	const [eventList, setEventList] = React.useState<Event[]>([]);
 	const [activityList, setActivityList] = React.useState<Activity[]>([]);
 	const [addTitle, setAddTitle] = React.useState(true);
+	const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) //vale sia per safari che firefox
+	console.log("IS SAFARI:", isSafari);
+	console.log("IS SAFARI:", isSafari);
+	console.log("IS SAFARI:", isSafari);
+	console.log("IS SAFARI:", isSafari);
+	console.log("IS SAFARI:", isSafari);
 
 	const [eventPositions, setEventPositions] = React.useState<
 		{
@@ -4630,7 +4636,7 @@ export default function Calendar(): React.JSX.Element {
 								<div className="creation-event-container">
 									<button
 										className="btn btn-primary"
-										style={{	
+										style={{
 											backgroundColor: "bisque",
 											color: "black",
 											border: "0",

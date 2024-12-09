@@ -55,6 +55,7 @@ export default function Profile(): React.JSX.Element {
 		try {
 			await logout();
 			nav("/login");
+			window.location.reload();
 		} catch (e) {
 			setMessage("Errore durante il tentativo di logout");
 		}
