@@ -41,8 +41,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -62,8 +62,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -76,8 +76,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -126,8 +126,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -146,8 +146,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -162,8 +162,8 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 						currentEvent.startTime = currentDate;
 						currentEvent.endTime = new Date(
 							currentEvent.startTime.getMilliseconds() -
-								(entry.startTime.getMilliseconds() -
-									entry.endTime.getMilliseconds())
+							(entry.startTime.getMilliseconds() -
+								entry.endTime.getMilliseconds())
 						);
 						eventList.push(currentEvent);
 					}
@@ -186,10 +186,10 @@ function getEventsFromDBEvents(dbList: Event[], from: Date, to: Date): Event[] {
 
 function minutesApprossimation(hours: number, minutes: number): number {
 	/*
-    if (hours === 0 && minutes < 5) {
-        return 5; // Approssima i minuti a 5
-    }
-    */
+	if (hours === 0 && minutes < 5) {
+		return 5; // Approssima i minuti a 5
+	}
+	*/
 	if (hours > 21) {
 		minutes = Math.floor(minutes / 10) * 10; // Approssima per difetto
 	} else {
@@ -333,13 +333,14 @@ router.post("/", async (req: Request, res: Response) => {
 			accessListAccepted,
 			isRisorsa,
 		} = req.body as Event;
-
-		console.log("isRisorsa passato come parametro:", isRisorsa);
-		console.log("isRisorsa passato come parametro:", isRisorsa);
-
-		console.log("isRisorsa passato come parametro:", isRisorsa);
-
-		console.log("isRisorsa passato come parametro:", isRisorsa);
+		/*
+				console.log("isRisorsa passato come parametro:", isRisorsa);
+				console.log("isRisorsa passato come parametro:", isRisorsa);
+		
+				console.log("isRisorsa passato come parametro:", isRisorsa);
+		
+				console.log("isRisorsa passato come parametro:", isRisorsa);
+				*/
 
 		if (new Date(startTime) > new Date(endTime)) {
 			return res.status(400).json({
@@ -1192,64 +1193,64 @@ router.put("/:id", async (req: Request, res: Response) => {
 /* IPOTETICA PUT ULTERIORE CON IDEVENTONOTIFICACONDIVISO
 
 router.put("/:id", async (req: Request, res: Response) => {
-    const idEventoNotificaCondiviso = req.params.id as string;
-    const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as
-        | string[]
-        | undefined; // username list
+	const idEventoNotificaCondiviso = req.params.id as string;
+	const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as
+		| string[]
+		| undefined; // username list
 
-    try {
-        // TODO: validate param
-        // TODO: validate body fields
+	try {
+		// TODO: validate param
+		// TODO: validate body fields
 
-        const foundEvents = await EventSchema.find({
-            idEventoNotificaCondiviso: idEventoNotificaCondiviso,
-        });
+		const foundEvents = await EventSchema.find({
+			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+		});
 
-        console.log("foundEvents:", foundEvents);
+		console.log("foundEvents:", foundEvents);
 
-        if (foundEvents.length === 0) {
-            const resBody: ResponseBody = {
-                message:
-                    "Event with id " +
-                    idEventoNotificaCondiviso +
-                    " not found!",
-                status: ResponseStatus.BAD,
-            };
+		if (foundEvents.length === 0) {
+			const resBody: ResponseBody = {
+				message:
+					"Event with id " +
+					idEventoNotificaCondiviso +
+					" not found!",
+				status: ResponseStatus.BAD,
+			};
 
-            return res.status(400).json(resBody);
-        }
+			return res.status(400).json(resBody);
+		}
 
-        let updatedAccessListAccepted: string[] | undefined;
-        if (inputAccessListAcceptedUser) {
-            // Crea una lista aggiornata per accessListAccepted
-            updatedAccessListAccepted = foundEvents[0].accessListAccepted?.concat(inputAccessListAcceptedUser);
+		let updatedAccessListAccepted: string[] | undefined;
+		if (inputAccessListAcceptedUser) {
+			// Crea una lista aggiornata per accessListAccepted
+			updatedAccessListAccepted = foundEvents[0].accessListAccepted?.concat(inputAccessListAcceptedUser);
 
-            console.log("Updating events to ", updatedAccessListAccepted);
+			console.log("Updating events to ", updatedAccessListAccepted);
 
-            // Aggiorna tutti gli eventi con lo stesso idEventoNotificaCondiviso
-            await EventSchema.updateMany(
-                { idEventoNotificaCondiviso: idEventoNotificaCondiviso },
-                { accessListAccepted: updatedAccessListAccepted }
-            );
-        }
+			// Aggiorna tutti gli eventi con lo stesso idEventoNotificaCondiviso
+			await EventSchema.updateMany(
+				{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+				{ accessListAccepted: updatedAccessListAccepted }
+			);
+		}
 
-        // TODO: filter the fields of the found event
-        const resBody: ResponseBody = {
-            message: "Events updated in database",
-            status: ResponseStatus.GOOD,
-            value: foundEvents,
-        };
+		// TODO: filter the fields of the found event
+		const resBody: ResponseBody = {
+			message: "Events updated in database",
+			status: ResponseStatus.GOOD,
+			value: foundEvents,
+		};
 
-        return res.json(resBody);
-    } catch (e) {
-        console.log(e);
-        const resBody: ResponseBody = {
-            message: "Error handling request",
-            status: ResponseStatus.BAD,
-        };
+		return res.json(resBody);
+	} catch (e) {
+		console.log(e);
+		const resBody: ResponseBody = {
+			message: "Error handling request",
+			status: ResponseStatus.BAD,
+		};
 
-        return res.status(500).json(resBody);
-    }
+		return res.status(500).json(resBody);
+	}
 });
 */
 

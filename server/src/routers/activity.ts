@@ -1004,6 +1004,18 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 
 			for (const member of newMembers) {
+				const newEvent = {
+					idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso,
+					owner: member,
+					title: "Scadenza " + foundActivity.title,
+					startTime: new Date(foundActivity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
+					endTime: foundActivity.deadline.toISOString(),
+					untilDate: null,
+					isInfinite: false,
+					frequency: "once",
+					location: "",
+					repetitions: 1,
+				};
 
 				if (projectId) { //se l'attività fa parte di un progetto
 					const notification: Notification = {
@@ -1016,24 +1028,14 @@ router.put("/:id", async (req: Request, res: Response) => {
 						data: {
 							date: new Date(Date.now()),
 							activity: foundActivity,
+							event: newEvent,
+							//notification: null,
 						},
 					}
 					await NotificationSchema.create(notification);
 				};
 
 				if (!projectId) { //se l'attività non fa parte di un progetto
-					const newEvent = {
-						idEventoNotificaCondiviso: foundActivity.idEventoNotificaCondiviso,
-						owner: member,
-						title: "Scadenza " + foundActivity.title,
-						startTime: foundActivity.start?.toISOString() || new Date().toISOString(),
-						endTime: foundActivity.deadline.toISOString(),
-						untilDate: null,
-						isInfinite: false,
-						frequency: "once",
-						location: "",
-						repetitions: 1,
-					};
 
 					const notification: Notification = {
 						sender: req.user!.id,

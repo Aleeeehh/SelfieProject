@@ -168,6 +168,25 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
 
+		//crea l'attività come evento sul calendario
+		const res = await fetch(`${SERVER_API}/events`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				idEventoNotificaCondiviso,
+				owner,
+				title: "Scadenza " + activity.title,
+				startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
+				endTime: activity.deadline.toISOString(),
+				untilDate: null,
+				isInfinite: false,
+				frequency: "once",
+				location: "",
+				repetitions: 1,
+			}),
+		});
+		console.log("Evento scadenza creato:", res);
+
 		fetch(`${SERVER_API}/activities/${activity.id}`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -209,11 +228,25 @@ export default function CreateActivityForm(): React.JSX.Element {
 			console.log("AccessList: ", activity.accessList);
 			//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
 			for (const receiver of activity.accessList) {
+				const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+				const data = await res.json();
+				const receiverId = data.id;
+
+				const newEvent = {
+					idEventoNotificaCondiviso,
+					owner: receiverId,
+					title: "Scadenza " + activity.title,
+					startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
+					endTime: activity.deadline.toISOString(),
+					untilDate: null,
+					isInfinite: false,
+					frequency: "once",
+					location: "",
+					repetitions: 1,
+				};
+
 
 				if (receiver !== activity.owner) { //posso mettere che la riceva anche l'owner magari
-					const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
-					const data = await res.json();
-					const receiverId = data.id;
 					console.log("Questo è il receiver:", receiver);
 					const res4 = await fetch(`${SERVER_API}/notifications`, {
 						method: "POST",
@@ -226,6 +259,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 							data: {
 								date: new Date(), // data prima notifica
 								activity: activity,
+								event: newEvent,
 							},
 						}),
 					});
@@ -238,12 +272,15 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 		if (!projectId) {
 			for (const receiver of activity.accessList) {
+				const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+				const data = await res.json();
+				const receiverId = data.id;
 
 				const newEvent = {
 					idEventoNotificaCondiviso,
-					owner: receiver,
+					owner: receiverId,
 					title: "Scadenza " + activity.title,
-					startTime: activity.start?.toISOString() || new Date().toISOString(),
+					startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
 					endTime: activity.deadline.toISOString(),
 					untilDate: null,
 					isInfinite: false,
@@ -254,9 +291,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 				if (receiver !== activity.owner) {
 
-					const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
-					const data = await res.json();
-					const receiverId = data.id;
+
 
 					console.log("Questo è il receiver:", receiver);
 					const res4 = await fetch(`${SERVER_API}/notifications`, {
