@@ -78,7 +78,7 @@
 .login-form input[type="text"],
 .login-form input[type="password"] {
     padding: 10px;
-    border: 2px solid #A0EAC7;
+    border: 2px solid #7DCFB6;
     border-radius: 8px;
     font-size: 1rem;
     outline: none;
@@ -115,7 +115,7 @@
 }
 
 .login-form button:hover {
-    background-color: #62B6A3;
+    background-color: #7DCFB6;
 }
 
 .login-message {
