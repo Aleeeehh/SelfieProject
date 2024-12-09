@@ -197,6 +197,7 @@ export default function Register(): React.JSX.Element {
 								name="username"
 								value={data.username}
 								onChange={handleChange}
+								maxLength={20}
 								required
 							/>
 						</div>
