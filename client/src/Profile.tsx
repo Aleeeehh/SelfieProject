@@ -74,7 +74,7 @@ export default function Profile(): React.JSX.Element {
 			console.log(resBody);
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Utente eliminato correttamente!");
+				//alert("Utente eliminato correttamente!");
 				nav("/login");
 			} else {
 				setMessage("Errore durante il tentativo di cancellazione");
@@ -111,7 +111,7 @@ export default function Profile(): React.JSX.Element {
 			console.log(resBody);
 
 			if (resBody.status === ResponseStatus.GOOD) {
-				alert("Utente aggiornato correttamente!");
+				//alert("Utente aggiornato correttamente!");
 				fetchUserData();
 				setIsEditing(false);
 			} else {

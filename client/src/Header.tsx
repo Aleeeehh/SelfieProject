@@ -191,7 +191,8 @@ export default function Header(): React.JSX.Element {
 		console.log("AccessListAccepted aggiornato:", data);
 
 		const newEvent = notification.data.event;
-		newEvent.owner = notification.receiver;
+		//newEvent.owner = notification.receiver;
+		console.log("Evento scadenza da aggiungere al calendario:", newEvent);
 
 		// Aggiungi al calendario l'evento scadenza dell'attività condivisa
 		const response = await fetch(`${SERVER_API}/events`, {
@@ -200,6 +201,8 @@ export default function Header(): React.JSX.Element {
 			body: JSON.stringify(newEvent),
 		});
 		console.log("Evento scadenza aggiunto:", response);
+		const data2 = await response.json();
+		console.log("Data dell'evento scadenza aggiunto:", data2);
 
 		// Aggiungi la notifica dell'attività condivisa come notifica sul calendario
 		if (notification.data.notification) {
@@ -240,8 +243,8 @@ export default function Header(): React.JSX.Element {
 	}
 
 	async function handleAddProjectActivity(notification: Notification): Promise<void> {
-		const owner = await getCurrentUser();
-		const ownerId = owner.value._id.toString();
+		//const owner = await getCurrentUser();
+		//const ownerId = owner.value._id.toString();
 		// Ottieni l'attività dal titolo
 		const res = await fetch(`${SERVER_API}/activities/by-title/${notification.data.activity.title}`);
 		const data = await res.json();
@@ -264,22 +267,17 @@ export default function Header(): React.JSX.Element {
 		const startTime = new Date(endTime);
 		startTime.setHours(endTime.getHours() - 1);
 
-		const res3 = await fetch(`${SERVER_API}/events`, {
+		const newEvent = notification.data.event;
+		//newEvent.owner = notification.receiver;
+		console.log("Evento scadenza da aggiungere al calendario:", newEvent);
+
+		// Aggiungi al calendario l'evento scadenza dell'attività condivisa
+		const response = await fetch(`${SERVER_API}/events`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				owner: ownerId,
-				title: "Scadenza attività " + activity.title,
-				startTime: startTime.toISOString(),
-				endTime: endTime.toISOString(),
-				untilDate: null,
-				isInfinite: false,
-				frequency: "once",
-				location: activity.location,
-				repetitions: 1,
-			}),
+			body: JSON.stringify(newEvent),
 		});
-		console.log("Evento scadenza creato:", res3);
+		console.log("Evento scadenza creato:", response);
 
 		handleReadNotification(notification.id);
 	}
