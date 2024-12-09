@@ -21,26 +21,34 @@ import * as argon2 from "argon2";
 // Connect to database
 // const DB_USER = "";
 //const DB_PSWD = "";
-const DB_HOST = "127.0.0.1"; // CHANGE THIS TO 'mongo_site232402' IN PRODUCTION
+
+//////////////////////////////////////
+//// PRODUCTION
+const DB_HOST = "mongo_site232402";
 const DB_PORT = "27017";
 const DB_APP_NAME = "selfie_db";
-const DB_SESSION = "SessionDB";
-const SESSION_SECRET = "secret";
-
+const DB_SESSION = "session_db";
+const SESSION_SECRET = "gdsjkhgsdjkhsdgkjsdhgsahfiaofhioh";
 const DB_USER = "site232402";
-const DB_PSWD = ""; // CHANGE THIS IN PRODUCTION
+const DB_PSWD = "oot3epuM";
+const dbConnectionString = `mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}`;
+const connectionOptions = `?authSource=admin&writeConcern=majority`;
+//////////////////////////////////////
 
-//////////////////////////////////
-// DO NOT DELETE THIS ROWS!!!
-// uncomment in production
-// const dbConnectionString = `mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}`;
-// comment in production
-const dbConnectionString = `mongodb://${DB_HOST}:${DB_PORT}`;
-//////////////////////////////////
+//////////////////////////////////////
+//// DEVELOPMENT
+// const DB_HOST = "localhost";
+// const DB_PORT = "27017";
+// const DB_APP_NAME = "selfie_db";
+// const DB_SESSION = "session_db";
+// const SESSION_SECRET = "secret";
+// const dbConnectionString = `mongodb://${DB_HOST}:${DB_PORT}`;
+// const connectionOptions = ``;
+//////////////////////////////////////
 
 // store of sessions
 const store = MongoStore.create({
-	mongoUrl: dbConnectionString + `/${DB_SESSION}`, // MongoDB connection URI
+	mongoUrl: dbConnectionString + `/${DB_SESSION}` + connectionOptions, // MongoDB connection URI
 	dbName: DB_SESSION, // Collection name for storing sessions
 });
 
@@ -142,7 +150,7 @@ server.get("*", (_: Request, res: Response) => {
 // TODO: Use authentication for DB
 // mongoose.connect(`mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}/${DB_APP_NAME}`);
 mongoose
-	.connect(dbConnectionString + `/${DB_APP_NAME}`)
+	.connect(dbConnectionString + `/${DB_APP_NAME}` + connectionOptions)
 	.then(() => createDummyUsers())
 	//.then(() => createDummyEvents())
 	//.then(() => createDummyNotes())

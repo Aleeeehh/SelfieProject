@@ -10,7 +10,7 @@ import UserSchema from "../schemas/User.js";
 import mongoose, { Types } from "mongoose";
 import type { Privacy } from "../types/Privacy.js";
 import { getActivityList, getIdListFromUsernameList, getUsernameListFromIdList } from "./lib.js";
-import NotificationSchema, { NotificationType } from "../schemas/Notification.js";
+import NotificationSchema from "../schemas/Notification.js";
 import type Notification from "../types/Notification.js";
 
 const router: Router = Router();
@@ -672,8 +672,8 @@ router.put("/:id", async (req: Request, res: Response) => {
 			console.log("ACCESS LIST PRECEDENTE:", previousAccessList);
 
 			// Converti le stringhe in ObjectId per il confronto
-			const newMembers = accessIdList.filter(member =>
-				!previousAccessList.includes(new Types.ObjectId(member))
+			const newMembers = accessIdList.filter(
+				(member) => !previousAccessList.includes(new Types.ObjectId(member))
 			);
 			console.log("NUOVI MEMBRI:", newMembers);
 
