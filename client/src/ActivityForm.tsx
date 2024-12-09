@@ -11,7 +11,6 @@ const baseActivity: Activity = {
 	owner: "",
 	accessList: [] as string[],
 	completed: false,
-	// start: new Date(),
 };
 
 interface ActivityCreateFormProps {
@@ -29,14 +28,12 @@ export default function ActivityForm({
 	inputActivity,
 	siblings,
 }: ActivityCreateFormProps): React.JSX.Element {
-	// const { loggedUser } = useAuth();
 	const [addNotification, setAddNotification] = React.useState(false);
 
 	const [activity, setActivity] = React.useState<Activity>(
 		inputActivity
 			? {
 				...inputActivity,
-				// start: new Date(inputActivity.start || ""),
 				deadline: new Date(inputActivity.deadline),
 			}
 			: baseActivity
@@ -47,14 +44,13 @@ export default function ActivityForm({
 	const [_, setNotificationRepeatTime] = React.useState(0);
 
 	const getValidRepeatOptions = (time: number): number[] => {
-		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
-		return options.filter((option) => option !== time && (time % option === 0 || option === 0)); // Filtra solo i divisori, escludendo il numero stesso
+		const options = [0, 5, 10, 15, 30, 60, 120, 1440];
+		return options.filter((option) => option !== time && (time % option === 0 || option === 0));
 	};
 
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
-		// create the new activity here (inside the component)
 		console.log("Creating activity: ", JSON.stringify(activity));
 
 		for (const user of activity.accessList) {
@@ -71,7 +67,6 @@ export default function ActivityForm({
 				deadline: activity.deadline.toISOString().split("T")[0],
 				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
 				projectId: projectId,
-				// start: activity.start?.toISOString().split("T")[0] || undefined,
 				milestone: activity.milestone,
 				parent: activity.parent,
 				prev: activity.prev,
@@ -80,7 +75,6 @@ export default function ActivityForm({
 			}),
 		});
 
-		// received action post activity creation handle
 		if (res.status === 200) onSuccess();
 		else onFail();
 	}
@@ -89,8 +83,6 @@ export default function ActivityForm({
 		e.preventDefault();
 
 		console.log("Updating activity: ", JSON.stringify(activity));
-
-		// update the activity here (inside the component)
 
 		const res = await fetch(`${SERVER_API}/activities/${activity.id}`, {
 			method: "PUT",
@@ -102,7 +94,6 @@ export default function ActivityForm({
 				deadline: activity.deadline.toISOString().split("T")[0],
 				idEventoNotificaCondiviso: activity.idEventoNotificaCondiviso,
 				projectId: projectId,
-				// start: activity.start?.toISOString().split("T")[0] || undefined,
 				milestone: activity.milestone,
 				parent: activity.parent,
 				prev: activity.prev,
@@ -111,27 +102,9 @@ export default function ActivityForm({
 			}),
 		});
 
-		// received action post activity update handle
 		if (res.status === 200) onSuccess();
 		else onFail();
 	}
-
-	/* function getActivitiesForProject(id: string): Activity[] {
-		if (!id) return [];
-
-		fetch(`${SERVER_API}/projects/${id}/activities`)
-			.then((res) => res.json())
-			.then((data) => {
-				return data.value as Activity[];
-			})
-			.catch((e) => {
-				console.log(e);
-				console.log("Errore nel ritrovamenteo delle attività");
-				return [];
-			});
-
-		return [];
-	} */
 
 	return (
 		<form className="activity-vertical">
@@ -197,7 +170,7 @@ export default function ActivityForm({
 						onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 							const [hours, minutes] = e.target.value.split(":");
 							const newDate = new Date(activity.deadline);
-							newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
+							newDate.setHours(Number(hours), Number(minutes));
 							setActivity({ ...activity, deadline: newDate });
 						}}
 					/>
@@ -223,12 +196,12 @@ export default function ActivityForm({
 						onChange={(e: React.ChangeEvent<HTMLSelectElement>): void => {
 							setNotificationTime(Number(e.target.value));
 							if (Number(e.target.value) > 0) {
-								setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+								setNotificationRepeat(true);
 							} else if (Number(e.target.value) === 0) {
 								setNotificationRepeat(false);
 							}
 						}}
-						style={{ backgroundColor: "white" }} // Aggiungi margine se necessario
+						style={{ backgroundColor: "white" }}
 					>
 						<option value="0">All'ora d'inizio</option>
 						<option value="5">5 minuti prima</option>
@@ -258,75 +231,17 @@ export default function ActivityForm({
 								{option === 0
 									? "Mai"
 									: option >= 60
-										? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+										? `Ogni ${option / 60} ore`
 										: `Ogni ${option} minuti`}
 							</option>
 						))}
 					</select>
 				</label>
 			)}
+			
 			{/* Leo - Progetti - START*/}
 			{projectId && (
 				<div>
-					{
-						// activity.parent = parent;
-						// activity.prev = prev;
-						// activity.next = prev;
-					}
-					{/*<label htmlFor="start" className="activity-vertical">
-						Data di inizio
-						<div>
-							<DatePicker
-								className="btn border"
-								name="start"
-								selected={activity.start || new Date()}
-								onChange={(date: Date | null): void => {
-									if (date) {
-										// Aggiorna la data mantenendo l'orario attuale
-										const newDate = new Date(activity.start || "");
-										newDate.setFullYear(
-											date.getFullYear(),
-											date.getMonth(),
-											date.getDate()
-										);
-										setActivity({ ...activity, start: newDate });
-									}
-								}}
-							/>
-						</div>
-						<div>
-							<input
-								style={{ backgroundColor: "white" }}
-								className="btn border"
-								type="time"
-								value={
-									activity.start
-										? `${new Date(activity.start)
-												.getHours()
-												.toString()
-												.padStart(2, "0")}:${new Date(activity.start)
-												.getMinutes()
-												.toString()
-												.padStart(2, "0")}`
-										: new Date(Date.now())
-												.getHours()
-												.toString()
-												.padStart(2, "0") +
-										  ":" +
-										  new Date(Date.now())
-												.getMinutes()
-												.toString()
-												.padStart(2, "0")
-								}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-									const [hours, minutes] = e.target.value.split(":");
-									const newDate = new Date(activity.start || "");
-									newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-									setActivity({ ...activity, start: newDate });
-								}}
-							/>
-						</div>
-					</label>*/}
 					<label htmlFor="milestone">
 						Milestone:
 						<input
@@ -363,6 +278,7 @@ export default function ActivityForm({
 							</option>
 						</select>
 					</label>
+
 					{/* Parent cannot be changed once is */}
 					<label htmlFor="parent" className="activity-vertical">
 						{inputActivity ? (
@@ -409,6 +325,7 @@ export default function ActivityForm({
 				</div>
 			)}
 			{/* Leo - Progetti - END*/}
+
 			<button
 				className="btn btn-primary"
 				style={{

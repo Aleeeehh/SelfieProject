@@ -17,7 +17,6 @@ enum SORT {
 }
 
 export default function Activities(): React.JSX.Element {
-	// const [message, setMessage] = React.useState("");
 	const [activities, setActivities] = React.useState([] as Activity[]);
 	const [userFilter, setUserFilter] = React.useState("");
 	const [projectFilter, setProjectFilter] = React.useState("");
@@ -25,7 +24,6 @@ export default function Activities(): React.JSX.Element {
 
 	const userId = localStorage.getItem("loggedUserId");
 
-	// const nav = useNavigate();
 
 	function getAllUsers(): string[] {
 		const users: string[] = [];
@@ -53,13 +51,10 @@ export default function Activities(): React.JSX.Element {
 		try {
 			const res = await fetch(`${SERVER_API}/users`);
 			if (!res.ok) {
-				// Controlla se la risposta non è ok
 				console.log("Utente non autenticato");
-				return null; // Restituisci null se non autenticato
+				return null;
 			}
-			//console.log("Questa è la risposta alla GET per ottenere lo user", res);
 			const data: User = await res.json();
-			//console.log("Questo è il json della risposta", data);
 			return data;
 		} catch (e) {
 			console.log("Impossibile recuperare l'utente corrente");
@@ -78,20 +73,10 @@ export default function Activities(): React.JSX.Element {
 				if (data.status === ResponseStatus.GOOD) {
 					const activities = data.value;
 					console.log("Attività trovate:", activities);
-					/*
-					let attivitàDaMostrare = [];
-					for (const activity of activities) {
-						if (activity.owner === userId || activity.accessListAccepted.includes(userId)) {
-							attivitàDaMostrare.push(activity);
-						}
-					}
-					*/
-
 					setActivities(activities as Activity[]);
 					console.log("Attività da mostrare:", activities);
 				} else {
 					console.log(data.message || "Errore nel caricamento delle attività");
-					// nav("/projects");
 				}
 
 				console.log("Getting all project names");
@@ -99,7 +84,6 @@ export default function Activities(): React.JSX.Element {
 
 			.catch(() => {
 				console.log("Impossibile raggiungere il server");
-				// nav("/projects");
 			});
 	}
 
@@ -147,7 +131,6 @@ export default function Activities(): React.JSX.Element {
 
 	return (
 		<>
-			{/* {message && <div>{message}</div>} */}
 			<div className="activities-container">
 				{/*
 				<a href={`/activities/new`} style={{ marginTop: "1em" }}>
@@ -171,6 +154,7 @@ export default function Activities(): React.JSX.Element {
 							))}
 						</select>
 					</div>
+					
 					{/* Filter for user */}
 					<div className="sort-label">
 						<div>Filtra per utente: </div>
