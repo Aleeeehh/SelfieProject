@@ -2,6 +2,20 @@
 
 Progetto di Tecnologie Web
 
+### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
+-   Mantenere la time machine attiva su tutta l'interfaccia
+-   Editare un evento già impostato
+-   Aumentare il contrasto nei colori
+-   Disallineamento nelle colonne del calendario
+-   Refresh informazioni (calendario mensile)
+-   Uniformare formato date ed ore (Magari al formato italiano)
+-   Time machine influenza anche pomodoro (e se serve, non ho controllato) progetti ed attività
+-   Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema operativo (con Notification API)
+-   gestione partecipanti dei progetti distinti
+-   Scroll calendario attività progetto da migliorare
+-   tutti i bottoni accessibili (anche fuori checkbox anche testo)
+-   "Invia evento ad utente" o lo tolgo oppure lo miglioro che mandi il form con "Crea" e non con "Invia ad utente"
+
 ### Componenti del Gruppo
 
 -   Alessio Prato - Mat. 0001081166
