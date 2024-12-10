@@ -6,11 +6,11 @@ import { default as apiRouter } from "./routers/api.js";
 import mongoose from "mongoose";
 import {
 	//createDummyEvents,
-	//createDummyNotes,
+	createDummyNotes,
 	createDummyPomodoros,
 	createDummyUsers,
 	createCurrentDate,
-	//createDummyProject,
+	createDummyProject,
 } from "./schemas/populateDB.js";
 import passport from "passport";
 import * as passportStrategy from "passport-local";
@@ -24,7 +24,7 @@ import * as argon2 from "argon2";
 
 //////////////////////////////////////
 //// PRODUCTION
-/*
+
 const DB_HOST = "mongo_site232402";
 const DB_PORT = "27017";
 const DB_APP_NAME = "selfie_db";
@@ -34,18 +34,20 @@ const DB_USER = "site232402";
 const DB_PSWD = "oot3epuM";
 const dbConnectionString = `mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}`;
 const connectionOptions = `?authSource=admin&writeConcern=majority`;
-*/
+
 //////////////////////////////////////
 
 //////////////////////////////////////
 //// DEVELOPMENT
+/*
 const DB_HOST = "localhost";
 const DB_PORT = "27017";
 const DB_APP_NAME = "selfie_db";
 const DB_SESSION = "session_db";
 const SESSION_SECRET = "secret";
 const dbConnectionString = `mongodb://${DB_HOST}:${DB_PORT}`;
-const connectionOptions = ``;
+const connectionOptions = ``;+
+*/
 //////////////////////////////////////
 
 // store of sessions
@@ -155,10 +157,10 @@ mongoose
 	.connect(dbConnectionString + `/${DB_APP_NAME}` + connectionOptions)
 	.then(() => createDummyUsers())
 	//.then(() => createDummyEvents())
-	//.then(() => createDummyNotes())
+	.then(() => createDummyNotes())
 	.then(() => createDummyPomodoros())
-	.then(() => createCurrentDate());
-//.then(() => createDummyProject());
+	.then(() => createCurrentDate())
+	.then(() => createDummyProject());
 
 mongoose.set("sanitizeFilter", true); // sanitize from NoSQLite
 mongoose.set("strictQuery", true); // only schema fields are saved in database!!!

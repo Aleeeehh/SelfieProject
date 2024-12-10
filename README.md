@@ -97,9 +97,9 @@ https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/#std-label-
 
 0. Lanciare il batch per il build del client: "build_server.sh"
 1. Build del server: "cd server && npm run build && cd .."
-2. copiare i file build del server sul server UNIBO: "ssh <path_to_project>/server/dist <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
-3. copiare i file build del client sul server UNIBO: "ssh <path_to_project>/server/webapp/build <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
-4. copiare il file package.json del server sul server UNIBO: "ssh <path_to_project>/server/package.json <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
+2. copiare i file build del server sul server UNIBO: "scp <path_to_project>/server/dist <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
+3. copiare i file build del client sul server UNIBO: "scp <path_to_project>/server/webapp/build <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
+4. copiare il file package.json del server sul server UNIBO: "scp <path_to_project>/server/package.json <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
 5. entrare tramite ssh nella rete UNIBO: "ssh <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html" (password: password di ateneo)
 6. entrare nella folder dei file caricati: "cd /home/web/site232402/html"
 7. Se non ancora fatto, aggiungere a PATH npm e node: "export PATH=/usr/local/node/bin:$PATH"
