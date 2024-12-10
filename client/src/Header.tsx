@@ -1669,8 +1669,8 @@ export default function Header(): React.JSX.Element {
 																color: "red",
 																fontSize: "20px",
 															}}></i>{" "}
-														{/* Icona di elimazione */}
 													</button>
+													{/*
 													<button
 														className="btn secondary"
 														style={{
@@ -1695,8 +1695,9 @@ export default function Header(): React.JSX.Element {
 																color: "lightblue",
 																fontSize: "20px",
 															}}></i>{" "}
-														{/* Icona di elimazione */}
+													
 													</button>
+													*/}
 												</div>
 											);
 										}
@@ -1780,6 +1781,7 @@ export default function Header(): React.JSX.Element {
 															}}></i>{" "}
 														{/* Icona di elimazione */}
 													</button>
+													{/*
 													<button
 														className="btn secondary"
 														style={{
@@ -1804,8 +1806,8 @@ export default function Header(): React.JSX.Element {
 																color: "lightblue",
 																fontSize: "20px",
 															}}></i>{" "}
-														{/* Icona di elimazione */}
 													</button>
+													*/}
 												</div>
 											);
 										}
