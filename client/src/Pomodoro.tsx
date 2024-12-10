@@ -346,6 +346,8 @@ export default function Pomodoros(): React.JSX.Element {
 							);
 						});
 
+						console.log("eventPomodoro:", eventPomodoro);
+
 						if (!eventPomodoro) {
 							console.log(
 								"Nessun evento 'Pomodoro Session' trovato che soddisfi i criteri."
@@ -1036,7 +1038,7 @@ export default function Pomodoros(): React.JSX.Element {
 									/>
 								</div>
 							</label>
-							
+
 							{eventMessage && (
 								<div className="error-message">
 									{eventMessage}

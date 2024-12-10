@@ -3541,144 +3541,149 @@ export default function Calendar(): React.JSX.Element {
 											/>
 											Evento Pomodoro
 										</label>
-
-										<label htmlFor="allDayEvent">
-											<input
-												type="checkbox"
-												name="allDayEvent"
-												onClick={toggleAllDayEvent}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-												}}
-											/>
-											Tutto il giorno
-										</label>
-
-										<label htmlFor="allDayEvent">
-											<input
-												type="checkbox"
-												name="repeatEvent"
-												onClick={toggleRepeatEvent}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-												}}
-											/>
-											Evento ripetuto
-										</label>
-										{repeatEvent && (
+										{addTitle && (
 											<>
-												<div
-													className="flex"
-													style={{ marginRight: "10px" }}>
-													Ripeti l'evento
-													<label htmlFor="repeatEvent">
-														<select
-															className="btn border"
-															name="repetitionType"
-															onChange={toggleSelectFrequency}
-															style={{
-																marginLeft: "5px",
-																marginRight: "3px",
-																marginTop: "3px",
-															}}>
-															<option value="Once">Una volta</option>
-															<option value="Daily">
-																Ogni giorno
-															</option>
-															<option value="Weekly">
-																Ogni settimana
-															</option>
-															<option value="Monthly">
-																Ogni mese{" "}
-															</option>
-															<option value="Yearly">
-																Ogni anno
-															</option>
-														</select>
-													</label>
-												</div>
+												<label htmlFor="allDayEvent">
+													<input
+														type="checkbox"
+														name="allDayEvent"
+														onClick={toggleAllDayEvent}
+														style={{
+															marginLeft: "5px",
+															marginRight: "3px",
+															marginTop: "3px",
+														}}
+													/>
+													Tutto il giorno
+												</label>
 
-												{until && (
-													<div>
-														<div>
-															<div
-																className="flex"
-																style={{ marginRight: "10px" }}>
-																Fino a
+
+												<label htmlFor="allDayEvent">
+													<input
+														type="checkbox"
+														name="repeatEvent"
+														onClick={toggleRepeatEvent}
+														style={{
+															marginLeft: "5px",
+															marginRight: "3px",
+															marginTop: "3px",
+														}}
+													/>
+													Evento ripetuto
+												</label>
+
+												{repeatEvent && (
+													<>
+														<div
+															className="flex"
+															style={{ marginRight: "10px" }}>
+															Ripeti l'evento
+															<label htmlFor="repeatEvent">
 																<select
 																	className="btn border"
-																	onChange={toggleSelectUntil}
-																	defaultValue="Data">
-																	<option value="Data">
-																		Data
+																	name="repetitionType"
+																	onChange={toggleSelectFrequency}
+																	style={{
+																		marginLeft: "5px",
+																		marginRight: "3px",
+																		marginTop: "3px",
+																	}}>
+																	<option value="Once">Una volta</option>
+																	<option value="Daily">
+																		Ogni giorno
 																	</option>
-																	<option value="Ripetizioni">
-																		Ripetizioni
+																	<option value="Weekly">
+																		Ogni settimana
 																	</option>
-																	<option value="Infinito">
-																		Infinito{" "}
+																	<option value="Monthly">
+																		Ogni mese{" "}
+																	</option>
+																	<option value="Yearly">
+																		Ogni anno
 																	</option>
 																</select>
-															</div>
-
-															{selectedValue === "Data" && (
-																<DatePicker
-																	className="btn border"
-																	name="finoAData"
-																	selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
-																	onChange={(
-																		date: Date | null
-																	): void => {
-																		if (date) {
-																			date.setHours(
-																				12,
-																				0,
-																				0,
-																				0
-																			); // Imposta l'orario a mezzogiorno
-																			setUntilDate(date); // Aggiorna lo stato con la nuova data
-																		}
-																	}}
-																	placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
-																/>
-															)}
-
-															{selectedValue === "Ripetizioni" && (
-																<div>
-																	<input
-																		className="btn border"
-																		type="number"
-																		min="1"
-																		onChange={(
-																			e: React.ChangeEvent<HTMLInputElement>
-																		): void => {
-																			setRepetitions(
-																				Number(
-																					e.target.value
-																				)
-																			);
-																			//setIsUntilDate(false);
-																			setUntilDate(null); // Aggiorna lo stato con la nuova data
-
-																			if (
-																				repetitions < 1 ||
-																				isNaN(repetitions)
-																			) {
-																				setRepetitions(1);
-																			}
-																			console.log(
-																				"Numero ripetizione dell'evento: ",
-																				repetitions
-																			);
-																		}}></input>
-																</div>
-															)}
+															</label>
 														</div>
-													</div>
+
+														{until && (
+															<div>
+																<div>
+																	<div
+																		className="flex"
+																		style={{ marginRight: "10px" }}>
+																		Fino a
+																		<select
+																			className="btn border"
+																			onChange={toggleSelectUntil}
+																			defaultValue="Data">
+																			<option value="Data">
+																				Data
+																			</option>
+																			<option value="Ripetizioni">
+																				Ripetizioni
+																			</option>
+																			<option value="Infinito">
+																				Infinito{" "}
+																			</option>
+																		</select>
+																	</div>
+
+																	{selectedValue === "Data" && (
+																		<DatePicker
+																			className="btn border"
+																			name="finoAData"
+																			selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
+																			onChange={(
+																				date: Date | null
+																			): void => {
+																				if (date) {
+																					date.setHours(
+																						12,
+																						0,
+																						0,
+																						0
+																					); // Imposta l'orario a mezzogiorno
+																					setUntilDate(date); // Aggiorna lo stato con la nuova data
+																				}
+																			}}
+																			placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
+																		/>
+																	)}
+
+																	{selectedValue === "Ripetizioni" && (
+																		<div>
+																			<input
+																				className="btn border"
+																				type="number"
+																				min="1"
+																				onChange={(
+																					e: React.ChangeEvent<HTMLInputElement>
+																				): void => {
+																					setRepetitions(
+																						Number(
+																							e.target.value
+																						)
+																					);
+																					//setIsUntilDate(false);
+																					setUntilDate(null); // Aggiorna lo stato con la nuova data
+
+																					if (
+																						repetitions < 1 ||
+																						isNaN(repetitions)
+																					) {
+																						setRepetitions(1);
+																					}
+																					console.log(
+																						"Numero ripetizione dell'evento: ",
+																						repetitions
+																					);
+																				}}></input>
+																		</div>
+																	)}
+																</div>
+															</div>
+														)}
+													</>
 												)}
 											</>
 										)}
