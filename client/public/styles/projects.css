@@ -60,7 +60,7 @@
 	text-align: justify;
 	font-size: 0.9em;
 	flex-grow: 1;
-	overflow-x: scroll;
+	overflow: hidden;
 }
 
 .card-project-users {
