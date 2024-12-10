@@ -149,7 +149,10 @@ export default function CreateNoteForm(): React.JSX.Element {
 
 	function addTag(e: React.MouseEvent<HTMLElement>): void {
 		e.preventDefault();
-		if (!note.tags.includes(tag)) setNote({ ...note, tags: [...note.tags, tag] });
+		if (!note.tags.includes(tag)) {
+			setNote({ ...note, tags: [...note.tags, tag] });
+			setTag("");
+		}		
 	}
 
 	function deleteTag(e: React.MouseEvent<HTMLElement>, tag: string): void {
@@ -235,17 +238,6 @@ export default function CreateNoteForm(): React.JSX.Element {
 			),
 		});
 	}
-
-	{/*function handleCheckboxChange(e: React.ChangeEvent<HTMLInputElement>, item: ListItem): void {
-		// e.preventDefault();
-
-		setNote({
-			...note,
-			toDoList: note.toDoList.map((i) =>
-				i.id === item.id ? { ...i, completed: e.target.checked } : i
-			),
-		});
-	}*/}
 
 	return (
 		<>
@@ -409,17 +401,25 @@ export default function CreateNoteForm(): React.JSX.Element {
 							<>
 								<SearchForm onItemClick={addUser} list={note.accessList} />
 
-								<div>
+								<div className="tags-container">
 									{note.accessList.map((user) => (
 										<>
-											<div>{user}</div>
-
-											<button
-												onClick={(
-													e: React.MouseEvent<HTMLButtonElement>
-												): void => RemoveUser(e, user)}>
-												X
-											</button>
+											<div className="project-user-box">
+												{user}
+													<button
+														style={{
+															marginLeft: "0.5em",
+															padding: "0",
+															backgroundColor: "#d64545",
+														}}
+														className="project-user-delete"
+														onClick={(
+															e: React.MouseEvent<HTMLButtonElement>
+														): void => RemoveUser(e, user)}
+													>
+														X
+													</button>
+											</div>
 										</>
 									))}
 								</div>
