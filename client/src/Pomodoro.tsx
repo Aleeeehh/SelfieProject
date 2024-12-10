@@ -129,7 +129,7 @@ export default function Pomodoros(): React.JSX.Element {
 	const nav = useNavigate();
 
 
-	const location = useLocation();
+	const location = useLocation();  //contiene informazioni sull'URL attuale (pathname, query, hash, etc.)
 	//setup per ricevere la durata dell'evento pomodoro cliccando dall'evento sul calendario
 	const getDurationParam = (): number => {
 		const params = new URLSearchParams(location.search);
@@ -144,7 +144,7 @@ export default function Pomodoros(): React.JSX.Element {
 	};
 
 	const duration = getDurationParam();
-	const id = getIdParam();
+	const id = getIdParam(); //id dell'evento corrente
 
 	React.useEffect(() => {
 		(async (): Promise<void> => {

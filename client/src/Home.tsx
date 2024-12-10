@@ -174,7 +174,7 @@ function Home(): React.JSX.Element {
 		}
 	}
 
-	// Combina i due useEffect in uno solo
+	// Combina i due useEffect in uno solo perchè fetchCurrentDate è in un useEffect
 	React.useEffect(() => {
 		// Funzione che esegue entrambe le operazioni in sequenza
 		const updateDateAndEvents = async (): Promise<void> => {
@@ -286,7 +286,7 @@ function Home(): React.JSX.Element {
 							</label>
 							<div className="preview-calendar-cards-container">
 								{eventList
-									.filter((_, i) => i < numEvents)
+									.filter((_, i) => i < numEvents)  //torna un array con gli eventi filtrati
 									.map((event) => (
 										<a className="preview-calendar-card" href={`/calendar`}>
 											<div>
