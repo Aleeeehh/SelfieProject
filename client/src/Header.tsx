@@ -1836,7 +1836,7 @@ export default function Header(): React.JSX.Element {
 								width: "40px",
 								height: "40px",
 								borderRadius: "50%",
-								backgroundColor: "#007bff",
+								backgroundColor: "white",
 								border: "none",
 								cursor: "pointer",
 								alignItems: "center",
@@ -1846,11 +1846,12 @@ export default function Header(): React.JSX.Element {
 						>
 							<img
 								src={
-									profileImage
-										? `/images/profile/${profileImage}`
-										: "/images/avatar.png"
+									`/images/profile/${profileImage}`
+									//	profileImage
+									//? `/images/profile/${profileImage}`
+									//: `/images/profile/${profileImage}`
 								}
-								alt="Avatar"
+								//alt="Avatar"
 								style={{
 									width: "40px",
 									height: "40px",
