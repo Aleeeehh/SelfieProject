@@ -19,4 +19,7 @@ export const profileImages: ProfileImage[] = [
 	{ url: "avatar-developer.png", name: "Sviluppatore" },
 	{ url: "avatar-scacchi.webp", name: "Scacchista" },
 	{ url: "avatar-pescatore.webp", name: "Pescatore" },
+	{ url: "avatar-affari.webp", name: "Uomo d'affari" },
+	{ url: "avatar-astronauta.webp", name: "Astronauta" },
+	{ url: "avatar-cuoco.webp", name: "Cuoco" },
 ];
