@@ -5,12 +5,12 @@ import path from "path";
 import { default as apiRouter } from "./routers/api.js";
 import mongoose from "mongoose";
 import {
-	//createDummyEvents,
-	//createDummyNotes,
+	createDummyEvents,
+	createDummyNotes,
 	createDummyPomodoros,
 	createDummyUsers,
 	createCurrentDate,
-	//createDummyProject,
+	createDummyProject,
 } from "./schemas/populateDB.js";
 import passport from "passport";
 import * as passportStrategy from "passport-local";
@@ -156,11 +156,11 @@ server.get("*", (_: Request, res: Response) => {
 mongoose
 	.connect(dbConnectionString + `/${DB_APP_NAME}` + connectionOptions)
 	.then(() => createDummyUsers())
-	//.then(() => createDummyEvents())
-	//.then(() => createDummyNotes())
+	.then(() => createDummyEvents())
+	.then(() => createDummyNotes())
 	.then(() => createDummyPomodoros())
-	.then(() => createCurrentDate());
-//.then(() => createDummyProject());
+	.then(() => createCurrentDate())
+	.then(() => createDummyProject());
 
 mongoose.set("sanitizeFilter", true); // sanitize from NoSQLite
 mongoose.set("strictQuery", true); // only schema fields are saved in database!!!
