@@ -128,11 +128,8 @@ export default function Profile(): React.JSX.Element {
 				<div className="profile-avatar">
 					<img
 						src={
-							user.profileImage
-								? `/images/profile/${user.profileImage}`
-								: "/images/avatar.png"
+							`/images/profile/${user.profileImage}`
 						}
-						alt="Avatar"
 					/>
 				</div>
 				<div className="profile-header">
