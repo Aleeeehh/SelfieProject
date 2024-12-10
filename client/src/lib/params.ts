@@ -9,12 +9,14 @@ type ProfileImage = {
 	name: string;
 	url: string;
 };
+
 export const profileImages: ProfileImage[] = [
 	{ url: "avatar-cards.png", name: "Pokerista" },
 	{ url: "avatar-gym.png", name: "Bodybuilder" },
 	{ url: "avatar-play.png", name: "Videogiocatore" },
 	{ url: "avatar-reader.png", name: "Lettore" },
 	{ url: "avatar-runner.png", name: "Corridore" },
+	{ url: "avatar-cacciatore.png", name: "Cacciatore" },
 	{ url: "avatar-writer.png", name: "Scrittore" },
 	{ url: "avatar-developer.png", name: "Sviluppatore" },
 	{ url: "avatar-scacchi.webp", name: "Scacchista" },
