@@ -630,11 +630,12 @@ export default function CreateActivityForm(): React.JSX.Element {
 							</div>
 						</div>
 						{/* milestone */}
-						<label className="activity-completed">
+						<label className="activity-completed" htmlFor="milestone">
 							Milestone?
 							<input
 								type="checkbox"
 								name="milestone"
+								id="milestone"
 								checked={activity.milestone || false}
 								onChange={handleCheckboxChange}
 							/>

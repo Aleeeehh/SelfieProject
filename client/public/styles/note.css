@@ -223,12 +223,15 @@ input[type="checkbox"] {
 
 .note-description {
     text-align: justify;
-    overflow-x: scroll;
+    /*overflow-x: scroll;*/
+    overflow-y: scroll;
+    max-height: 500px;
 }
 
 .markdown-preview,
 .markdown-content {
-    overflow-x: scroll;
+    overflow-y: scroll;
+    max-height: 500px;
     text-align: justify;
 }
 

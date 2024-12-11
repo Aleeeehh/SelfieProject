@@ -1087,12 +1087,15 @@ export default function Calendar(): React.JSX.Element {
 	function toggleCreateEvent(): void {
 		if (createActivity) {
 			setCreateActivity(false);
+			console.log("createActivity:", "sono qui");
 		}
 		if (createNonDisturbare) {
 			setCreateNonDisturbare(false);
+			console.log("createNonDisturbare:", "sono qui");
 		}
 		if (createRisorsa) {
 			setCreateRisorsa(false);
+			console.log("createRisorsa:", "sono qui");
 		}
 		if (!createEvent) {
 			// Usa l'ora corrente o l'ora di startTime
@@ -1100,7 +1103,7 @@ export default function Calendar(): React.JSX.Element {
 			const currentMinutes = startTime.getMinutes();
 			const endHours = endTime.getHours();
 			const endMinutes = endTime.getMinutes();
-
+			console.log("createEvent:", "sono qui");
 			// Imposta startTime con day, meseCorrente, year e l'ora corrente
 			var initialStartTime = new Date(
 				year,
@@ -3537,6 +3540,7 @@ export default function Calendar(): React.JSX.Element {
 										<label htmlFor="useDefaultTitle">
 											<input
 												type="checkbox"
+												id="useDefaultTitle"
 												name="useDefaultTitle"
 												onClick={toggleEventTitle}
 												style={{
@@ -3553,6 +3557,7 @@ export default function Calendar(): React.JSX.Element {
 													<input
 														type="checkbox"
 														name="allDayEvent"
+														id="allDayEvent"
 														onClick={toggleAllDayEvent}
 														style={{
 															marginLeft: "5px",
@@ -3565,10 +3570,11 @@ export default function Calendar(): React.JSX.Element {
 
 												{!allDayEvent && (
 													<>
-														<label htmlFor="allDayEvent">
+														<label htmlFor="repeatEvent">
 															<input
 																type="checkbox"
 																name="repeatEvent"
+																id="repeatEvent"
 																onClick={toggleRepeatEvent}
 																style={{
 																	marginLeft: "5px",
@@ -3578,7 +3584,6 @@ export default function Calendar(): React.JSX.Element {
 															/>
 															Evento ripetuto
 														</label>
-
 
 														{repeatEvent && (
 															<>
@@ -3863,10 +3868,11 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										</label>
 
-										<label htmlFor="allDayEvent">
+										<label htmlFor="addNotificationEvent">
 											<input
 												type="checkbox"
-												name="addNotification"
+												name="addNotificationEvent"
+												id="addNotificationEvent"
 												onClick={toggleAddNotification}
 												style={{
 													marginLeft: "5px",
@@ -3956,9 +3962,10 @@ export default function Calendar(): React.JSX.Element {
 											</label>
 										)}
 
-										<label htmlFor="allDayEvent">
+										<label htmlFor="sendInviteEvent">
 											<input
 												type="checkbox"
+												id="sendInviteEvent"
 												onClick={toggleSendInviteEvent}
 												style={{
 													marginLeft: "5px",
@@ -4002,9 +4009,10 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										)}
 
-										<label htmlFor="allDayEvent">
+										<label htmlFor="shareEvent">
 											<input
 												type="checkbox"
+												id="shareEvent"
 												onClick={toggleShareEvent}
 												style={{
 													marginLeft: "5px",
@@ -4164,9 +4172,11 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										</label>
 
-										<label htmlFor="allDayEvent">
+										<label htmlFor="addNotificationActivity">
 											<input
 												type="checkbox"
+												name="addNotificationActivity"
+												id="addNotificationActivity"
 												onClick={toggleAddNotification}
 												style={{
 													marginLeft: "5px",
@@ -4236,10 +4246,11 @@ export default function Calendar(): React.JSX.Element {
 											</label>
 										)}
 
-										<label htmlFor="allDayEvent">
+										<label htmlFor="sendInviteActivity">
 											<input
 												type="checkbox"
-												name="addNotification"
+												name="sendInviteActivity"
+												id="sendInviteActivity"
 												onClick={toggleSendInviteActivity}
 												style={{
 													marginLeft: "5px",
@@ -4283,10 +4294,11 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										)}
 
-										<label htmlFor="allDayEvent">
+										<label htmlFor="shareActivity">
 											<input
 												type="checkbox"
-												name="addNotification"
+												name="shareActivity"
+												id="shareActivity"
 												onClick={toggleShareActivity}
 												style={{
 													marginLeft: "5px",
@@ -4365,10 +4377,11 @@ export default function Calendar(): React.JSX.Element {
 										Chiudi
 									</button>
 									<form>
-										<label htmlFor="allDayEvent">
+										<label htmlFor="allDayNotDisturb">
 											<input
 												type="checkbox"
-												name="allDayEvent"
+												name="allDayNotDisturb"
+												id="allDayNotDisturb"
 												onClick={toggleAllDayEvent}
 												style={{
 													marginLeft: "5px",
@@ -4379,10 +4392,11 @@ export default function Calendar(): React.JSX.Element {
 											Tutto il giorno
 										</label>
 
-										<label htmlFor="allDayEvent">
+										<label htmlFor="repeatNotDisturb">
 											<input
 												type="checkbox"
-												name="repeatEvent"
+												name="repeatNotDisturb"
+												id="repeatNotDisturb"
 												onClick={toggleRepeatEvent}
 												style={{
 													marginLeft: "5px",
@@ -5264,22 +5278,25 @@ export default function Calendar(): React.JSX.Element {
 									<div className="data-orario">
 										<div
 											className="nome-data-container"
-											style={{ marginLeft: "5vw" }}>
-											{day} {Mesi[meseCorrente]} {year}
+											style={{ marginLeft: "5vw" }}
+										>
 											<button
 												className="year-button "
 												onClick={(): void => {
 													setEventPositions([]); // Svuota l'array delle posizioni
 													setYear(year - 1); // Decrementa l'anno
-												}}>
+												}}
+											>
 												-
 											</button>
+											{day} {Mesi[meseCorrente]} {year}
 											<button
 												className="year-button"
 												onClick={(): void => {
 													setEventPositions([]); // Svuota l'array delle posizioni
 													setYear(year + 1); // Decrementa l'anno
-												}}>
+												}}
+											>
 												+
 											</button>
 											{activitiesMode && (
@@ -5292,7 +5309,8 @@ export default function Calendar(): React.JSX.Element {
 															color: "white",
 															border: "0",
 															marginLeft: "15px",
-														}}>
+														}}
+													>
 														Mostra attività che scadono questo giorno
 													</button>
 
@@ -5304,7 +5322,8 @@ export default function Calendar(): React.JSX.Element {
 															color: "white",
 															border: "0",
 															marginLeft: "15px",
-														}}>
+														}}
+													>
 														Mostra tutte le attività
 													</button>
 												</div>
