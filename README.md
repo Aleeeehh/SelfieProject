@@ -3,18 +3,28 @@
 Progetto di Tecnologie Web
 
 ### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
--   Mantenere la time machine attiva su tutta l'interfaccia
+-   Mantenere la time machine attiva su tutta l'interfaccia, se cambio pagina non si deve resettare. Se la time machine cambia orario, deve cambiare anche il pomodoro.
 -   Editare un evento già impostato
--   Aumentare il contrasto nei colori
--   Disallineamento nelle colonne del calendario
--   Refresh informazioni (calendario mensile)
--   Uniformare formato date ed ore (Magari al formato italiano)
--   Time machine influenza anche pomodoro (e se serve, non ho controllato) progetti ed attività
--   Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema operativo (con Notification API)
--   gestione partecipanti dei progetti distinti
--   Scroll calendario attività progetto da migliorare
--   tutti i bottoni accessibili (anche fuori checkbox anche testo)
--   "Invia evento ad utente" o lo tolgo oppure lo miglioro che mandi il form con "Crea" e non con "Invia ad utente"
+-   Aumentare il contrasto nei colori, in particolare il colore degli eventi del calendario (colore nome evento su sfondo del medesimo colore)
+-   Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con mouse con rotella)
+-   Tutte le cose che vengono aggiunte/cambiano, devono venire aggiunte/essere cambiate senza refreshare la pagina (in particolare calendario, per view day, week, month, ma anche progetti, attività, ecc.)
+-   Uniformare formato date ed ore (TUTTE NEL FORMATO ITALIANO)
+-   Time machine deve influenzare OGNI SINGOLO COMPONENTE DEL PROGETTO, quindi sia calendario, che pomodoro, che attività, che progetti, che note!
+-   Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema operativo (con Notification API). Mettere un filtro "mostra X notifiche" come nella home, e magari appena ne arriva una, mostrarla a schermo e fai sentire un suono. Magari implementa una libreria che permetta la notifica del sistema operativo, ma magari anche via email e/o whatsapp.
+- Campo "indirizzo" nel register: email o di casa?
+- Correggi tutti gli input time per il pomodoro (in alcuni casi non posso mettere un numero con più di una cifra)
+- gestione partecipanti dei progetti distinti, non ci può essere un medesimo utente più volte nello stesso progetto (in particolare l'owner)
+- Scroll calendario attività progetto da migliorare (immagino intenda, da migliorare la view gantt dei progetti)
+- tutti i bottoni accessibili (se c'è una checkbox, deve potersi spuntare anche se clicco il testo affianco), CONCENTRIAMOCI SULL'USABILITA' DI QUALSIASI COSA, CI SI SOFFERMA MOLTO!
+- "Invia evento ad utente" o lo tolgo oppure lo miglioro che mandi il form con "Crea" e non con "Invia ad utente"
+- Da fixare visuale gantt dei progetti.
+- Correggi in modo definitivo i bug di visualizzazione eventi/pomodoro event su cui hai messo una toppa (pomodoro session con allDay, pomodorSession ripetuto, allDay ripetuto.. deve funzionare anche sul server remoto in cui fai il deploy)
+- fixa todoList, c'è un caso in cui si bugga
+- Controlla che quando si modifica un oggetto(evento,attività, progetto), tale modifica sia reale, funzioni, e influenzi anche quello degli altri utenti se sono coinvolti in quell'oggetto (nel caso in cui sia condiviso)
+- La creazione attività nel pannello attività, deve avere gli stessi campi della creazione attività nel pannello calendario.
+- La creazione di evento pomodoro nel pannello pomodoro, deve avere gli stessi campi della creazione evento pomodoro nel pannello calendario.
+- MIGLIORA/FIXA IN GENERALE QUALSIASI COSA SU CUI POTREBBE FARE STORIE, IN PARTICOLARE UI E USABILITA' SONO FONDAMENTALI! CERCHIAMO DI IMMAGINARCI/PREVEDERE SU COSA POTREBBE FARE STORIE (ANCHE COSE MOLTO PICCOLE)
+
 
 ### Componenti del Gruppo
 
