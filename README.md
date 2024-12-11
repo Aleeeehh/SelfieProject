@@ -23,6 +23,7 @@ Progetto di Tecnologie Web
 - Controlla che quando si modifica un oggetto(evento,attività, progetto), tale modifica sia reale, funzioni, e influenzi anche quello degli altri utenti se sono coinvolti in quell'oggetto (nel caso in cui sia condiviso)
 - La creazione attività nel pannello attività, deve avere gli stessi campi della creazione attività nel pannello calendario.
 - La creazione di evento pomodoro nel pannello pomodoro, deve avere gli stessi campi della creazione evento pomodoro nel pannello calendario.
+- metti il "-" per andare indietro di un anno a sinistra della data, nel pannello calendario
 - MIGLIORA/FIXA IN GENERALE QUALSIASI COSA SU CUI POTREBBE FARE STORIE, IN PARTICOLARE UI E USABILITA' SONO FONDAMENTALI! CERCHIAMO DI IMMAGINARCI/PREVEDERE SU COSA POTREBBE FARE STORIE (ANCHE COSE MOLTO PICCOLE)
 
 
