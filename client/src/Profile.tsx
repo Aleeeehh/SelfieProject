@@ -230,11 +230,12 @@ export default function Profile(): React.JSX.Element {
 
 				{isEditing && (
 					<div className="profile-details">
-						<label>
+						<label htmlFor="updatePassword">
 							Aggiorna password?
 							<input
 								type="checkbox"
 								name="updatePassword"
+								id="updatePassword"
 								onChange={(e): void => setChangePassword(e.target.checked)}
 							/>
 						</label>

@@ -24,7 +24,7 @@ import * as argon2 from "argon2";
 
 //////////////////////////////////////
 //// PRODUCTION
-
+/*
 const DB_HOST = "mongo_site232402";
 const DB_PORT = "27017";
 const DB_APP_NAME = "selfie_db";
@@ -34,12 +34,12 @@ const DB_USER = "site232402";
 const DB_PSWD = "oot3epuM";
 const dbConnectionString = `mongodb://${DB_USER}:${DB_PSWD}@${DB_HOST}:${DB_PORT}`;
 const connectionOptions = `?authSource=admin&writeConcern=majority`;
-
+*/
 //////////////////////////////////////
 
 //////////////////////////////////////
 //// DEVELOPMENT
-/*
+
 const DB_HOST = "localhost";
 const DB_PORT = "27017";
 const DB_APP_NAME = "selfie_db";
@@ -47,7 +47,7 @@ const DB_SESSION = "session_db";
 const SESSION_SECRET = "secret";
 const dbConnectionString = `mongodb://${DB_HOST}:${DB_PORT}`;
 const connectionOptions = ``;
-*/
+
 //////////////////////////////////////
 
 // store of sessions

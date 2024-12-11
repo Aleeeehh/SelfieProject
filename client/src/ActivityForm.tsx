@@ -177,10 +177,11 @@ export default function ActivityForm({
 				</div>
 			</label>
 
-			<label htmlFor="allDayEvent">
+			<label htmlFor="addNotification">
 				Aggiungi notifica
 				<input
 					type="checkbox"
+					id="addNotification"
 					name="addNotification"
 					onClick={(): void => setAddNotification(!addNotification)}
 					style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
@@ -248,6 +249,7 @@ export default function ActivityForm({
 							style={{ marginLeft: "5px", marginRight: "3px", marginTop: "3px" }}
 							type="checkbox"
 							name="milestone"
+							id="milestone"
 							checked={activity.milestone || false}
 							onClick={(): void => {
 								setActivity({ ...activity, milestone: !activity.milestone });

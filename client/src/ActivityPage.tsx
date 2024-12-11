@@ -706,11 +706,12 @@ export default function ActivityPage(): React.JSX.Element {
 							</label>
 
 							{/* render completed */}
-							<label className="activity-completed">
+							<label className="activity-completed" htmlFor="completed">
 								Completa?
 								<input
 									type="checkbox"
 									name="completed"
+									id="completed"
 									checked={activity.completed}
 									onChange={handleCheckboxChange}
 									disabled={!isUser}
@@ -888,11 +889,12 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 
 									{/* render completed */}
-									<label className="activity-completed">
+									<label className="activity-completed" htmlFor="milestone">
 										Milestone?
 										<input
 											type="checkbox"
 											name="milestone"
+											id="milestone"
 											checked={activity.milestone || false}
 											onChange={handleCheckboxChange}
 											disabled={!isOwner}
@@ -900,11 +902,12 @@ export default function ActivityPage(): React.JSX.Element {
 									</label>
 
 									{/* Segna come attiva */}
-									<label className="activity-completed">
+									<label className="activity-completed" htmlFor="active">
 										Attiva?
 										<input
 											type="checkbox"
 											name="active"
+											id="active"
 											checked={activity.active || false}
 											onChange={handleCheckboxChange}
 											disabled={!isUser}
@@ -912,11 +915,12 @@ export default function ActivityPage(): React.JSX.Element {
 									</label>
 
 									{/* Segna come  */}
-									<label className="activity-completed">
+									<label className="activity-completed" htmlFor="abandoned">
 										Abbandonata?
 										<input
 											type="checkbox"
 											name="abandoned"
+											id="abandoned"
 											checked={activity.abandoned || false}
 											onChange={handleCheckboxChange}
 											disabled={!isUser}
@@ -925,11 +929,12 @@ export default function ActivityPage(): React.JSX.Element {
 
 									{/* Segna come attiva (SOLO OWNER) */}
 									{isOwner && activity.status === ActivityStatus.COMPLETED && (
-										<label className="activity-completed">
+										<label className="activity-completed" htmlFor="reactivated">
 											Riattiva:
 											<input
 												type="checkbox"
 												name="reactivated"
+												id="reactivated"
 												checked={activity.reactivated || false}
 												onChange={handleCheckboxChange}
 											/>
