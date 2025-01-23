@@ -243,7 +243,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 		<>
 			<div className="note-background">
 				<div className="note-container">
-					<div className="note-page-title">
+					{/*<div className="note-page-title">
 						<div
 							style={{
 								width: "100%",
@@ -256,7 +256,13 @@ export default function CreateNoteForm(): React.JSX.Element {
 							</a>
 						</div>
 						<p>Crea una nuova nota</p>
-					</div>
+					</div>*/}
+					<div id="title-2" className="note-page-title">
+					Crea una nuova nota
+					<a href="/notes" className="note-close-link">
+						X
+					</a>
+				</div>
 
 					{/* render title and text */}
 					<label htmlFor="title">

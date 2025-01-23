@@ -181,7 +181,7 @@ export default function Notes(): React.JSX.Element {
 									</p>
 								</div>
 								<div className="card-note-date">
-									<p style={{ fontWeight: "bold" }}>
+									<p style={{ fontWeight: "bold", margin: "0" }}>
 										Ultima modifica:{" "}
 										{note.updatedAt
 											? new Date(note.updatedAt).toLocaleDateString("it-IT")

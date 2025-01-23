@@ -5278,10 +5278,10 @@ export default function Calendar(): React.JSX.Element {
 									<div className="data-orario">
 										<div
 											className="nome-data-container"
-											style={{ marginLeft: "5vw" }}
+											/*style={{ marginLeft: "5vw" }}*/
 										>
 											<button
-												className="year-button "
+												className="year-button"
 												onClick={(): void => {
 													setEventPositions([]); // Svuota l'array delle posizioni
 													setYear(year - 1); // Decrementa l'anno

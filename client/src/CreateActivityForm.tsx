@@ -340,7 +340,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 			<div className="activity-container">
 				{/* Render updating activity*/}
 				<div id="title-2" className="activity-page-title">
-					Crea attività
+					Crea una nuova attività
 					<a href="/activities" className="activity-close-link">
 						X
 					</a>

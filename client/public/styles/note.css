@@ -21,11 +21,10 @@
 }
 
 .note-page-title {
+    position: relative;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 0.5em;
     font-size: 1.8em;
     font-weight: bold;
     color: #333;
@@ -39,6 +38,10 @@
 }
 
 .note-close-link {
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -48,7 +51,7 @@
     color: white;
     font-size: 1em;
     font-weight: bold;
-    border-radius: 8px;
+    border-radius: 5px;
     text-decoration: none;
     cursor: pointer;
     transition: background-color 0.2s, color 0.2s;
@@ -251,23 +254,18 @@ input[type="checkbox"] {
 
     .note-page-title {
         padding-top: 2em;
+        text-align: center;
     }
 }
 
 
 /* NOTES PAGE */
 
-.note-background {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 .note-outer-container {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
 }
 
 .note-outer-container>a {
@@ -276,6 +274,7 @@ input[type="checkbox"] {
 
 .note-outer-container>a>button {
     background-color: bisque;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
     color: black;
     font-weight: bold;
     border: none;
@@ -334,14 +333,14 @@ input[type="checkbox"] {
 
 .card-note {
     width: 300px;
-    height: 300px;
-    background-color: rgb(238, 234, 228);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.2s ease;
+	height: 300px;
+	background-color: rgb(238, 234, 228);
+	border-radius: 12px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	transition: transform 0.2s ease;
 }
 
 .card-note-title {
@@ -399,8 +398,12 @@ input[type="checkbox"] {
     font-size: 0.95em;
 }
 
-@media screen and (max-width: 350px) {
+@media screen and (max-width: 390px) {
     .card-note {
         width: 250px;
+    }
+
+    .card-note-actions {
+        flex-direction: column;
     }
 }
