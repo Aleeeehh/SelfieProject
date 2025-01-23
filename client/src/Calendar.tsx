@@ -3393,7 +3393,7 @@ export default function Calendar(): React.JSX.Element {
 									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
 									cursor: eventsMode ? "pointer" : "default",
 								}}>
-								Day
+								Giorno
 							</button>
 							<button
 								className="calendar-header-button"
@@ -3403,7 +3403,7 @@ export default function Calendar(): React.JSX.Element {
 									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
 									cursor: eventsMode ? "pointer" : "default",
 								}}>
-								Week
+								Settimana
 							</button>
 							<button
 								className="calendar-header-button"
@@ -3413,7 +3413,7 @@ export default function Calendar(): React.JSX.Element {
 									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
 									cursor: eventsMode ? "pointer" : "default",
 								}}>
-								Month
+								Mese
 							</button>
 						</div>
 
