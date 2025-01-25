@@ -11,6 +11,9 @@ const MAX_TITLE_CHARS = 17;
 
 export default function Notes(): React.JSX.Element {
 	const [noteList, setNoteList] = React.useState([] as Note[]);
+	const [confirmDelete, setConfirmDelete] = React.useState(false);
+	const [noteToDelete, setNoteToDelete] = React.useState<string | null>(null);
+
 
 	const nav = useNavigate();
 
@@ -34,6 +37,7 @@ export default function Notes(): React.JSX.Element {
 
 	React.useEffect(() => {
 		getAllNotes();
+		setConfirmDelete(false);
 	}, []);
 
 	async function handleDuplicate(
@@ -75,7 +79,7 @@ export default function Notes(): React.JSX.Element {
 		}
 	}
 
-	async function handleDelete(e: React.MouseEvent<HTMLButtonElement>, note: Note): Promise<void> {
+	/*async function handleDelete(e: React.MouseEvent<HTMLButtonElement>, note: Note): Promise<void> {
 		e.preventDefault();
 		try {
 			const res = await fetch(`${SERVER_API}/notes/${note.id}`, {
@@ -95,7 +99,35 @@ export default function Notes(): React.JSX.Element {
 		} catch (e) {
 			alert("Impossibile raggiungere il server");
 		}
-	}
+		setConfirmDelete(false);
+	}*/
+
+	async function handleDelete(noteId: string): Promise<void> {
+		if (!noteId) {
+		  console.error("ID della nota non valido");
+		  return;
+		}
+	  
+		try {
+		  const res = await fetch(`${SERVER_API}/notes/${noteId}`, {
+			method: "DELETE",
+		  });
+	  
+		  const data = (await res.json()) as ResponseBody;
+	  
+		  console.log(data);
+	  
+		  if (data.status === ResponseStatus.GOOD) {
+			console.log("Nota eliminata correttamente");
+			getAllNotes(); // Aggiorna la lista delle note
+		  } else {
+			alert(data.message || "Errore durante l'eliminazione della nota");
+		  }
+		} catch (e) {
+		  alert("Impossibile raggiungere il server");
+		}
+	  }
+	  
 
 	function sortBy(method: Order): void {
 		switch (method) {
@@ -164,6 +196,94 @@ export default function Notes(): React.JSX.Element {
 				</label>
 				<div className="notes-list-container">
 					{noteList.map((note) => (
+						<a href={`/notes/${note.id}`} onClick={(e): void => e.preventDefault()}
+						onDoubleClick={(): void => {
+							window.location.assign(`/notes/${note.id}`)
+						}}>
+							<div className="card-note">
+								<div className="card-note-title">
+									<h3>
+										{note.title.length > MAX_TITLE_CHARS
+											? note.title.substring(0, MAX_TITLE_CHARS) + "..."
+											: note.title}
+									</h3>
+								</div>
+								<div className="card-note-text">
+									<p>
+										{note.text.length > PREVIEW_CHARS
+											? note.text.substring(0, PREVIEW_CHARS) + "..."
+											: note.text}
+									</p>
+								</div>
+								<div className="card-note-date">
+									<p style={{ fontWeight: "bold", margin: "0" }}>
+										Ultima modifica:{" "}
+										{note.updatedAt
+											? new Date(note.updatedAt).toLocaleDateString("it-IT")
+											: "N/A"}
+									</p>
+								</div>
+								<div className="card-note-actions">
+									<button
+										onClick={(
+											e: React.MouseEvent<HTMLButtonElement>
+										): Promise<void> => handleDuplicate(e, note)}
+									>
+										Duplica
+									</button>
+									<button
+										style={{ backgroundColor: "#ff6b6b" }}
+										onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
+											e.preventDefault();
+											setNoteToDelete(note.id || null);
+											setConfirmDelete(true);
+										}}
+									>
+										Elimina
+									</button>
+								</div>
+								<div className="confirmDelete-background"
+									style={{ display: confirmDelete ? "flex" : "none" }}
+								>
+									<div className="confirmDelete-container">
+										<h2>Stai eliminando una nota. Vuoi procedere?</h2>
+										<div
+											style={{ display: "flex", gap: "2em" }}
+										>
+											<button
+												style={{ backgroundColor: "#ff6b6b" }}
+												onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
+													e.preventDefault();
+													setConfirmDelete(false);
+													setNoteToDelete(null);
+												}}
+											>
+												Annulla
+											</button>
+											<button
+												onClick={async (e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+													e.preventDefault();
+													if (noteToDelete) {
+													  await handleDelete(noteToDelete);
+													  setNoteToDelete(null);
+													  setConfirmDelete(false);
+													}
+												}}
+											>
+												Continua
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</a>
+					))}
+
+
+
+
+
+					{/*{noteList.map((note) => (
 						<a href={`/notes/${note.id}`}>
 							<div className="card-note">
 								<div className="card-note-title">
@@ -207,7 +327,7 @@ export default function Notes(): React.JSX.Element {
 								</div>
 							</div>
 						</a>
-					))}
+					))}*/}
 				</div>
 			</div>
 	);

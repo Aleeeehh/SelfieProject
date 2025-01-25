@@ -324,7 +324,6 @@ export default function NotePage(): React.JSX.Element {
 					<div className="note-page-title">
 						<div
 							style={{
-								width: "100%",
 								display: "flex",
 								justifyContent: "center",
 							}}
