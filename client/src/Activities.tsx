@@ -29,7 +29,8 @@ export default function Activities(): React.JSX.Element {
 	const [projectTitles, setProjectTitles] = React.useState<string[]>([]);
 	const [projectIdToTitle, setProjectIdToTitle] = React.useState<{ [key: string]: string }>({});
 
-
+	const [confirmDelete, setConfirmDelete] = React.useState(false);
+	const [activityToDelete, setActivityToDelete] = React.useState<string | null>(null);
 
 
 
@@ -163,7 +164,7 @@ export default function Activities(): React.JSX.Element {
 		getAllUsers().then(setUsers);
 	}, [activities]);
 
-	async function handleDelete(
+	/*async function handleDelete(
 		e: React.MouseEvent<HTMLButtonElement>,
 		id: string | undefined
 	): Promise<void> {
@@ -199,7 +200,37 @@ export default function Activities(): React.JSX.Element {
 		} catch (e) {
 			console.log("Impossibile raggiungere il server");
 		}
+	}*/
+
+
+	async function handleDelete(id: string): Promise<void> {
+		if (!id) {
+		  alert("Errore nel cancellamento dell'attività: ID non trovato.");
+		  return;
+		}
+	  
+		try {
+		  const res = await fetch(`${SERVER_API}/activities/${id}`, {
+			method: "DELETE",
+		  });
+	  
+		  const resBody = (await res.json()) as ResponseBody;
+	  
+		  if (res.status === 200) {
+			console.log("Attività eliminata correttamente!");
+			setActivities((prev) => prev.filter((activity) => (activity as any)._id !== id)); // Aggiorna lo stato rimuovendo l'attività eliminata
+			setConfirmDelete(false); // Chiudi il popup
+			setActivityToDelete(null); // Resetta l'attività selezionata
+		  } else {
+			alert(resBody.message || "Errore nel cancellamento dell'attività.");
+		  }
+		} catch (e) {
+		  console.log("Impossibile raggiungere il server.");
+		}
 	}
+
+	  
+	
 
 	return (
 		<>
@@ -233,7 +264,8 @@ export default function Activities(): React.JSX.Element {
 									: projectFilter === "no-project"
 										? "no-project"
 										: projectIdToTitle[projectFilter] || ""
-							}>
+							}
+						>
 							<option value="">Tutti</option>
 							<option value="no-project">Senza progetto</option>
 							{projectTitles.map((title) => (
@@ -251,7 +283,8 @@ export default function Activities(): React.JSX.Element {
 							onChange={(e): void => {
 								console.log(e.target.value);
 								setUserFilter(e.target.value);
-							}}>
+							}}
+						>
 							<option value="">Tutti</option>
 							{users.map((user) => (
 								<option value={user}>{user}</option>
@@ -266,7 +299,8 @@ export default function Activities(): React.JSX.Element {
 							onChange={(e): void => {
 								console.log(e.target.value);
 								setSortFilter(e.target.value as SORT);
-							}}>
+							}}
+						>
 							<option value={SORT.PROJECT}>Progetto</option>
 							<option value={SORT.NAME}>Titolo</option>
 							<option value={SORT.DEADLINE}>Scadenza</option>
@@ -332,7 +366,82 @@ export default function Activities(): React.JSX.Element {
 									<button
 										onClick={(): void =>
 											window.location.assign(`/activities/${(activity as any)._id}`)
-										}>
+										}
+									>
+										Visualizza
+									</button>
+									{activity.owner === userId && (
+										<button
+											style={{ backgroundColor: "#ff6b6b" }}
+											onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
+												e.preventDefault(); // Previene comportamenti indesiderati
+												setConfirmDelete(true); // Mostra il popup di conferma
+												setActivityToDelete((activity as any)._id); // Imposta l'attività selezionata per l'eliminazione
+											  }}
+										>
+											Cancella
+										</button>
+									)}
+								</div>
+								<div className="confirmDelete-background"
+									style={{ display: confirmDelete ? "flex" : "none" }}
+								>
+									<div className="confirmDelete-container">
+										<h2>Stai eliminando un progetto. Vuoi procedere?</h2>
+										<div
+											style={{ display: "flex", gap: "2em" }}
+										>
+											<button
+												style={{ backgroundColor: "#ff6b6b" }}
+												onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
+													e.preventDefault();
+													setConfirmDelete(false); // Chiudi il popup
+													setActivityToDelete(null); // Resetta l'attività selezionata
+												  }}
+											>
+												Annulla
+											</button>
+											<button
+												onClick={async (e: React.MouseEvent<HTMLButtonElement>): Promise<void> => {
+													e.preventDefault();
+													if (activityToDelete) {
+														await handleDelete(activityToDelete);
+														setActivityToDelete(null);
+														setConfirmDelete(false);
+													}
+												}}
+											>
+												Continua
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						))
+						
+						/*.map((activity) => (
+							<div className="card-activity" key={activity.id}>
+								<div className="card-activity-title">
+									<h3>
+										{activity.title.length > MAX_TITLE_CHARS
+											? activity.title.substring(0, MAX_TITLE_CHARS) + "..."
+											: activity.title}
+									</h3>
+								</div>
+								<div className="card-activity-description">
+									<p>
+										{activity.description.length > PREVIEW_CHARS
+											? activity.description.substring(0, PREVIEW_CHARS) +
+											"..."
+											: activity.description}
+									</p>
+								</div>
+								<div className="card-activity-buttons">
+									<button
+										onClick={(): void =>
+											window.location.assign(`/activities/${(activity as any)._id}`)
+										}
+									>
 										Visualizza
 									</button>
 									{activity.owner === userId && (
@@ -343,16 +452,28 @@ export default function Activities(): React.JSX.Element {
 											): Promise<void> => {
 												console.log("attività da eliminare: ", activity);
 												console.log("attività da eliminare: ", activity);
-												console.log("attività da eliminare: ", activity);
-												console.log("attività da eliminare: ", activity);
 												handleDelete(e, (activity as any)._id);
-											}}>
+											}}
+										>
 											Cancella
 										</button>
 									)}
 								</div>
 							</div>
-						))}
+						))*/
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						
+						}
 				</div>
 			</div>
 		</>

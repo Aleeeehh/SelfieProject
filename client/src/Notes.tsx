@@ -126,7 +126,7 @@ export default function Notes(): React.JSX.Element {
 		} catch (e) {
 		  alert("Impossibile raggiungere il server");
 		}
-	  }
+	}
 	  
 
 	function sortBy(method: Order): void {
