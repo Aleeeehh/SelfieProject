@@ -258,11 +258,11 @@ export default function CreateNoteForm(): React.JSX.Element {
 						<p>Crea una nuova nota</p>
 					</div>*/}
 					<div id="title-2" className="note-page-title">
-					Crea una nuova nota
-					<a href="/notes" className="note-close-link">
-						X
-					</a>
-				</div>
+						Crea una nuova nota
+						<a href="/notes" className="note-close-link">
+							X
+						</a>
+					</div>
 
 					{/* render title and text */}
 					<label htmlFor="title">
@@ -307,7 +307,8 @@ export default function CreateNoteForm(): React.JSX.Element {
 												display: "flex",
 												alignItems: "center",
 												flexDirection: "column",
-											}}>
+											}}
+										>
 											{l.endDate ? (
 												<>
 													<label style={{ margin: "0" }}>
@@ -330,7 +331,8 @@ export default function CreateNoteForm(): React.JSX.Element {
 															e: React.MouseEvent<HTMLButtonElement>
 														): void =>
 															handleRemoveDateItem(e, l)
-														}>
+														}
+													>
 														Rimuovi Scadenza
 													</button>
 												</>
@@ -338,7 +340,8 @@ export default function CreateNoteForm(): React.JSX.Element {
 												<button
 													onClick={(
 														e: React.MouseEvent<HTMLButtonElement>
-													): void => handleAddDateItem(e, l)}>
+													): void => handleAddDateItem(e, l)}
+												>
 													Aggiungi Scadenza
 												</button>
 											)}
@@ -347,7 +350,8 @@ export default function CreateNoteForm(): React.JSX.Element {
 											onClick={(
 												e: React.MouseEvent<HTMLButtonElement>
 											): void => handleRemoveItem(e, l)}
-											style={{ backgroundColor: "#d64545" }}>
+											style={{ backgroundColor: "#d64545" }}
+										>
 											Elimina Item
 										</button>
 									</div>
@@ -388,7 +392,8 @@ export default function CreateNoteForm(): React.JSX.Element {
 											className="tag-delete"
 											onClick={(e: React.MouseEvent<HTMLElement>): void =>
 												deleteTag(e, tag)
-											}>
+											}
+										>
 											X
 										</button>
 									</div>

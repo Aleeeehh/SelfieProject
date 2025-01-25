@@ -155,6 +155,7 @@
 
 .project-close-link:hover {
 	background-color: red;
+	color: #a12a2a !important;
 }
 
 .project-container>* {

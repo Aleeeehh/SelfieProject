@@ -196,7 +196,8 @@ export default function CreateProjectForm(): React.JSX.Element {
 										className="project-user-delete"
 										onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
 											deleteUser(e, u)
-										}>
+										}
+									>
 										X
 									</button>
 								</div>

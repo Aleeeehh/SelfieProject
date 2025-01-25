@@ -341,7 +341,10 @@ export default function CreateActivityForm(): React.JSX.Element {
 				{/* Render updating activity*/}
 				<div id="title-2" className="activity-page-title">
 					Crea una nuova attività
-					<a href="/activities" className="activity-close-link">
+					<a
+						href="/activities"
+						className="activity-close-link"
+					>
 						X
 					</a>
 				</div>
@@ -382,7 +385,8 @@ export default function CreateActivityForm(): React.JSX.Element {
 						border: "1px solid #ddd",
 						borderRadius: "8px",
 						backgroundColor: "#fdfdfd",
-					}}>
+					}}
+				>
 					Scadenza
 					<div
 						style={{
@@ -390,7 +394,8 @@ export default function CreateActivityForm(): React.JSX.Element {
 							flexFlow: "wrap",
 							alignItems: "center",
 							gap: "0.5em",
-						}}>
+						}}
+					>
 						<input
 							type="date"
 							name="deadline"
@@ -578,7 +583,8 @@ export default function CreateActivityForm(): React.JSX.Element {
 								border: "1px solid #ddd",
 								borderRadius: "8px",
 								backgroundColor: "#fdfdfd",
-							}}>
+							}}
+						>
 							Data di Inizio
 							<div
 								style={{
@@ -586,7 +592,8 @@ export default function CreateActivityForm(): React.JSX.Element {
 									flexFlow: "wrap",
 									alignItems: "center",
 									gap: "0.5em",
-								}}>
+								}}
+							>
 								<input
 									type="date"
 									name="start"
@@ -615,7 +622,8 @@ export default function CreateActivityForm(): React.JSX.Element {
 											advancementType: e.target.value as AdvancementType,
 										});
 									}}
-									value={activity.advancementType || undefined}>
+									value={activity.advancementType || undefined}
+								>
 									<option
 										key={AdvancementType.TRANSLATION}
 										value={AdvancementType.TRANSLATION}>
@@ -656,7 +664,8 @@ export default function CreateActivityForm(): React.JSX.Element {
 					onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 						e.preventDefault();
 						handleCreateActivity(e);
-					}}>
+					}}
+				>
 					Crea attività
 				</button>
 			</div>

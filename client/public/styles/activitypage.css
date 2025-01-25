@@ -207,6 +207,10 @@ div[message] {
     margin-right: 10px;
 }
 
+.activity-close-link:hover {
+    color: red !important;
+}
+
 @media screen and (max-width: 600px) {
     .activity-close-link {
         top: 0;

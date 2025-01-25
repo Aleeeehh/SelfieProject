@@ -325,7 +325,10 @@ export default function ActivityPage(): React.JSX.Element {
 						<div className="activity-container">
 							<div id="title-1" className="activity-page-title">
 								Visualizza attività
-								<a href="/activities" className="activity-close-link">
+								<a
+									href="/activities"
+									className="activity-close-link"
+								>
 									X
 								</a>
 							</div>
@@ -502,7 +505,8 @@ export default function ActivityPage(): React.JSX.Element {
 									document.getElementById("title-1")?.scrollIntoView({
 										behavior: "smooth",
 									});
-								}}>
+								}}
+							>
 								Modifica
 							</button>
 						</div>
@@ -514,7 +518,10 @@ export default function ActivityPage(): React.JSX.Element {
 							{/* Render updating activity*/}
 							<div id="title-2" className="activity-page-title">
 								Modifica attività
-								<a href="/activities" className="activity-close-link">
+								<a
+									href="/activities"
+									className="activity-close-link"
+								>
 									X
 								</a>
 							</div>
@@ -642,7 +649,8 @@ export default function ActivityPage(): React.JSX.Element {
 									border: "1px solid #ddd",
 									borderRadius: "8px",
 									backgroundColor: "#fdfdfd",
-								}}>
+								}}
+							>
 								Scadenza
 								<div
 									style={{
@@ -650,7 +658,8 @@ export default function ActivityPage(): React.JSX.Element {
 										flexFlow: "wrap",
 										alignItems: "center",
 										gap: "0.5em",
-									}}>
+									}}
+								>
 									<div>
 										<DatePicker
 											className="btn border"
@@ -797,7 +806,8 @@ export default function ActivityPage(): React.JSX.Element {
 															.value as AdvancementType,
 													});
 												}}
-												value={activity.advancementType || undefined}>
+												value={activity.advancementType || undefined}
+											>
 												<option
 													key={AdvancementType.TRANSLATION}
 													value={AdvancementType.TRANSLATION}>
@@ -839,7 +849,8 @@ export default function ActivityPage(): React.JSX.Element {
 																...activity,
 																next: e.target.value,
 															});
-														}}>
+														}}
+													>
 														<option value="">Nessuna</option>
 														{project &&
 															getPossibleNextList(
@@ -853,7 +864,8 @@ export default function ActivityPage(): React.JSX.Element {
 															))}
 													</select>
 													<a
-														href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}&next=${activity.next}`}>
+														href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}&next=${activity.next}`}
+													>
 														<button>
 															Aggiungi attività successiva
 														</button>
@@ -881,7 +893,8 @@ export default function ActivityPage(): React.JSX.Element {
 											</div>
 											{isOwner && !activity.parent && (
 												<a
-													href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}`}>
+													href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}`}
+												>
 													<button>Aggiungi sotto-attività</button>
 												</a>
 											)}
@@ -950,7 +963,8 @@ export default function ActivityPage(): React.JSX.Element {
 									document.getElementById("title-2")?.scrollIntoView({
 										behavior: "smooth",
 									});
-								}}>
+								}}
+							>
 								Termina modifiche
 							</button>
 							<button
@@ -961,12 +975,14 @@ export default function ActivityPage(): React.JSX.Element {
 										behavior: "smooth",
 									});
 								}}
-								style={{ backgroundColor: "red" }}>
+								style={{ backgroundColor: "red" }}
+							>
 								Annulla Modifiche
 							</button>
 							<button
 								onClick={handleDeleteActivity}
-								style={{ backgroundColor: "red" }}>
+								style={{ backgroundColor: "red" }}
+							>
 								Elimina Attività
 							</button>
 						</div>
