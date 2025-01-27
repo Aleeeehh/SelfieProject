@@ -239,6 +239,15 @@ input[type="checkbox"] {
     text-align: justify;
 }
 
+.markdown-content {
+    scrollbar-width: none; /* Per i browser Firefox */
+    -ms-overflow-style: none; /* Per i browser Internet Explorer */
+}
+
+.markdown-content::-webkit-scrollbar {
+    display: none; /* Per i browser basati su Webkit */
+}
+
 @media screen and (max-width: 690px) {
     .note-to-do-container {
         gap: 0.5em;
@@ -387,7 +396,7 @@ input[type="checkbox"] {
 }
 
 .confirmDelete-background {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.2);
     position: fixed;
     top: 0;
     left: 0;

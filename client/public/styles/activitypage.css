@@ -280,6 +280,15 @@ div[message] {
     overflow-x: scroll;
 }
 
+.card-activity-description {
+    scrollbar-width: none; /* Per i browser Firefox */
+    -ms-overflow-style: none; /* Per i browser Internet Explorer */
+}
+
+.card-activity-description::-webkit-scrollbar {
+    display: none; /* Per i browser basati su Webkit */
+}
+
 .card-activity-buttons {
     display: flex;
     justify-content: space-evenly;
