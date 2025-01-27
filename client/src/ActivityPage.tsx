@@ -37,6 +37,8 @@ export default function ActivityPage(): React.JSX.Element {
 	const [isUser, setIsUser] = React.useState(false);
 	const [isOwner, setIsOwner] = React.useState(false);
 
+	const [confirmDelete, setConfirmDelete] = React.useState(false);
+
 	const { serverTime } = useRefresh();
 
 	const loggedUser = {
@@ -231,6 +233,7 @@ export default function ActivityPage(): React.JSX.Element {
 			.catch(() => {
 				setMessage("Impossibile raggiungere il server");
 			});
+		setConfirmDelete(false);
 	}
 
 	function handleAbortChanges(e: React.MouseEvent<HTMLButtonElement>): void {
@@ -980,11 +983,33 @@ export default function ActivityPage(): React.JSX.Element {
 								Annulla Modifiche
 							</button>
 							<button
-								onClick={handleDeleteActivity}
+								onClick={(): void => setConfirmDelete(true)}
 								style={{ backgroundColor: "red" }}
 							>
 								Elimina Attività
 							</button>
+							<div className="confirmDelete-background"
+									style={{ display: confirmDelete ? "flex" : "none" }}
+								>
+									<div className="confirmDelete-container">
+										<h2>Stai eliminando una attività. Vuoi procedere?</h2>
+										<div
+											style={{ display: "flex", gap: "2em" }}
+										>
+											<button
+												style={{ backgroundColor: "#ff6b6b" }}
+												onClick={(): void => setConfirmDelete(false)}
+											>
+												Annulla
+											</button>
+											<button
+												onClick={handleDeleteActivity}
+											>
+												Continua
+											</button>
+										</div>
+									</div>
+								</div>
 						</div>
 					</>
 				)}

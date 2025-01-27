@@ -40,6 +40,8 @@ export default function ProjectPage(): React.JSX.Element {
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [isOwner, setIsOwner] = React.useState(false);
 
+	const [confirmDelete, setConfirmDelete] = React.useState(false);
+
 	const { serverTime } = useRefresh();
 
 	const loggedUser = {
@@ -151,6 +153,8 @@ export default function ProjectPage(): React.JSX.Element {
 			setMessage("Impossibile raggiungere il server");
 		}
 		setMessage("");
+
+		setConfirmDelete(false);
 	}
 
 	function toggleEdit(e: React.MouseEvent<HTMLButtonElement>): void {
@@ -308,10 +312,32 @@ export default function ProjectPage(): React.JSX.Element {
 							{/* if is owner, can delete project (not new project) */}
 							<button
 								style={{ backgroundColor: "red" }}
-								onClick={handleDeleteProject}
+								onClick={(): void => setConfirmDelete(true)}
 							>
 								Cancella Progetto
 							</button>
+							<div className="confirmDelete-background"
+							style={{ display: confirmDelete ? "flex" : "none" }}
+							>
+								<div className="confirmDelete-container">
+									<h2>Stai eliminando un progetto. Vuoi procedere?</h2>
+									<div
+										style={{ display: "flex", gap: "2em" }}
+									>
+										<button
+											style={{ backgroundColor: "#ff6b6b" }}
+											onClick={(): void => setConfirmDelete(false)}
+										>
+											Annulla
+										</button>
+										<button
+											onClick={handleDeleteProject}
+										>
+											Continua
+										</button>
+									</div>
+								</div>
+							</div>
 						</>
 					)}
 				</div>

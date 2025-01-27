@@ -31,6 +31,8 @@ export default function NotePage(): React.JSX.Element {
 	const [count, setCount] = React.useState(0);
 	const nav = useNavigate();
 
+	const [confirmDelete, setConfirmDelete] = React.useState(false);
+
 	const loggedUser = {
 		username: localStorage.getItem("loggedUserName"),
 		id: localStorage.getItem("loggedUserId"),
@@ -202,6 +204,8 @@ export default function NotePage(): React.JSX.Element {
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
 		}
+
+		setConfirmDelete(false);
 	}
 
 	function addTag(e: React.MouseEvent<HTMLElement>): void {
@@ -690,12 +694,36 @@ export default function NotePage(): React.JSX.Element {
 							)}
 
 							{!isEditing ? (
-								<button
-									style={{ backgroundColor: "red" }}
-									onClick={handleDeleteNote}
-								>
-									Cancella Nota
-								</button>
+								<>
+									<button
+										style={{ backgroundColor: "red" }}
+										onClick={(): void => setConfirmDelete(true)}
+									>
+										Cancella Nota
+									</button>
+									<div className="confirmDelete-background"
+									style={{ display: confirmDelete ? "flex" : "none" }}
+									>
+										<div className="confirmDelete-container">
+											<h2>Stai eliminando una nota. Vuoi procedere?</h2>
+											<div
+												style={{ display: "flex", gap: "2em" }}
+											>
+												<button
+													style={{ backgroundColor: "#ff6b6b" }}
+													onClick={(): void => setConfirmDelete(false)}
+												>
+													Annulla
+												</button>
+												<button
+													onClick={handleDeleteNote}
+												>
+													Continua
+												</button>
+											</div>
+										</div>
+									</div>
+								</>
 							) : (
 								<></>
 							)}

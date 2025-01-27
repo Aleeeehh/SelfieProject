@@ -387,7 +387,7 @@ export default function Activities(): React.JSX.Element {
 									style={{ display: confirmDelete ? "flex" : "none" }}
 								>
 									<div className="confirmDelete-container">
-										<h2>Stai eliminando un progetto. Vuoi procedere?</h2>
+										<h2>Stai eliminando una attività. Vuoi procedere?</h2>
 										<div
 											style={{ display: "flex", gap: "2em" }}
 										>
