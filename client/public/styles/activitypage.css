@@ -355,7 +355,7 @@ div[message] {
     }
 }
 
-@media screen and (max-width: 540px) {
+@media screen and (max-width: 390px) {
     .card-activity-buttons {
         flex-direction: column;
     }
