@@ -196,10 +196,12 @@ export default function Notes(): React.JSX.Element {
 				</label>
 				<div className="notes-list-container">
 					{noteList.map((note) => (
-						<a href={`/notes/${note.id}`} onClick={(e): void => e.preventDefault()}
-						onDoubleClick={(): void => {
+						<a
+							href={`/notes/${note.id}`}
+							onClick={(): void => {
 							window.location.assign(`/notes/${note.id}`)
-						}}>
+							}}
+						>
 							<div className="card-note">
 								<div className="card-note-title">
 									<h3>
@@ -234,6 +236,7 @@ export default function Notes(): React.JSX.Element {
 									<button
 										style={{ backgroundColor: "#ff6b6b" }}
 										onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
+											e.stopPropagation();
 											e.preventDefault();
 											setNoteToDelete(note.id || null);
 											setConfirmDelete(true);
@@ -244,6 +247,10 @@ export default function Notes(): React.JSX.Element {
 								</div>
 								<div className="confirmDelete-background"
 									style={{ display: confirmDelete ? "flex" : "none" }}
+									onClick={(e: React.MouseEvent<HTMLDivElement>): void => {
+										e.stopPropagation();
+										e.preventDefault();
+									}}
 								>
 									<div className="confirmDelete-container">
 										<h2>Stai eliminando una nota. Vuoi procedere?</h2>
