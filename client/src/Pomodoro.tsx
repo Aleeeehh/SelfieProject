@@ -938,6 +938,7 @@ export default function Pomodoros(): React.JSX.Element {
 												});
 											}
 										}}
+										dateFormat="dd/MM/yyyy"
 									/>
 								</div>
 								<div>
@@ -993,6 +994,7 @@ export default function Pomodoros(): React.JSX.Element {
 												});
 											}
 										}}
+										dateFormat="dd/MM/yyyy"
 									/>
 								</div>
 								<div>

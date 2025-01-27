@@ -3725,23 +3725,24 @@ export default function Calendar(): React.JSX.Element {
 										<label htmlFor="startTime">
 											Data Inizio
 											<div>
-												<DatePicker
-													className="btn border"
-													name="startTime"
-													selected={startTime}
-													onChange={(date: Date | null): void => {
-														if (date) {
-															// Aggiorna la data mantenendo l'orario attuale
-															const newDate = new Date(startTime);
-															newDate.setFullYear(
-																date.getFullYear(),
-																date.getMonth(),
-																date.getDate()
-															);
-															setStartTime(newDate);
-														}
-													}}
-												/>
+											<DatePicker
+												className="btn border"
+												name="startTime"
+												selected={startTime}
+												onChange={(date: Date | null): void => {
+													if (date) {
+														// Aggiorna la data mantenendo l'orario attuale
+														const newDate = new Date(startTime);
+														newDate.setFullYear(
+															date.getFullYear(),
+															date.getMonth(),
+															date.getDate()
+														);
+														setStartTime(newDate);
+													}
+												}}
+												dateFormat="dd/MM/yyyy"
+											/>
 											</div>
 											{!allDayEvent && (
 												<>
@@ -3813,6 +3814,7 @@ export default function Calendar(): React.JSX.Element {
 															setEndTime(newDate);
 														}
 													}}
+													dateFormat="dd/MM/yyyy"
 												/>
 											</div>
 											{!allDayEvent && (
@@ -4141,6 +4143,7 @@ export default function Calendar(): React.JSX.Element {
 															setEndTime(newDate);
 														}
 													}}
+													dateFormat="dd/MM/yyyy"
 												/>
 											</div>
 											<div>
@@ -4545,6 +4548,7 @@ export default function Calendar(): React.JSX.Element {
 															setStartTime(newDate);
 														}
 													}}
+													dateFormat="dd/MM/yyyy"
 												/>
 											</div>
 											{!allDayEvent && (
@@ -4617,6 +4621,7 @@ export default function Calendar(): React.JSX.Element {
 															setEndTime(newDate);
 														}
 													}}
+													dateFormat="dd/MM/yyyy"
 												/>
 											</div>
 											{!allDayEvent && (
