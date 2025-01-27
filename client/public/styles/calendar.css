@@ -380,7 +380,7 @@ button.btn:focus {
 .evento {
 	position: absolute;
 	display: flex;
-	color: rgb(155, 223, 212);
+	color: rgb(53, 61, 173);
 	font-weight: bold;
 	background-color: rgba(155, 223, 212, 0.5);
 	justify-content: center;

@@ -283,15 +283,16 @@ export default function Calendar(): React.JSX.Element {
 							height: `${event.height}px`,
 							width: `calc(95%/${event.width})`,
 							position: "absolute",
-							color: !event.type ? "red" : "rgb(155, 223, 212)",
+							color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/,
 							borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
 							backgroundColor: !event.type
 								? "rgba(249, 67, 67, 0.5)"
 								: "rgba(155, 223, 212, 0.5)",
 							marginLeft: `${event.marginLeft}%`,
 							cursor: "default",
-						}}>
-						<div style={{ color: !event.type ? "red" : "rgb(155, 223, 212)" }}>
+						}}
+					>
+						<div style={{ color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/ }}>
 							{!event.type ? (
 								<Link
 									to={`/pomodoro?duration=${((startTime, endTime): number => {
@@ -308,7 +309,8 @@ export default function Calendar(): React.JSX.Element {
 										textDecoration: "none",
 										color: "inherit",
 										cursor: "pointer",
-									}}>
+									}}
+								>
 									{event.name}
 								</Link>
 							) : (
@@ -321,7 +323,8 @@ export default function Calendar(): React.JSX.Element {
 								await handleDeleteEvent(event.event._id, event.event.groupId);
 
 								weekMode(e as React.MouseEvent<HTMLElement>);
-							}}>
+							}}
+						>
 							<i
 								className="bi bi-trash"
 								style={{
@@ -330,7 +333,7 @@ export default function Calendar(): React.JSX.Element {
 									fontSize: "1.5rem",
 									margin: 0,
 									padding: 0,
-									color: !event.type ? "red" : "rgb(155, 223, 212)",
+									color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/,
 									cursor: "pointer",
 								}}></i>
 						</div>
@@ -372,7 +375,7 @@ export default function Calendar(): React.JSX.Element {
 									height: `15px`,
 									width: `130px`,
 									position: "relative",
-									color: !event.type ? "red" : "rgb(155, 223, 212)",
+									color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/,
 									borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
 									backgroundColor: !event.type
 										? "rgba(249, 67, 67, 0.5)"
@@ -381,8 +384,9 @@ export default function Calendar(): React.JSX.Element {
 									cursor: "default",
 									marginBottom: "1px",
 									fontSize: "12px",
-								}}>
-								<div style={{ color: !event.type ? "red" : "rgb(155, 223, 212)" }}>
+								}}
+							>
+								<div style={{ color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/ }}>
 									{!event.type ? (
 										<Link
 											to={`/pomodoro?duration=${((
@@ -543,7 +547,7 @@ export default function Calendar(): React.JSX.Element {
 										height: `15px`,
 										width: `130px`,
 										position: "relative",
-										color: !event.type ? "red" : "rgb(155, 223, 212)",
+										color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/,
 										borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
 										backgroundColor: !event.type
 											? "rgba(249, 67, 67, 0.5)"
@@ -555,7 +559,7 @@ export default function Calendar(): React.JSX.Element {
 									}}>
 									<div
 										style={{
-											color: !event.type ? "red" : "rgb(155, 223, 212)",
+											color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/,
 										}}>
 										{!event.type ? (
 											<Link
@@ -627,7 +631,7 @@ export default function Calendar(): React.JSX.Element {
 										height: `15px`,
 										width: `130px`,
 										position: "relative",
-										color: "rgb(155, 223, 212)",
+										color: "black" /*!"rgb(53, 61, 173)"*/,
 										backgroundColor: "rgba(155, 223, 212, 0.5)",
 										marginLeft: `0px`,
 										cursor: "default",
@@ -3669,6 +3673,7 @@ export default function Calendar(): React.JSX.Element {
 																						className="btn border"
 																						type="number"
 																						min="1"
+																						style={{ width: "100%" }}
 																						onChange={(
 																							e: React.ChangeEvent<HTMLInputElement>
 																						): void => {
@@ -4490,6 +4495,7 @@ export default function Calendar(): React.JSX.Element {
 																		className="btn border"
 																		type="number"
 																		min="1"
+																		style={{ width: "100%" }}
 																		onChange={(
 																			e: React.ChangeEvent<HTMLInputElement>
 																		): void => {
@@ -5345,8 +5351,8 @@ export default function Calendar(): React.JSX.Element {
 																color:
 																	new Date(currentDate) >
 																		new Date(event.event.endTime)
-																		? "rgba(209, 150, 150, 1)"
-																		: "red",
+																		? "black"
+																		: "black",
 																borderColor:
 																	new Date(currentDate) >
 																		new Date(event.event.endTime)
@@ -5361,7 +5367,7 @@ export default function Calendar(): React.JSX.Element {
 																cursor: "default",
 															}}
 														>
-															<div style={{ color: "red" }}>
+															<div style={{ color: "black" }}>
 																<Link
 																	to={`/pomodoro?duration=${((
 																		startTime,
@@ -5412,7 +5418,7 @@ export default function Calendar(): React.JSX.Element {
 																		fontSize: "1.5rem",
 																		margin: 0,
 																		padding: 0,
-																		color: "red",
+																		color: "black",
 																		cursor: "pointer",
 																	}}
 																></i>
@@ -5438,7 +5444,7 @@ export default function Calendar(): React.JSX.Element {
 																	color:
 																		event.event.title ===
 																			"Non disturbare"
-																			? "rgba(128, 138, 136, 1)"
+																			? "black"
 																			: event.event.isRisorsa
 																				? "rgba(166, 93, 41, 0.48)"
 																				: new Date(
@@ -5447,8 +5453,8 @@ export default function Calendar(): React.JSX.Element {
 																					new Date(
 																						event.event.endTime
 																					)
-																					? "rgba(135, 190, 196, 0.8)"
-																					: "rgb(155, 223, 212)",
+																					? "black"
+																					: "black",
 																	borderColor:
 																		event.event.title ===
 																			"Non disturbare"
@@ -5521,7 +5527,7 @@ export default function Calendar(): React.JSX.Element {
 																						event.event
 																							.title ===
 																							"Non disturbare"
-																							? "rgba(128, 138, 136, 1)"
+																							? "black"
 																							: event
 																								.event
 																								.isRisorsa
@@ -5532,8 +5538,8 @@ export default function Calendar(): React.JSX.Element {
 																									new Date(
 																										event.event.endTime
 																									)
-																									? "rgba(135, 190, 196, 0.8)"
-																									: "rgb(155, 223, 212)",
+																									? "black"
+																									: "black",
 																					cursor: "pointer",
 																				}}
 																			></i>
