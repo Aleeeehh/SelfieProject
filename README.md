@@ -75,7 +75,7 @@ connessione tra server e database.
 Prima di avviare il server, avviare MongoDB per permettere al connessione.
 
 ### Lanciare React Client
-
+(Per accedere al client via browser in modalità sviluppo, accedere a http://localhost:8000)
 ```(bash)
 cd client
 npm install
