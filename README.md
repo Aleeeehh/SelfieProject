@@ -10,14 +10,13 @@ Inoltre, si possono creare e gestire pomodoro timer e note con todo-list.
 -   Andrea Santilli
 -   Leonardo Pinna
 
-### Lanciare in locale l'applicazione
+## Lanciare in locale l'applicazione
 
-## Avviare l'istanza di mongodb (container o su host)
+### Avviare l'istanza di mongodb (container o su host)
 
 Prima di avviare il server, avviare MongoDB per permettere al connessione.
 
-### Lanciare Server e Client insieme
-
+Lanciare Server e Client insieme
 ```(bash)
 ./start.sh
 ```
@@ -25,12 +24,10 @@ Prima di avviare il server, avviare MongoDB per permettere al connessione.
 Per accedere all'applicazione via browser locale in modalità sviluppo, accedere a http://localhost:8000
 
 Se necessarie dipendenze per client e/o server
-
 ```(bash)
 cd server
 npm install
 ```
-
 ```(bash)
 cd client
 npm install
