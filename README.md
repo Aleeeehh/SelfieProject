@@ -39,7 +39,7 @@ npm install
 
 ### Frontend / Client
 
-Come framework client abbiamo utilizzato React, per i seguenti motivi:
+Come framework client abbiamo utilizzato React con Typescript, per i seguenti motivi:
 
 -   React permette la generazione di file statici facilmente serviti dal server
 -   React sfutta la logica per componenti, che ha facilitato il riutilizzo di componenti in diverse
