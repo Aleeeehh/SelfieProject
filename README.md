@@ -1,29 +1,34 @@
 # SELFIE
 
-Applicazione web di produttività personale.
-Permette la gestione di eventi,attività e progetti in un calendario.
-Inoltre, si possono creare e gestire pomodoro timer e note con todo-list.
+Personal productivity web application.
+It allows the management of events, tasks, and projects in a calendar.
+Additionally, you can create and manage Pomodoro timers and notes with to-do lists.
 
-### Componenti del team di lavoro
+### Team members 
 
 -   Alessio Prato
 -   Andrea Santilli
 -   Leonardo Pinna
 
-## Lanciare in locale l'applicazione
+## Launch the application locally
 
- Avviare l'istanza di mongodb (container o su host)
+Start the MongoDB instance (container or on the host):
+Before starting the server, make sure MongoDB is running to allow the connection.
 
-Prima di avviare il server, avviare MongoDB per permettere al connessione.
+If you have MongoDB installed locally, you can start it with
+```(bash)
+mongod
+```
 
-Lanciare Server e Client insieme all'interno della cartella del progetto
+Run Server and Client together within the project folder
 ```(bash)
 ./start.sh
 ```
 
-Per accedere all'applicazione via browser locale in modalità sviluppo, accedere a http://localhost:8000
+To access the application via a local browser in development mode, go to http://localhost:8000.
 
-Se necessarie dipendenze per client e/o server
+
+If dependencies are required for the client and/or server, install them before running the application.
 ```(bash)
 cd server
 npm install
@@ -32,33 +37,4 @@ npm install
 cd client
 npm install
 ```
-
-
-
-## Scelte implementative
-
-### Frontend / Client
-
-Come framework client abbiamo utilizzato React con Typescript, per i seguenti motivi:
-
--   React permette la generazione di file statici facilmente serviti dal server
--   React sfutta la logica per componenti, che ha facilitato il riutilizzo di componenti in diverse
-    parti del sito
--   Almeno un paio di componenti del gruppo avevano esperienza non nulla nell'utilizzo del framework
-    React
-
-### Backend / Server
-
-Come backend abbiamo utilizzato NodeJS e il framework ExpressJS, per i seguenti motivi:
-
--   ExpressJS è un framework attorno al quale sono sviluppate numerose librerie che integrano
-    funzionalità anche complesse
--   la struttura per API endpoints di ExpressJS segue un flusso logico coerente e permette di
-    incapsulare le funzionalità
-
-### Database
-
-Come database, abbiamo utilizzato MongoDB in quanto previsto dai requisiti di progetto, e per
-integrare le funzionalità del server abbiamo utilizzato la libreria Mongoose, facilitando la
-connessione tra server e database.
 
