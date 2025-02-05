@@ -12,7 +12,7 @@ Inoltre, si possono creare e gestire pomodoro timer e note con todo-list.
 
 ## Lanciare in locale l'applicazione
 
-### Avviare l'istanza di mongodb (container o su host)
+ Avviare l'istanza di mongodb (container o su host)
 
 Prima di avviare il server, avviare MongoDB per permettere al connessione.
 
