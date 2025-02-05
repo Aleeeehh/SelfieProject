@@ -16,7 +16,7 @@ Inoltre, si possono creare e gestire pomodoro timer e note con todo-list.
 
 Prima di avviare il server, avviare MongoDB per permettere al connessione.
 
-Lanciare Server e Client insieme
+Lanciare Server e Client insieme all'interno della cartella del progetto
 ```(bash)
 ./start.sh
 ```
