@@ -67,12 +67,15 @@
 }
 
 .config-container {
-    scrollbar-width: none; /* Per i browser Firefox */
-    -ms-overflow-style: none; /* Per i browser Internet Explorer */
+	scrollbar-width: none;
+	/* Per i browser Firefox */
+	-ms-overflow-style: none;
+	/* Per i browser Internet Explorer */
 }
 
 .config-container::-webkit-scrollbar {
-    display: none; /* Per i browser basati su Webkit */
+	display: none;
+	/* Per i browser basati su Webkit */
 }
 
 .title {
@@ -192,7 +195,6 @@ h1 {
 	justify-content: center;
 	width: 100%;
 	align-items: center;
-	margin-top: 1%;
 }
 
 .paragraph {

@@ -153,7 +153,7 @@ export default function Register(): React.JSX.Element {
 						</div>
 
 						<div>
-							<label>Indirizzo</label>
+							<label>Email</label>
 							<input
 								type="text"
 								name="address"

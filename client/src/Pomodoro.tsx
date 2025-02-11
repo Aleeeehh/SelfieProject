@@ -1199,7 +1199,7 @@ export default function Pomodoros(): React.JSX.Element {
 
 									<br />
 
-									<div className="commands-container" style={{ width: "100%" }}>
+									<div className="commands-container" style={{ width: "100%", marginTop: "-20px" }}>
 										<button
 											type="button"
 											className="bg-warning skip-phase-button"
