@@ -10,15 +10,19 @@ Progetto di Tecnologie Web
 
 
 ### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
--   Aumentare il contrasto nei colori, in particolare il colore degli eventi del calendario (colore nome evento su sfondo del medesimo colore) (trova buoni accoppiamenti di colori, e fallo anche
+- Alessio
+- Aumentare il contrasto nei colori, in particolare il colore degli eventi del calendario (colore nome evento su sfondo del medesimo colore) (trova buoni accoppiamenti di colori, e fallo anche
 per le risorse allocate)
 - Se si cancella un evento con associata una risorsa, elimina allocazione risorsa 
--   Mantenere la time machine attiva su tutta l'interfaccia, se cambio pagina non si deve resettare. Se la time machine cambia orario, deve cambiare anche il pomodoro.
--   Editare un evento già impostato
--   Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con mouse con rotella)
--   Tutte le cose che vengono aggiunte/cambiano, devono venire aggiunte/essere cambiate senza refreshare la pagina (in particolare calendario, per view day, week, month, ma anche progetti, attività, ecc.)
--   Time machine deve influenzare OGNI SINGOLO COMPONENTE DEL PROGETTO, quindi sia calendario, che pomodoro, che attività, che progetti, che note!
--   Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema operativo (con Notification API). Mettere un filtro "mostra X notifiche" come nella home, e magari appena ne arriva una, mostrarla a schermo e fai sentire un suono. Magari implementa una libreria che permetta la notifica del sistema operativo, ma magari anche via email e/o whatsapp.
+- Editare un evento già impostato
+- Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con mouse con rotella)
+- Tutte le cose che vengono aggiunte/cambiano, devono venire aggiunte/essere cambiate senza refreshare la pagina (in particolare calendario, per view day, week, month, ma anche progetti, attività, ecc.)
+- metti il "-" per andare indietro di un anno a sinistra della data, nel pannello calendario
+
+
+- Mantenere la time machine attiva su tutta l'interfaccia, se cambio pagina non si deve resettare. Se la time machine cambia orario, deve cambiare anche il pomodoro.
+- Time machine deve influenzare OGNI SINGOLO COMPONENTE DEL PROGETTO, quindi sia calendario, che pomodoro, che attività, che progetti, che note!
+- Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema operativo (con Notification API). Mettere un filtro "mostra X notifiche" come nella home, e magari appena ne arriva una, mostrarla a schermo e fai sentire un suono. Magari implementa una libreria che permetta la notifica del sistema operativo, ma magari anche via email e/o whatsapp.
 - Correggi tutti gli input time per il pomodoro (in alcuni casi non posso mettere un numero con più di una cifra)
 - gestione partecipanti dei progetti distinti, non ci può essere un medesimo utente più volte nello stesso progetto (in particolare l'owner)
 - Scroll calendario attività progetto da migliorare (immagino intenda, da migliorare la view gantt dei progetti)
@@ -30,8 +34,32 @@ per le risorse allocate)
 - Controlla che quando si modifica un oggetto(evento,attività, progetto), tale modifica sia reale, funzioni, e influenzi anche quello degli altri utenti se sono coinvolti in quell'oggetto (nel caso in cui sia condiviso)
 - La creazione attività nel pannello attività, deve avere gli stessi campi della creazione attività nel pannello calendario.
 - La creazione di evento pomodoro nel pannello pomodoro, deve avere gli stessi campi della creazione evento pomodoro nel pannello calendario.
-- metti il "-" per andare indietro di un anno a sinistra della data, nel pannello calendario
 - MIGLIORA/FIXA IN GENERALE QUALSIASI COSA SU CUI POTREBBE FARE STORIE, IN PARTICOLARE UI E USABILITA' SONO FONDAMENTALI! CERCHIAMO DI IMMAGINARCI/PREVEDERE SU COSA POTREBBE FARE STORIE (ANCHE COSE MOLTO PICCOLE)
+
+### ALTRI REQUISITI (FORSE RIDONDANTI DA NOTE ANDRE)
+- Mantenere la time machine attiva su tutta l'interfaccia
+- Editare un evento già impostato
+- Disallineamento nelle colonne del calendario
+- Refresh informazioni (calendario mensile)
+- Time machine influenza anche pomodoro (e se serve., non ho controllato) progetti ed attività)
+- Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema operativo (con Notification API)
+- gestione partecipanti dei progetti distinti
+- Scroll calendario attività progetto da migliorare
+- Ordine dei "Prossimi eventi" nella home non sempre corretto
+- Orologio alla lunga è sbagliato
+- Pomodoro NON rimane attivo anche se cambio pagina (musica compresa)
+- Se mi trovo all'interno del giorno della scadenza di un'attività me la segna "in ritardo" => togliere l'orario (ora è 01:00) oppure impostare l'orario a 23:59
+- Mettere il radio button per scegliere tra "evento pomodoro", "tutto il giorno" e "ripetuto" nel form di creazione dell'evento
+- Non posso togliere il “completata” ad una attività, una volta che l’ho completata
+- Su telefono (Safari?): due eventi che coincidono con l’orario non stanno entrambi nella view
+- Su telefono (Safari?): Note page ha la “X” non allineata al centro, anche la pagina di creazione della nota
+- Avviando un link YouTube dal pomodoro, se la view è stretta, escono gli elementi dal loro container
+- Quando spunto un'attività relativa ad un progetto come completata, viene traslata verso il basso nel gantt e non capisco perchè
+- Un evento “tutto il giorno” nella visualizzazione “month” e “week” viene mostrato su 2 giorni
+- Da IPad, probabilmente anche da altri dispositivi/browser, le colonne della week si muovono singolarmente
+- FORSE, non funziona bene il sorting delle note: quando entro nella pagina delle note, queste sono ordinate senza un criterio
+- Nel calendario, sulla view giornaliera, in base al giorno che seleziono per vedere gli eventi, il calendario non mi permette di creare una attività precedente a quella data. Esempio: seleziono il 20 gennaio --> non posso creare attività che scadono il 18 perchè mi da la data come non valida
+
 
 
 ### Componenti del Gruppo
