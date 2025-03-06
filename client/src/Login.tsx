@@ -61,14 +61,38 @@ export default function Login(): React.JSX.Element {
 
 						<div>
 							<label>Password</label>
-							<input
-								type={clearPswd ? "text" : "password"}
-								name="password"
-								value={password}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>): void =>
-									setPassword(e.target.value)
-								}
-							/>
+							<div style={{ position: 'relative' }}>
+								{/* Input nascosto per l'autofill */}
+								<input
+									type="password"
+									name="password"
+									value={password}
+									onChange={(e): void => setPassword(e.target.value)}
+									style={{
+										position: 'absolute',
+										opacity: 0,
+										pointerEvents: 'none',
+										height: 0
+									}}
+									autoComplete="current-password"
+								/>
+								{/* Input visibile per l'interazione utente */}
+								<input
+									type="text"
+									value={clearPswd ? password : '•'.repeat(password.length)}
+									onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+										if (!clearPswd) {
+											if (e.target.value.length > password.length) {
+												setPassword(password + e.target.value.slice(-1));
+											} else {
+												setPassword(password.slice(0, -1));
+											}
+										} else {
+											setPassword(e.target.value);
+										}
+									}}
+								/>
+							</div>
 						</div>
 
 						<div
@@ -81,7 +105,10 @@ export default function Login(): React.JSX.Element {
 							<i
 								className={`bi ${clearPswd ? "bi-eye" : "bi-eye-slash"}`}
 								onClick={(): void => setClearPswd(!clearPswd)}
-								style={{ cursor: "pointer", marginLeft: "8px" }}
+								style={{
+									cursor: "pointer",
+									marginLeft: "8px",
+								}}
 							></i>
 						</div>
 

@@ -58,14 +58,63 @@ export default function Register(): React.JSX.Element {
 			}
 		}
 	}
+	/*
+		function isValidEmail(email: string): boolean {
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			return emailRegex.test(email);
+		}*/
+
+	function isValidPassword(password: string): { isValid: boolean; message: string } {
+		if (password.length < 8) {
+			return { isValid: false, message: "La password deve essere almeno 8 caratteri" };
+		}
+
+		const hasUpperCase = /[A-Z]/.test(password);
+		const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+		if (!hasUpperCase) {
+			return { isValid: false, message: "La password deve contenere almeno una lettera maiuscola" };
+		}
+
+		if (!hasSpecialChar) {
+			return { isValid: false, message: "La password deve contenere almeno un carattere speciale" };
+		}
+
+		return { isValid: true, message: "" };
+	}
 
 	async function handleRegister(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+
+		const passwordValidation = isValidPassword(data.password);
+
 
 		if (data.password !== data.confirmPassword) {
 			setMessage("Le password non coincidono");
 			return;
 		}
+
+		if (!passwordValidation.isValid) {
+			setMessage(passwordValidation.message);
+			return;
+		}
+
+		if (data.birthday > new Date(Date.now())) {
+			setMessage("La data di nascita non può essere nel futuro");
+			return;
+		}
+
+		if (data.firstName.length === 0 || data.lastName.length === 0 || data.address.length === 0
+			|| data.username.length === 0 || data.password.length === 0 || data.confirmPassword.length === 0) {
+			setMessage("Compila tutti i campi");
+			return;
+		}
+		/*
+				if (!isValidEmail(data.address)) {
+					setMessage("Inserisci un indirizzo email valido");
+					return;
+				}
+					*/
 
 		console.log("Registering user:", data);
 
@@ -89,18 +138,21 @@ export default function Register(): React.JSX.Element {
 			.then((resBody) => {
 				console.log(resBody);
 				if (resBody.status === ResponseStatus.GOOD) {
-					alert(
+					/*alert(
 						"Registrazione completata con successo. Sarai reindirizzato alla pagina di login."
-					);
+					);*/
 
 					nav("/login");
+				} else if (resBody.message === 'User with that username already exists') {
+					//console.log(resBody);
+					setMessage("Username già esistente");
 				} else {
-					setMessage("Registrazione fallita: " + resBody.message);
+					//setMessage("Registrazione fallita: " + resBody.message);
 				}
 			})
 			.catch((error) => {
 				console.error(error);
-				setMessage("Registrazione fallita: " + error);
+				//setMessage("Registrazione fallita: " + error);
 			});
 	}
 
@@ -153,12 +205,13 @@ export default function Register(): React.JSX.Element {
 						</div>
 
 						<div>
-							<label>Email</label>
+							<label>Indirizzo di casa</label>
 							<input
 								type="text"
 								name="address"
 								value={data.address}
 								onChange={handleChange}
+								pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
 								required
 							/>
 						</div>

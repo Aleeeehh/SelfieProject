@@ -72,8 +72,24 @@ function WithLayout<T extends React.ReactNode>({
 				{children}
 
 				{showChat && (
-					<div style={{ display: "block" }}>
-						<MessageHub />
+					<div
+						style={{
+							position: 'fixed',
+							top: 0,
+							left: 0,
+							right: 0,
+							bottom: 0,
+							backgroundColor: 'rgba(0, 0, 0, 0.3)',
+							zIndex: 9
+						}}
+						onClick={(): void => setShowChat(false)}
+					>
+						<div
+							style={{ display: "block" }}
+							onClick={(e): void => e.stopPropagation()}
+						>
+							<MessageHub />
+						</div>
 					</div>
 				)}
 

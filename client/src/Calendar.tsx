@@ -3547,7 +3547,16 @@ export default function Calendar(): React.JSX.Element {
 										Chiudi
 									</button>
 									<form>
-										<label htmlFor="useDefaultTitle">
+										<label
+											htmlFor="useDefaultTitle"
+											style={{
+												cursor: 'pointer',
+												userSelect: 'none',  // Impedisce la selezione del testo
+												WebkitUserSelect: 'none',  // Per Safari
+												MozUserSelect: 'none',     // Per Firefox
+												msUserSelect: 'none'       // Per IE/Edge
+											}}
+										>
 											<input
 												type="checkbox"
 												id="useDefaultTitle"
@@ -3563,7 +3572,14 @@ export default function Calendar(): React.JSX.Element {
 										</label>
 										{addTitle && (
 											<>
-												<label htmlFor="allDayEvent">
+												<label htmlFor="allDayEvent"
+													style={{
+														cursor: 'pointer',
+														userSelect: 'none',  // Impedisce la selezione del testo
+														WebkitUserSelect: 'none',  // Per Safari
+														MozUserSelect: 'none',     // Per Firefox
+														msUserSelect: 'none'       // Per IE/Edge
+													}}>
 													<input
 														type="checkbox"
 														name="allDayEvent"
@@ -3580,7 +3596,14 @@ export default function Calendar(): React.JSX.Element {
 
 												{!allDayEvent && (
 													<>
-														<label htmlFor="repeatEvent">
+														<label htmlFor="repeatEvent"
+															style={{
+																cursor: 'pointer',
+																userSelect: 'none',  // Impedisce la selezione del testo
+																WebkitUserSelect: 'none',  // Per Safari
+																MozUserSelect: 'none',     // Per Firefox
+																msUserSelect: 'none'       // Per IE/Edge
+															}}>
 															<input
 																type="checkbox"
 																name="repeatEvent"
@@ -3883,7 +3906,14 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										</label>
 
-										<label htmlFor="addNotificationEvent">
+										<label htmlFor="addNotificationEvent"
+											style={{
+												cursor: 'pointer',
+												userSelect: 'none',  // Impedisce la selezione del testo
+												WebkitUserSelect: 'none',  // Per Safari
+												MozUserSelect: 'none',     // Per Firefox
+												msUserSelect: 'none'       // Per IE/Edge
+											}}>
 											<input
 												type="checkbox"
 												name="addNotificationEvent"
@@ -3977,7 +4007,14 @@ export default function Calendar(): React.JSX.Element {
 											</label>
 										)}
 
-										<label htmlFor="sendInviteEvent">
+										<label htmlFor="sendInviteEvent"
+											style={{
+												cursor: 'pointer',
+												userSelect: 'none',  // Impedisce la selezione del testo
+												WebkitUserSelect: 'none',  // Per Safari
+												MozUserSelect: 'none',     // Per Firefox
+												msUserSelect: 'none'       // Per IE/Edge
+											}}>
 											<input
 												type="checkbox"
 												id="sendInviteEvent"
@@ -4024,7 +4061,14 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										)}
 
-										<label htmlFor="shareEvent">
+										<label htmlFor="shareEvent"
+											style={{
+												cursor: 'pointer',
+												userSelect: 'none',  // Impedisce la selezione del testo
+												WebkitUserSelect: 'none',  // Per Safari
+												MozUserSelect: 'none',     // Per Firefox
+												msUserSelect: 'none'       // Per IE/Edge
+											}}>
 											<input
 												type="checkbox"
 												id="shareEvent"
@@ -4188,7 +4232,14 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										</label>
 
-										<label htmlFor="addNotificationActivity">
+										<label htmlFor="addNotificationActivity"
+											style={{
+												cursor: 'pointer',
+												userSelect: 'none',  // Impedisce la selezione del testo
+												WebkitUserSelect: 'none',  // Per Safari
+												MozUserSelect: 'none',     // Per Firefox
+												msUserSelect: 'none'       // Per IE/Edge
+											}}>
 											<input
 												type="checkbox"
 												name="addNotificationActivity"
@@ -4262,7 +4313,14 @@ export default function Calendar(): React.JSX.Element {
 											</label>
 										)}
 
-										<label htmlFor="sendInviteActivity">
+										<label htmlFor="sendInviteActivity"
+											style={{
+												cursor: 'pointer',
+												userSelect: 'none',  // Impedisce la selezione del testo
+												WebkitUserSelect: 'none',  // Per Safari
+												MozUserSelect: 'none',     // Per Firefox
+												msUserSelect: 'none'       // Per IE/Edge
+											}}>
 											<input
 												type="checkbox"
 												name="sendInviteActivity"
@@ -4310,7 +4368,14 @@ export default function Calendar(): React.JSX.Element {
 											</div>
 										)}
 
-										<label htmlFor="shareActivity">
+										<label htmlFor="shareActivity"
+											style={{
+												cursor: 'pointer',
+												userSelect: 'none',  // Impedisce la selezione del testo
+												WebkitUserSelect: 'none',  // Per Safari
+												MozUserSelect: 'none',     // Per Firefox
+												msUserSelect: 'none'       // Per IE/Edge
+											}}>
 											<input
 												type="checkbox"
 												name="shareActivity"
@@ -4393,7 +4458,14 @@ export default function Calendar(): React.JSX.Element {
 										Chiudi
 									</button>
 									<form>
-										<label htmlFor="allDayNotDisturb">
+										<label htmlFor="allDayNotDisturb"
+											style={{
+												cursor: 'pointer',
+												userSelect: 'none',  // Impedisce la selezione del testo
+												WebkitUserSelect: 'none',  // Per Safari
+												MozUserSelect: 'none',     // Per Firefox
+												msUserSelect: 'none'       // Per IE/Edge
+											}}>
 											<input
 												type="checkbox"
 												name="allDayNotDisturb"
@@ -4410,7 +4482,14 @@ export default function Calendar(): React.JSX.Element {
 
 										{!allDayNotDisturb && (
 											<>
-												<label htmlFor="repeatNotDisturb">
+												<label htmlFor="repeatNotDisturb"
+													style={{
+														cursor: 'pointer',
+														userSelect: 'none',  // Impedisce la selezione del testo
+														WebkitUserSelect: 'none',  // Per Safari
+														MozUserSelect: 'none',     // Per Firefox
+														msUserSelect: 'none'       // Per IE/Edge
+													}}>
 													<input
 														type="checkbox"
 														name="repeatNotDisturb"

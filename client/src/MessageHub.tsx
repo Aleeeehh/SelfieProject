@@ -227,11 +227,10 @@ function MessageHub(): React.JSX.Element {
 								activeChat.messageList &&
 								activeChat.messageList.map((message, index) => (
 									<div
-										className={`chat-message ${
-											message.username === loggedUser?.username
-												? "message-sent"
-												: "message-received"
-										}`}
+										className={`chat-message ${message.username === loggedUser?.username
+											? "message-sent"
+											: "message-received"
+											}`}
 										key={message.id}
 										ref={
 											index === activeChat.messageList.length - 1
@@ -240,16 +239,22 @@ function MessageHub(): React.JSX.Element {
 										}
 									>
 										<div className="message-text">{message.text}</div>
-										<div className="message-info">
-											<span>Da {message.username} - </span>
+										<div
+											className="message-info"
+											style={{
+												display: 'flex',
+												justifyContent: 'flex-end',  // Allinea a destra
+												gap: '4px'  // Spazio consistente tra gli elementi
+											}}
+										>
+											<span>Da {message.username}</span>
+											<span>-</span>
 											<span>
 												{message.createdAt
-													? new Date(
-															message.createdAt
-													  ).toLocaleTimeString("it-IT", {
-															hour: "2-digit",
-															minute: "2-digit",
-													  })
+													? new Date(message.createdAt).toLocaleTimeString("it-IT", {
+														hour: "2-digit",
+														minute: "2-digit",
+													})
 													: "N/A"}
 											</span>
 										</div>
@@ -262,6 +267,18 @@ function MessageHub(): React.JSX.Element {
 								className="message-input"
 								value={input}
 								onChange={(e): void => setInput(e.target.value)}
+								onKeyDown={(e): void => {
+									if (e.key === 'Enter' && input.trim()) {
+										e.preventDefault();
+										handleSendMessage();
+									}
+									// Non blocchiamo altri tasti, permettendo la loro ripetizione naturale
+								}}
+								autoComplete="off"  // Previene suggerimenti che potrebbero interferire
+								style={{
+									WebkitUserSelect: 'text',
+									userSelect: 'text'
+								}}
 							/>
 							<button
 								className="send-button"
@@ -277,5 +294,5 @@ function MessageHub(): React.JSX.Element {
 		</>
 	);
 }
-
 export default MessageHub;
+

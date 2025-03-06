@@ -269,174 +269,174 @@ function Home(): React.JSX.Element {
 		<>
 			<div className="home-background">
 				<div className="home-container">
-						<div className="preview preview-calendar">
-							<h4>Prossimi eventi:</h4>
-							<label>
-								Mostra
-								<select
-									value={numEvents}
-									className="home-select"
-									onChange={(e): void => setNumEvents(Number(e.target.value))}>
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-								</select>
-								eventi:
-							</label>
-							<div className="preview-calendar-cards-container">
-								{eventList
-									.filter((_, i) => i < numEvents)  //torna un array con gli eventi filtrati
-									.map((event) => (
-										<a className="preview-calendar-card" href={`/calendar`}>
-											<div>
-												<div className="preview-calendar-card-title">
-													{event.title.length > HOME_MAX_TITLE_CHARS
-														? event.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-														) + "..."
-														: event.title}
-												</div>
-												<div>
-													{new Date(event.startTime).toLocaleString("it-IT", {
-														day: "2-digit",
-														month: "2-digit",
-														year: "numeric",
-														hour: "2-digit",
-														minute: "2-digit",
-													})}
-												</div>
-												<div>
-													{new Date(event.endTime).toLocaleString("it-IT", {
-														day: "2-digit",
-														month: "2-digit",
-														year: "numeric",
-														hour: "2-digit",
-														minute: "2-digit",
-													})}
-												</div>
-												<div>{event.location}</div>
+					<div className="preview preview-calendar" >
+						<h4>Prossimi eventi:</h4>
+						<label>
+							Mostra
+							<select
+								value={numEvents}
+								className="home-select"
+								onChange={(e): void => setNumEvents(Number(e.target.value))}>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
+							eventi:
+						</label>
+						<div className="preview-calendar-cards-container">
+							{eventList
+								.filter((_, i) => i < numEvents)  //torna un array con gli eventi filtrati
+								.map((event) => (
+									<a className="preview-calendar-card" href={`/calendar`}>
+										<div>
+											<div className="preview-calendar-card-title">
+												{event.title.length > HOME_MAX_TITLE_CHARS
+													? event.title.substring(
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
+													: event.title}
 											</div>
-										</a>
-									))}
-							</div>
+											<div>
+												{new Date(event.startTime).toLocaleString("it-IT", {
+													day: "2-digit",
+													month: "2-digit",
+													year: "numeric",
+													hour: "2-digit",
+													minute: "2-digit",
+												})}
+											</div>
+											<div>
+												{new Date(event.endTime).toLocaleString("it-IT", {
+													day: "2-digit",
+													month: "2-digit",
+													year: "numeric",
+													hour: "2-digit",
+													minute: "2-digit",
+												})}
+											</div>
+											<div>{event.location}</div>
+										</div>
+									</a>
+								))}
 						</div>
+					</div>
 
-						<div className="preview preview-pomodoro">
-							<h4>Pomodoro recenti:</h4>
-							<label>
-								Mostra
-								<select
-									value={numPomodoros}
-									className="home-select"
-									onChange={(e): void => setNumPomodoros(Number(e.target.value))}>
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-								</select>
-								pomodoro:
-							</label>
-							<div className="preview-pomodoro-cards-container">
-								{pomodoros
-									.slice(-numPomodoros) // perchè non devo filtrare come nelle note
-									.map((pomodoro) => (
-										<a className="preview-pomodoro-card" href={`/pomodoro`}>
-											<div>
-												<div>{pomodoro.studyTime} min</div>
-												<div>{pomodoro.pauseTime} min</div>
-												<div>{pomodoro.cycles} cicli</div>
-											</div>
-										</a>
-									))}
-							</div>
+					<div className="preview preview-pomodoro" >
+						<h4>Pomodoro recenti:</h4>
+						<label>
+							Mostra
+							<select
+								value={numPomodoros}
+								className="home-select"
+								onChange={(e): void => setNumPomodoros(Number(e.target.value))}>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
+							pomodoro:
+						</label>
+						<div className="preview-pomodoro-cards-container">
+							{pomodoros
+								.slice(-numPomodoros) // perchè non devo filtrare come nelle note
+								.map((pomodoro) => (
+									<a className="preview-pomodoro-card" href={`/pomodoro`}>
+										<div>
+											<div>{pomodoro.studyTime} min</div>
+											<div>{pomodoro.pauseTime} min</div>
+											<div>{pomodoro.cycles} cicli</div>
+										</div>
+									</a>
+								))}
 						</div>
+					</div>
 
-						<div className="preview preview-note">
-							<h4>Le tue note recenti:</h4>
-							<label>
-								Mostra
-								<select
-									value={numNotes}
-									className="home-select"
-									onChange={(e): void => setNumNotes(Number(e.target.value))}>
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-								</select>
-								note:
-							</label>
-							<div className="preview-note-cards-container">
-								{notes
-									.filter((_, i) => i < numNotes)
-									.map((note) => (
-										<a className="preview-note-card" href={`/notes/${note.id}`}>
-											<div>
-												<div className="preview-note-card-title">
-													{note.title.length > HOME_MAX_TITLE_CHARS
-														? note.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-														) + "..."
-														: note.title}
-												</div>
-												<div className="preview-note-card-text">
-													{note.text.length > HOME_MAX_TEXT_CHARS
-														? note.text.substring(0, HOME_MAX_TEXT_CHARS) +
-														"..."
-														: note.text}
-												</div>
+					<div className="preview preview-note" >
+						<h4>Le tue note recenti:</h4>
+						<label>
+							Mostra
+							<select
+								value={numNotes}
+								className="home-select"
+								onChange={(e): void => setNumNotes(Number(e.target.value))}>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
+							note:
+						</label>
+						<div className="preview-note-cards-container">
+							{notes
+								.filter((_, i) => i < numNotes)
+								.map((note) => (
+									<a className="preview-note-card" href={`/notes/${note.id}`}>
+										<div>
+											<div className="preview-note-card-title">
+												{note.title.length > HOME_MAX_TITLE_CHARS
+													? note.title.substring(
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
+													: note.title}
 											</div>
-										</a>
-									))}
-							</div>
+											<div className="preview-note-card-text">
+												{note.text.length > HOME_MAX_TEXT_CHARS
+													? note.text.substring(0, HOME_MAX_TEXT_CHARS) +
+													"..."
+													: note.text}
+											</div>
+										</div>
+									</a>
+								))}
 						</div>
+					</div>
 
-						<div className="preview preview-projects">
-							<h4>I tuoi progetti:</h4>
-							<label>
-								Mostra
-								<select
-									value={numProjects}
-									className="home-select"
-									onChange={(e): void => setNumProjects(Number(e.target.value))}>
-									<option value="1">1</option>
-									<option value="2">2</option>
-									<option value="3">3</option>
-									<option value="4">4</option>
-								</select>
-								progetti:
-							</label>
-							<div className="preview-projects-cards-container">
-								{projects
-									.filter((_, i) => i < numProjects)
-									.map((project) => (
-										<a
-											className="preview-projects-card"
-											href={`/projects/${project.id}`}>
-											<div>
-												<div className="preview-projects-card-title">
-													{project.title.length > HOME_MAX_TITLE_CHARS
-														? project.title.substring(
-															0,
-															HOME_MAX_TITLE_CHARS
-														) + "..."
-														: project.title}
-												</div>
-												<div className="preview-projects-card-text">
-													{project.description.length > HOME_MAX_TEXT_CHARS
-														? project.description.substring(
-															0,
-															HOME_MAX_TEXT_CHARS
-														) + "..."
-														: project.description}
-												</div>
+					<div className="preview preview-projects">
+						<h4>I tuoi progetti:</h4>
+						<label>
+							Mostra
+							<select
+								value={numProjects}
+								className="home-select"
+								onChange={(e): void => setNumProjects(Number(e.target.value))}>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+							</select>
+							progetti:
+						</label>
+						<div className="preview-projects-cards-container">
+							{projects
+								.filter((_, i) => i < numProjects)
+								.map((project) => (
+									<a
+										className="preview-projects-card"
+										href={`/projects/${project.id}`}>
+										<div>
+											<div className="preview-projects-card-title">
+												{project.title.length > HOME_MAX_TITLE_CHARS
+													? project.title.substring(
+														0,
+														HOME_MAX_TITLE_CHARS
+													) + "..."
+													: project.title}
 											</div>
-										</a>
-									))}
-							</div>
+											<div className="preview-projects-card-text">
+												{project.description.length > HOME_MAX_TEXT_CHARS
+													? project.description.substring(
+														0,
+														HOME_MAX_TEXT_CHARS
+													) + "..."
+													: project.description}
+											</div>
+										</div>
+									</a>
+								))}
+						</div>
 					</div>
 				</div>
 			</div>
