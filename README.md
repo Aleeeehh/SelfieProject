@@ -10,6 +10,9 @@ Progetto di Tecnologie Web
 - Controllo e validazione input register, gestione errori da mostrare all'utente X
 - Controllo, validazione input e gestione errori nella pagina di modifica campi utente X
 - Le checkbox accessibili non devono evidenziarsi se li clicco, e devono avere click pointer X
+- Migliorata, e fixata chat X
+
+
 
 
 
