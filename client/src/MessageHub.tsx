@@ -48,6 +48,7 @@ function MessageHub(): React.JSX.Element {
 
 	React.useEffect(() => {
 		getAllChats();
+		console.log(chatMessage);
 	}, []);
 
 	async function handleSendMessage(): Promise<void> {
@@ -143,13 +144,23 @@ function MessageHub(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (res.status === 200) {
-				console.log(resBody);
-
 				// Aggiorna la lista delle chat
 				const chats = await fetch(`${SERVER_API}/chats`);
 				const resBody2 = (await chats.json()) as ResponseBody;
 				if (res.status === 200) {
-					setChatList(resBody2.value as Chat[]);
+					const updatedChats = resBody2.value as Chat[];
+					setChatList(updatedChats);
+
+					// Se la chat eliminata era quella attiva
+					if (chat.id === activeChat.id) {
+						// Se ci sono altre chat, imposta la prima come attiva
+						if (updatedChats.length > 0) {
+							setActiveChat(updatedChats[0]);
+						} else {
+							// Se non ci sono altre chat, resetta activeChat
+							setActiveChat({} as Chat);
+						}
+					}
 				} else {
 					setListMessage("Impossibile eliminare la chat: " + resBody.message);
 				}
@@ -198,6 +209,7 @@ function MessageHub(): React.JSX.Element {
 										}
 									}}
 									list={[]}
+									excludeUser={loggedUser?.username}
 								/>
 								<button
 									className="chat-close-button"
@@ -284,7 +296,7 @@ function MessageHub(): React.JSX.Element {
 										</div>
 									))}
 							</div>
-							{chatMessage && (<div className="error-message">{chatMessage}</div>)}
+							{/* {chatMessage && (<div className="error-message">{chatMessage}</div>)} */}
 							<div className="chat-input-container">
 								<input
 									className="message-input"

@@ -300,6 +300,7 @@ export default function Profile(): React.JSX.Element {
 								name="updatePassword"
 								id="updatePassword"
 								onChange={(e): void => setChangePassword(e.target.checked)}
+								style={{ cursor: "pointer" }}
 							/>
 						</label>
 						{changePassword && (

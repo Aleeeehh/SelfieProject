@@ -17,7 +17,7 @@
 	padding: 10px;
 	position: sticky;
 	top: 0;
-	z-index: 100;
+	z-index: 1000;
 }
 
 .header-container img {
@@ -50,8 +50,10 @@
 
 .notification-dot {
 	position: absolute;
-	top: -5px;/* Posiziona il pallino sopra il pulsante */
-	right: -5px;/* Posiziona il pallino a destra del pulsante */
+	top: -5px;
+	/* Posiziona il pallino sopra il pulsante */
+	right: -5px;
+	/* Posiziona il pallino a destra del pulsante */
 	width: 15px;
 	height: 15px;
 	border-radius: 50%;
@@ -66,8 +68,10 @@
 
 .notification-dot-gray {
 	position: absolute;
-	top: -5px;/* Posiziona il pallino sopra il pulsante */
-	right: -5px;/* Posiziona il pallino a destra del pulsante */
+	top: -5px;
+	/* Posiziona il pallino sopra il pulsante */
+	right: -5px;
+	/* Posiziona il pallino a destra del pulsante */
 	width: 15px;
 	height: 15px;
 	border-radius: 50%;
@@ -124,37 +128,37 @@
 
 
 .time-machine-button {
-    background-color: white;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    margin: 10px;
+	background-color: white;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	margin: 10px;
 }
 
 .right-menu-buttons,
 .left-menu-buttons {
-    display: flex;
-    justify-content: flex-end;
-    text-align: center;
+	display: flex;
+	justify-content: flex-end;
+	text-align: center;
 	align-items: center;
-    border-radius: 10px;
+	border-radius: 10px;
 }
 
-.class-header-buttons > a {
-    display: flex; 
-    vertical-align: middle;
-    justify-content: center;
+.class-header-buttons>a {
+	display: flex;
+	vertical-align: middle;
+	justify-content: center;
 }
 
 .header-home {
-    display: flex;
+	display: flex;
 }
 
 .selfie-title {
-    align-self: center;
-    text-align: center;
-    font-weight: 900;
-    margin-right: 1em;
+	align-self: center;
+	text-align: center;
+	font-weight: 900;
+	margin-right: 1em;
 }
 
 .header-link {
@@ -164,12 +168,12 @@
 	width: 9vw;
 	align-self: center;
 	background: transparent;
-    font-weight: 600;
+	font-weight: 600;
 }
 
 .header-link:hover {
-    color: green;
-    text-decoration: underline;
+	color: green;
+	text-decoration: underline;
 }
 
 .header-menu-button {
@@ -180,7 +184,9 @@
 }
 
 @media screen and (max-width: 950px) {
-	.date-button, .selfie-title {
+
+	.date-button,
+	.selfie-title {
 		display: none !important;
 	}
 

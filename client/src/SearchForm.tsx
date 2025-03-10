@@ -4,9 +4,10 @@ import { SERVER_API } from "./lib/params";
 type SearchFormProps = {
 	onItemClick: (e: React.ChangeEvent<HTMLSelectElement>, user: string) => void;
 	list: string[];
+	excludeUser?: string | null;
 };
 
-export default function SearchForm({ onItemClick, list }: SearchFormProps): React.JSX.Element {
+export default function SearchForm({ onItemClick, list, excludeUser }: SearchFormProps): React.JSX.Element {
 	const [search, setSearch] = React.useState("");
 	const [selectedUsername, setSelectedUsername] = React.useState<string | null>(null);
 	const [searchResults, setSearchResults] = React.useState([] as string[]);
@@ -56,12 +57,13 @@ export default function SearchForm({ onItemClick, list }: SearchFormProps): Reac
 				style={{ margin: "0" }}
 			/>
 			{searchResults.length > 0 && (
-				<select className="search-form-select" onChange={handleSelectChange}>
-					<option value="">
-						{selectedUsername ? selectedUsername : "Seleziona un utente"}
-					</option>
+				<select className="search-form-select" onChange={handleSelectChange} value={selectedUsername || ""}>
+					<option value="">Seleziona un utente</option>
 					{searchResults
-						.filter((username) => !list.find((u) => u === username))
+						.filter((username) =>
+							!list.find((u) => u === username) &&
+							(!excludeUser || username !== excludeUser)
+						)
 						.map((user) => (
 							<option key={user} value={user}>
 								{user}

@@ -324,7 +324,7 @@ function Home(): React.JSX.Element {
 					</div>
 
 					<div className="preview preview-pomodoro" >
-						<h4>Pomodoro recenti:</h4>
+						<h4>Pomodori recenti:</h4>
 						<label>
 							Mostra
 							<select

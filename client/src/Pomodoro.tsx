@@ -1080,7 +1080,7 @@ export default function Pomodoros(): React.JSX.Element {
 										className="previous-pomodoros-button"
 										onClick={togglePreviousPomodoros}
 									>
-										Visualizza ultimi Pomodoro
+										Visualizza ultimi Pomodori
 									</button>
 									<button className="share-config-button" onClick={toggleShareConfig}>
 										<a style={{ textDecoration: "none", color: "inherit" }}>
@@ -1096,7 +1096,7 @@ export default function Pomodoros(): React.JSX.Element {
 									className="preview"
 									style={{ display: previousPomodoros ? "flex" : "none" }}
 								>
-									<div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
+									<div style={{ fontWeight: "bold" }}>POMODORI RECENTI:</div>
 									{tomatoList.slice(-3).map((pomodoro, index) => (
 										<button
 											className="previous-pomodoros"

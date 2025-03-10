@@ -97,7 +97,7 @@ function WithLayout<T extends React.ReactNode>({
 							right: 0,
 							bottom: 0,
 							backgroundColor: 'rgba(0, 0, 0, 0.3)',
-							zIndex: 9,
+							zIndex: 999,
 							display: 'flex',
 							justifyContent: 'center',
 							alignItems: 'center'
@@ -136,7 +136,7 @@ function WithLayout<T extends React.ReactNode>({
 							fontSize: "20px",
 							cursor: "pointer",
 							boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-							zIndex: 10,
+							zIndex: 1000,
 						}}>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"

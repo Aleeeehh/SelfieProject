@@ -279,22 +279,55 @@ export default function Calendar(): React.JSX.Element {
 				{weekEvents[index].positions.map((event, idx) => (
 					<div
 						key={idx}
-						className={`evento ${!event.type ? "red" : "blue"}`}
+						className={`evento ${event.event.title === "Non disturbare"
+							? "non-disturbare"
+							: event.event.isRisorsa
+								? "brown"
+								: !event.type
+									? "red"
+									: "blue"
+							}`}
 						style={{
 							top: `calc(${event.top}px - 0.01*${event.top}px)`,
 							height: `${event.height}px`,
 							width: `calc(95%/${event.width})`,
 							position: "absolute",
-							color: !event.type ? "red" : "rgb(53, 61, 173)",
-							borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
-							backgroundColor: !event.type
-								? "rgba(249, 67, 67, 0.5)"
-								: "rgba(155, 223, 212, 0.5)",
+							color: event.event.title === "Non disturbare"
+								? "gray"
+								: event.event.isRisorsa
+									? "rgb(117, 71, 42)"
+									: (!event.type ? "red" : "rgb(155, 223, 212)"),
+							borderColor: event.event.title === "Non disturbare"
+								? "white"
+								: event.event.isRisorsa
+									? "rgba(166, 93, 41, 0.48)"
+									: (!event.type ? "red" : "rgb(155, 223, 212)"),
+							backgroundColor: event.event.title === "Non disturbare"
+								? new Date(currentDate) > new Date(event.event.endTime)
+									? "rgba(128, 138, 136, 0.2)"
+									: "rgba(128, 138, 136, 0.4)"
+								: event.event.isRisorsa
+									? new Date(currentDate) > new Date(event.event.endTime)
+										? "rgba(139, 69, 19, 0.2)"
+										: "rgba(139, 69, 19, 0.5)"
+									: !event.type
+										? new Date(currentDate) > new Date(event.event.endTime)
+											? "rgba(249, 67, 67, 0.2)"  // Pomodoro passato
+											: "rgba(249, 67, 67, 0.5)"  // Pomodoro corrente/futuro
+										: new Date(currentDate) > new Date(event.event.endTime)
+											? "rgba(155, 223, 212, 0.2)"
+											: "rgba(155, 223, 212, 0.5)",
 							marginLeft: `${event.marginLeft}%`,
 							cursor: "default",
 						}}
 					>
-						<div style={{ color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/ }}>
+						<div style={{
+							color: event.event.title === "Non disturbare"
+								? "gray"
+								: event.event.isRisorsa
+									? "rgb(117, 71, 42)"
+									: (!event.type ? "red" : "rgb(77, 168, 189)")
+						}}>
 							{!event.type ? (
 								<Link
 									to={`/pomodoro?duration=${((startTime, endTime): number => {
@@ -327,6 +360,7 @@ export default function Calendar(): React.JSX.Element {
 								weekMode(e as React.MouseEvent<HTMLElement>);
 							}}
 						>
+							{/*
 							<i
 								className="bi bi-trash"
 								style={{
@@ -335,9 +369,12 @@ export default function Calendar(): React.JSX.Element {
 									fontSize: "1.5rem",
 									margin: 0,
 									padding: 0,
-									color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/,
+									color: event.event.isRisorsa
+										? "rgb(117, 71, 42)"
+										: (!event.type ? "red" : "rgb(77, 168, 189)"),
 									cursor: "pointer",
 								}}></i>
+							*/}
 						</div>
 					</div>
 				))}
@@ -371,24 +408,57 @@ export default function Calendar(): React.JSX.Element {
 						return (
 							<div
 								key={idx}
-								className={`evento ${!event.type ? "red" : "blue"}`}
+								className={`evento ${event.event.title === "Non disturbare"
+									? "non-disturbare"
+									: event.event.isRisorsa
+										? "brown"
+										: !event.type
+											? "red"
+											: "blue"
+									}`}
 								style={{
 									top: `0px`,
 									height: `15px`,
 									width: `130px`,
 									position: "relative",
-									color: !event.type ? "red" : "rgb(53, 61, 173)",
-									borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
-									backgroundColor: !event.type
-										? "rgba(249, 67, 67, 0.5)"
-										: "rgba(155, 223, 212, 0.5)",
+									color: event.event.title === "Non disturbare"
+										? "gray"
+										: event.event.isRisorsa
+											? "rgb(117, 71, 42)"
+											: (!event.type ? "red" : "rgb(53, 61, 173)"),
+									borderColor: event.event.title === "Non disturbare"
+										? "white"
+										: event.event.isRisorsa
+											? "rgba(166, 93, 41, 0.48)"
+											: (!event.type ? "red" : "rgb(155, 223, 212)"),
+									backgroundColor: event.event.title === "Non disturbare"
+										? new Date(currentDate) > new Date(event.event.endTime)
+											? "rgba(128, 138, 136, 0.2)"
+											: "rgba(128, 138, 136, 0.4)"
+										: event.event.isRisorsa
+											? new Date(currentDate) > new Date(event.event.endTime)
+												? "rgba(139, 69, 19, 0.2)"
+												: "rgba(139, 69, 19, 0.5)"
+											: !event.type
+												? new Date(currentDate) > new Date(event.event.endTime)
+													? "rgba(249, 67, 67, 0.2)"
+													: "rgba(249, 67, 67, 0.5)"
+												: new Date(currentDate) > new Date(event.event.endTime)
+													? "rgba(155, 223, 212, 0.2)"
+													: "rgba(155, 223, 212, 0.5)",
 									marginLeft: `0px`,
 									cursor: "default",
 									marginBottom: "1px",
 									fontSize: "12px",
 								}}
 							>
-								<div style={{ color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/ }}>
+								<div style={{
+									color: event.event.title === "Non disturbare"
+										? "gray"
+										: event.event.isRisorsa
+											? "rgb(117, 71, 42)"
+											: (!event.type ? "red" : "rgb(77, 168, 189)")
+								}}>
 									{!event.type ? (
 										<Link
 											to={`/pomodoro?duration=${((
@@ -543,17 +613,37 @@ export default function Calendar(): React.JSX.Element {
 							return (
 								<div
 									key={idx}
-									className={`evento ${!event.type ? "red" : "blue"}`}
+									className={`evento ${event.event.isRisorsa ? "brown" : !event.type ? "red" : "blue"}`}
 									style={{
 										top: `0px`,
 										height: `15px`,
 										width: `130px`,
 										position: "relative",
-										color: !event.type ? "red" : "rgb(53, 61, 173)",
-										borderColor: !event.type ? "red" : "rgb(155, 223, 212)",
-										backgroundColor: !event.type
-											? "rgba(249, 67, 67, 0.5)"
-											: "rgba(155, 223, 212, 0.5)",
+										color: event.event.title === "Non disturbare"
+											? "gray"
+											: event.event.isRisorsa
+												? "rgb(117, 71, 42)"
+												: (!event.type ? "red" : "rgb(53, 61, 173)"),
+										borderColor: event.event.title === "Non disturbare"
+											? "white"
+											: event.event.isRisorsa
+												? "rgba(166, 93, 41, 0.48)"
+												: (!event.type ? "red" : "rgb(155, 223, 212)"),
+										backgroundColor: event.event.title === "Non disturbare"
+											? new Date(currentDate) > new Date(event.event.endTime)
+												? "rgba(128, 138, 136, 0.2)"
+												: "rgba(128, 138, 136, 0.4)"
+											: event.event.isRisorsa
+												? new Date(currentDate) > new Date(event.event.endTime)
+													? "rgba(139, 69, 19, 0.2)"
+													: "rgba(139, 69, 19, 0.5)"
+												: !event.type
+													? new Date(currentDate) > new Date(event.event.endTime)
+														? "rgba(249, 67, 67, 0.2)"
+														: "rgba(249, 67, 67, 0.5)"
+													: new Date(currentDate) > new Date(event.event.endTime)
+														? "rgba(155, 223, 212, 0.2)"
+														: "rgba(155, 223, 212, 0.5)",
 										marginLeft: `0px`,
 										cursor: "default",
 										marginBottom: "1px",
@@ -561,7 +651,11 @@ export default function Calendar(): React.JSX.Element {
 									}}>
 									<div
 										style={{
-											color: "black" /*!event.type ? "black" : "rgb(53, 61, 173)"*/,
+											color: event.event.title === "Non disturbare"
+												? "gray"
+												: event.event.isRisorsa
+													? "rgb(117, 71, 42)"
+													: (!event.type ? "red" : "rgb(77, 168, 189)")
 										}}>
 										{!event.type ? (
 											<Link
@@ -633,8 +727,13 @@ export default function Calendar(): React.JSX.Element {
 										height: `15px`,
 										width: `130px`,
 										position: "relative",
-										color: "rgb(77, 168, 189)",
-										backgroundColor: "rgba(155, 223, 212, 0.5)",
+										color: event.event.title === "Non disturbare"
+											? "rgb(117, 71, 42)"
+											: (!event.type ? "red" : "rgb(77, 168, 189)"),
+										borderColor: "rgb(77, 168, 189)",
+										backgroundColor: new Date(currentDate) > new Date(event.event.endTime)
+											? "rgba(155, 223, 212, 0.2)"
+											: "rgba(155, 223, 212, 0.5)",
 										marginLeft: `0px`,
 										cursor: "default",
 										marginBottom: "1px",
@@ -3567,6 +3666,7 @@ export default function Calendar(): React.JSX.Element {
 													marginLeft: "5px",
 													marginRight: "3px",
 													marginTop: "3px",
+													cursor: "pointer",
 												}}
 											/>
 											Evento Pomodoro
@@ -3590,6 +3690,7 @@ export default function Calendar(): React.JSX.Element {
 															marginLeft: "5px",
 															marginRight: "3px",
 															marginTop: "3px",
+															cursor: "pointer",
 														}}
 													/>
 													Tutto il giorno
@@ -3614,6 +3715,7 @@ export default function Calendar(): React.JSX.Element {
 																	marginLeft: "5px",
 																	marginRight: "3px",
 																	marginTop: "3px",
+																	cursor: "pointer",
 																}}
 															/>
 															Evento ripetuto
@@ -3924,6 +4026,7 @@ export default function Calendar(): React.JSX.Element {
 													marginLeft: "5px",
 													marginRight: "3px",
 													marginTop: "3px",
+													cursor: "pointer",
 												}}
 											/>
 											Aggiungi notifica
@@ -4024,6 +4127,7 @@ export default function Calendar(): React.JSX.Element {
 													marginLeft: "5px",
 													marginRight: "3px",
 													marginTop: "3px",
+													cursor: "pointer",
 												}}
 											/>
 											Invia evento ad utente
@@ -4078,6 +4182,7 @@ export default function Calendar(): React.JSX.Element {
 													marginLeft: "5px",
 													marginRight: "3px",
 													marginTop: "3px",
+													cursor: "pointer",
 												}}
 											/>
 											Condividi evento
@@ -4250,6 +4355,7 @@ export default function Calendar(): React.JSX.Element {
 													marginLeft: "5px",
 													marginRight: "3px",
 													marginTop: "3px",
+													cursor: "pointer",
 												}}
 											/>
 											Aggiungi notifica
@@ -4331,6 +4437,7 @@ export default function Calendar(): React.JSX.Element {
 													marginLeft: "5px",
 													marginRight: "3px",
 													marginTop: "3px",
+													cursor: "pointer",
 												}}
 											/>
 											Invia attività ad utente
@@ -4386,6 +4493,7 @@ export default function Calendar(): React.JSX.Element {
 													marginLeft: "5px",
 													marginRight: "3px",
 													marginTop: "3px",
+													cursor: "pointer",
 												}}
 											/>
 											Condividi attività
@@ -4476,6 +4584,7 @@ export default function Calendar(): React.JSX.Element {
 													marginLeft: "5px",
 													marginRight: "3px",
 													marginTop: "3px",
+													cursor: "pointer",
 												}}
 											/>
 											Tutto il giorno
@@ -4500,6 +4609,7 @@ export default function Calendar(): React.JSX.Element {
 															marginLeft: "5px",
 															marginRight: "3px",
 															marginTop: "3px",
+															cursor: "pointer",
 														}}
 													/>
 													Ripeti
@@ -4917,10 +5027,16 @@ export default function Calendar(): React.JSX.Element {
 												className="nome-data-container"
 												style={{ flexDirection: "column" }}
 											>
-												<div style={{ display: "flex", flexDirection: "row", gap: "0.5em" }}>
+												<div style={{ display: "flex", flexDirection: "row", gap: "0.5em", alignItems: "center" }}>
 
 													<button
-														className="year-button "
+														className="year-button"
+														style={{
+															padding: "2px 8px",
+															height: "24px",
+															minHeight: "24px",
+															lineHeight: "1",
+														}}
 														onClick={(): void => {
 															setEventPositions([]); // Svuota l'array delle posizioni
 															setYear(year - 1); // Decrementa l'anno
@@ -4932,6 +5048,12 @@ export default function Calendar(): React.JSX.Element {
 
 													<button
 														className="year-button"
+														style={{
+															padding: "2px 8px",
+															height: "24px",
+															minHeight: "24px",
+															lineHeight: "1",
+														}}
 														onClick={(): void => {
 															setEventPositions([]); // Svuota l'array delle posizioni
 															setYear(year + 1); // Decrementa l'anno
@@ -5111,9 +5233,15 @@ export default function Calendar(): React.JSX.Element {
 											<div
 												className="nome-data-container"
 												style={{ flexDirection: "column" }}>
-												<div style={{ display: "flex", flexDirection: "row", gap: "0.5em" }}>
+												<div style={{ display: "flex", flexDirection: "row", gap: "0.5em", alignItems: "center" }}>
 													<button
 														className="year-button "
+														style={{
+															padding: "2px 8px",
+															height: "24px",
+															minHeight: "24px",
+															lineHeight: "1",
+														}}
 
 														onClick={(): void => {
 															setEventPositions([]); // Svuota l'array delle posizioni
@@ -5126,6 +5254,12 @@ export default function Calendar(): React.JSX.Element {
 
 													<button
 														className="year-button"
+														style={{
+															padding: "2px 8px",
+															height: "24px",
+															minHeight: "24px",
+															lineHeight: "1",
+														}}
 														onClick={(): void => {
 															setEventPositions([]); // Svuota l'array delle posizioni
 															setYear(year + 1); // Decrementa l'anno
@@ -5517,7 +5651,7 @@ export default function Calendar(): React.JSX.Element {
 																	style={{
 																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
 																		right: "50%", // Posiziona l'icona a 10px dal lato destro
-																		fontSize: "1.5rem",
+																		fontSize: "1rem",
 																		margin: 0,
 																		padding: 0,
 																		color: "red",
@@ -5603,7 +5737,11 @@ export default function Calendar(): React.JSX.Element {
 																	cursor: "default",
 																}}
 															>
-																{event.name}
+																{event.name && (
+																	event.name.split(' ').some(word => word.length > 30)
+																		? event.name.substring(0, 20) + "..."
+																		: event.name
+																)}
 																<div
 																	className="position-relative"
 																	onClick={(): Promise<void> =>
@@ -5621,7 +5759,7 @@ export default function Calendar(): React.JSX.Element {
 																				style={{
 																					bottom: "2px", // Posiziona l'icona a 10px dal fondo
 																					right: "50%", // Posiziona l'icona a 10px dal lato destro
-																					fontSize: "1.5rem",
+																					fontSize: "1rem",
 																					margin: 0,
 																					padding: 0,
 																					color:
