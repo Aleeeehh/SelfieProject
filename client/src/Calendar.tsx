@@ -2987,6 +2987,14 @@ export default function Calendar(): React.JSX.Element {
 		await loadEvents();
 		handleDateClick(startTime.getDate());
 
+		if (activeButton == 1) {
+			weekMode(e);
+		}
+
+		if (activeButton == 2) {
+			monthMode(e);
+		}
+
 		//setMessage(data.message || "Undefined error");
 		setCreateEvent(!createEvent);
 		setAllDayEvent(false);
@@ -3414,6 +3422,8 @@ export default function Calendar(): React.JSX.Element {
 	function toggleRepeatEvent(): void {
 		console.log("toggleRepeatEvent");
 		setRepeatEvent(!repeatEvent);
+		//setSelectedValue("Data");
+		//setIsInfinite(false);
 	}
 
 	function toggleUntil(selectedValue: string): void {
@@ -3764,7 +3774,7 @@ export default function Calendar(): React.JSX.Element {
 																				<select
 																					className="btn border"
 																					onChange={toggleSelectUntil}
-																					defaultValue="Data">
+																					value={selectedValue}>
 																					<option value="Data">
 																						Data
 																					</option>
@@ -4657,7 +4667,7 @@ export default function Calendar(): React.JSX.Element {
 																		<select
 																			className="btn border"
 																			onChange={toggleSelectUntil}
-																			defaultValue="Data">
+																			defaultValue={selectedValue}>
 																			<option value="Data">
 																				Data
 																			</option>

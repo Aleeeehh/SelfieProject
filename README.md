@@ -12,6 +12,9 @@ Progetto di Tecnologie Web
 - Le checkbox accessibili non devono evidenziarsi se li clicco, e devono avere click pointer X
 - Migliorata, fixata chat e sua relazione con searchform X
 - Migliorato contrasto, e fixata coerenza grafica view day/week/month X
+- Fixato bug ripetizione evento X
+- migliorata animazione topbar X
+- Quando siamo in visuale week/month, ed inseriamo un evento, questo viene visualizzato immediatamente X
 
 
 
@@ -20,13 +23,10 @@ Progetto di Tecnologie Web
 
 
 ### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
-- Aumentare il contrasto nei colori, in particolare il colore degli eventi del calendario (colore nome evento su sfondo del medesimo colore) (trova buoni accoppiamenti di colori, e fallo anche
-per le risorse allocate)
-- Se si cancella un evento con associata una risorsa, elimina allocazione risorsa 
+
 - Editare un evento già impostato
 - Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con mouse con rotella)
 - Tutte le cose che vengono aggiunte/cambiano, devono venire aggiunte/essere cambiate senza refreshare la pagina (in particolare calendario, per view day, week, month, ma anche progetti, attività, ecc.)
-
 
 - Mantenere la time machine attiva su tutta l'interfaccia, se cambio pagina non si deve resettare. Se la time machine cambia orario, deve cambiare anche il pomodoro.
 - Time machine deve influenzare OGNI SINGOLO COMPONENTE DEL PROGETTO, quindi sia calendario, che pomodoro, che attività, che progetti, che note!

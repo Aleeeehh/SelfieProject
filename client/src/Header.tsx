@@ -626,6 +626,28 @@ export default function Header(): React.JSX.Element {
 		console.log("showDropdown:", showDropdown);
 	}
 
+	useEffect(() => {
+		const header = document.querySelector('.header-container');
+
+		const handleScroll = (): void => {
+			if (header) {
+				// Controlla se l'header è attaccato al top
+				if (window.scrollY > 0) {
+					header.classList.add('sticky');
+				} else {
+					header.classList.remove('sticky');
+				}
+			}
+		};
+
+		window.addEventListener('scroll', handleScroll);
+
+		// Cleanup
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+		};
+	}, []);
+
 	return (
 		<header className="header-container">
 			{/*Parte sinistra dell'header*/}
@@ -1695,7 +1717,7 @@ export default function Header(): React.JSX.Element {
 																color: "lightblue",
 																fontSize: "20px",
 															}}></i>{" "}
-													
+												
 													</button>
 													*/}
 												</div>
