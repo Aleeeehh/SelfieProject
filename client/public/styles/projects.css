@@ -7,11 +7,11 @@
 	flex-direction: column;
 }
 
-.projects-container>a {
+.projects-container > a {
 	margin: 1em auto;
 }
 
-.projects-container>a>button {
+.projects-container > a > button {
 	background-color: #b6b6e3;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 	color: black;
@@ -93,7 +93,6 @@
 	}
 }
 
-
 /* SINGLE PROJECT PAGE */
 
 .project-background {
@@ -158,7 +157,7 @@
 	color: #a12a2a !important;
 }
 
-.project-container>* {
+.project-container > * {
 	width: 100%;
 	margin-bottom: 1em;
 	border-radius: 8px;
@@ -169,7 +168,7 @@
 	border-radius: 8px;
 }
 
-.project-container>label {
+.project-container > label {
 	display: flex;
 	flex-direction: column;
 	font-weight: bold;
@@ -269,7 +268,7 @@
 	gap: 0.5em;
 }
 
-.project-activities-container>label {
+.project-activities-container > label {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
@@ -291,7 +290,7 @@
 	background-color: #ffd57e;
 	color: #4a4a4a;
 	font-weight: 500;
-	width: 40%;
+	width: 100%;
 	font-style: italic;
 	display: flex;
 	margin-top: 5px;
@@ -300,6 +299,14 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	gap: 0.5em;
 	flex-wrap: wrap;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: baseline;
+}
+
+.project-activity-child {
+	padding: 0.5em 1em;
+	background-color: rgb(253, 197, 86);
 }
 
 .project-activity-edit,
@@ -364,7 +371,6 @@
 	}
 }
 
-
 /* PROJECT GANTT */
 
 .gantt-background {
@@ -375,7 +381,7 @@
 }
 
 .gantt-container {
-	font-family: 'Arial', sans-serif;
+	font-family: "Arial", sans-serif;
 	text-align: center;
 	padding: 20px;
 	width: 80%;
@@ -477,7 +483,6 @@
 	width: 100%;
 	height: 40px;
 	margin: auto;
-
 }
 
 .gantt-empty-cell {
