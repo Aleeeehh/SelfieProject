@@ -1120,20 +1120,40 @@ router.post("/eventsOfDay", async (req: Request, res: Response) => {
 });
 
 router.put("/:id", async (req: Request, res: Response) => {
+	console.log("Entro nella PUT con req.body:", req.body);
+	console.log("Entro nella PUT con req.params:", req.params);
 	const idEventoNotificaCondiviso = req.params.id as string;
 	const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as string[] | undefined; // username list
 	const inputEndTime = req.body.endTime as Date | undefined;
 	try {
 		console.log("ENTRO NELLA PUT CON inputEndTime:", inputEndTime);
-		console.log("Entro nella PUT con inputEndTime:", inputEndTime);
-		console.log("Entro nella PUT con inputEndTime:", inputEndTime);
-		console.log("Entro nella PUT con inputEndTime:", inputEndTime);
 
 		const foundEvents = await EventSchema.find({
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 		});
 
-		console.log("foundEvents:", foundEvents);
+		console.log("evento trovato:", foundEvents);
+
+		if (req.body.isUpdate) {
+			console.log("STO MODIFICANDO UN EVENTO");
+			console.log("STO MODIFICANDO UN EVENTO");
+			console.log("STO MODIFICANDO UN EVENTO");
+			console.log("STO MODIFICANDO UN EVENTO");
+			console.log("STO MODIFICANDO UN EVENTO");
+			const updatedTitle = req.body.title;
+			const updatedStartTime = req.body.startTime;
+			const updatedEndTime = req.body.endTime;
+			const updatedLocation = req.body.location;
+			await EventSchema.updateOne(
+				{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+				{
+					title: updatedTitle,
+					startTime: updatedStartTime,
+					endTime: updatedEndTime,
+					location: updatedLocation,
+				}
+			);
+		}
 
 		if (foundEvents.length === 0) {
 			const resBody: ResponseBody = {
