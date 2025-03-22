@@ -3595,25 +3595,27 @@ export default function Calendar(): React.JSX.Element {
 								Chiudi
 							</button>
 
-							<label htmlFor="title">
-								Titolo
-								<input
-									className="btn border"
-									type="text"
-									name="title"
-									value={selectedEvent?.title}
-									onChange={(
-										e: React.ChangeEvent<HTMLInputElement>
-									): void => {
-										if (selectedEvent) {
-											setSelectedEvent({
-												...selectedEvent,
-												title: e.target.value,
-											});
-										}
-									}}
-								/>
-							</label>
+							{selectedEvent?.title !== "Non disturbare" &&
+								<label htmlFor="title">
+									Titolo
+									<input
+										className="btn border"
+										type="text"
+										name="title"
+										value={selectedEvent?.title}
+										onChange={(
+											e: React.ChangeEvent<HTMLInputElement>
+										): void => {
+											if (selectedEvent) {
+												setSelectedEvent({
+													...selectedEvent,
+													title: e.target.value,
+												});
+											}
+										}}
+									/>
+								</label>
+							}
 
 							<label htmlFor="startTime">
 								Data Inizio
@@ -3708,31 +3710,32 @@ export default function Calendar(): React.JSX.Element {
 									/>
 								</div>
 							</label>
-
-							<label htmlFor="location">
-								Luogo
-								<div>
-									<input
-										className="btn border createEventinput"
-										type="text"
-										name="location"
-										value={selectedEvent?.location}
-										onChange={(e: ChangeEvent<HTMLInputElement>): void => {
-											if (selectedEvent) {  // Verifichiamo che selectedEvent non sia null
-												setSelectedEvent({
-													...selectedEvent,
-													location: e.target.value,
-													_id: selectedEvent._id,  // Assicuriamoci che le proprietà richieste siano presenti
-													title: selectedEvent.title,
-													startTime: selectedEvent.startTime,
-													endTime: selectedEvent.endTime,
-													// ... altre proprietà richieste dal tipo Event
-												});
-											}
-										}}
-									/>
-								</div>
-							</label>
+							{selectedEvent?.title !== "Non disturbare" &&
+								<label htmlFor="location">
+									Luogo
+									<div>
+										<input
+											className="btn border createEventinput"
+											type="text"
+											name="location"
+											value={selectedEvent?.location}
+											onChange={(e: ChangeEvent<HTMLInputElement>): void => {
+												if (selectedEvent) {  // Verifichiamo che selectedEvent non sia null
+													setSelectedEvent({
+														...selectedEvent,
+														location: e.target.value,
+														_id: selectedEvent._id,  // Assicuriamoci che le proprietà richieste siano presenti
+														title: selectedEvent.title,
+														startTime: selectedEvent.startTime,
+														endTime: selectedEvent.endTime,
+														// ... altre proprietà richieste dal tipo Event
+													});
+												}
+											}}
+										/>
+									</div>
+								</label>
+							}
 
 							{messageEditEvent && (
 								<div className="error-message">
