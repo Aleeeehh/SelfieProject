@@ -169,6 +169,8 @@ export default function Calendar(): React.JSX.Element {
 
 	//ANDRE
 	const [showDownloadImport, setShowDownloadImport] = React.useState(false);
+	//const [typeEvent, setTypeEvent] = React.useState("simpleEvent");
+	//console.log(setTypeEvent);
 
 	const getValidRepeatOptions = (time: number): number[] => {
 		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
@@ -3527,6 +3529,27 @@ export default function Calendar(): React.JSX.Element {
 		setShowDownloadImport(!showDownloadImport);
 		setMessageExpImp("");
 	}
+
+	/* function selectTypeEvent(e: React.ChangeEvent<HTMLSelectElement>): void {
+		const tipoSelezionato = e.target.value;
+		if (tipoSelezionato === "simpleEvent") {
+			setAddTitle(true);
+			setRepeatEvent(false);
+			setAllDayEvent(false);
+		}
+		else if (tipoSelezionato === "pomodoroEvent") {
+			setTitle("Pomodoro Session");
+			setAddTitle(false);
+			setRepeatEvent(false);
+			setAllDayEvent(false);
+		}
+		else if (tipoSelezionato === "ttggEvent") {
+			
+		}
+		else if (tipoSelezionato === "repeatedEvent") {
+			
+		}
+	} */
 
 	return (
 		<>

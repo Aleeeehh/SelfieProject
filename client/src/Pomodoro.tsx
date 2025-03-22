@@ -302,11 +302,6 @@ export default function Pomodoros(): React.JSX.Element {
 					const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 					const date = await res.json();
 					console.log("Eventi trovati nella handleLeftTime:", data);
-					console.log("Eventi trovati nella handleLeftTime:", data);
-					console.log("Eventi trovati nella handleLeftTime:", data);
-					console.log("Eventi trovati nella handleLeftTime:", data);
-					console.log("Eventi trovati nella handleLeftTime:", data);
-
 
 					// Creo una variabile per il pomodoro attuale
 					const currentPomodoro = date.value.find((event: any) => {
@@ -319,15 +314,6 @@ export default function Pomodoros(): React.JSX.Element {
 					);
 
 					if (date.status === ResponseStatus.GOOD) {
-						console.log("ENTRO NELL'IF");
-						console.log("ENTRO NELL'IF");
-
-						console.log("ENTRO NELL'IF");
-
-						console.log("ENTRO NELL'IF");
-						console.log("ENTRO NELL'IF");
-						console.log("ENTRO NELL'IF");
-						console.log("ENTRO NELL'IF");
 						console.log("ENTRO NELL'IF");
 						console.log("ENTRO NELL'IF");
 
@@ -390,18 +376,6 @@ export default function Pomodoros(): React.JSX.Element {
 								console.log("Errore nella creazione del nuovo evento.");
 							}
 						} else if (eventPomodoro) {
-							console.log(
-								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
-								eventPomodoro
-							);
-							console.log(
-								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
-								eventPomodoro
-							);
-							console.log(
-								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
-								eventPomodoro
-							);
 							console.log(
 								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
 								eventPomodoro
