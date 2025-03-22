@@ -4,6 +4,7 @@ import { Event } from "../types/Event.js";
 import { ResponseBody } from "../types/ResponseBody.js";
 import { ResponseStatus } from "../types/ResponseStatus.js";
 import EventSchema from "../schemas/Event.js";
+import NotificationSchema from "../schemas/Notification.js";
 import multer from "multer";
 import ical from "ical";
 import { validDateString } from "../lib.js";
@@ -1134,16 +1135,15 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 		console.log("evento trovato:", foundEvents);
 
+		//se entra in questo if, vuol dire che abbiamo modificato l'evento dal calendario
 		if (req.body.isUpdate) {
-			console.log("STO MODIFICANDO UN EVENTO");
-			console.log("STO MODIFICANDO UN EVENTO");
-			console.log("STO MODIFICANDO UN EVENTO");
 			console.log("STO MODIFICANDO UN EVENTO");
 			console.log("STO MODIFICANDO UN EVENTO");
 			const updatedTitle = req.body.title;
 			const updatedStartTime = req.body.startTime;
 			const updatedEndTime = req.body.endTime;
 			const updatedLocation = req.body.location;
+			//modifichiamo i campi base dell'evento 
 			await EventSchema.updateOne(
 				{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
 				{
@@ -1153,6 +1153,40 @@ router.put("/:id", async (req: Request, res: Response) => {
 					location: updatedLocation,
 				}
 			);
+
+			//guardiamo se abbiamo modificato la data di inzio dell'evento
+			if (new Date(updatedStartTime).getTime() !== new Date(foundEvents[0].startTime).getTime()) {
+				console.log("updatedStartTime:", updatedStartTime);
+				console.log("foundEvents[0].startTime:", foundEvents[0].startTime);
+				console.log("HO MODIFICATO LA DATA DI INIZIO DELL'EVENTO");
+				console.log("HO MODIFICATO LA DATA DI INIZIO DELL'EVENTO");
+				console.log("HO MODIFICATO LA DATA DI INIZIO DELL'EVENTO");
+
+				//se la abbiamo modificata, guardiamo se esiste una notifica associata all'evento
+				const notificheAssociata = await NotificationSchema.find({ idEventoNotificaCondiviso: idEventoNotificaCondiviso });
+				console.log("notificheAssociata:", notificheAssociata);
+
+				//se entrambe sono vere, calcoliamo la differenza tra la data originale e la data modificata
+				if (notificheAssociata !== null) {
+					//aggiungiamo/togliamo la differenza tra le date a tutte le notifiche associate all'evento
+					//DOBBIAMO GESTIRE IL CASO IN VALORE ASSOLUTO
+					for (const notifica of notificheAssociata) {
+						const differenza = new Date(updatedStartTime).getTime() - new Date(foundEvents[0].startTime).getTime();
+						const newDataNotifica = new Date(new Date(notifica.data.date).getTime() + differenza);
+						console.log("newDataNotifica:", newDataNotifica);
+						await NotificationSchema.updateOne(
+							{ _id: notifica._id },
+							{
+								data: {
+									...notifica.data,  // mantiene tutti i campi esistenti
+									date: newDataNotifica  // aggiorna solo la data
+								}
+							});
+					}
+
+				}
+
+			}
 		}
 
 		if (foundEvents.length === 0) {
@@ -1181,10 +1215,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 		}
 
 		if (inputEndTime) {
-			console.log("AGGIORNO LA ENDTIME:", inputEndTime);
-			console.log("AGGIORNO LA ENDTIME:", inputEndTime);
-			console.log("AGGIORNO LA ENDTIME:", inputEndTime);
-			console.log("AGGIORNO LA ENDTIME:", inputEndTime);
+			//console.log("AGGIORNO LA ENDTIME:", inputEndTime);
 			await EventSchema.updateMany(
 				{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
 				{ endTime: inputEndTime }
