@@ -208,14 +208,15 @@ Cartella html..
 - npm install
 - npm run build
 - cancella cartella node_modules
--scp -r ./build alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
--vai in cartella server
--npm install
--npm run build
--cancella cartella node_modules
--scp -r ./* alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
--ssh alessio.prato2@eva.cs.unibo.it (entro nel pc remoto del dipartimento)
--cd /home, cd web, cd site232402, cd html
--/usr/local/node/bin/npm install
--ssh alessio.prato2@gocker.cs.unibo.it (entro in gocker)
--start node-17 site232402 dist/server.js
+- scp -r ./build alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
+- vai in cartella server
+- npm install
+- npm run build
+- cancella cartella node_modules
+- scp -r ./* alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
+- ssh alessio.prato2@eva.cs.unibo.it (entro nel pc remoto del dipartimento)
+- cd /home, cd web, cd site232402, cd html
+- /usr/local/node/bin/npm install
+- ssh alessio.prato2@gocker.cs.unibo.it (entro in gocker)
+- start node-17 site232402 dist/server.js
+
