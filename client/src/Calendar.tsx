@@ -53,6 +53,7 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element {
 	// prova push
+	const [messageEditEvent, setMessageEditEvent] = React.useState("");
 	const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
 	const [editEvent, setEditEvent] = React.useState(false);
 	const [title, setTitle] = React.useState("");
@@ -2752,8 +2753,23 @@ export default function Calendar(): React.JSX.Element {
 	async function handleUpdateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		console.log("Modifico l'evento:", selectedEvent);
-		setEditEvent(false);
-		setSelectedEvent(null);
+		if (!selectedEvent?.startTime || !selectedEvent?.endTime ||
+			new Date(selectedEvent.startTime).getTime() > new Date(selectedEvent.endTime).getTime()) {
+			setMessageEditEvent("La data di inizio non può essere collocata dopo la data di fine!");
+			return;
+		}
+
+		if (selectedEvent?.title === "" || selectedEvent?.location === "") {
+			setMessageEditEvent("Tutti i campi dell'evento devono essere riempiti!");
+			return;
+		}
+
+		//l'evento deve durare almeno 30 minuti
+		if ((new Date(selectedEvent.endTime).getTime() - new Date(selectedEvent.startTime).getTime()) < 30 * 60 * 1000) {
+			setMessageEditEvent("L'evento deve durare almeno 30 minuti!");
+			return;
+		}
+
 		//quello che dobbbiamo fare adesso è fare una PUT all'evento che stiamo modificando.
 		const res = await fetch(`${SERVER_API}/events/${selectedEvent?.idEventoNotificaCondiviso}`, {
 			method: "PUT",
@@ -2764,6 +2780,9 @@ export default function Calendar(): React.JSX.Element {
 			}),
 		});
 		console.log("Risposta della PUT:", res);
+		setEditEvent(false);
+		setSelectedEvent(null);
+		setMessageEditEvent("");
 	}
 
 	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -3602,17 +3621,18 @@ export default function Calendar(): React.JSX.Element {
 									<input
 										className="btn border createEventinput"
 										type="time"
-										value={`${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getMinutes().toString().padStart(2, "0") : "00"
-											}`}
+										value={`${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getMinutes().toString().padStart(2, "0") : "00"}`}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 											const [hours, minutes] = e.target.value.split(":");
-											if (selectedEvent?.startTime) {
-												const newDate = new Date(selectedEvent.startTime);
-												newDate.setHours(Number(hours), Number(minutes), 0, 0);
-												setSelectedEvent({
-													...selectedEvent,
-													startTime: newDate
-												});
+											if (hours && minutes && !isNaN(Number(hours)) && !isNaN(Number(minutes))) {
+												if (selectedEvent?.startTime) {
+													const newDate = new Date(selectedEvent.startTime);
+													newDate.setHours(Number(hours), Number(minutes), 0, 0);
+													setSelectedEvent({
+														...selectedEvent,
+														startTime: newDate
+													});
+												}
 											}
 										}}
 									/>
@@ -3648,17 +3668,18 @@ export default function Calendar(): React.JSX.Element {
 									<input
 										className="btn border createEventinput"
 										type="time"
-										value={`${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getMinutes().toString().padStart(2, "0") : "00"
-											}`}
+										value={`${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getMinutes().toString().padStart(2, "0") : "00"}`}
 										onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 											const [hours, minutes] = e.target.value.split(":");
-											if (selectedEvent?.endTime) {
-												const newDate = new Date(selectedEvent.endTime);
-												newDate.setHours(Number(hours), Number(minutes), 0, 0);
-												setSelectedEvent({
-													...selectedEvent,
-													endTime: newDate
-												});
+											if (hours && minutes && !isNaN(Number(hours)) && !isNaN(Number(minutes))) {
+												if (selectedEvent?.endTime) {
+													const newDate = new Date(selectedEvent.endTime);
+													newDate.setHours(Number(hours), Number(minutes), 0, 0);
+													setSelectedEvent({
+														...selectedEvent,
+														endTime: newDate
+													});
+												}
 											}
 										}}
 									/>
@@ -3689,13 +3710,13 @@ export default function Calendar(): React.JSX.Element {
 									/>
 								</div>
 							</label>
-							{/*
-							{eventMessage && (
+
+							{messageEditEvent && (
 								<div className="error-message">
-									{eventMessage}
+									{messageEditEvent}
 								</div>
 							)}
-								*/}
+
 							<button
 								className="btn btn-primary"
 								style={{
