@@ -200,22 +200,22 @@ https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/#std-label-
 
 ## Upload su Gocker
 
-0. Lanciare il batch per il build del client: "build_server.sh"
-1. Build del server: "cd server && npm run build && cd .."
-2. copiare i file build del server sul server UNIBO: "scp <path_to_project>/server/dist
-   <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
-3. copiare i file build del client sul server UNIBO: "scp <path_to_project>/server/webapp/build
-   <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
-4. copiare il file package.json del server sul server UNIBO: "scp
-   <path_to_project>/server/package.json <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html"
-5. entrare tramite ssh nella rete UNIBO: "ssh
-   <nome_utente>@eva.cs.unibo.it:/home/web/site232402/html" (password: password di ateneo)
-6. entrare nella folder dei file caricati: "cd /home/web/site232402/html"
-7. Se non ancora fatto, aggiungere a PATH npm e node: "export PATH=/usr/local/node/bin:$PATH"
-8. eseguire "npm install"
-9. entrare su gocker: "ssh <nome_utente>@gocker.cs.unibo.it" (password di ateneo)
-10. Avviare il container del database: "start mongo site232402"
-11. Avviare il container del server: "start node-20 site232402 dist/server.js"
-12. Verificare il corretto avvio del server: "logs site232402"
-13. Usare la mongosh: "mongosh site232402" (inserire la password mostrata come risultato del comando
-    "start mongo" precedente)
+- commenta codice development in server.js, e decommenta codice production
+- commenta in params.ts l'url localhost e metti quella del sito
+- se da errori, prima di caricare backend e frontend, elimina tutto con "rm -rf *" nella
+Cartella html..
+- dentro la cartella del progetto, vai su cartella client
+- npm install
+- npm run build
+- cancella cartella node_modules
+-scp -r ./build alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
+-vai in cartella server
+-npm install
+-npm run build
+-cancella cartella node_modules
+-scp -r ./* alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
+-ssh alessio.prato2@eva.cs.unibo.it (entro nel pc remoto del dipartimento)
+-cd /home, cd web, cd site232402, cd html
+-/usr/local/node/bin/npm install
+-ssh alessio.prato2@gocker.cs.unibo.it (entro in gocker)
+-start node-17 site232402 dist/server.js
