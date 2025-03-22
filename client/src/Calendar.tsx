@@ -169,8 +169,8 @@ export default function Calendar(): React.JSX.Element {
 
 	//ANDRE
 	const [showDownloadImport, setShowDownloadImport] = React.useState(false);
-	const [typeEvent, setTypeEvent] = React.useState("simpleEvent");
-	console.log(setTypeEvent);
+	//const [typeEvent, setTypeEvent] = React.useState("simpleEvent");
+	//console.log(setTypeEvent);
 
 	const getValidRepeatOptions = (time: number): number[] => {
 		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
@@ -3530,7 +3530,7 @@ export default function Calendar(): React.JSX.Element {
 		setMessageExpImp("");
 	}
 
-	function selectTypeEvent(e: React.ChangeEvent<HTMLSelectElement>): void {
+	/* function selectTypeEvent(e: React.ChangeEvent<HTMLSelectElement>): void {
 		const tipoSelezionato = e.target.value;
 		if (tipoSelezionato === "simpleEvent") {
 			setAddTitle(true);
@@ -3549,7 +3549,7 @@ export default function Calendar(): React.JSX.Element {
 		else if (tipoSelezionato === "repeatedEvent") {
 			
 		}
-	}
+	} */
 
 	return (
 		<>
