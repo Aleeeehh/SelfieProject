@@ -4,30 +4,32 @@ Progetto di Tecnologie Web
 
 ### REQUISITI MINIMI COMPLETATI
 
--   Uniformare formato date ed ore (TUTTE NEL FORMATO ITALIANO) X
+-   Uniformare formato date ed ore (TUTTE NEL FORMATO ITALIANO) 
 -   tutti i bottoni accessibili (se c'è una checkbox, deve potersi spuntare anche se clicco il testo
-    affianco), CONCENTRIAMOCI SULL'USABILITA' DI QUALSIASI COSA, CI SI SOFFERMA MOLTO! X
--   Dimensione bottoni fase/ciclo view pomodoro X
--   metti il "-" per andare indietro di un anno a sinistra della data, nel pannello calendario X
--   Controllo e validazione input register, gestione errori da mostrare all'utente X
--   Controllo, validazione input e gestione errori nella pagina di modifica campi utente X
--   Le checkbox accessibili non devono evidenziarsi se li clicco, e devono avere click pointer X
--   Migliorata, fixata chat e sua relazione con searchform X
--   Migliorato contrasto, e fixata coerenza grafica view day/week/month X
--   Fixato bug ripetizione evento X
--   migliorata animazione topbar X
+    affianco), CONCENTRIAMOCI SULL'USABILITA' DI QUALSIASI COSA, CI SI SOFFERMA MOLTO! 
+-   Dimensione bottoni fase/ciclo view pomodoro 
+-   metti il "-" per andare indietro di un anno a sinistra della data, nel pannello calendario 
+-   Controllo e validazione input register, gestione errori da mostrare all'utente 
+-   Controllo, validazione input e gestione errori nella pagina di modifica campi utente 
+-   Le checkbox accessibili non devono evidenziarsi se li clicco, e devono avere click pointer 
+-   Migliorata, fixata chat e sua relazione con searchform 
+-   Migliorato contrasto, e fixata coerenza grafica view day/week/month 
+-   Fixato bug ripetizione evento 
+-   migliorata animazione topbar 
 -   Quando siamo in visuale week/month, ed inseriamo un evento, questo viene visualizzato
-    immediatamente X
+    immediatamente 
 -   Mantenere la time machine attiva su tutta l'interfaccia, se cambio pagina non si deve resettare.
     (Leo - 20250321)
 -   gestione partecipanti dei progetti distinti, non ci può essere un medesimo utente più volte
     nello stesso progetto, in particolare l'owner (Leo - 20250321)
 -   fix cambio dell'input ai progetti (ora cambiano solo quando il pulsante aggiorna è premuto)
     (Leo - 20250321)
+-   Editare un evento base già esistente (ancora da gestire casi complessi) (Ale - 20250321)
 
 ### TASK DI ALE
 
--   Editare un evento già impostato
+- editare un evento complesso (ripetuto, notifiche, risorse..)(per quanto possibile per non fare disastri di dipendenze)
+-   Editare un'attività esistente dalla view calendario (collegandolo alla view activities)
 -   Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con
     mouse con rotella)
 -   Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema
@@ -38,9 +40,10 @@ Progetto di Tecnologie Web
     metti modifica.
 -   La creazione attività nel pannello attività, deve avere gli stessi campi della creazione
     attività nel pannello calendario.
+- Se voglio editare un'attività corrente, nella View calendario se clicco su di essa, con Cursor pointer, deve portarmi alla visuale modifica attività
 
 ### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
-
+-   Non è ancora cambiata la logica dei tempi ancora sui progetti e pomodoro!
 -   Tutte le cose che vengono aggiunte/cambiano, devono venire aggiunte/essere cambiate senza
     refreshare la pagina (in particolare calendario, per view day, week, month, ma anche progetti,
     attività, ecc.)

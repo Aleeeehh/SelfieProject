@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ChangeEvent } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ResponseBody } from "./types/ResponseBody";
@@ -53,6 +53,9 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element {
 	// prova push
+	const [messageEditEvent, setMessageEditEvent] = React.useState("");
+	const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
+	const [editEvent, setEditEvent] = React.useState(false);
 	const [title, setTitle] = React.useState("");
 	const [file, setFile] = React.useState<File | null>(null);
 	const [createRisorsa, setCreateRisorsa] = React.useState(false);
@@ -148,10 +151,8 @@ export default function Calendar(): React.JSX.Element {
 	const [addTitle, setAddTitle] = React.useState(true);
 	const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) //vale sia per safari che firefox
 	console.log("IS SAFARI:", isSafari);
-	console.log("IS SAFARI:", isSafari);
-	console.log("IS SAFARI:", isSafari);
-	console.log("IS SAFARI:", isSafari);
-	console.log("IS SAFARI:", isSafari);
+	//const [isFirstRender, setIsFirstRender] = React.useState(true);
+
 
 	const [eventPositions, setEventPositions] = React.useState<
 		{
@@ -243,6 +244,14 @@ export default function Calendar(): React.JSX.Element {
 			console.error("Errore durante il recupero della data corrente:", error);
 		}
 	};
+
+	React.useEffect(() => {
+		if (selectedEvent != null) {
+			setEditEvent(true);
+			console.log("selectedEvent:", selectedEvent);
+		}
+		handleDateClick(day);
+	}, [selectedEvent]);
 
 	//ogni volta che si vogliono visualizzare le attività, aggiorna la currentDate
 	React.useEffect(() => {
@@ -356,10 +365,9 @@ export default function Calendar(): React.JSX.Element {
 						</div>
 						<div
 							className="position-relative"
-							onClick={async (e): Promise<void> => {
-								await handleDeleteEvent(event.event._id, event.event.groupId);
-
-								weekMode(e as React.MouseEvent<HTMLElement>);
+							onClick={(e): Promise<void> => {
+								e.stopPropagation();
+								return handleDeleteEvent(event.event._id, event.event.groupId);
 							}}
 						>
 							{/*
@@ -2744,6 +2752,41 @@ export default function Calendar(): React.JSX.Element {
 		}
 	}
 
+	async function handleUpdateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		e.preventDefault();
+		console.log("Modifico l'evento:", selectedEvent);
+		if (!selectedEvent?.startTime || !selectedEvent?.endTime ||
+			new Date(selectedEvent.startTime).getTime() > new Date(selectedEvent.endTime).getTime()) {
+			setMessageEditEvent("La data di inizio non può essere collocata dopo la data di fine!");
+			return;
+		}
+
+		if (selectedEvent?.title === "" || selectedEvent?.location === "") {
+			setMessageEditEvent("Tutti i campi dell'evento devono essere riempiti!");
+			return;
+		}
+
+		//l'evento deve durare almeno 30 minuti
+		if ((new Date(selectedEvent.endTime).getTime() - new Date(selectedEvent.startTime).getTime()) < 30 * 60 * 1000) {
+			setMessageEditEvent("L'evento deve durare almeno 30 minuti!");
+			return;
+		}
+
+		//quello che dobbbiamo fare adesso è fare una PUT all'evento che stiamo modificando.
+		const res = await fetch(`${SERVER_API}/events/${selectedEvent?.idEventoNotificaCondiviso}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				...selectedEvent,
+				isUpdate: true,
+			}),
+		});
+		console.log("Risposta della PUT:", res);
+		setEditEvent(false);
+		setSelectedEvent(null);
+		setMessageEditEvent("");
+	}
+
 	async function handleCreateEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 		const uniqueAccessList = [...new Set(accessList)];
@@ -3511,1411 +3554,1615 @@ export default function Calendar(): React.JSX.Element {
 	return (
 		<>
 			<div className="calendar-background">
-				<div className="whole-calendar-container">
-					<div className="calendar-header">
-						<div className="header-visualizza">
-							<label htmlFor="eventType" style={{ margin: "0" }}>
-								Visualizza:
-								<select
-									className="btn"
-									id="eventType"
-									onChange={handleSelectMode}
-									value={selectedMode}>
-									<option value="1">Eventi</option>
-									<option value="2">Attività</option>
-								</select>
-							</label>
+				{editEvent ? (
+					<div className="create-event-container">
+						{/*
+						Modifica evento
+						<div>
+							{selectedEvent && (
+								<div>
+									<h4>
+										SelectedEvent: {selectedEvent.title}
+										<br />
+										SelectedEvent startTime: {selectedEvent.startTime.toLocaleString()}
+										<br />
+										SelectedEvent endTime: {selectedEvent.endTime.toLocaleString()}
+										<br />
+										SelectedEvent location: {selectedEvent.location}
+										<br />
+										SelectedEvent isRisorsa: {selectedEvent.isRisorsa}
+										<br />
+
+									</h4>
+								</div>
+							)}
 						</div>
+						*/}
 
-						<div className="day-week-month">
-							<button
-								className="calendar-header-button"
-								onClick={dayMode}
-								disabled={!eventsMode}
-								style={{
-									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
-									cursor: eventsMode ? "pointer" : "default",
-								}}>
-								Giorno
-							</button>
-							<button
-								className="calendar-header-button"
-								onClick={weekMode}
-								disabled={!eventsMode}
-								style={{
-									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
-									cursor: eventsMode ? "pointer" : "default",
-								}}>
-								Settimana
-							</button>
-							<button
-								className="calendar-header-button"
-								onClick={monthMode}
-								disabled={!eventsMode}
-								style={{
-									backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
-									cursor: eventsMode ? "pointer" : "default",
-								}}>
-								Mese
-							</button>
-						</div>
-
-						<button
-							className="calendar-header-button"
-							style={{ backgroundColor: "#3a7a3c" }}
-							onClick={toggleDownloadImport}>
-							Scarica/importa
-						</button>
-
-						<button
-							className="calendar-header-button"
-							style={{ backgroundColor: "#3a7a3c" }}
-							onClick={toggleShowRisorse}>
-							{showRisorse ? "Nascondi risorse" : "Mostra risorse"}
-						</button>
-
-						<button
-							className="calendar-header-button"
-							style={{ backgroundColor: "#3a7a3c", width: "45px" }}
-							onClick={toggleCreate}>
-							+
-						</button>
-					</div>
-
-					<div
-						className="calendar-top-container"
-						style={{ padding: showDownloadImport || create ? "1em" : "0" }}
-					>
-						{messageExpImp && (
-							<div className="error-message">{messageExpImp}</div>
-						)}
-						<div
-							className="download-import"
-							style={{ display: showDownloadImport ? "flex" : "none" }}>
+						<form>
+							<h4 style={{ textAlign: "center" }}>
+								Modifica evento
+							</h4>
 							<button
 								className="btn btn-primary"
-								style={{ backgroundColor: "bisque", color: "black", border: "0" }}
-								onClick={handleDownloadCalendar}>
-								Scarica Calendario
+								style={{
+									backgroundColor: "bisque",
+									color: "black",
+									border: "0",
+								}}
+								onClick={(): void => setEditEvent(false)}
+							>
+								Chiudi
 							</button>
-							<button
-								className="btn btn-primary"
-								style={{ backgroundColor: "bisque", color: "black", border: "0" }}
-								onClick={handleImportCalendar}>
-								Importa Calendario
-							</button>
-							<div>
+
+							<label htmlFor="title">
+								Titolo
 								<input
-									style={{ display: "none" }}
-									type="file"
-									accept=".ics"
-									onChange={handleFileChange}
-									id="file-upload" // Aggiungi un ID per il collegamento
+									className="btn border"
+									type="text"
+									name="title"
+									value={selectedEvent?.title}
+									onChange={(
+										e: React.ChangeEvent<HTMLInputElement>
+									): void => {
+										if (selectedEvent) {
+											setSelectedEvent({
+												...selectedEvent,
+												title: e.target.value,
+											});
+										}
+									}}
 								/>
-								<label
-									htmlFor="file-upload"
-									className="btn btn-primary border"
-									style={{
-										backgroundColor: "white",
-										color: "black",
-										margin: "0",
-									}}>
-									Scegli file
+							</label>
+
+							<label htmlFor="startTime">
+								Data Inizio
+								<div>
+									<DatePicker
+										className="btn border createEventinput"
+										name="startTime"
+										selected={selectedEvent?.startTime}
+										onChange={(date: Date | null): void => {
+											if (date && selectedEvent?.startTime) {  // Verifichiamo che entrambi esistano
+												// Aggiorna la data mantenendo l'orario attuale
+												const newDate = new Date(selectedEvent.startTime);  // Ora TypeScript sa che startTime esiste
+												newDate.setFullYear(
+													date.getFullYear(),
+													date.getMonth(),
+													date.getDate()
+												);
+												setSelectedEvent({
+													...selectedEvent,
+													startTime: newDate
+												});
+											}
+										}}
+										dateFormat="dd/MM/yyyy"
+									/>
+								</div>
+								<div>
+									<input
+										className="btn border createEventinput"
+										type="time"
+										value={`${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getMinutes().toString().padStart(2, "0") : "00"}`}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+											const [hours, minutes] = e.target.value.split(":");
+											if (hours && minutes && !isNaN(Number(hours)) && !isNaN(Number(minutes))) {
+												if (selectedEvent?.startTime) {
+													const newDate = new Date(selectedEvent.startTime);
+													newDate.setHours(Number(hours), Number(minutes), 0, 0);
+													setSelectedEvent({
+														...selectedEvent,
+														startTime: newDate
+													});
+												}
+											}
+										}}
+									/>
+								</div>
+							</label>
+
+							<label htmlFor="endTime">
+								Data Fine
+								<div>
+									<DatePicker
+										className="btn border createEventinput"
+										name="endTime"
+										selected={selectedEvent?.endTime}
+										onChange={(date: Date | null): void => {
+											if (date && selectedEvent?.endTime) {  // Verifichiamo che entrambi esistano
+												// Aggiorna la data mantenendo l'orario attuale
+												const newDate = new Date(selectedEvent.endTime);
+												newDate.setFullYear(
+													date.getFullYear(),
+													date.getMonth(),
+													date.getDate()
+												);
+												setSelectedEvent({
+													...selectedEvent,
+													endTime: newDate,
+												});
+											}
+										}}
+										dateFormat="dd/MM/yyyy"
+									/>
+								</div>
+								<div>
+									<input
+										className="btn border createEventinput"
+										type="time"
+										value={`${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getMinutes().toString().padStart(2, "0") : "00"}`}
+										onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+											const [hours, minutes] = e.target.value.split(":");
+											if (hours && minutes && !isNaN(Number(hours)) && !isNaN(Number(minutes))) {
+												if (selectedEvent?.endTime) {
+													const newDate = new Date(selectedEvent.endTime);
+													newDate.setHours(Number(hours), Number(minutes), 0, 0);
+													setSelectedEvent({
+														...selectedEvent,
+														endTime: newDate
+													});
+												}
+											}
+										}}
+									/>
+								</div>
+							</label>
+
+							<label htmlFor="location">
+								Luogo
+								<div>
+									<input
+										className="btn border createEventinput"
+										type="text"
+										name="location"
+										value={selectedEvent?.location}
+										onChange={(e: ChangeEvent<HTMLInputElement>): void => {
+											if (selectedEvent) {  // Verifichiamo che selectedEvent non sia null
+												setSelectedEvent({
+													...selectedEvent,
+													location: e.target.value,
+													_id: selectedEvent._id,  // Assicuriamoci che le proprietà richieste siano presenti
+													title: selectedEvent.title,
+													startTime: selectedEvent.startTime,
+													endTime: selectedEvent.endTime,
+													// ... altre proprietà richieste dal tipo Event
+												});
+											}
+										}}
+									/>
+								</div>
+							</label>
+
+							{messageEditEvent && (
+								<div className="error-message">
+									{messageEditEvent}
+								</div>
+							)}
+
+							<button
+								className="btn btn-primary"
+								style={{
+									backgroundColor: "bisque",
+									color: "black",
+									border: "0",
+								}}
+								onClick={handleUpdateEvent}
+							>
+								Modifica
+							</button>
+						</form>
+					</div>
+				) : (
+					<div className="whole-calendar-container">
+						<div className="calendar-header">
+							<div className="header-visualizza">
+								<label htmlFor="eventType" style={{ margin: "0" }}>
+									Visualizza:
+									<select
+										className="btn"
+										id="eventType"
+										onChange={handleSelectMode}
+										value={selectedMode}>
+										<option value="1">Eventi</option>
+										<option value="2">Attività</option>
+									</select>
 								</label>
 							</div>
+
+							<div className="day-week-month">
+								<button
+									className="calendar-header-button"
+									onClick={dayMode}
+									disabled={!eventsMode}
+									style={{
+										backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
+										cursor: eventsMode ? "pointer" : "default",
+									}}>
+									Giorno
+								</button>
+								<button
+									className="calendar-header-button"
+									onClick={weekMode}
+									disabled={!eventsMode}
+									style={{
+										backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
+										cursor: eventsMode ? "pointer" : "default",
+									}}>
+									Settimana
+								</button>
+								<button
+									className="calendar-header-button"
+									onClick={monthMode}
+									disabled={!eventsMode}
+									style={{
+										backgroundColor: eventsMode ? "#4a90e2" : "lightgray",
+										cursor: eventsMode ? "pointer" : "default",
+									}}>
+									Mese
+								</button>
+							</div>
+
+							<button
+								className="calendar-header-button"
+								style={{ backgroundColor: "#3a7a3c" }}
+								onClick={toggleDownloadImport}>
+								Scarica/importa
+							</button>
+
+							<button
+								className="calendar-header-button"
+								style={{ backgroundColor: "#3a7a3c" }}
+								onClick={toggleShowRisorse}>
+								{showRisorse ? "Nascondi risorse" : "Mostra risorse"}
+							</button>
+
+							<button
+								className="calendar-header-button"
+								style={{ backgroundColor: "#3a7a3c", width: "45px" }}
+								onClick={toggleCreate}>
+								+
+							</button>
 						</div>
 
 						<div
-							className="choice-create-buttons"
-							style={{ display: create ? "flex" : "none" }}>
-							<button
-								className="calendar-header-button"
-								style={{ backgroundColor: "bisque" }}
-								onClick={toggleCreateEvent}>
-								Evento
-								{ createEvent && (
-									<select
-										value={typeEvent}
-										className="home-select"
-										onChange={selectTypeEvent}
-									>
-										<option value="simpleEvent">Semplice</option>
-										<option value="pomodoroEvent">Pomodoro</option>
-										<option value="ttggEvent">Tutto il giorno</option>
-										<option value="repeatedEvent">Ripetuto</option>
-									</select>
-								)}
-							</button>
-							<button
-								className="calendar-header-button"
-								style={{ backgroundColor: "bisque" }}
-								onClick={toggleCreateActivity}>
-								Attività
-							</button>
-							<button
-								className="calendar-header-button"
-								style={{ backgroundColor: "bisque" }}
-								onClick={toggleCreateNonDisturbare}>
-								Non disturbare
-							</button>
-
-							<button
-								className="calendar-header-button"
-								style={{ backgroundColor: "bisque" }}
-								onClick={toggleCreateRisorsa}>
-								Risorsa
-							</button>
-						</div>
-
-						<div
-							className="choice-create"
-							style={{
-								display:
-									createEvent ||
-										createActivity ||
-										createRisorsa ||
-										createNonDisturbare
-										? "flex"
-										: "none",
-								margin: create ? "0" : "1em 0",
-							}}>
-							{createEvent && (
-								<div className="creation-event-container">
-									<button
-										className="btn btn-primary"
+							className="calendar-top-container"
+							style={{ padding: showDownloadImport || create ? "1em" : "0" }}
+						>
+							{messageExpImp && (
+								<div className="error-message">{messageExpImp}</div>
+							)}
+							<div
+								className="download-import"
+								style={{ display: showDownloadImport ? "flex" : "none" }}>
+								<button
+									className="btn btn-primary"
+									style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+									onClick={handleDownloadCalendar}>
+									Scarica Calendario
+								</button>
+								<button
+									className="btn btn-primary"
+									style={{ backgroundColor: "bisque", color: "black", border: "0" }}
+									onClick={handleImportCalendar}>
+									Importa Calendario
+								</button>
+								<div>
+									<input
+										style={{ display: "none" }}
+										type="file"
+										accept=".ics"
+										onChange={handleFileChange}
+										id="file-upload" // Aggiungi un ID per il collegamento
+									/>
+									<label
+										htmlFor="file-upload"
+										className="btn btn-primary border"
 										style={{
-											backgroundColor: "bisque",
+											backgroundColor: "white",
 											color: "black",
-											border: "0",
-										}}
-										onClick={toggleCreateEvent}>
-										Chiudi
-									</button>
-									<form>
-										<label
-											htmlFor="useDefaultTitle"
-											style={{
-												cursor: 'pointer',
-												userSelect: 'none',  // Impedisce la selezione del testo
-												WebkitUserSelect: 'none',  // Per Safari
-												MozUserSelect: 'none',     // Per Firefox
-												msUserSelect: 'none'       // Per IE/Edge
-											}}
-										>
-											<input
-												type="checkbox"
-												id="useDefaultTitle"
-												name="useDefaultTitle"
-												onClick={toggleEventTitle}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-													cursor: "pointer",
-												}}
-											/>
-											Evento Pomodoro
-										</label>
-										{addTitle && (
-											<>
-												<label htmlFor="allDayEvent"
-													style={{
-														cursor: 'pointer',
-														userSelect: 'none',  // Impedisce la selezione del testo
-														WebkitUserSelect: 'none',  // Per Safari
-														MozUserSelect: 'none',     // Per Firefox
-														msUserSelect: 'none'       // Per IE/Edge
-													}}>
-													<input
-														type="checkbox"
-														name="allDayEvent"
-														id="allDayEvent"
-														onClick={toggleAllDayEvent}
-														style={{
-															marginLeft: "5px",
-															marginRight: "3px",
-															marginTop: "3px",
-															cursor: "pointer",
-														}}
-													/>
-													Tutto il giorno
-												</label>
+											margin: "0",
+										}}>
+										Scegli file
+									</label>
+								</div>
+							</div>
 
-												{!allDayEvent && (
-													<>
-														<label htmlFor="repeatEvent"
+							<div
+								className="choice-create-buttons"
+								style={{ display: create ? "flex" : "none" }}>
+								<button
+									className="calendar-header-button"
+									style={{ backgroundColor: "bisque" }}
+									onClick={toggleCreateEvent}>
+									Evento
+								</button>
+								<button
+									className="calendar-header-button"
+									style={{ backgroundColor: "bisque" }}
+									onClick={toggleCreateActivity}>
+									Attività
+								</button>
+								<button
+									className="calendar-header-button"
+									style={{ backgroundColor: "bisque" }}
+									onClick={toggleCreateNonDisturbare}>
+									Non disturbare
+								</button>
+
+								<button
+									className="calendar-header-button"
+									style={{ backgroundColor: "bisque" }}
+									onClick={toggleCreateRisorsa}>
+									Risorsa
+								</button>
+							</div>
+
+							<div
+								className="choice-create"
+								style={{
+									display:
+										createEvent ||
+											createActivity ||
+											createRisorsa ||
+											createNonDisturbare
+											? "flex"
+											: "none",
+									margin: create ? "0" : "1em 0",
+								}}>
+								{createEvent && (
+									<div className="creation-event-container">
+										<button
+											className="btn btn-primary"
+											style={{
+												backgroundColor: "bisque",
+												color: "black",
+												border: "0",
+											}}
+											onClick={toggleCreateEvent}>
+											Chiudi
+										</button>
+										<form>
+											<label
+												htmlFor="useDefaultTitle"
+												style={{
+													cursor: 'pointer',
+													userSelect: 'none',  // Impedisce la selezione del testo
+													WebkitUserSelect: 'none',  // Per Safari
+													MozUserSelect: 'none',     // Per Firefox
+													msUserSelect: 'none'       // Per IE/Edge
+												}}
+											>
+												<input
+													type="checkbox"
+													id="useDefaultTitle"
+													name="useDefaultTitle"
+													onClick={toggleEventTitle}
+													style={{
+														marginLeft: "5px",
+														marginRight: "3px",
+														marginTop: "3px",
+														cursor: "pointer",
+													}}
+												/>
+												Evento Pomodoro
+											</label>
+											{addTitle && (
+												<>
+													<label htmlFor="allDayEvent"
+														style={{
+															cursor: 'pointer',
+															userSelect: 'none',  // Impedisce la selezione del testo
+															WebkitUserSelect: 'none',  // Per Safari
+															MozUserSelect: 'none',     // Per Firefox
+															msUserSelect: 'none'       // Per IE/Edge
+														}}>
+														<input
+															type="checkbox"
+															name="allDayEvent"
+															id="allDayEvent"
+															onClick={toggleAllDayEvent}
 															style={{
-																cursor: 'pointer',
-																userSelect: 'none',  // Impedisce la selezione del testo
-																WebkitUserSelect: 'none',  // Per Safari
-																MozUserSelect: 'none',     // Per Firefox
-																msUserSelect: 'none'       // Per IE/Edge
-															}}>
-															<input
-																type="checkbox"
-																name="repeatEvent"
-																id="repeatEvent"
-																onClick={toggleRepeatEvent}
-																style={{
-																	marginLeft: "5px",
-																	marginRight: "3px",
-																	marginTop: "3px",
-																	cursor: "pointer",
-																}}
-															/>
-															Evento ripetuto
-														</label>
-
-														{repeatEvent && (
-															<>
-																<div
-																	className="flex"
-																	style={{ marginRight: "10px" }}>
-																	Ripeti l'evento
-																	<label htmlFor="repeatEvent">
-																		<select
-																			className="btn border"
-																			name="repetitionType"
-																			onChange={toggleSelectFrequency}
-																			style={{
-																				marginLeft: "5px",
-																				marginRight: "3px",
-																				marginTop: "3px",
-																			}}>
-																			<option value="Once">Una volta</option>
-																			<option value="Daily">
-																				Ogni giorno
-																			</option>
-																			<option value="Weekly">
-																				Ogni settimana
-																			</option>
-																			<option value="Monthly">
-																				Ogni mese{" "}
-																			</option>
-																			<option value="Yearly">
-																				Ogni anno
-																			</option>
-																		</select>
-																	</label>
-																</div>
-
-																{until && (
-																	<div>
-																		<div>
-																			<div
-																				className="flex"
-																				style={{ marginRight: "10px" }}>
-																				Fino a
-																				<select
-																					className="btn border"
-																					onChange={toggleSelectUntil}
-																					value={selectedValue}>
-																					<option value="Data">
-																						Data
-																					</option>
-																					<option value="Ripetizioni">
-																						Ripetizioni
-																					</option>
-																					<option value="Infinito">
-																						Infinito{" "}
-																					</option>
-																				</select>
-																			</div>
-
-																			{selectedValue === "Data" && (
-																				<DatePicker
-																					className="btn border"
-																					name="finoAData"
-																					selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
-																					onChange={(
-																						date: Date | null
-																					): void => {
-																						if (date) {
-																							date.setHours(
-																								12,
-																								0,
-																								0,
-																								0
-																							); // Imposta l'orario a mezzogiorno
-																							setUntilDate(date); // Aggiorna lo stato con la nuova data
-																						}
-																					}}
-																					dateFormat="dd/MM/yyyy"
-																					locale="it"
-																					placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
-																				/>
-																			)}
-
-																			{selectedValue === "Ripetizioni" && (
-																				<div>
-																					<input
-																						className="btn border"
-																						type="number"
-																						min="1"
-																						style={{ width: "100%" }}
-																						onChange={(
-																							e: React.ChangeEvent<HTMLInputElement>
-																						): void => {
-																							setRepetitions(
-																								Number(
-																									e.target.value
-																								)
-																							);
-																							//setIsUntilDate(false);
-																							setUntilDate(null); // Aggiorna lo stato con la nuova data
-
-																							if (
-																								repetitions < 1 ||
-																								isNaN(repetitions)
-																							) {
-																								setRepetitions(1);
-																							}
-																							console.log(
-																								"Numero ripetizione dell'evento: ",
-																								repetitions
-																							);
-																						}}></input>
-																				</div>
-																			)}
-																		</div>
-																	</div>
-																)}
-															</>
-														)}
-													</>
-												)}
-											</>
-										)}
-										{addTitle && (
-											<label htmlFor="title">
-												Titolo
-												<input
-													className="btn border"
-													type="text"
-													name="title"
-													value={title}
-													onChange={(
-														e: React.ChangeEvent<HTMLInputElement>
-													): void => setTitle(e.target.value)}
-												/>
-											</label>
-										)}
-
-										<label htmlFor="startTime">
-											Data Inizio
-											<div>
-												<DatePicker
-													className="btn border"
-													name="startTime"
-													selected={startTime}
-													onChange={(date: Date | null): void => {
-														if (date) {
-															// Aggiorna la data mantenendo l'orario attuale
-															const newDate = new Date(startTime);
-															newDate.setFullYear(
-																date.getFullYear(),
-																date.getMonth(),
-																date.getDate()
-															);
-															setStartTime(newDate);
-														}
-													}}
-													dateFormat="dd/MM/yyyy"
-												/>
-											</div>
-											{!allDayEvent && (
-												<>
-													<div>
-														<input
-															className="btn border"
-															type="time"
-															value={
-																startTime
-																	? `${startTime
-																		.getHours()
-																		.toString()
-																		.padStart(
-																			2,
-																			"0"
-																		)}:${startTime
-																			.getMinutes()
-																			.toString()
-																			.padStart(2, "0")}`
-																	: ""
-															}
-															onChange={(
-																e: React.ChangeEvent<HTMLInputElement>
-															): void => {
-																const [hours, minutes] =
-																	e.target.value.split(":");
-																if (hours && minutes) {
-																	// Controlla se hours e minutes sono definiti
-																	const newDate = new Date(
-																		startTime
-																	); // Crea un nuovo oggetto Date basato su startTime
-																	newDate.setHours(
-																		Number(hours),
-																		Number(minutes),
-																		0,
-																		0
-																	); // Imposta l'orario
-																	setStartTime(newDate); // Imposta il nuovo oggetto Date
-																}
-															}}
-															onKeyDown={(
-																e: React.KeyboardEvent<HTMLInputElement>
-															): void => {
-																if (e.key === "Backspace") {
-																	e.preventDefault(); // Impedisce l'input del tasto backspace
-																}
+																marginLeft: "5px",
+																marginRight: "3px",
+																marginTop: "3px",
+																cursor: "pointer",
 															}}
 														/>
-													</div>
-												</>
-											)}
-										</label>
-										<label htmlFor="endTime">
-											Data Fine
-											<div>
-												<DatePicker
-													className="btn border"
-													name="endTime"
-													selected={endTime}
-													onChange={(date: Date | null): void => {
-														if (date) {
-															// Aggiorna la data mantenendo l'orario attuale
-															const newDate = new Date(endTime);
-															newDate.setFullYear(
-																date.getFullYear(),
-																date.getMonth(),
-																date.getDate()
-															);
-															setEndTime(newDate);
-														}
-													}}
-													dateFormat="dd/MM/yyyy"
-												/>
-											</div>
-											{!allDayEvent && (
-												<>
-													<div>
-														<input
-															className="btn border"
-															type="time"
-															value={`${endTime
-																.getHours()
-																.toString()
-																.padStart(2, "0")}:${endTime
-																	.getMinutes()
-																	.toString()
-																	.padStart(2, "0")}`}
-															onChange={(
-																e: React.ChangeEvent<HTMLInputElement>
-															): void => {
-																const [hours, minutes] =
-																	e.target.value.split(":");
-																if (hours && minutes) {
-																	// Controlla se hours e minutes sono definiti
-																	const newDate = new Date(
-																		endTime
-																	);
-																	newDate.setHours(
-																		Number(hours),
-																		Number(minutes)
-																	); // Aggiorna l'orario
-																	setEndTime(newDate); // Imposta il nuovo oggetto Date
-																}
-															}}
-															onKeyDown={(
-																e: React.KeyboardEvent<HTMLInputElement>
-															): void => {
-																if (e.key === "Backspace") {
-																	e.preventDefault(); // Impedisce l'input del tasto backspace
-																}
-															}}
-														/>
-													</div>
-												</>
-											)}
-										</label>
+														Tutto il giorno
+													</label>
 
-										<label htmlFor="location">
-											Luogo
-											<div>
-												<input
-													className="btn border"
-													type="text"
-													name="location"
-													value={location}
-													onChange={(
-														e: React.ChangeEvent<HTMLInputElement>
-													): void => setLocation(e.target.value)}
-												/>
-											</div>
-										</label>
-
-										<label htmlFor="addNotificationEvent"
-											style={{
-												cursor: 'pointer',
-												userSelect: 'none',  // Impedisce la selezione del testo
-												WebkitUserSelect: 'none',  // Per Safari
-												MozUserSelect: 'none',     // Per Firefox
-												msUserSelect: 'none'       // Per IE/Edge
-											}}>
-											<input
-												type="checkbox"
-												name="addNotificationEvent"
-												id="addNotificationEvent"
-												onClick={toggleAddNotification}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-													cursor: "pointer",
-												}}
-											/>
-											Aggiungi notifica
-										</label>
-
-										{addNotification && (
-											<label htmlFor="notificationTime">
-												Quanto tempo prima mandare la notifica
-												<select
-													id="notificationTimeSelect"
-													className="btn border"
-													onChange={(
-														e: React.ChangeEvent<HTMLSelectElement>
-													): void => {
-														setNotificationTime(Number(e.target.value));
-														if (Number(e.target.value) > 0) {
-															setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-														} else if (Number(e.target.value) === 0) {
-															setNotificationRepeat(false);
-														}
-													}}
-													style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
-												>
-													{isInfinite ? (
-														<option value="0">All'ora d'inizio</option> // Solo questa opzione se isInfinite è true
-													) : (
+													{!allDayEvent && (
 														<>
-															<option value="0">
-																All'ora d'inizio
-															</option>
-															<option value="5">
-																5 minuti prima
-															</option>
-															<option value="10">
-																10 minuti prima
-															</option>
-															<option value="15">
-																15 minuti prima
-															</option>
-															<option value="30">
-																30 minuti prima
-															</option>
-															<option value="60">1 ora prima</option>
-															<option value="120">2 ore prima</option>
-															<option value="1440">
-																Un giorno prima
-															</option>
-															<option value="2880">
-																2 giorni prima
-															</option>
-														</>
-													)}
-												</select>
-											</label>
-										)}
-
-										{notificationRepeat && (
-											<label htmlFor="notificationRepeatTime">
-												Quanto tempo ripetere la notifica
-												<select
-													className="btn border"
-													name="notificationRepeatTime"
-													onChange={(
-														e: React.ChangeEvent<HTMLSelectElement>
-													): void => {
-														setNotificationRepeatTime(
-															Number(e.target.value)
-														);
-													}}>
-													{getValidRepeatOptions(notificationTime).map(
-														(option) => (
-															<option key={option} value={option}>
-																{option === 0
-																	? "Mai"
-																	: option >= 60
-																		? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-																		: `Ogni ${option} minuti`}
-															</option>
-														)
-													)}
-												</select>
-											</label>
-										)}
-
-										<label htmlFor="sendInviteEvent"
-											style={{
-												cursor: 'pointer',
-												userSelect: 'none',  // Impedisce la selezione del testo
-												WebkitUserSelect: 'none',  // Per Safari
-												MozUserSelect: 'none',     // Per Firefox
-												msUserSelect: 'none'       // Per IE/Edge
-											}}>
-											<input
-												type="checkbox"
-												id="sendInviteEvent"
-												onClick={toggleSendInviteEvent}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-													cursor: "pointer",
-												}}
-											/>
-											Invia evento ad utente
-										</label>
-
-										{sendInviteEvent && (
-											<div
-												id="send-invite"
-												className="send-invite-container"
-												style={{
-													display: "flex",
-													flexDirection: "column",
-													alignItems: "center",
-													justifyContent: "center",
-												}}>
-												<div>
-													Scegli l'utente al quale inviare la notifica
-												</div>
-												{users.length > 0}
-												<SearchForm
-													onItemClick={handleSelectUser}
-													list={users}
-												/>
-												{messageSend && <div className="error-message">{messageSend}</div>}
-												<button
-													onClick={handleSendInviteEvent}
-													className="btn btn-primary send-invite-button"
-													style={{
-														backgroundColor: "bisque",
-														color: "black",
-														border: "0",
-														marginBottom: "10px",
-													}}>
-													Invia Invito
-												</button>
-											</div>
-										)}
-
-										<label htmlFor="shareEvent"
-											style={{
-												cursor: 'pointer',
-												userSelect: 'none',  // Impedisce la selezione del testo
-												WebkitUserSelect: 'none',  // Per Safari
-												MozUserSelect: 'none',     // Per Firefox
-												msUserSelect: 'none'       // Per IE/Edge
-											}}>
-											<input
-												type="checkbox"
-												id="shareEvent"
-												onClick={toggleShareEvent}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-													cursor: "pointer",
-												}}
-											/>
-											Condividi evento
-										</label>
-
-										{shareEvent && (
-											<div
-												id="send-invite"
-												className="send-invite-container"
-												style={{
-													display: "flex",
-													flexDirection: "column",
-													alignItems: "center",
-													justifyContent: "center",
-												}}>
-												<div style={{ textAlign: "center" }}>
-													Scegli l'utente o la risorsa con cui condividere
-													l'evento
-												</div>
-												{users.length > 0}
-												<SearchFormResource
-													onItemClick={handleSelectUser}
-													list={users}
-												/>
-												{messageShareRisorsa && (
-													<div className="error-message">
-														{messageShareRisorsa}
-													</div>
-												)}
-												<button
-													onClick={handleAddUserEvent}
-													className="btn btn-primary send-invite-button"
-													style={{
-														backgroundColor: "bisque",
-														color: "black",
-														border: "0",
-														marginBottom: "10px",
-													}}>
-													Condividi
-												</button>
-											</div>
-										)}
-
-										{messageEvent && (
-											<div className="error-message">{messageEvent}</div>
-										)}
-										<button
-											className="btn btn-primary"
-											style={{
-												backgroundColor: "bisque",
-												color: "black",
-												border: "0",
-											}}
-											onClick={handleCreateEvent}>
-											Crea
-										</button>
-									</form>
-								</div>
-							)}
-
-							{createActivity && (
-								<div className="creation-event-container">
-									<button
-										className="btn btn-primary"
-										style={{
-											backgroundColor: "bisque",
-											color: "black",
-											border: "0",
-										}}
-										onClick={toggleCreateActivity}>
-										Chiudi
-									</button>
-									<form>
-										{addTitle && (
-											<label htmlFor="title">
-												Title
-												<input
-													className="btn border"
-													type="text"
-													name="title"
-													value={title}
-													onChange={(
-														e: React.ChangeEvent<HTMLInputElement>
-													): void => setTitle(e.target.value)}
-												/>
-											</label>
-										)}
-										<label htmlFor="description">
-											Descrizione
-											<input
-												className="btn border"
-												type="text"
-												name="title"
-												value={description}
-												onChange={(
-													e: React.ChangeEvent<HTMLInputElement>
-												): void => setDescription(e.target.value)}
-											/>
-										</label>
-										<label htmlFor="endTime">
-											Scadenza
-											<div>
-												<DatePicker
-													className="btn border"
-													name="endTime"
-													selected={endTime}
-													onChange={(date: Date | null): void => {
-														if (date) {
-															// Aggiorna la data mantenendo l'orario attuale
-															const newDate = new Date(endTime);
-															newDate.setFullYear(
-																date.getFullYear(),
-																date.getMonth(),
-																date.getDate()
-															);
-															setEndTime(newDate);
-														}
-													}}
-													dateFormat="dd/MM/yyyy"
-												/>
-											</div>
-											<div>
-												<input
-													className="btn border"
-													type="time"
-													value={`${endTime
-														.getHours()
-														.toString()
-														.padStart(2, "0")}:${endTime
-															.getMinutes()
-															.toString()
-															.padStart(2, "0")}`}
-													onChange={(
-														e: React.ChangeEvent<HTMLInputElement>
-													): void => {
-														const [hours, minutes] =
-															e.target.value.split(":");
-														const newDate = new Date(endTime);
-														newDate.setHours(
-															Number(hours),
-															Number(minutes)
-														); // Aggiorna l'orario
-														setEndTime(newDate); // Imposta il nuovo oggetto Date
-													}}
-													onKeyDown={(
-														e: React.KeyboardEvent<HTMLInputElement>
-													): void => {
-														if (e.key === "Backspace") {
-															e.preventDefault(); // Impedisce l'input del tasto backspace
-														}
-													}}
-												/>
-											</div>
-										</label>
-
-										<label htmlFor="addNotificationActivity"
-											style={{
-												cursor: 'pointer',
-												userSelect: 'none',  // Impedisce la selezione del testo
-												WebkitUserSelect: 'none',  // Per Safari
-												MozUserSelect: 'none',     // Per Firefox
-												msUserSelect: 'none'       // Per IE/Edge
-											}}>
-											<input
-												type="checkbox"
-												name="addNotificationActivity"
-												id="addNotificationActivity"
-												onClick={toggleAddNotification}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-													cursor: "pointer",
-												}}
-											/>
-											Aggiungi notifica
-										</label>
-
-										{addNotification && (
-											<label htmlFor="notificationTime">
-												Quanto tempo prima mandare la notifica
-												<select
-													id="notificationTimeSelect"
-													className="btn border"
-													onChange={(
-														e: React.ChangeEvent<HTMLSelectElement>
-													): void => {
-														setNotificationTime(Number(e.target.value));
-														if (Number(e.target.value) > 0) {
-															setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-														} else if (Number(e.target.value) == 0) {
-															setNotificationRepeat(false);
-														}
-													}}
-													style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
-												>
-													<option value="0">All'ora d'inizio</option>
-													<option value="5">5 minuti prima</option>
-													<option value="10">10 minuti prima</option>
-													<option value="15">15 minuti prima</option>
-													<option value="30">30 minuti prima</option>
-													<option value="60">1 ora prima</option>
-													<option value="120">2 ore prima</option>
-													<option value="1440">Un giorno prima</option>
-													<option value="2880">2 giorni prima</option>
-												</select>
-											</label>
-										)}
-
-										{notificationRepeat && (
-											<label htmlFor="notificationRepeatTime">
-												Quanto tempo ripetere la notifica
-												<select
-													className="btn border"
-													name="notificationRepeatTime"
-													onChange={(
-														e: React.ChangeEvent<HTMLSelectElement>
-													): void => {
-														setNotificationRepeatTime(
-															Number(e.target.value)
-														);
-													}}>
-													{getValidRepeatOptions(notificationTime).map(
-														(option) => (
-															<option key={option} value={option}>
-																{option === 0
-																	? "Mai"
-																	: option >= 60
-																		? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-																		: `Ogni ${option} minuti`}
-															</option>
-														)
-													)}
-												</select>
-											</label>
-										)}
-
-										<label htmlFor="sendInviteActivity"
-											style={{
-												cursor: 'pointer',
-												userSelect: 'none',  // Impedisce la selezione del testo
-												WebkitUserSelect: 'none',  // Per Safari
-												MozUserSelect: 'none',     // Per Firefox
-												msUserSelect: 'none'       // Per IE/Edge
-											}}>
-											<input
-												type="checkbox"
-												name="sendInviteActivity"
-												id="sendInviteActivity"
-												onClick={toggleSendInviteActivity}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-													cursor: "pointer",
-												}}
-											/>
-											Invia attività ad utente
-										</label>
-
-										{sendInviteActivity && (
-											<div
-												id="send-invite"
-												className="send-invite-container"
-												style={{
-													display: "flex",
-													flexDirection: "column",
-													alignItems: "center",
-													justifyContent: "center",
-												}}>
-												<div>
-													Scegli l'utente al quale inviare la notifica
-												</div>
-												{users.length > 0}
-												<SearchForm
-													onItemClick={handleSelectUser}
-													list={users}
-												/>
-												{messageSend && <div className="error-message">{messageSend}</div>}
-												<button
-													onClick={handleSendInviteActivity}
-													className="btn btn-primary send-invite-button"
-													style={{
-														backgroundColor: "bisque",
-														color: "black",
-														border: "0",
-														marginBottom: "10px",
-													}}>
-													Invia Invito
-												</button>
-											</div>
-										)}
-
-										<label htmlFor="shareActivity"
-											style={{
-												cursor: 'pointer',
-												userSelect: 'none',  // Impedisce la selezione del testo
-												WebkitUserSelect: 'none',  // Per Safari
-												MozUserSelect: 'none',     // Per Firefox
-												msUserSelect: 'none'       // Per IE/Edge
-											}}>
-											<input
-												type="checkbox"
-												name="shareActivity"
-												id="shareActivity"
-												onClick={toggleShareActivity}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-													cursor: "pointer",
-												}}
-											/>
-											Condividi attività
-										</label>
-
-										{shareActivity && (
-											<div
-												id="send-invite"
-												className="send-invite-container"
-												style={{
-													display: "flex",
-													flexDirection: "column",
-													alignItems: "center",
-													justifyContent: "center",
-												}}>
-												<div>
-													Scegli l'utente con il quale condividere
-													l'attività
-												</div>
-												{users.length > 0}
-												<SearchForm
-													onItemClick={handleSelectUser}
-													list={users}
-												/>
-												{messageShareActivity && (
-													<div className="error-message">
-														{messageShareActivity}
-													</div>
-												)}
-												<button
-													onClick={handleAddUserActivity}
-													className="btn btn-primary send-invite-button"
-													style={{
-														backgroundColor: "bisque",
-														color: "black",
-														border: "0",
-														marginBottom: "10px",
-													}}>
-													Condividi
-												</button>
-											</div>
-										)}
-
-										{messageActivity && (
-											<div className="error-message">{messageActivity}</div>
-										)}
-										<button
-											className="btn btn-primary"
-											style={{
-												backgroundColor: "bisque",
-												color: "black",
-												border: "0",
-											}}
-											onClick={handleCreateActivity}>
-											Crea
-										</button>
-									</form>
-								</div>
-							)}
-
-							{createNonDisturbare && (
-								<div className="creation-event-container">
-									<button
-										className="btn btn-primary"
-										style={{
-											backgroundColor: "bisque",
-											color: "black",
-											border: "0",
-										}}
-										onClick={toggleCreateNonDisturbare}>
-										Chiudi
-									</button>
-									<form>
-										<label htmlFor="allDayNotDisturb"
-											style={{
-												cursor: 'pointer',
-												userSelect: 'none',  // Impedisce la selezione del testo
-												WebkitUserSelect: 'none',  // Per Safari
-												MozUserSelect: 'none',     // Per Firefox
-												msUserSelect: 'none'       // Per IE/Edge
-											}}>
-											<input
-												type="checkbox"
-												name="allDayNotDisturb"
-												id="allDayNotDisturb"
-												onClick={toggleAllDayEvent}
-												style={{
-													marginLeft: "5px",
-													marginRight: "3px",
-													marginTop: "3px",
-													cursor: "pointer",
-												}}
-											/>
-											Tutto il giorno
-										</label>
-
-										{!allDayNotDisturb && (
-											<>
-												<label htmlFor="repeatNotDisturb"
-													style={{
-														cursor: 'pointer',
-														userSelect: 'none',  // Impedisce la selezione del testo
-														WebkitUserSelect: 'none',  // Per Safari
-														MozUserSelect: 'none',     // Per Firefox
-														msUserSelect: 'none'       // Per IE/Edge
-													}}>
-													<input
-														type="checkbox"
-														name="repeatNotDisturb"
-														id="repeatNotDisturb"
-														onClick={toggleRepeatEvent}
-														style={{
-															marginLeft: "5px",
-															marginRight: "3px",
-															marginTop: "3px",
-															cursor: "pointer",
-														}}
-													/>
-													Ripeti
-												</label>
-												{repeatEvent && (
-													<>
-														<div
-															className="flex"
-															style={{ marginRight: "10px" }}>
-															Ripeti l'evento
-															<label htmlFor="repeatEvent">
-																<select
-																	className="btn border"
-																	name="repetitionType"
-																	onChange={toggleSelectFrequency}
+															<label htmlFor="repeatEvent"
+																style={{
+																	cursor: 'pointer',
+																	userSelect: 'none',  // Impedisce la selezione del testo
+																	WebkitUserSelect: 'none',  // Per Safari
+																	MozUserSelect: 'none',     // Per Firefox
+																	msUserSelect: 'none'       // Per IE/Edge
+																}}>
+																<input
+																	type="checkbox"
+																	name="repeatEvent"
+																	id="repeatEvent"
+																	onClick={toggleRepeatEvent}
 																	style={{
 																		marginLeft: "5px",
 																		marginRight: "3px",
 																		marginTop: "3px",
-																	}}>
-																	<option value="Once">Una volta</option>
-																	<option value="Daily">
-																		Ogni giorno
-																	</option>
-																	<option value="Weekly">
-																		Ogni settimana
-																	</option>
-																	<option value="Monthly">
-																		Ogni mese{" "}
-																	</option>
-																	<option value="Yearly">
-																		Ogni anno
-																	</option>
-																</select>
+																		cursor: "pointer",
+																	}}
+																/>
+																Evento ripetuto
 															</label>
-														</div>
 
-														{until && (
-															<div>
-																<div>
+															{repeatEvent && (
+																<>
 																	<div
 																		className="flex"
 																		style={{ marginRight: "10px" }}>
-																		Fino a
-																		<select
-																			className="btn border"
-																			onChange={toggleSelectUntil}
-																			defaultValue={selectedValue}>
-																			<option value="Data">
-																				Data
-																			</option>
-																			<option value="Ripetizioni">
-																				Ripetizioni
-																			</option>
-																			<option value="Infinito">
-																				Infinito{" "}
-																			</option>
-																		</select>
+																		Ripeti l'evento
+																		<label htmlFor="repeatEvent">
+																			<select
+																				className="btn border"
+																				name="repetitionType"
+																				onChange={toggleSelectFrequency}
+																				style={{
+																					marginLeft: "5px",
+																					marginRight: "3px",
+																					marginTop: "3px",
+																				}}>
+																				<option value="Once">Una volta</option>
+																				<option value="Daily">
+																					Ogni giorno
+																				</option>
+																				<option value="Weekly">
+																					Ogni settimana
+																				</option>
+																				<option value="Monthly">
+																					Ogni mese{" "}
+																				</option>
+																				<option value="Yearly">
+																					Ogni anno
+																				</option>
+																			</select>
+																		</label>
 																	</div>
 
-																	{selectedValue === "Data" && (
-																		<DatePicker
-																			className="btn border"
-																			name="finoAData"
-																			selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
-																			onChange={(
-																				date: Date | null
-																			): void => {
-																				if (date) {
-																					date.setHours(
-																						12,
-																						0,
-																						0,
-																						0
-																					); // Imposta l'orario a mezzogiorno
-																					setUntilDate(date); // Aggiorna lo stato con la nuova data
-																				}
-																			}}
-																			placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
-																		/>
-																	)}
-
-																	{selectedValue === "Ripetizioni" && (
+																	{until && (
 																		<div>
-																			<input
-																				className="btn border"
-																				type="number"
-																				min="1"
-																				style={{ width: "100%" }}
-																				onChange={(
-																					e: React.ChangeEvent<HTMLInputElement>
-																				): void => {
-																					setRepetitions(
-																						Number(
-																							e.target.value
-																						)
-																					);
-																					//setIsUntilDate(false);
-																					setUntilDate(null); // Aggiorna lo stato con la nuova data
+																			<div>
+																				<div
+																					className="flex"
+																					style={{ marginRight: "10px" }}>
+																					Fino a
+																					<select
+																						className="btn border"
+																						onChange={toggleSelectUntil}
+																						value={selectedValue}>
+																						<option value="Data">
+																							Data
+																						</option>
+																						<option value="Ripetizioni">
+																							Ripetizioni
+																						</option>
+																						<option value="Infinito">
+																							Infinito{" "}
+																						</option>
+																					</select>
+																				</div>
 
-																					if (
-																						repetitions < 1 ||
-																						isNaN(repetitions)
-																					) {
-																						setRepetitions(1);
-																					}
-																					console.log(
-																						"Numero ripetizione dell'evento: ",
-																						repetitions
-																					);
-																				}}></input>
+																				{selectedValue === "Data" && (
+																					<DatePicker
+																						className="btn border"
+																						name="finoAData"
+																						selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
+																						onChange={(
+																							date: Date | null
+																						): void => {
+																							if (date) {
+																								date.setHours(
+																									12,
+																									0,
+																									0,
+																									0
+																								); // Imposta l'orario a mezzogiorno
+																								setUntilDate(date); // Aggiorna lo stato con la nuova data
+																							}
+																						}}
+																						dateFormat="dd/MM/yyyy"
+																						locale="it"
+																						placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
+																					/>
+																				)}
+
+																				{selectedValue === "Ripetizioni" && (
+																					<div>
+																						<input
+																							className="btn border"
+																							type="number"
+																							min="1"
+																							style={{ width: "100%" }}
+																							onChange={(
+																								e: React.ChangeEvent<HTMLInputElement>
+																							): void => {
+																								setRepetitions(
+																									Number(
+																										e.target.value
+																									)
+																								);
+																								//setIsUntilDate(false);
+																								setUntilDate(null); // Aggiorna lo stato con la nuova data
+
+																								if (
+																									repetitions < 1 ||
+																									isNaN(repetitions)
+																								) {
+																									setRepetitions(1);
+																								}
+																								console.log(
+																									"Numero ripetizione dell'evento: ",
+																									repetitions
+																								);
+																							}}></input>
+																					</div>
+																				)}
+																			</div>
 																		</div>
 																	)}
-																</div>
-															</div>
-														)}
+																</>
+															)}
+														</>
+													)}
+												</>
+											)}
+											{addTitle && (
+												<label htmlFor="title">
+													Titolo
+													<input
+														className="btn border"
+														type="text"
+														name="title"
+														value={title}
+														onChange={(
+															e: React.ChangeEvent<HTMLInputElement>
+														): void => setTitle(e.target.value)}
+													/>
+												</label>
+											)}
+
+											<label htmlFor="startTime">
+												Data Inizio
+												<div>
+													<DatePicker
+														className="btn border"
+														name="startTime"
+														selected={startTime}
+														onChange={(date: Date | null): void => {
+															if (date) {
+																// Aggiorna la data mantenendo l'orario attuale
+																const newDate = new Date(startTime);
+																newDate.setFullYear(
+																	date.getFullYear(),
+																	date.getMonth(),
+																	date.getDate()
+																);
+																setStartTime(newDate);
+															}
+														}}
+														dateFormat="dd/MM/yyyy"
+													/>
+												</div>
+												{!allDayEvent && (
+													<>
+														<div>
+															<input
+																className="btn border"
+																type="time"
+																value={
+																	startTime
+																		? `${startTime
+																			.getHours()
+																			.toString()
+																			.padStart(
+																				2,
+																				"0"
+																			)}:${startTime
+																				.getMinutes()
+																				.toString()
+																				.padStart(2, "0")}`
+																		: ""
+																}
+																onChange={(
+																	e: React.ChangeEvent<HTMLInputElement>
+																): void => {
+																	const [hours, minutes] =
+																		e.target.value.split(":");
+																	if (hours && minutes) {
+																		// Controlla se hours e minutes sono definiti
+																		const newDate = new Date(
+																			startTime
+																		); // Crea un nuovo oggetto Date basato su startTime
+																		newDate.setHours(
+																			Number(hours),
+																			Number(minutes),
+																			0,
+																			0
+																		); // Imposta l'orario
+																		setStartTime(newDate); // Imposta il nuovo oggetto Date
+																	}
+																}}
+																onKeyDown={(
+																	e: React.KeyboardEvent<HTMLInputElement>
+																): void => {
+																	if (e.key === "Backspace") {
+																		e.preventDefault(); // Impedisce l'input del tasto backspace
+																	}
+																}}
+															/>
+														</div>
 													</>
 												)}
-											</>
-										)}
-										<label htmlFor="startTime">
-											Data Inizio
-											<div>
-												<DatePicker
-													className="btn border"
-													name="startTime"
-													selected={startTime}
-													onChange={(date: Date | null): void => {
-														if (date) {
-															// Aggiorna la data mantenendo l'orario attuale
-															const newDate = new Date(startTime);
-															newDate.setFullYear(
-																date.getFullYear(),
-																date.getMonth(),
-																date.getDate()
-															);
-															setStartTime(newDate);
-														}
-													}}
-													dateFormat="dd/MM/yyyy"
-												/>
-											</div>
-											{!allDayEvent && (
-												<>
-													<div>
-														<input
-															className="btn border"
-															type="time"
-															value={
-																startTime
-																	? `${startTime
-																		.getHours()
-																		.toString()
-																		.padStart(
-																			2,
-																			"0"
-																		)}:${startTime
-																			.getMinutes()
-																			.toString()
-																			.padStart(2, "0")}`
-																	: ""
+											</label>
+											<label htmlFor="endTime">
+												Data Fine
+												<div>
+													<DatePicker
+														className="btn border"
+														name="endTime"
+														selected={endTime}
+														onChange={(date: Date | null): void => {
+															if (date) {
+																// Aggiorna la data mantenendo l'orario attuale
+																const newDate = new Date(endTime);
+																newDate.setFullYear(
+																	date.getFullYear(),
+																	date.getMonth(),
+																	date.getDate()
+																);
+																setEndTime(newDate);
 															}
-															onChange={(
-																e: React.ChangeEvent<HTMLInputElement>
-															): void => {
-																const [hours, minutes] =
-																	e.target.value.split(":");
-																if (hours && minutes) {
-																	// Controlla se hours e minutes sono definiti
-																	const newDate = new Date(
-																		startTime
-																	); // Crea un nuovo oggetto Date basato su startTime
-																	newDate.setHours(
-																		Number(hours),
-																		Number(minutes),
-																		0,
-																		0
-																	); // Imposta l'orario
-																	setStartTime(newDate); // Imposta il nuovo oggetto Date
-																}
-															}}
-															onKeyDown={(
-																e: React.KeyboardEvent<HTMLInputElement>
-															): void => {
-																if (e.key === "Backspace") {
-																	e.preventDefault(); // Impedisce l'input del tasto backspace
-																}
-															}}
-														/>
-													</div>
-												</>
-											)}
-										</label>
-										<label htmlFor="endTime">
-											Data Fine
-											<div>
-												<DatePicker
-													className="btn border"
-													name="endTime"
-													selected={endTime}
-													onChange={(date: Date | null): void => {
-														if (date) {
-															// Aggiorna la data mantenendo l'orario attuale
-															const newDate = new Date(endTime);
-															newDate.setFullYear(
-																date.getFullYear(),
-																date.getMonth(),
-																date.getDate()
-															);
-															setEndTime(newDate);
-														}
-													}}
-													dateFormat="dd/MM/yyyy"
-												/>
-											</div>
-											{!allDayEvent && (
-												<>
-													<div>
-														<input
-															className="btn border"
-															type="time"
-															value={`${endTime
-																.getHours()
-																.toString()
-																.padStart(2, "0")}:${endTime
-																	.getMinutes()
+														}}
+														dateFormat="dd/MM/yyyy"
+													/>
+												</div>
+												{!allDayEvent && (
+													<>
+														<div>
+															<input
+																className="btn border"
+																type="time"
+																value={`${endTime
+																	.getHours()
 																	.toString()
-																	.padStart(2, "0")}`}
-															onChange={(
-																e: React.ChangeEvent<HTMLInputElement>
-															): void => {
-																const [hours, minutes] =
-																	e.target.value.split(":");
-																if (hours && minutes) {
-																	// Controlla se hours e minutes sono definiti
-																	const newDate = new Date(
-																		endTime
-																	);
-																	newDate.setHours(
-																		Number(hours),
-																		Number(minutes)
-																	); // Aggiorna l'orario
-																	setEndTime(newDate); // Imposta il nuovo oggetto Date
-																}
-															}}
-															onKeyDown={(
-																e: React.KeyboardEvent<HTMLInputElement>
-															): void => {
-																if (e.key === "Backspace") {
-																	e.preventDefault(); // Impedisce l'input del tasto backspace
-																}
+																	.padStart(2, "0")}:${endTime
+																		.getMinutes()
+																		.toString()
+																		.padStart(2, "0")}`}
+																onChange={(
+																	e: React.ChangeEvent<HTMLInputElement>
+																): void => {
+																	const [hours, minutes] =
+																		e.target.value.split(":");
+																	if (hours && minutes) {
+																		// Controlla se hours e minutes sono definiti
+																		const newDate = new Date(
+																			endTime
+																		);
+																		newDate.setHours(
+																			Number(hours),
+																			Number(minutes)
+																		); // Aggiorna l'orario
+																		setEndTime(newDate); // Imposta il nuovo oggetto Date
+																	}
+																}}
+																onKeyDown={(
+																	e: React.KeyboardEvent<HTMLInputElement>
+																): void => {
+																	if (e.key === "Backspace") {
+																		e.preventDefault(); // Impedisce l'input del tasto backspace
+																	}
+																}}
+															/>
+														</div>
+													</>
+												)}
+											</label>
+
+											<label htmlFor="location">
+												Luogo
+												<div>
+													<input
+														className="btn border"
+														type="text"
+														name="location"
+														value={location}
+														onChange={(
+															e: React.ChangeEvent<HTMLInputElement>
+														): void => setLocation(e.target.value)}
+													/>
+												</div>
+											</label>
+
+											<label htmlFor="addNotificationEvent"
+												style={{
+													cursor: 'pointer',
+													userSelect: 'none',  // Impedisce la selezione del testo
+													WebkitUserSelect: 'none',  // Per Safari
+													MozUserSelect: 'none',     // Per Firefox
+													msUserSelect: 'none'       // Per IE/Edge
+												}}>
+												<input
+													type="checkbox"
+													name="addNotificationEvent"
+													id="addNotificationEvent"
+													onClick={toggleAddNotification}
+													style={{
+														marginLeft: "5px",
+														marginRight: "3px",
+														marginTop: "3px",
+														cursor: "pointer",
+													}}
+												/>
+												Aggiungi notifica
+											</label>
+
+											{addNotification && (
+												<label htmlFor="notificationTime">
+													Quanto tempo prima mandare la notifica
+													<select
+														id="notificationTimeSelect"
+														className="btn border"
+														onChange={(
+															e: React.ChangeEvent<HTMLSelectElement>
+														): void => {
+															setNotificationTime(Number(e.target.value));
+															if (Number(e.target.value) > 0) {
+																setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+															} else if (Number(e.target.value) === 0) {
+																setNotificationRepeat(false);
+															}
+														}}
+														style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+													>
+														{isInfinite ? (
+															<option value="0">All'ora d'inizio</option> // Solo questa opzione se isInfinite è true
+														) : (
+															<>
+																<option value="0">
+																	All'ora d'inizio
+																</option>
+																<option value="5">
+																	5 minuti prima
+																</option>
+																<option value="10">
+																	10 minuti prima
+																</option>
+																<option value="15">
+																	15 minuti prima
+																</option>
+																<option value="30">
+																	30 minuti prima
+																</option>
+																<option value="60">1 ora prima</option>
+																<option value="120">2 ore prima</option>
+																<option value="1440">
+																	Un giorno prima
+																</option>
+																<option value="2880">
+																	2 giorni prima
+																</option>
+															</>
+														)}
+													</select>
+												</label>
+											)}
+
+											{notificationRepeat && (
+												<label htmlFor="notificationRepeatTime">
+													Quanto tempo ripetere la notifica
+													<select
+														className="btn border"
+														name="notificationRepeatTime"
+														onChange={(
+															e: React.ChangeEvent<HTMLSelectElement>
+														): void => {
+															setNotificationRepeatTime(
+																Number(e.target.value)
+															);
+														}}>
+														{getValidRepeatOptions(notificationTime).map(
+															(option) => (
+																<option key={option} value={option}>
+																	{option === 0
+																		? "Mai"
+																		: option >= 60
+																			? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+																			: `Ogni ${option} minuti`}
+																</option>
+															)
+														)}
+													</select>
+												</label>
+											)}
+
+											<label htmlFor="sendInviteEvent"
+												style={{
+													cursor: 'pointer',
+													userSelect: 'none',  // Impedisce la selezione del testo
+													WebkitUserSelect: 'none',  // Per Safari
+													MozUserSelect: 'none',     // Per Firefox
+													msUserSelect: 'none'       // Per IE/Edge
+												}}>
+												<input
+													type="checkbox"
+													id="sendInviteEvent"
+													onClick={toggleSendInviteEvent}
+													style={{
+														marginLeft: "5px",
+														marginRight: "3px",
+														marginTop: "3px",
+														cursor: "pointer",
+													}}
+												/>
+												Invia evento ad utente
+											</label>
+
+											{sendInviteEvent && (
+												<div
+													id="send-invite"
+													className="send-invite-container"
+													style={{
+														display: "flex",
+														flexDirection: "column",
+														alignItems: "center",
+														justifyContent: "center",
+													}}>
+													<div>
+														Scegli l'utente al quale inviare la notifica
+													</div>
+													{users.length > 0}
+													<SearchForm
+														onItemClick={handleSelectUser}
+														list={users}
+													/>
+													{messageSend && <div className="error-message">{messageSend}</div>}
+													<button
+														onClick={handleSendInviteEvent}
+														className="btn btn-primary send-invite-button"
+														style={{
+															backgroundColor: "bisque",
+															color: "black",
+															border: "0",
+															marginBottom: "10px",
+														}}>
+														Invia Invito
+													</button>
+												</div>
+											)}
+
+											<label htmlFor="shareEvent"
+												style={{
+													cursor: 'pointer',
+													userSelect: 'none',  // Impedisce la selezione del testo
+													WebkitUserSelect: 'none',  // Per Safari
+													MozUserSelect: 'none',     // Per Firefox
+													msUserSelect: 'none'       // Per IE/Edge
+												}}>
+												<input
+													type="checkbox"
+													id="shareEvent"
+													onClick={toggleShareEvent}
+													style={{
+														marginLeft: "5px",
+														marginRight: "3px",
+														marginTop: "3px",
+														cursor: "pointer",
+													}}
+												/>
+												Condividi evento
+											</label>
+
+											{shareEvent && (
+												<div
+													id="send-invite"
+													className="send-invite-container"
+													style={{
+														display: "flex",
+														flexDirection: "column",
+														alignItems: "center",
+														justifyContent: "center",
+													}}>
+													<div style={{ textAlign: "center" }}>
+														Scegli l'utente o la risorsa con cui condividere
+														l'evento
+													</div>
+													{users.length > 0}
+													<SearchFormResource
+														onItemClick={handleSelectUser}
+														list={users}
+													/>
+													{messageShareRisorsa && (
+														<div className="error-message">
+															{messageShareRisorsa}
+														</div>
+													)}
+													<button
+														onClick={handleAddUserEvent}
+														className="btn btn-primary send-invite-button"
+														style={{
+															backgroundColor: "bisque",
+															color: "black",
+															border: "0",
+															marginBottom: "10px",
+														}}>
+														Condividi
+													</button>
+												</div>
+											)}
+
+											{messageEvent && (
+												<div className="error-message">{messageEvent}</div>
+											)}
+											<button
+												className="btn btn-primary"
+												style={{
+													backgroundColor: "bisque",
+													color: "black",
+													border: "0",
+												}}
+												onClick={handleCreateEvent}>
+												Crea
+											</button>
+										</form>
+									</div>
+								)}
+
+								{createActivity && (
+									<div className="creation-event-container">
+										<button
+											className="btn btn-primary"
+											style={{
+												backgroundColor: "bisque",
+												color: "black",
+												border: "0",
+											}}
+											onClick={toggleCreateActivity}>
+											Chiudi
+										</button>
+										<form>
+											{addTitle && (
+												<label htmlFor="title">
+													Title
+													<input
+														className="btn border"
+														type="text"
+														name="title"
+														value={title}
+														onChange={(
+															e: React.ChangeEvent<HTMLInputElement>
+														): void => setTitle(e.target.value)}
+													/>
+												</label>
+											)}
+											<label htmlFor="description">
+												Descrizione
+												<input
+													className="btn border"
+													type="text"
+													name="title"
+													value={description}
+													onChange={(
+														e: React.ChangeEvent<HTMLInputElement>
+													): void => setDescription(e.target.value)}
+												/>
+											</label>
+											<label htmlFor="endTime">
+												Scadenza
+												<div>
+													<DatePicker
+														className="btn border"
+														name="endTime"
+														selected={endTime}
+														onChange={(date: Date | null): void => {
+															if (date) {
+																// Aggiorna la data mantenendo l'orario attuale
+																const newDate = new Date(endTime);
+																newDate.setFullYear(
+																	date.getFullYear(),
+																	date.getMonth(),
+																	date.getDate()
+																);
+																setEndTime(newDate);
+															}
+														}}
+														dateFormat="dd/MM/yyyy"
+													/>
+												</div>
+												<div>
+													<input
+														className="btn border"
+														type="time"
+														value={`${endTime
+															.getHours()
+															.toString()
+															.padStart(2, "0")}:${endTime
+																.getMinutes()
+																.toString()
+																.padStart(2, "0")}`}
+														onChange={(
+															e: React.ChangeEvent<HTMLInputElement>
+														): void => {
+															const [hours, minutes] =
+																e.target.value.split(":");
+															const newDate = new Date(endTime);
+															newDate.setHours(
+																Number(hours),
+																Number(minutes)
+															); // Aggiorna l'orario
+															setEndTime(newDate); // Imposta il nuovo oggetto Date
+														}}
+														onKeyDown={(
+															e: React.KeyboardEvent<HTMLInputElement>
+														): void => {
+															if (e.key === "Backspace") {
+																e.preventDefault(); // Impedisce l'input del tasto backspace
+															}
+														}}
+													/>
+												</div>
+											</label>
+
+											<label htmlFor="addNotificationActivity"
+												style={{
+													cursor: 'pointer',
+													userSelect: 'none',  // Impedisce la selezione del testo
+													WebkitUserSelect: 'none',  // Per Safari
+													MozUserSelect: 'none',     // Per Firefox
+													msUserSelect: 'none'       // Per IE/Edge
+												}}>
+												<input
+													type="checkbox"
+													name="addNotificationActivity"
+													id="addNotificationActivity"
+													onClick={toggleAddNotification}
+													style={{
+														marginLeft: "5px",
+														marginRight: "3px",
+														marginTop: "3px",
+														cursor: "pointer",
+													}}
+												/>
+												Aggiungi notifica
+											</label>
+
+											{addNotification && (
+												<label htmlFor="notificationTime">
+													Quanto tempo prima mandare la notifica
+													<select
+														id="notificationTimeSelect"
+														className="btn border"
+														onChange={(
+															e: React.ChangeEvent<HTMLSelectElement>
+														): void => {
+															setNotificationTime(Number(e.target.value));
+															if (Number(e.target.value) > 0) {
+																setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+															} else if (Number(e.target.value) == 0) {
+																setNotificationRepeat(false);
+															}
+														}}
+														style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+													>
+														<option value="0">All'ora d'inizio</option>
+														<option value="5">5 minuti prima</option>
+														<option value="10">10 minuti prima</option>
+														<option value="15">15 minuti prima</option>
+														<option value="30">30 minuti prima</option>
+														<option value="60">1 ora prima</option>
+														<option value="120">2 ore prima</option>
+														<option value="1440">Un giorno prima</option>
+														<option value="2880">2 giorni prima</option>
+													</select>
+												</label>
+											)}
+
+											{notificationRepeat && (
+												<label htmlFor="notificationRepeatTime">
+													Quanto tempo ripetere la notifica
+													<select
+														className="btn border"
+														name="notificationRepeatTime"
+														onChange={(
+															e: React.ChangeEvent<HTMLSelectElement>
+														): void => {
+															setNotificationRepeatTime(
+																Number(e.target.value)
+															);
+														}}>
+														{getValidRepeatOptions(notificationTime).map(
+															(option) => (
+																<option key={option} value={option}>
+																	{option === 0
+																		? "Mai"
+																		: option >= 60
+																			? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+																			: `Ogni ${option} minuti`}
+																</option>
+															)
+														)}
+													</select>
+												</label>
+											)}
+
+											<label htmlFor="sendInviteActivity"
+												style={{
+													cursor: 'pointer',
+													userSelect: 'none',  // Impedisce la selezione del testo
+													WebkitUserSelect: 'none',  // Per Safari
+													MozUserSelect: 'none',     // Per Firefox
+													msUserSelect: 'none'       // Per IE/Edge
+												}}>
+												<input
+													type="checkbox"
+													name="sendInviteActivity"
+													id="sendInviteActivity"
+													onClick={toggleSendInviteActivity}
+													style={{
+														marginLeft: "5px",
+														marginRight: "3px",
+														marginTop: "3px",
+														cursor: "pointer",
+													}}
+												/>
+												Invia attività ad utente
+											</label>
+
+											{sendInviteActivity && (
+												<div
+													id="send-invite"
+													className="send-invite-container"
+													style={{
+														display: "flex",
+														flexDirection: "column",
+														alignItems: "center",
+														justifyContent: "center",
+													}}>
+													<div>
+														Scegli l'utente al quale inviare la notifica
+													</div>
+													{users.length > 0}
+													<SearchForm
+														onItemClick={handleSelectUser}
+														list={users}
+													/>
+													{messageSend && <div className="error-message">{messageSend}</div>}
+													<button
+														onClick={handleSendInviteActivity}
+														className="btn btn-primary send-invite-button"
+														style={{
+															backgroundColor: "bisque",
+															color: "black",
+															border: "0",
+															marginBottom: "10px",
+														}}>
+														Invia Invito
+													</button>
+												</div>
+											)}
+
+											<label htmlFor="shareActivity"
+												style={{
+													cursor: 'pointer',
+													userSelect: 'none',  // Impedisce la selezione del testo
+													WebkitUserSelect: 'none',  // Per Safari
+													MozUserSelect: 'none',     // Per Firefox
+													msUserSelect: 'none'       // Per IE/Edge
+												}}>
+												<input
+													type="checkbox"
+													name="shareActivity"
+													id="shareActivity"
+													onClick={toggleShareActivity}
+													style={{
+														marginLeft: "5px",
+														marginRight: "3px",
+														marginTop: "3px",
+														cursor: "pointer",
+													}}
+												/>
+												Condividi attività
+											</label>
+
+											{shareActivity && (
+												<div
+													id="send-invite"
+													className="send-invite-container"
+													style={{
+														display: "flex",
+														flexDirection: "column",
+														alignItems: "center",
+														justifyContent: "center",
+													}}>
+													<div>
+														Scegli l'utente con il quale condividere
+														l'attività
+													</div>
+													{users.length > 0}
+													<SearchForm
+														onItemClick={handleSelectUser}
+														list={users}
+													/>
+													{messageShareActivity && (
+														<div className="error-message">
+															{messageShareActivity}
+														</div>
+													)}
+													<button
+														onClick={handleAddUserActivity}
+														className="btn btn-primary send-invite-button"
+														style={{
+															backgroundColor: "bisque",
+															color: "black",
+															border: "0",
+															marginBottom: "10px",
+														}}>
+														Condividi
+													</button>
+												</div>
+											)}
+
+											{messageActivity && (
+												<div className="error-message">{messageActivity}</div>
+											)}
+											<button
+												className="btn btn-primary"
+												style={{
+													backgroundColor: "bisque",
+													color: "black",
+													border: "0",
+												}}
+												onClick={handleCreateActivity}>
+												Crea
+											</button>
+										</form>
+									</div>
+								)}
+
+								{createNonDisturbare && (
+									<div className="creation-event-container">
+										<button
+											className="btn btn-primary"
+											style={{
+												backgroundColor: "bisque",
+												color: "black",
+												border: "0",
+											}}
+											onClick={toggleCreateNonDisturbare}>
+											Chiudi
+										</button>
+										<form>
+											<label htmlFor="allDayNotDisturb"
+												style={{
+													cursor: 'pointer',
+													userSelect: 'none',  // Impedisce la selezione del testo
+													WebkitUserSelect: 'none',  // Per Safari
+													MozUserSelect: 'none',     // Per Firefox
+													msUserSelect: 'none'       // Per IE/Edge
+												}}>
+												<input
+													type="checkbox"
+													name="allDayNotDisturb"
+													id="allDayNotDisturb"
+													onClick={toggleAllDayEvent}
+													style={{
+														marginLeft: "5px",
+														marginRight: "3px",
+														marginTop: "3px",
+														cursor: "pointer",
+													}}
+												/>
+												Tutto il giorno
+											</label>
+
+											{!allDayNotDisturb && (
+												<>
+													<label htmlFor="repeatNotDisturb"
+														style={{
+															cursor: 'pointer',
+															userSelect: 'none',  // Impedisce la selezione del testo
+															WebkitUserSelect: 'none',  // Per Safari
+															MozUserSelect: 'none',     // Per Firefox
+															msUserSelect: 'none'       // Per IE/Edge
+														}}>
+														<input
+															type="checkbox"
+															name="repeatNotDisturb"
+															id="repeatNotDisturb"
+															onClick={toggleRepeatEvent}
+															style={{
+																marginLeft: "5px",
+																marginRight: "3px",
+																marginTop: "3px",
+																cursor: "pointer",
 															}}
 														/>
-													</div>
+														Ripeti
+													</label>
+													{repeatEvent && (
+														<>
+															<div
+																className="flex"
+																style={{ marginRight: "10px" }}>
+																Ripeti l'evento
+																<label htmlFor="repeatEvent">
+																	<select
+																		className="btn border"
+																		name="repetitionType"
+																		onChange={toggleSelectFrequency}
+																		style={{
+																			marginLeft: "5px",
+																			marginRight: "3px",
+																			marginTop: "3px",
+																		}}>
+																		<option value="Once">Una volta</option>
+																		<option value="Daily">
+																			Ogni giorno
+																		</option>
+																		<option value="Weekly">
+																			Ogni settimana
+																		</option>
+																		<option value="Monthly">
+																			Ogni mese{" "}
+																		</option>
+																		<option value="Yearly">
+																			Ogni anno
+																		</option>
+																	</select>
+																</label>
+															</div>
+
+															{until && (
+																<div>
+																	<div>
+																		<div
+																			className="flex"
+																			style={{ marginRight: "10px" }}>
+																			Fino a
+																			<select
+																				className="btn border"
+																				onChange={toggleSelectUntil}
+																				defaultValue={selectedValue}>
+																				<option value="Data">
+																					Data
+																				</option>
+																				<option value="Ripetizioni">
+																					Ripetizioni
+																				</option>
+																				<option value="Infinito">
+																					Infinito{" "}
+																				</option>
+																			</select>
+																		</div>
+
+																		{selectedValue === "Data" && (
+																			<DatePicker
+																				className="btn border"
+																				name="finoAData"
+																				selected={untilDate} // Il DatePicker sarà vuoto se untilDate è null
+																				onChange={(
+																					date: Date | null
+																				): void => {
+																					if (date) {
+																						date.setHours(
+																							12,
+																							0,
+																							0,
+																							0
+																						); // Imposta l'orario a mezzogiorno
+																						setUntilDate(date); // Aggiorna lo stato con la nuova data
+																					}
+																				}}
+																				placeholderText="Seleziona una data" // Testo segnaposto quando il DatePicker è vuoto
+																			/>
+																		)}
+
+																		{selectedValue === "Ripetizioni" && (
+																			<div>
+																				<input
+																					className="btn border"
+																					type="number"
+																					min="1"
+																					style={{ width: "100%" }}
+																					onChange={(
+																						e: React.ChangeEvent<HTMLInputElement>
+																					): void => {
+																						setRepetitions(
+																							Number(
+																								e.target.value
+																							)
+																						);
+																						//setIsUntilDate(false);
+																						setUntilDate(null); // Aggiorna lo stato con la nuova data
+
+																						if (
+																							repetitions < 1 ||
+																							isNaN(repetitions)
+																						) {
+																							setRepetitions(1);
+																						}
+																						console.log(
+																							"Numero ripetizione dell'evento: ",
+																							repetitions
+																						);
+																					}}></input>
+																			</div>
+																		)}
+																	</div>
+																</div>
+															)}
+														</>
+													)}
 												</>
 											)}
-										</label>
+											<label htmlFor="startTime">
+												Data Inizio
+												<div>
+													<DatePicker
+														className="btn border"
+														name="startTime"
+														selected={startTime}
+														onChange={(date: Date | null): void => {
+															if (date) {
+																// Aggiorna la data mantenendo l'orario attuale
+																const newDate = new Date(startTime);
+																newDate.setFullYear(
+																	date.getFullYear(),
+																	date.getMonth(),
+																	date.getDate()
+																);
+																setStartTime(newDate);
+															}
+														}}
+														dateFormat="dd/MM/yyyy"
+													/>
+												</div>
+												{!allDayEvent && (
+													<>
+														<div>
+															<input
+																className="btn border"
+																type="time"
+																value={
+																	startTime
+																		? `${startTime
+																			.getHours()
+																			.toString()
+																			.padStart(
+																				2,
+																				"0"
+																			)}:${startTime
+																				.getMinutes()
+																				.toString()
+																				.padStart(2, "0")}`
+																		: ""
+																}
+																onChange={(
+																	e: React.ChangeEvent<HTMLInputElement>
+																): void => {
+																	const [hours, minutes] =
+																		e.target.value.split(":");
+																	if (hours && minutes) {
+																		// Controlla se hours e minutes sono definiti
+																		const newDate = new Date(
+																			startTime
+																		); // Crea un nuovo oggetto Date basato su startTime
+																		newDate.setHours(
+																			Number(hours),
+																			Number(minutes),
+																			0,
+																			0
+																		); // Imposta l'orario
+																		setStartTime(newDate); // Imposta il nuovo oggetto Date
+																	}
+																}}
+																onKeyDown={(
+																	e: React.KeyboardEvent<HTMLInputElement>
+																): void => {
+																	if (e.key === "Backspace") {
+																		e.preventDefault(); // Impedisce l'input del tasto backspace
+																	}
+																}}
+															/>
+														</div>
+													</>
+												)}
+											</label>
+											<label htmlFor="endTime">
+												Data Fine
+												<div>
+													<DatePicker
+														className="btn border"
+														name="endTime"
+														selected={endTime}
+														onChange={(date: Date | null): void => {
+															if (date) {
+																// Aggiorna la data mantenendo l'orario attuale
+																const newDate = new Date(endTime);
+																newDate.setFullYear(
+																	date.getFullYear(),
+																	date.getMonth(),
+																	date.getDate()
+																);
+																setEndTime(newDate);
+															}
+														}}
+														dateFormat="dd/MM/yyyy"
+													/>
+												</div>
+												{!allDayEvent && (
+													<>
+														<div>
+															<input
+																className="btn border"
+																type="time"
+																value={`${endTime
+																	.getHours()
+																	.toString()
+																	.padStart(2, "0")}:${endTime
+																		.getMinutes()
+																		.toString()
+																		.padStart(2, "0")}`}
+																onChange={(
+																	e: React.ChangeEvent<HTMLInputElement>
+																): void => {
+																	const [hours, minutes] =
+																		e.target.value.split(":");
+																	if (hours && minutes) {
+																		// Controlla se hours e minutes sono definiti
+																		const newDate = new Date(
+																			endTime
+																		);
+																		newDate.setHours(
+																			Number(hours),
+																			Number(minutes)
+																		); // Aggiorna l'orario
+																		setEndTime(newDate); // Imposta il nuovo oggetto Date
+																	}
+																}}
+																onKeyDown={(
+																	e: React.KeyboardEvent<HTMLInputElement>
+																): void => {
+																	if (e.key === "Backspace") {
+																		e.preventDefault(); // Impedisce l'input del tasto backspace
+																	}
+																}}
+															/>
+														</div>
+													</>
+												)}
+											</label>
 
-										{messageNotDisturb && (
-											<div className="error-message">{messageNotDisturb}</div>
-										)}
+											{messageNotDisturb && (
+												<div className="error-message">{messageNotDisturb}</div>
+											)}
+											<button
+												className="btn btn-primary"
+												style={{
+													backgroundColor: "bisque",
+													color: "black",
+													border: "0",
+												}}
+												onClick={handleCreateNonDisturbare}>
+												Crea
+											</button>
+										</form>
+									</div>
+								)}
+
+								{createRisorsa && (
+									<div className="creation-event-container">
 										<button
 											className="btn btn-primary"
 											style={{
@@ -4923,228 +5170,416 @@ export default function Calendar(): React.JSX.Element {
 												color: "black",
 												border: "0",
 											}}
-											onClick={handleCreateNonDisturbare}>
-											Crea
+											onClick={toggleCreateRisorsa}>
+											Chiudi
 										</button>
-									</form>
-								</div>
-							)}
+										<form>
+											<label htmlFor="title">
+												Nome
+												<input
+													className="btn border"
+													type="text"
+													name="title"
+													value={title}
+													onChange={(
+														e: React.ChangeEvent<HTMLInputElement>
+													): void => setTitle(e.target.value)}
+												/>
+											</label>
+											<label htmlFor="description">
+												Descrizione
+												<input
+													className="btn border"
+													type="text"
+													name="description"
+													value={description}
+													onChange={(
+														e: React.ChangeEvent<HTMLInputElement>
+													): void => setDescription(e.target.value)}
+												/>
+											</label>
 
-							{createRisorsa && (
-								<div className="creation-event-container">
-									<button
-										className="btn btn-primary"
-										style={{
-											backgroundColor: "bisque",
-											color: "black",
-											border: "0",
-										}}
-										onClick={toggleCreateRisorsa}>
-										Chiudi
-									</button>
-									<form>
-										<label htmlFor="title">
-											Nome
-											<input
-												className="btn border"
-												type="text"
-												name="title"
-												value={title}
-												onChange={(
-													e: React.ChangeEvent<HTMLInputElement>
-												): void => setTitle(e.target.value)}
-											/>
-										</label>
-										<label htmlFor="description">
-											Descrizione
-											<input
-												className="btn border"
-												type="text"
-												name="description"
-												value={description}
-												onChange={(
-													e: React.ChangeEvent<HTMLInputElement>
-												): void => setDescription(e.target.value)}
-											/>
-										</label>
-
-										{messageRisorsa && <div className="error-message">{messageRisorsa}</div>}
-										<button
-											className="btn btn-primary"
-											style={{
-												backgroundColor: "bisque",
-												color: "black",
-												border: "0",
-											}}
-											onClick={handleCreateRisorsa}>
-											Crea
-										</button>
-									</form>
-								</div>
-							)}
+											{messageRisorsa && <div className="error-message">{messageRisorsa}</div>}
+											<button
+												className="btn btn-primary"
+												style={{
+													backgroundColor: "bisque",
+													color: "black",
+													border: "0",
+												}}
+												onClick={handleCreateRisorsa}>
+												Crea
+											</button>
+										</form>
+									</div>
+								)}
+							</div>
 						</div>
-					</div>
 
-					{activitiesMode && (
-						<>
-							<div className="activities-view-container">
-								<div className="calendar">
-									<div
-										className="month-indicator"
-										style={{
-											display: "flex",
-											justifyContent: "center",
-											alignItems: "center",
-											gap: "0.5em",
-										}}>
-										<button
-											className="calendar-arrows"
-											onClick={(): void => {
-												mesePrecedente(); /*
+						{activitiesMode && (
+							<>
+								<div className="activities-view-container">
+									<div className="calendar">
+										<div
+											className="month-indicator"
+											style={{
+												display: "flex",
+												justifyContent: "center",
+												alignItems: "center",
+												gap: "0.5em",
+											}}>
+											<button
+												className="calendar-arrows"
+												onClick={(): void => {
+													mesePrecedente(); /*
 												console.log(Mesi[meseCorrente - 1]);
 												const date = new Date(year, meseCorrente - 1);
 												console.log(getDaysInMonth(date));
 												*/
-											}}>
-											{"<<"}
-										</button>
-										<time> {Mesi[meseCorrente]}</time>
-										<button
-											className="calendar-arrows"
-											onClick={(): void => {
-												meseSuccessivo(); /*
+												}}>
+												{"<<"}
+											</button>
+											<time> {Mesi[meseCorrente]}</time>
+											<button
+												className="calendar-arrows"
+												onClick={(): void => {
+													meseSuccessivo(); /*
 												console.log(Mesi[meseCorrente + 1]);
 												const date = new Date(year, meseCorrente + 1);
 												console.log(getDaysInMonth(date));
 												*/
-											}}>
-											{">>"}
-										</button>
-									</div>
-									<div className="day-of-week">
-										<div>Dom</div>
-										<div>Lun</div>
-										<div>Mar</div>
-										<div>Mer</div>
-										<div>Gio</div>
-										<div>Ven</div>
-										<div>Sab</div>
-									</div>
-									<div className="date-grid" key={renderKey}>
-										{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
-										{((): JSX.Element[] => {
-											return Array.from({
-												length: getDay(
-													startOfMonth(new Date(year, meseCorrente))
-												),
-											}).map((_, index) => <div key={index}></div>);
-										})()}
-										{/* Genera i bottoni per i giorni del mese */}
-										{Array.from({
-											length: getDaysInMonth(new Date(year, meseCorrente)),
-										}).map((_, day) => (
-											<div key={day + 1} style={{ position: "relative" }}>
-												<button onClick={handleDateClick}>{day + 1}</button>
-												{hasEventsForDay(day + 1) && ( //true se ci sono eventi
-													<span
-														className="calendar-event-dot"
-													/*style={{
-													position: 'absolute', // Posiziona il pallino in modo assoluto
-													bottom: '3px', // Posiziona il pallino sotto il bottone
-													left: '32%', // Centra orizzontalmente
-													transform: 'translateX(-50%)', // Centra il pallino
-													width: '8px',
-													height: '8px',
-													borderRadius: '50%',
-													backgroundColor: 'lightgray', // Colore del pallino
-												}} */
-													/>
-												)}
-											</div>
-										))}
-									</div>
-								</div>
-
-								{todayActivitiesMode && (
-									<>
-										<div className="data-orario">
-											<div
-												className="nome-data-container"
-												style={{ flexDirection: "column" }}
-											>
-												<div style={{ display: "flex", flexDirection: "row", gap: "0.5em", alignItems: "center" }}>
-
-													<button
-														className="year-button"
-														style={{
-															padding: "2px 8px",
-															height: "24px",
-															minHeight: "24px",
-															lineHeight: "1",
-														}}
-														onClick={(): void => {
-															setEventPositions([]); // Svuota l'array delle posizioni
-															setYear(year - 1); // Decrementa l'anno
-														}}>
-														-
-													</button>
-													{day} {Mesi[meseCorrente]} {" "}
-													{year}
-
-													<button
-														className="year-button"
-														style={{
-															padding: "2px 8px",
-															height: "24px",
-															minHeight: "24px",
-															lineHeight: "1",
-														}}
-														onClick={(): void => {
-															setEventPositions([]); // Svuota l'array delle posizioni
-															setYear(year + 1); // Decrementa l'anno
-														}}>
-														+
-													</button>
+												}}>
+												{">>"}
+											</button>
+										</div>
+										<div className="day-of-week">
+											<div>Dom</div>
+											<div>Lun</div>
+											<div>Mar</div>
+											<div>Mer</div>
+											<div>Gio</div>
+											<div>Ven</div>
+											<div>Sab</div>
+										</div>
+										<div className="date-grid" key={renderKey}>
+											{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
+											{((): JSX.Element[] => {
+												return Array.from({
+													length: getDay(
+														startOfMonth(new Date(year, meseCorrente))
+													),
+												}).map((_, index) => <div key={index}></div>);
+											})()}
+											{/* Genera i bottoni per i giorni del mese */}
+											{Array.from({
+												length: getDaysInMonth(new Date(year, meseCorrente)),
+											}).map((_, day) => (
+												<div key={day + 1} style={{ position: "relative" }}>
+													<button onClick={handleDateClick}>{day + 1}</button>
+													{hasEventsForDay(day + 1) && ( //true se ci sono eventi
+														<span
+															className="calendar-event-dot"
+														/*style={{
+														position: 'absolute', // Posiziona il pallino in modo assoluto
+														bottom: '3px', // Posiziona il pallino sotto il bottone
+														left: '32%', // Centra orizzontalmente
+														transform: 'translateX(-50%)', // Centra il pallino
+														width: '8px',
+														height: '8px',
+														borderRadius: '50%',
+														backgroundColor: 'lightgray', // Colore del pallino
+													}} */
+														/>
+													)}
 												</div>
+											))}
+										</div>
+									</div>
 
-												{activitiesMode && (
-													<div className="activities-button-container">
+									{todayActivitiesMode && (
+										<>
+											<div className="data-orario">
+												<div
+													className="nome-data-container"
+													style={{ flexDirection: "column" }}
+												>
+													<div style={{ display: "flex", flexDirection: "row", gap: "0.5em", alignItems: "center" }}>
+
 														<button
-															className="btn btn-primary"
-															onClick={toggleTodayActivitiesMode}
+															className="year-button"
 															style={{
-																backgroundColor: "bisque",
-																color: "black",
-																border: "0",
+																padding: "2px 8px",
+																height: "24px",
+																minHeight: "24px",
+																lineHeight: "1",
+															}}
+															onClick={(): void => {
+																setEventPositions([]); // Svuota l'array delle posizioni
+																setYear(year - 1); // Decrementa l'anno
 															}}>
-															Mostra attività che scadono questo
-															giorno
+															-
 														</button>
+														{day} {Mesi[meseCorrente]} {" "}
+														{year}
 
 														<button
-															className="btn btn-primary"
-															onClick={toggleAllActivitiesMode}
+															className="year-button"
 															style={{
-																backgroundColor: "bisque",
-																color: "black",
-																border: "0",
+																padding: "2px 8px",
+																height: "24px",
+																minHeight: "24px",
+																lineHeight: "1",
+															}}
+															onClick={(): void => {
+																setEventPositions([]); // Svuota l'array delle posizioni
+																setYear(year + 1); // Decrementa l'anno
 															}}>
-															Mostra tutte le attività
+															+
 														</button>
 													</div>
-												)}
+
+													{activitiesMode && (
+														<div className="activities-button-container">
+															<button
+																className="btn btn-primary"
+																onClick={toggleTodayActivitiesMode}
+																style={{
+																	backgroundColor: "bisque",
+																	color: "black",
+																	border: "0",
+																}}>
+																Mostra attività che scadono questo
+																giorno
+															</button>
+
+															<button
+																className="btn btn-primary"
+																onClick={toggleAllActivitiesMode}
+																style={{
+																	backgroundColor: "bisque",
+																	color: "black",
+																	border: "0",
+																}}>
+																Mostra tutte le attività
+															</button>
+														</div>
+													)}
+												</div>
+												<div
+													className="orario"
+													style={{
+														display: "flex",
+														justifyContent: "flex-start",
+														alignItems: "center",
+													}}
+													key={renderKey}>
+													{activitiesCheScadonoOggi.length > 0 ? (
+														activitiesCheScadonoOggi.map(
+															(activity, index) => (
+																<div
+																	key={index}
+																	style={{
+																		margin: "5px",
+																		padding: "10px",
+																		border: "1px solid #ccc",
+																		borderRadius: "10px",
+																		width: "100%",
+																	}}>
+																	<h4 className="overflow-adhoc">
+																		{activity.title}
+																	</h4>
+																	<p>
+																		Scadenza:{" "}
+																		{new Date(
+																			activity.deadline
+																		).toLocaleString("it-IT", {
+																			day: "2-digit",
+																			month: "2-digit",
+																			year: "numeric",
+																			hour: "2-digit",
+																			minute: "2-digit",
+																		})}
+																	</p>
+																	<p className="overflow-adhoc">
+																		Descrizione:{" "}
+																		{activity.description}
+																	</p>
+																	<span
+																		style={{
+																			color: "black",
+																			marginBottom: "10px",
+																		}}>
+																		Completata:
+																		<span
+																			style={{
+																				color: activity.completed
+																					? "lightgreen"
+																					: "lightcoral",
+																			}}>
+																			{activity.completed
+																				? " Si"
+																				: " No"}
+																		</span>
+																		{new Date(activity.deadline) <
+																			currentDate &&
+																			!activity.completed && (
+																				<p
+																					style={{
+																						color: "red",
+																						fontWeight:
+																							"bold",
+																					}}>
+																					ATTIVITÀ IN RITARDO
+																				</p>
+																			)}
+																	</span>
+																	<br />
+																	<button
+																		onClick={async (): Promise<void> => {
+																			await handleDeleteActivity(
+																				activity._id
+																			); // Chiama la funzione di eliminazione
+																			// Dopo l'eliminazione, aggiorna la lista delle attività
+																			setActivityList(
+																				(prevList) =>
+																					prevList.filter(
+																						(a) =>
+																							a._id !==
+																							activity._id
+																					)
+																			);
+																		}}
+																		className="btn btn-primary"
+																		style={{
+																			backgroundColor: "bisque",
+																			marginRight: "10px",
+																			color: "white",
+																			border: "0",
+																			padding: "5px 5px 5px 5px",
+																		}}>
+																		<i
+																			style={{ color: "black" }}
+																			className="bi bi-trash">
+																			{" "}
+																		</i>
+																	</button>
+
+																	<button
+																		onClick={async (): Promise<void> => {
+																			await handleCompleteActivity(
+																				activity._id
+																			); //completo l'attività corrente
+																		}}
+																		className="btn btn-primary"
+																		style={{
+																			backgroundColor: "bisque",
+																			color: "white",
+																			border: "0",
+																			padding: "5px 5px 5px 5px",
+																		}}>
+																		<i
+																			style={{ color: "black" }}
+																			className="bi bi-check">
+																			{" "}
+																		</i>
+																	</button>
+																</div>
+															)
+														)
+													) : (
+														<p
+															style={{
+																color: "black",
+																textAlign: "center",
+																justifyContent: "center",
+																marginTop: "16vw",
+																fontWeight: "bold",
+															}}>
+															Non ci sono attività in scadenza oggi.
+														</p>
+													)}
+												</div>
 											</div>
-											<div
-												className="orario"
-												style={{
-													display: "flex",
-													justifyContent: "flex-start",
-													alignItems: "center",
-												}}
-												key={renderKey}>
-												{activitiesCheScadonoOggi.length > 0 ? (
-													activitiesCheScadonoOggi.map(
-														(activity, index) => (
+										</>
+									)}
+
+									{allActivitiesMode && (
+										<>
+											<div className="data-orario">
+												<div
+													className="nome-data-container"
+													style={{ flexDirection: "column" }}>
+													<div style={{ display: "flex", flexDirection: "row", gap: "0.5em", alignItems: "center" }}>
+														<button
+															className="year-button "
+															style={{
+																padding: "2px 8px",
+																height: "24px",
+																minHeight: "24px",
+																lineHeight: "1",
+															}}
+
+															onClick={(): void => {
+																setEventPositions([]); // Svuota l'array delle posizioni
+																setYear(year - 1); // Decrementa l'anno
+															}}>
+															-
+														</button>
+														{day} {Mesi[meseCorrente]} {" "}
+														{year}
+
+														<button
+															className="year-button"
+															style={{
+																padding: "2px 8px",
+																height: "24px",
+																minHeight: "24px",
+																lineHeight: "1",
+															}}
+															onClick={(): void => {
+																setEventPositions([]); // Svuota l'array delle posizioni
+																setYear(year + 1); // Decrementa l'anno
+															}}>
+															+
+														</button>
+													</div>
+													{activitiesMode && (
+														<div className="activities-button-container">
+															<button
+																className="btn btn-primary"
+																onClick={toggleTodayActivitiesMode}
+																style={{
+																	backgroundColor: "bisque",
+																	color: "black",
+																	border: "0",
+																}}>
+																Mostra attività che scadono questo
+																giorno
+															</button>
+
+															<button
+																className="btn btn-primary"
+																onClick={toggleAllActivitiesMode}
+																style={{
+																	backgroundColor: "bisque",
+																	color: "black",
+																	border: "0",
+																}}>
+																Mostra tutte le attività
+															</button>
+														</div>
+													)}
+												</div>
+												<div
+													className="orario"
+													style={{
+														display: "flex",
+														justifyContent: "flex-start",
+														alignItems: "center",
+													}}
+													key={renderKey}>
+													{activityList.length > 0 ? (
+														activityList.map((activity, index) => (
 															<div
 																key={index}
 																style={{
@@ -5170,8 +5605,7 @@ export default function Calendar(): React.JSX.Element {
 																	})}
 																</p>
 																<p className="overflow-adhoc">
-																	Descrizione:{" "}
-																	{activity.description}
+																	Descrizione: {activity.description}
 																</p>
 																<span
 																	style={{
@@ -5189,19 +5623,20 @@ export default function Calendar(): React.JSX.Element {
 																			? " Si"
 																			: " No"}
 																	</span>
-																	{new Date(activity.deadline) <
-																		currentDate &&
-																		!activity.completed && (
-																			<p
-																				style={{
-																					color: "red",
-																					fontWeight:
-																						"bold",
-																				}}>
-																				ATTIVITÀ IN RITARDO
-																			</p>
-																		)}
 																</span>
+
+																{new Date(activity.deadline) <
+																	currentDate &&
+																	!activity.completed && (
+																		<p
+																			style={{
+																				color: "red",
+																				fontWeight: "bold",
+																			}}>
+																			ATTIVITÀ IN RITARDO
+																		</p>
+																	)}
+
 																<br />
 																<button
 																	onClick={async (): Promise<void> => {
@@ -5209,13 +5644,12 @@ export default function Calendar(): React.JSX.Element {
 																			activity._id
 																		); // Chiama la funzione di eliminazione
 																		// Dopo l'eliminazione, aggiorna la lista delle attività
-																		setActivityList(
-																			(prevList) =>
-																				prevList.filter(
-																					(a) =>
-																						a._id !==
-																						activity._id
-																				)
+																		setActivityList((prevList) =>
+																			prevList.filter(
+																				(a) =>
+																					a._id !==
+																					activity._id
+																			)
 																		);
 																	}}
 																	className="btn btn-primary"
@@ -5253,402 +5687,173 @@ export default function Calendar(): React.JSX.Element {
 																	</i>
 																</button>
 															</div>
-														)
-													)
-												) : (
-													<p
-														style={{
-															color: "black",
-															textAlign: "center",
-															justifyContent: "center",
-															marginTop: "16vw",
-															fontWeight: "bold",
-														}}>
-														Non ci sono attività in scadenza oggi.
-													</p>
-												)}
-											</div>
-										</div>
-									</>
-								)}
-
-								{allActivitiesMode && (
-									<>
-										<div className="data-orario">
-											<div
-												className="nome-data-container"
-												style={{ flexDirection: "column" }}>
-												<div style={{ display: "flex", flexDirection: "row", gap: "0.5em", alignItems: "center" }}>
-													<button
-														className="year-button "
-														style={{
-															padding: "2px 8px",
-															height: "24px",
-															minHeight: "24px",
-															lineHeight: "1",
-														}}
-
-														onClick={(): void => {
-															setEventPositions([]); // Svuota l'array delle posizioni
-															setYear(year - 1); // Decrementa l'anno
-														}}>
-														-
-													</button>
-													{day} {Mesi[meseCorrente]} {" "}
-													{year}
-
-													<button
-														className="year-button"
-														style={{
-															padding: "2px 8px",
-															height: "24px",
-															minHeight: "24px",
-															lineHeight: "1",
-														}}
-														onClick={(): void => {
-															setEventPositions([]); // Svuota l'array delle posizioni
-															setYear(year + 1); // Decrementa l'anno
-														}}>
-														+
-													</button>
+														))
+													) : (
+														<p
+															style={{
+																color: "black",
+																textAlign: "center",
+																justifyContent: "center",
+																marginTop: "16vw",
+																fontWeight: "bold",
+															}}>
+															Non ci sono attività in scadenza.
+														</p>
+													)}
 												</div>
-												{activitiesMode && (
-													<div className="activities-button-container">
-														<button
-															className="btn btn-primary"
-															onClick={toggleTodayActivitiesMode}
-															style={{
-																backgroundColor: "bisque",
-																color: "black",
-																border: "0",
-															}}>
-															Mostra attività che scadono questo
-															giorno
-														</button>
-
-														<button
-															className="btn btn-primary"
-															onClick={toggleAllActivitiesMode}
-															style={{
-																backgroundColor: "bisque",
-																color: "black",
-																border: "0",
-															}}>
-															Mostra tutte le attività
-														</button>
-													</div>
-												)}
 											</div>
-											<div
-												className="orario"
-												style={{
-													display: "flex",
-													justifyContent: "flex-start",
-													alignItems: "center",
-												}}
-												key={renderKey}>
-												{activityList.length > 0 ? (
-													activityList.map((activity, index) => (
-														<div
-															key={index}
-															style={{
-																margin: "5px",
-																padding: "10px",
-																border: "1px solid #ccc",
-																borderRadius: "10px",
-																width: "100%",
-															}}>
-															<h4 className="overflow-adhoc">
-																{activity.title}
-															</h4>
-															<p>
-																Scadenza:{" "}
-																{new Date(
-																	activity.deadline
-																).toLocaleString("it-IT", {
-																	day: "2-digit",
-																	month: "2-digit",
-																	year: "numeric",
-																	hour: "2-digit",
-																	minute: "2-digit",
-																})}
-															</p>
-															<p className="overflow-adhoc">
-																Descrizione: {activity.description}
-															</p>
-															<span
-																style={{
-																	color: "black",
-																	marginBottom: "10px",
-																}}>
-																Completata:
-																<span
-																	style={{
-																		color: activity.completed
-																			? "lightgreen"
-																			: "lightcoral",
-																	}}>
-																	{activity.completed
-																		? " Si"
-																		: " No"}
-																</span>
-															</span>
+										</>
+									)}
+								</div >
+							</>
+						)
+						}
 
-															{new Date(activity.deadline) <
-																currentDate &&
-																!activity.completed && (
-																	<p
-																		style={{
-																			color: "red",
-																			fontWeight: "bold",
-																		}}>
-																		ATTIVITÀ IN RITARDO
-																	</p>
-																)}
-
-															<br />
-															<button
-																onClick={async (): Promise<void> => {
-																	await handleDeleteActivity(
-																		activity._id
-																	); // Chiama la funzione di eliminazione
-																	// Dopo l'eliminazione, aggiorna la lista delle attività
-																	setActivityList((prevList) =>
-																		prevList.filter(
-																			(a) =>
-																				a._id !==
-																				activity._id
-																		)
-																	);
-																}}
-																className="btn btn-primary"
-																style={{
-																	backgroundColor: "bisque",
-																	marginRight: "10px",
-																	color: "white",
-																	border: "0",
-																	padding: "5px 5px 5px 5px",
-																}}>
-																<i
-																	style={{ color: "black" }}
-																	className="bi bi-trash">
-																	{" "}
-																</i>
-															</button>
-
-															<button
-																onClick={async (): Promise<void> => {
-																	await handleCompleteActivity(
-																		activity._id
-																	); //completo l'attività corrente
-																}}
-																className="btn btn-primary"
-																style={{
-																	backgroundColor: "bisque",
-																	color: "white",
-																	border: "0",
-																	padding: "5px 5px 5px 5px",
-																}}>
-																<i
-																	style={{ color: "black" }}
-																	className="bi bi-check">
-																	{" "}
-																</i>
-															</button>
-														</div>
-													))
-												) : (
-													<p
-														style={{
-															color: "black",
-															textAlign: "center",
-															justifyContent: "center",
-															marginTop: "16vw",
-															fontWeight: "bold",
-														}}>
-														Non ci sono attività in scadenza.
-													</p>
-												)}
-											</div>
-										</div>
-									</>
-								)}
-							</div>
-						</>
-					)}
-
-					{eventsMode && (
-						<>
-							{activeButton === 0 && (
-								<div className="calendar-day-view-container">
-									<div className="calendar">
-										<div
-											className="month-indicator"
-											style={{
-												display: "flex",
-												justifyContent: "center",
-												alignItems: "center",
-												gap: "0.5em",
-											}}>
-											<button
-												className="calendar-arrows"
-												onClick={(): void => {
-													mesePrecedente(); /*
+						{
+							eventsMode && (
+								<>
+									{activeButton === 0 && (
+										<div className="calendar-day-view-container">
+											<div className="calendar">
+												<div
+													className="month-indicator"
+													style={{
+														display: "flex",
+														justifyContent: "center",
+														alignItems: "center",
+														gap: "0.5em",
+													}}>
+													<button
+														className="calendar-arrows"
+														onClick={(): void => {
+															mesePrecedente(); /*
 													console.log(Mesi[meseCorrente - 1]);
 													const date = new Date(year, meseCorrente - 1);
 													console.log(getDaysInMonth(date));
 													*/
-												}}>
-												{"<<"}
-											</button>
-											<time> {Mesi[meseCorrente]}</time>
-											<button
-												className="calendar-arrows"
-												onClick={(): void => {
-													meseSuccessivo(); /*
+														}}>
+														{"<<"}
+													</button>
+													<time> {Mesi[meseCorrente]}</time>
+													<button
+														className="calendar-arrows"
+														onClick={(): void => {
+															meseSuccessivo(); /*
 													console.log(Mesi[meseCorrente + 1]);
 													const date = new Date(year, meseCorrente + 1);
 													console.log(getDaysInMonth(date));
 													*/
-												}}>
-												{">>"}
-											</button>
-										</div>
-										<div className="day-of-week">
-											<div>Dom</div>
-											<div>Lun</div>
-											<div>Mar</div>
-											<div>Mer</div>
-											<div>Gio</div>
-											<div>Ven</div>
-											<div>Sab</div>
-										</div>
-										<div className="date-grid" key={renderKey}>
-											{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
-											{((): JSX.Element[] => {
-												return Array.from({
-													length: getDay(
-														startOfMonth(new Date(year, meseCorrente))
-													),
-												}).map((_, index) => <div key={index}></div>);
-											})()}
-											{/* Genera i bottoni per i giorni del mese */}
-											{Array.from({
-												length: getDaysInMonth(
-													new Date(year, meseCorrente)
-												),
-											}).map((_, day) => (
-												<div key={day + 1} style={{ position: "relative" }}>
-													<button onClick={handleDateClick}>
-														{day + 1}
+														}}>
+														{">>"}
 													</button>
-													{hasEventsForDay(day + 1) && ( //true se ci sono eventi
-														<span
-															className="calendar-event-dot"
-														/*style={{
-														position: 'absolute', // Posiziona il pallino in modo assoluto
-														bottom: '3px', // Posiziona il pallino sotto il bottone
-														left: '32%', // Centra orizzontalmente
-														transform: 'translateX(-50%)', // Centra il pallino
-														width: '8px',
-														height: '8px',
-														borderRadius: '50%',
-														backgroundColor: 'lightgray', // Colore del pallino
-													}} */
-														/>
+												</div>
+												<div className="day-of-week">
+													<div>Dom</div>
+													<div>Lun</div>
+													<div>Mar</div>
+													<div>Mer</div>
+													<div>Gio</div>
+													<div>Ven</div>
+													<div>Sab</div>
+												</div>
+												<div className="date-grid" key={renderKey}>
+													{/* Aggiungi spazi vuoti per allineare il primo giorno del mese */}
+													{((): JSX.Element[] => {
+														return Array.from({
+															length: getDay(
+																startOfMonth(new Date(year, meseCorrente))
+															),
+														}).map((_, index) => <div key={index}></div>);
+													})()}
+													{/* Genera i bottoni per i giorni del mese */}
+													{Array.from({
+														length: getDaysInMonth(
+															new Date(year, meseCorrente)
+														),
+													}).map((_, day) => (
+														<div key={day + 1} style={{ position: "relative" }}>
+															<button onClick={handleDateClick}>
+																{day + 1}
+															</button>
+															{hasEventsForDay(day + 1) && ( //true se ci sono eventi
+																<span
+																	className="calendar-event-dot"
+																/*style={{
+																position: 'absolute', // Posiziona il pallino in modo assoluto
+																bottom: '3px', // Posiziona il pallino sotto il bottone
+																left: '32%', // Centra orizzontalmente
+																transform: 'translateX(-50%)', // Centra il pallino
+																width: '8px',
+																height: '8px',
+																borderRadius: '50%',
+																backgroundColor: 'lightgray', // Colore del pallino
+															}} */
+																/>
+															)}
+														</div>
+													))}
+												</div>
+											</div>
+
+											<div className="data-orario">
+												<div
+													className="nome-data-container"
+												/*style={{ marginLeft: "5vw" }}*/
+												>
+													<button
+														className="year-button"
+														onClick={(): void => {
+															setEventPositions([]); // Svuota l'array delle posizioni
+															setYear(year - 1); // Decrementa l'anno
+														}}
+													>
+														-
+													</button>
+													{day} {Mesi[meseCorrente]} {year}
+													<button
+														className="year-button"
+														onClick={(): void => {
+															setEventPositions([]); // Svuota l'array delle posizioni
+															setYear(year + 1); // Decrementa l'anno
+														}}
+													>
+														+
+													</button>
+													{activitiesMode && (
+														<div>
+															<button
+																className="btn btn-primary"
+																onClick={toggleTodayActivitiesMode}
+																style={{
+																	backgroundColor: "bisque",
+																	color: "white",
+																	border: "0",
+																	marginLeft: "15px",
+																}}
+															>
+																Mostra attività che scadono questo giorno
+															</button>
+
+															<button
+																className="btn btn-primary"
+																onClick={toggleAllActivitiesMode}
+																style={{
+																	backgroundColor: "bisque",
+																	color: "white",
+																	border: "0",
+																	marginLeft: "15px",
+																}}
+															>
+																Mostra tutte le attività
+															</button>
+														</div>
 													)}
 												</div>
-											))}
-										</div>
-									</div>
 
-									<div className="data-orario">
-										<div
-											className="nome-data-container"
-										/*style={{ marginLeft: "5vw" }}*/
-										>
-											<button
-												className="year-button"
-												onClick={(): void => {
-													setEventPositions([]); // Svuota l'array delle posizioni
-													setYear(year - 1); // Decrementa l'anno
-												}}
-											>
-												-
-											</button>
-											{day} {Mesi[meseCorrente]} {year}
-											<button
-												className="year-button"
-												onClick={(): void => {
-													setEventPositions([]); // Svuota l'array delle posizioni
-													setYear(year + 1); // Decrementa l'anno
-												}}
-											>
-												+
-											</button>
-											{activitiesMode && (
-												<div>
-													<button
-														className="btn btn-primary"
-														onClick={toggleTodayActivitiesMode}
-														style={{
-															backgroundColor: "bisque",
-															color: "white",
-															border: "0",
-															marginLeft: "15px",
-														}}
-													>
-														Mostra attività che scadono questo giorno
-													</button>
-
-													<button
-														className="btn btn-primary"
-														onClick={toggleAllActivitiesMode}
-														style={{
-															backgroundColor: "bisque",
-															color: "white",
-															border: "0",
-															marginLeft: "15px",
-														}}
-													>
-														Mostra tutte le attività
-													</button>
-												</div>
-											)}
-										</div>
-
-										<div className="orario" style={{ fontSize: "15.8px" }}>
-											<div style={{ position: "relative", marginLeft: "10%" }}>
-												{eventPositions.map((event, index) =>
-													!event.type ? (
-														<div
-															key={index}
-															className="evento red"
-															style={{
-																top: `${event.top}px`,
-																height: `${event.height}px`,
-																width: `calc(95%/${event.width})`,
-																position: "absolute",
-																color:
-																	new Date(currentDate) >
-																		new Date(event.event.endTime)
-																		? "red"
-																		: "red",
-																borderColor:
-																	new Date(currentDate) >
-																		new Date(event.event.endTime)
-																		? "rgba(209, 150, 150, 1)"
-																		: "red",
-																backgroundColor:
-																	new Date(currentDate) >
-																		new Date(event.event.endTime)
-																		? "rgba(249, 67, 67, 0.2)"
-																		: "rgba(249, 67, 67, 0.5)",
-																marginLeft: `${event.marginLeft}%`,
-																cursor: "default",
-															}}
-														>
-															<div style={{ color: "red" }}>
+												<div className="orario" style={{ fontSize: "15.8px" }}>
+													<div style={{ position: "relative", marginLeft: "10%" }}>
+														{eventPositions.map((event, index) =>
+															!event.type ? (
 																<Link
 																	to={`/pomodoro?duration=${((
 																		startTime,
@@ -5678,847 +5883,896 @@ export default function Calendar(): React.JSX.Element {
 																		cursor: "pointer",
 																	}}
 																>
-																	{event.name}
-																</Link>
-															</div>
-															<div
-																className="position-relative"
-																onClick={(): Promise<void> =>
-																	handleDeleteEvent(
-																		event.event._id,
-																		event.event.groupId
-																	)
-																}
-															>
-																{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																<i
-																	className="bi bi-trash"
-																	style={{
-																		bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																		right: "50%", // Posiziona l'icona a 10px dal lato destro
-																		fontSize: "1rem",
-																		margin: 0,
-																		padding: 0,
-																		color: "red",
-																		cursor: "pointer",
-																	}}
-																></i>
-															</div>
-														</div>
-													) : (
-														(!event.event.isRisorsa ||
-															(event.event.isRisorsa &&
-																showRisorse)) && (
-															<div
-																className={`evento ${event.event.title ===
-																	"Non disturbare"
-																	? "non-disturbare"
-																	: event.event.isRisorsa
-																		? "brown"
-																		: "blue"
-																	}`}
-																style={{
-																	top: `${event.top}px`,
-																	height: `${event.height}px`,
-																	width: `calc(95%/${event.width})`,
-																	position: "absolute",
-																	color:
-																		event.event.title ===
-																			"Non disturbare"
-																			? "gray"
-																			: event.event.isRisorsa
-																				? "rgb(117, 71, 42)"
-																				: new Date(
-																					currentDate
-																				) >
-																					new Date(
-																						event.event.endTime
-																					)
-																					? "rgb(77, 168, 189)"
-																					: "rgb(77, 168, 189)",
-																	borderColor:
-																		event.event.title ===
-																			"Non disturbare"
-																			? "white"
-																			: event.event.isRisorsa
-																				? "rgba(166, 93, 41, 0.48)"
-																				: new Date(
-																					currentDate
-																				) >
-																					new Date(
-																						event.event.endTime
-																					)
-																					? "rgba(135, 190, 196, 0.8)"
-																					: "rgb(155, 223, 212)",
-																	backgroundColor:
-																		event.event.title ===
-																			"Non disturbare"
-																			? new Date(
-																				currentDate
-																			) >
-																				new Date(
-																					event.event.endTime
-																				)
-																				? "rgba(128, 138, 136, 0.2)"
-																				: "rgba(128, 138, 136, 0.4)"
-																			: event.event.isRisorsa
-																				? new Date(
-																					currentDate
-																				) >
-																					new Date(
-																						event.event.endTime
-																					)
-																					? "rgba(139, 69, 19, 0.2)"
-																					: "rgba(139, 69, 19, 0.5)"
-																				: new Date(
-																					currentDate
-																				) >
-																					new Date(
-																						event.event.endTime
-																					)
-																					? "rgba(155, 223, 212, 0.2)"
-																					: "rgba(155, 223, 212, 0.5)",
-																	marginLeft: `${event.marginLeft}%`,
-																	cursor: "default",
-																}}
-															>
-																{event.name && (
-																	event.name.split(' ').some(word => word.length > 30)
-																		? event.name.substring(0, 20) + "..."
-																		: event.name
-																)}
-																<div
-																	className="position-relative"
-																	onClick={(): Promise<void> =>
-																		handleDeleteEvent(
-																			event.event._id,
-																			event.event.groupId
-																		)
-																	}
-																>
-																	{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																	{(!event.event.isRisorsa ||
-																		(event.event.isRisorsa)) && (
+																	<div onClick={(): void => console.log("ciao")}
+																		key={index}
+																		className="evento red"
+																		style={{
+																			top: `${event.top}px`,
+																			height: `${event.height}px`,
+																			width: `calc(95%/${event.width})`,
+																			position: "absolute",
+																			color:
+																				new Date(currentDate) >
+																					new Date(event.event.endTime)
+																					? "red"
+																					: "red",
+																			borderColor:
+																				new Date(currentDate) >
+																					new Date(event.event.endTime)
+																					? "rgba(209, 150, 150, 1)"
+																					: "red",
+																			backgroundColor:
+																				new Date(currentDate) >
+																					new Date(event.event.endTime)
+																					? "rgba(249, 67, 67, 0.2)"
+																					: "rgba(249, 67, 67, 0.5)",
+																			marginLeft: `${event.marginLeft}%`,
+																			cursor: "pointer",
+																		}}
+																	>
+																		<div style={{ color: "red" }}>
+
+																			{event.name}
+
+																		</div>
+																		<div
+																			className="position-relative"
+																			onClick={(e): Promise<void> => {
+																				e.stopPropagation();
+																				return handleDeleteEvent(
+																					event.event._id,
+																					event.event.groupId
+																				);
+																			}}
+																		>
+																			{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
 																			<i
 																				className="bi bi-trash"
+																				onClick={(e): void => {
+																					e.preventDefault();
+																					e.stopPropagation();
+																					handleDeleteEvent(event.event._id, event.event.groupId);
+																				}}
 																				style={{
 																					bottom: "2px", // Posiziona l'icona a 10px dal fondo
 																					right: "50%", // Posiziona l'icona a 10px dal lato destro
 																					fontSize: "1rem",
 																					margin: 0,
 																					padding: 0,
-																					color:
-																						event.event
-																							.title ===
-																							"Non disturbare"
-																							? "gray"
-																							: event
-																								.event
-																								.isRisorsa
-																								? "rgb(117, 71, 42)"
-																								: new Date(
-																									currentDate
-																								) >
-																									new Date(
-																										event.event.endTime
-																									)
-																									? "rgb(77, 168, 189)"
-																									: "rgb(77, 168, 189)",
+																					color: "red",
 																					cursor: "pointer",
 																				}}
 																			></i>
+																		</div>
+																	</div>
+																</Link>
+															) : (
+																(!event.event.isRisorsa ||
+																	(event.event.isRisorsa &&
+																		showRisorse)) && (
+																	<div onClick={(): void => {
+																		//setEditEvent(true)
+																		setSelectedEvent(event.event);
+																		//console.log("Stampo l'evento da modificare:", event.event);
+																		//console.log("Stampo l'evento inserito nello state:", selectedEvent);
+																	}}
+																		className={`evento ${event.event.title ===
+																			"Non disturbare"
+																			? "non-disturbare"
+																			: event.event.isRisorsa
+																				? "brown"
+																				: "blue"
+																			}`}
+																		style={{
+																			top: `${event.top}px`,
+																			height: `${event.height}px`,
+																			width: `calc(95%/${event.width})`,
+																			position: "absolute",
+																			color:
+																				event.event.title ===
+																					"Non disturbare"
+																					? "gray"
+																					: event.event.isRisorsa
+																						? "rgb(117, 71, 42)"
+																						: new Date(
+																							currentDate
+																						) >
+																							new Date(
+																								event.event.endTime
+																							)
+																							? "rgb(77, 168, 189)"
+																							: "rgb(77, 168, 189)",
+																			borderColor:
+																				event.event.title ===
+																					"Non disturbare"
+																					? "white"
+																					: event.event.isRisorsa
+																						? "rgba(166, 93, 41, 0.48)"
+																						: new Date(
+																							currentDate
+																						) >
+																							new Date(
+																								event.event.endTime
+																							)
+																							? "rgba(135, 190, 196, 0.8)"
+																							: "rgb(155, 223, 212)",
+																			backgroundColor:
+																				event.event.title ===
+																					"Non disturbare"
+																					? new Date(
+																						currentDate
+																					) >
+																						new Date(
+																							event.event.endTime
+																						)
+																						? "rgba(128, 138, 136, 0.2)"
+																						: "rgba(128, 138, 136, 0.4)"
+																					: event.event.isRisorsa
+																						? new Date(
+																							currentDate
+																						) >
+																							new Date(
+																								event.event.endTime
+																							)
+																							? "rgba(139, 69, 19, 0.2)"
+																							: "rgba(139, 69, 19, 0.5)"
+																						: new Date(
+																							currentDate
+																						) >
+																							new Date(
+																								event.event.endTime
+																							)
+																							? "rgba(155, 223, 212, 0.2)"
+																							: "rgba(155, 223, 212, 0.5)",
+																			marginLeft: `${event.marginLeft}%`,
+																			cursor: "pointer",
+																		}}
+																	>
+																		{event.name && (
+																			event.name.split(' ').some(word => word.length > 30)
+																				? event.name.substring(0, 20) + "..."
+																				: event.name
 																		)}
-																</div>
-															</div>
-														)
-													)
-												)}
+																		<div
+																			className="position-relative"
+																			onClick={(e): Promise<void> => {
+																				e.stopPropagation();
+																				return handleDeleteEvent(
+																					event.event._id,
+																					event.event.groupId
+																				);
+																			}}
+																		>
+																			{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+																			{(!event.event.isRisorsa ||
+																				(event.event.isRisorsa)) && (
+																					<i
+																						className="bi bi-trash"
+																						onClick={(e): void => {
+																							e.preventDefault();
+																							e.stopPropagation();
+																							handleDeleteEvent(event.event._id, event.event.groupId);
+																						}}
+																						style={{
+																							bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																							right: "50%", // Posiziona l'icona a 10px dal lato destro
+																							fontSize: "1rem",
+																							margin: 0,
+																							padding: 0,
+																							color:
+																								event.event
+																									.title ===
+																									"Non disturbare"
+																									? "gray"
+																									: event
+																										.event
+																										.isRisorsa
+																										? "rgb(117, 71, 42)"
+																										: new Date(
+																											currentDate
+																										) >
+																											new Date(
+																												event.event.endTime
+																											)
+																											? "rgb(77, 168, 189)"
+																											: "rgb(77, 168, 189)",
+																							cursor: "pointer",
+																						}}
+																					></i>
+																				)}
+																		</div>
+																	</div>
+																)
+															)
+														)}
+													</div>
+
+													<time>00:00</time>
+													<time>01:00</time>
+													<time>02:00</time>
+													<time>03:00</time>
+													<time>04:00</time>
+													<time>05:00</time>
+													<time>06:00</time>
+													<time>07:00</time>
+													<time>08:00</time>
+													<time>09:00</time>
+													<time>10:00</time>
+													<time>11:00</time>
+													<time>12:00</time>
+													<time>13:00</time>
+													<time>14:00</time>
+													<time>15:00</time>
+													<time>16:00</time>
+													<time>17:00</time>
+													<time>18:00</time>
+													<time>19:00</time>
+													<time>20:00</time>
+													<time>21:00</time>
+													<time>22:00</time>
+													<time>23:00</time>
+												</div>
+											</div>
+										</div>
+									)}
+
+									{activeButton === 1 && (
+										<div className="calendar-week-view-container">
+											<div
+												className="month-indicator"
+												style={{
+													display: "flex",
+													justifyContent: "center",
+													alignItems: "center",
+													gap: "0.5em",
+												}}
+											>
+												<button className="calendar-arrows" onClick={prevWeek}>
+													{"<<"}
+												</button>
+												<div>
+													{Mesi[meseCorrente]} {year}{" "}
+												</div>
+												<button className="calendar-arrows" onClick={nextWeek}>
+													{">>"}
+												</button>
 											</div>
 
-											<time>00:00</time>
-											<time>01:00</time>
-											<time>02:00</time>
-											<time>03:00</time>
-											<time>04:00</time>
-											<time>05:00</time>
-											<time>06:00</time>
-											<time>07:00</time>
-											<time>08:00</time>
-											<time>09:00</time>
-											<time>10:00</time>
-											<time>11:00</time>
-											<time>12:00</time>
-											<time>13:00</time>
-											<time>14:00</time>
-											<time>15:00</time>
-											<time>16:00</time>
-											<time>17:00</time>
-											<time>18:00</time>
-											<time>19:00</time>
-											<time>20:00</time>
-											<time>21:00</time>
-											<time>22:00</time>
-											<time>23:00</time>
-										</div>
-									</div>
-								</div>
-							)}
-
-							{activeButton === 1 && (
-								<div className="calendar-week-view-container">
-									<div
-										className="month-indicator"
-										style={{
-											display: "flex",
-											justifyContent: "center",
-											alignItems: "center",
-											gap: "0.5em",
-										}}
-									>
-										<button className="calendar-arrows" onClick={prevWeek}>
-											{"<<"}
-										</button>
-										<div>
-											{Mesi[meseCorrente]} {year}{" "}
-										</div>
-										<button className="calendar-arrows" onClick={nextWeek}>
-											{">>"}
-										</button>
-									</div>
-
-									<div>
-										{((): JSX.Element | null => {
-											//const dayOfWeek = getDay(new Date(year, meseCorrente, day));
-											//console.log(dayOfWeek);
-											return null;
-										})()}
-										<div
-											style={{
-												display: "flex",
-												justifyContent: "space-between",
-												marginLeft: "auto",
-												marginRight: "auto",
-											}}
-										>
-											<div className="nome-data-week">
+											<div>
+												{((): JSX.Element | null => {
+													//const dayOfWeek = getDay(new Date(year, meseCorrente, day));
+													//console.log(dayOfWeek);
+													return null;
+												})()}
 												<div
 													style={{
-														color: "gray",
-														width: "100%",
-														fontWeight: 500,
-														textAlign: "center",
-														fontSize: "1em",
-														letterSpacing: "0.1em",
-														fontVariant: "small-caps",
+														display: "flex",
+														justifyContent: "space-between",
+														marginLeft: "auto",
+														marginRight: "auto",
 													}}
 												>
-													Dom{" "}
-													{((): JSX.Element | null => {
-														const currentDayOfWeek = getDay(
-															new Date(year, meseCorrente, day)
-														);
+													<div className="nome-data-week">
+														<div
+															style={{
+																color: "gray",
+																width: "100%",
+																fontWeight: 500,
+																textAlign: "center",
+																fontSize: "1em",
+																letterSpacing: "0.1em",
+																fontVariant: "small-caps",
+															}}
+														>
+															Dom{" "}
+															{((): JSX.Element | null => {
+																const currentDayOfWeek = getDay(
+																	new Date(year, meseCorrente, day)
+																);
 
-														return (
-															<>
-																{currentDayOfWeek === 5 &&
-																	getAdjustedDay(
-																		day,
-																		-5,
-																		year,
-																		meseCorrente
-																	)}
-																{currentDayOfWeek === 4 &&
-																	getAdjustedDay(
-																		day,
-																		-4,
-																		year,
-																		meseCorrente
-																	)}
-																{currentDayOfWeek === 3 &&
-																	getAdjustedDay(
-																		day,
-																		-3,
-																		year,
-																		meseCorrente
-																	)}
-																{currentDayOfWeek === 2 &&
-																	getAdjustedDay(
-																		day,
-																		-2,
-																		year,
-																		meseCorrente
-																	)}
-																{currentDayOfWeek === 1 &&
-																	getAdjustedDay(
-																		day,
-																		-1,
-																		year,
-																		meseCorrente
-																	)}
-																{currentDayOfWeek === 0 &&
-																	getAdjustedDay(
-																		day,
-																		0,
-																		year,
-																		meseCorrente
-																	)}
-															</>
-														);
-													})()}
-												</div>
-												<div
-													className="orario"
-													style={{
-														width: "95%",
-														flex: "1",
-														position: "relative",
-														overflowY: "auto",
-													}}
-													onWheel={handleScroll}
-												>
-													{renderWeekEvents(weekEvents, 0)}
+																return (
+																	<>
+																		{currentDayOfWeek === 5 &&
+																			getAdjustedDay(
+																				day,
+																				-5,
+																				year,
+																				meseCorrente
+																			)}
+																		{currentDayOfWeek === 4 &&
+																			getAdjustedDay(
+																				day,
+																				-4,
+																				year,
+																				meseCorrente
+																			)}
+																		{currentDayOfWeek === 3 &&
+																			getAdjustedDay(
+																				day,
+																				-3,
+																				year,
+																				meseCorrente
+																			)}
+																		{currentDayOfWeek === 2 &&
+																			getAdjustedDay(
+																				day,
+																				-2,
+																				year,
+																				meseCorrente
+																			)}
+																		{currentDayOfWeek === 1 &&
+																			getAdjustedDay(
+																				day,
+																				-1,
+																				year,
+																				meseCorrente
+																			)}
+																		{currentDayOfWeek === 0 &&
+																			getAdjustedDay(
+																				day,
+																				0,
+																				year,
+																				meseCorrente
+																			)}
+																	</>
+																);
+															})()}
+														</div>
+														<div
+															className="orario"
+															style={{
+																width: "95%",
+																flex: "1",
+																position: "relative",
+																overflowY: "auto",
+															}}
+															onWheel={handleScroll}
+														>
+															{renderWeekEvents(weekEvents, 0)}
 
-													{/*{renderMonthEvents(monthEvents, 12)}
+															{/*{renderMonthEvents(monthEvents, 12)}
 													RENDERIZZA GLI EVENTI DEL GIORNO 12+1 = 13*/}
 
-													<time>00:00</time>
-													<time>01:00</time>
-													<time>02:00</time>
-													<time>03:00</time>
-													<time>04:00</time>
-													<time>05:00</time>
-													<time>06:00</time>
-													<time>07:00</time>
-													<time>08:00</time>
-													<time>09:00</time>
-													<time>10:00</time>
-													<time>11:00</time>
-													<time>12:00</time>
-													<time>13:00</time>
-													<time>14:00</time>
-													<time>15:00</time>
-													<time>16:00</time>
-													<time>17:00</time>
-													<time>18:00</time>
-													<time>19:00</time>
-													<time>20:00</time>
-													<time>21:00</time>
-													<time>22:00</time>
-													<time>23:00</time>
-												</div>
-											</div>
-											<div className="nome-data-week">
-												<div
-													style={{
-														color: "gray",
-														width: "100%",
-														fontWeight: 500,
-														textAlign: "center",
-														fontSize: "1em",
-														letterSpacing: "0.1em",
-														fontVariant: "small-caps",
-													}}
-												>
-													Lun{" "}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														6 &&
-														getAdjustedDay(day, -5, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														5 &&
-														getAdjustedDay(day, -4, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														4 &&
-														getAdjustedDay(day, -3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														3 &&
-														getAdjustedDay(day, -2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														2 &&
-														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														1 &&
-														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														0 &&
-														getAdjustedDay(day, 1, year, meseCorrente)}
-												</div>
+															<time>00:00</time>
+															<time>01:00</time>
+															<time>02:00</time>
+															<time>03:00</time>
+															<time>04:00</time>
+															<time>05:00</time>
+															<time>06:00</time>
+															<time>07:00</time>
+															<time>08:00</time>
+															<time>09:00</time>
+															<time>10:00</time>
+															<time>11:00</time>
+															<time>12:00</time>
+															<time>13:00</time>
+															<time>14:00</time>
+															<time>15:00</time>
+															<time>16:00</time>
+															<time>17:00</time>
+															<time>18:00</time>
+															<time>19:00</time>
+															<time>20:00</time>
+															<time>21:00</time>
+															<time>22:00</time>
+															<time>23:00</time>
+														</div>
+													</div>
+													<div className="nome-data-week">
+														<div
+															style={{
+																color: "gray",
+																width: "100%",
+																fontWeight: 500,
+																textAlign: "center",
+																fontSize: "1em",
+																letterSpacing: "0.1em",
+																fontVariant: "small-caps",
+															}}
+														>
+															Lun{" "}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																6 &&
+																getAdjustedDay(day, -5, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																5 &&
+																getAdjustedDay(day, -4, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																4 &&
+																getAdjustedDay(day, -3, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																3 &&
+																getAdjustedDay(day, -2, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																2 &&
+																getAdjustedDay(day, -1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																1 &&
+																getAdjustedDay(day, 0, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																0 &&
+																getAdjustedDay(day, 1, year, meseCorrente)}
+														</div>
 
-												<div
-													className="orario"
-													style={{
-														width: "calc(100% - 10px)",
-														flex: "1",
-													}}
-													onWheel={handleScroll}
-												>
-													{renderWeekEvents(weekEvents, 1)}
+														<div
+															className="orario"
+															style={{
+																width: "calc(100% - 10px)",
+																flex: "1",
+															}}
+															onWheel={handleScroll}
+														>
+															{renderWeekEvents(weekEvents, 1)}
 
-													<time>00:00</time>
-													<time>01:00</time>
-													<time>02:00</time>
-													<time>03:00</time>
-													<time>04:00</time>
-													<time>05:00</time>
-													<time>06:00</time>
-													<time>07:00</time>
-													<time>08:00</time>
-													<time>09:00</time>
-													<time>10:00</time>
-													<time>11:00</time>
-													<time>12:00</time>
-													<time>13:00</time>
-													<time>14:00</time>
-													<time>15:00</time>
-													<time>16:00</time>
-													<time>17:00</time>
-													<time>18:00</time>
-													<time>19:00</time>
-													<time>20:00</time>
-													<time>21:00</time>
-													<time>22:00</time>
-													<time>23:00</time>
-												</div>
-											</div>
-											<div className="nome-data-week">
-												<div
-													style={{
-														color: "gray",
-														width: "100%",
-														fontWeight: 500,
-														textAlign: "center",
-														fontSize: "1em",
-														letterSpacing: "0.1em",
-														fontVariant: "small-caps",
-													}}
-												>
-													Mar{" "}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														6 &&
-														getAdjustedDay(day, -4, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														5 &&
-														getAdjustedDay(day, -3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														4 &&
-														getAdjustedDay(day, -2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														3 &&
-														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														2 &&
-														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														1 &&
-														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														0 &&
-														getAdjustedDay(day, 2, year, meseCorrente)}
-												</div>
-												<div
-													className="orario"
-													style={{
-														width: "calc(100% - 10px)",
-														flex: "1",
-													}}
-													onWheel={handleScroll}
-												>
-													{renderWeekEvents(weekEvents, 2)}
-													<time>00:00</time>
-													<time>01:00</time>
-													<time>02:00</time>
-													<time>03:00</time>
-													<time>04:00</time>
-													<time>05:00</time>
-													<time>06:00</time>
-													<time>07:00</time>
-													<time>08:00</time>
-													<time>09:00</time>
-													<time>10:00</time>
-													<time>11:00</time>
-													<time>12:00</time>
-													<time>13:00</time>
-													<time>14:00</time>
-													<time>15:00</time>
-													<time>16:00</time>
-													<time>17:00</time>
-													<time>18:00</time>
-													<time>19:00</time>
-													<time>20:00</time>
-													<time>21:00</time>
-													<time>22:00</time>
-													<time>23:00</time>
-												</div>
-											</div>
-											<div className="nome-data-week">
-												<div
-													style={{
-														color: "gray",
-														width: "100%",
-														fontWeight: 500,
-														textAlign: "center",
-														fontSize: "1em",
-														letterSpacing: "0.1em",
-														fontVariant: "small-caps",
-													}}
-												>
-													Mer{" "}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														6 &&
-														getAdjustedDay(day, -3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														5 &&
-														getAdjustedDay(day, -2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														4 &&
-														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														3 &&
-														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														2 &&
-														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														1 &&
-														getAdjustedDay(day, 2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														0 &&
-														getAdjustedDay(day, 3, year, meseCorrente)}
-												</div>
-												<div
-													className="orario"
-													style={{
-														width: "calc(100% - 10px)",
-														flex: "1",
-													}}
-													onWheel={handleScroll}
-												>
-													{renderWeekEvents(weekEvents, 3)}
-													<time>00:00</time>
-													<time>01:00</time>
-													<time>02:00</time>
-													<time>03:00</time>
-													<time>04:00</time>
-													<time>05:00</time>
-													<time>06:00</time>
-													<time>07:00</time>
-													<time>08:00</time>
-													<time>09:00</time>
-													<time>10:00</time>
-													<time>11:00</time>
-													<time>12:00</time>
-													<time>13:00</time>
-													<time>14:00</time>
-													<time>15:00</time>
-													<time>16:00</time>
-													<time>17:00</time>
-													<time>18:00</time>
-													<time>19:00</time>
-													<time>20:00</time>
-													<time>21:00</time>
-													<time>22:00</time>
-													<time>23:00</time>
-												</div>
-											</div>
-											<div className="nome-data-week">
-												<div
-													style={{
-														color: "gray",
-														width: "100%",
-														fontWeight: 500,
-														textAlign: "center",
-														fontSize: "1em",
-														letterSpacing: "0.1em",
-														fontVariant: "small-caps",
-													}}
-												>
-													Gio{" "}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														6 &&
-														getAdjustedDay(day, -2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														5 &&
-														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														4 &&
-														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														3 &&
-														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														2 &&
-														getAdjustedDay(day, 2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														1 &&
-														getAdjustedDay(day, 3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														0 &&
-														getAdjustedDay(day, 4, year, meseCorrente)}
-												</div>
-												<div
-													className="orario"
-													style={{
-														width: "calc(100% - 10px)",
-														flex: "1",
-													}}
-													onWheel={handleScroll}
-												>
-													{renderWeekEvents(weekEvents, 4)}
-													<time>00:00</time>
-													<time>01:00</time>
-													<time>02:00</time>
-													<time>03:00</time>
-													<time>04:00</time>
-													<time>05:00</time>
-													<time>06:00</time>
-													<time>07:00</time>
-													<time>08:00</time>
-													<time>09:00</time>
-													<time>10:00</time>
-													<time>11:00</time>
-													<time>12:00</time>
-													<time>13:00</time>
-													<time>14:00</time>
-													<time>15:00</time>
-													<time>16:00</time>
-													<time>17:00</time>
-													<time>18:00</time>
-													<time>19:00</time>
-													<time>20:00</time>
-													<time>21:00</time>
-													<time>22:00</time>
-													<time>23:00</time>
-												</div>
-											</div>
-											<div className="nome-data-week">
-												<div
-													style={{
-														color: "gray",
-														width: "100%",
-														fontWeight: 500,
-														textAlign: "center",
-														fontSize: "1em",
-														letterSpacing: "0.1em",
-														fontVariant: "small-caps",
-													}}
-												>
-													Ven{" "}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														6 &&
-														getAdjustedDay(day, -1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														5 &&
-														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														4 &&
-														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														3 &&
-														getAdjustedDay(day, 2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														2 &&
-														getAdjustedDay(day, 3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														1 &&
-														getAdjustedDay(day, 4, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														0 &&
-														getAdjustedDay(day, 5, year, meseCorrente)}
-												</div>
-												<div
-													className="orario"
-													style={{
-														width: "calc(100% - 10px)",
-														flex: "1",
-													}}
-													onWheel={handleScroll}
-												>
-													{renderWeekEvents(weekEvents, 5)}
-													<time>00:00</time>
-													<time>01:00</time>
-													<time>02:00</time>
-													<time>03:00</time>
-													<time>04:00</time>
-													<time>05:00</time>
-													<time>06:00</time>
-													<time>07:00</time>
-													<time>08:00</time>
-													<time>09:00</time>
-													<time>10:00</time>
-													<time>11:00</time>
-													<time>12:00</time>
-													<time>13:00</time>
-													<time>14:00</time>
-													<time>15:00</time>
-													<time>16:00</time>
-													<time>17:00</time>
-													<time>18:00</time>
-													<time>19:00</time>
-													<time>20:00</time>
-													<time>21:00</time>
-													<time>22:00</time>
-													<time>23:00</time>
-												</div>
-											</div>
-											<div className="nome-data-week">
-												<div
-													style={{
-														color: "gray",
-														width: "100%",
-														fontWeight: 500,
-														textAlign: "center",
-														fontSize: "1em",
-														letterSpacing: "0.1em",
-														fontVariant: "small-caps",
-													}}
-												>
-													Sab{" "}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														6 &&
-														getAdjustedDay(day, 0, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														5 &&
-														getAdjustedDay(day, 1, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														4 &&
-														getAdjustedDay(day, 2, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														3 &&
-														getAdjustedDay(day, 3, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														2 &&
-														getAdjustedDay(day, 4, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														1 &&
-														getAdjustedDay(day, 5, year, meseCorrente)}
-													{getDay(new Date(year, meseCorrente, day)) ===
-														0 &&
-														getAdjustedDay(day, 6, year, meseCorrente)}
-												</div>
-												<div
-													className="orario"
-													style={{
-														width: "calc(100% - 10px)",
-														flex: "1",
-													}}
-													onWheel={handleScroll}
-												>
-													{renderWeekEvents(weekEvents, 6)}
-													<time>00:00</time>
-													<time>01:00</time>
-													<time>02:00</time>
-													<time>03:00</time>
-													<time>04:00</time>
-													<time>05:00</time>
-													<time>06:00</time>
-													<time>07:00</time>
-													<time>08:00</time>
-													<time>09:00</time>
-													<time>10:00</time>
-													<time>11:00</time>
-													<time>12:00</time>
-													<time>13:00</time>
-													<time>14:00</time>
-													<time>15:00</time>
-													<time>16:00</time>
-													<time>17:00</time>
-													<time>18:00</time>
-													<time>19:00</time>
-													<time>20:00</time>
-													<time>21:00</time>
-													<time>22:00</time>
-													<time>23:00</time>
+															<time>00:00</time>
+															<time>01:00</time>
+															<time>02:00</time>
+															<time>03:00</time>
+															<time>04:00</time>
+															<time>05:00</time>
+															<time>06:00</time>
+															<time>07:00</time>
+															<time>08:00</time>
+															<time>09:00</time>
+															<time>10:00</time>
+															<time>11:00</time>
+															<time>12:00</time>
+															<time>13:00</time>
+															<time>14:00</time>
+															<time>15:00</time>
+															<time>16:00</time>
+															<time>17:00</time>
+															<time>18:00</time>
+															<time>19:00</time>
+															<time>20:00</time>
+															<time>21:00</time>
+															<time>22:00</time>
+															<time>23:00</time>
+														</div>
+													</div>
+													<div className="nome-data-week">
+														<div
+															style={{
+																color: "gray",
+																width: "100%",
+																fontWeight: 500,
+																textAlign: "center",
+																fontSize: "1em",
+																letterSpacing: "0.1em",
+																fontVariant: "small-caps",
+															}}
+														>
+															Mar{" "}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																6 &&
+																getAdjustedDay(day, -4, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																5 &&
+																getAdjustedDay(day, -3, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																4 &&
+																getAdjustedDay(day, -2, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																3 &&
+																getAdjustedDay(day, -1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																2 &&
+																getAdjustedDay(day, 0, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																1 &&
+																getAdjustedDay(day, 1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																0 &&
+																getAdjustedDay(day, 2, year, meseCorrente)}
+														</div>
+														<div
+															className="orario"
+															style={{
+																width: "calc(100% - 10px)",
+																flex: "1",
+															}}
+															onWheel={handleScroll}
+														>
+															{renderWeekEvents(weekEvents, 2)}
+															<time>00:00</time>
+															<time>01:00</time>
+															<time>02:00</time>
+															<time>03:00</time>
+															<time>04:00</time>
+															<time>05:00</time>
+															<time>06:00</time>
+															<time>07:00</time>
+															<time>08:00</time>
+															<time>09:00</time>
+															<time>10:00</time>
+															<time>11:00</time>
+															<time>12:00</time>
+															<time>13:00</time>
+															<time>14:00</time>
+															<time>15:00</time>
+															<time>16:00</time>
+															<time>17:00</time>
+															<time>18:00</time>
+															<time>19:00</time>
+															<time>20:00</time>
+															<time>21:00</time>
+															<time>22:00</time>
+															<time>23:00</time>
+														</div>
+													</div>
+													<div className="nome-data-week">
+														<div
+															style={{
+																color: "gray",
+																width: "100%",
+																fontWeight: 500,
+																textAlign: "center",
+																fontSize: "1em",
+																letterSpacing: "0.1em",
+																fontVariant: "small-caps",
+															}}
+														>
+															Mer{" "}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																6 &&
+																getAdjustedDay(day, -3, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																5 &&
+																getAdjustedDay(day, -2, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																4 &&
+																getAdjustedDay(day, -1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																3 &&
+																getAdjustedDay(day, 0, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																2 &&
+																getAdjustedDay(day, 1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																1 &&
+																getAdjustedDay(day, 2, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																0 &&
+																getAdjustedDay(day, 3, year, meseCorrente)}
+														</div>
+														<div
+															className="orario"
+															style={{
+																width: "calc(100% - 10px)",
+																flex: "1",
+															}}
+															onWheel={handleScroll}
+														>
+															{renderWeekEvents(weekEvents, 3)}
+															<time>00:00</time>
+															<time>01:00</time>
+															<time>02:00</time>
+															<time>03:00</time>
+															<time>04:00</time>
+															<time>05:00</time>
+															<time>06:00</time>
+															<time>07:00</time>
+															<time>08:00</time>
+															<time>09:00</time>
+															<time>10:00</time>
+															<time>11:00</time>
+															<time>12:00</time>
+															<time>13:00</time>
+															<time>14:00</time>
+															<time>15:00</time>
+															<time>16:00</time>
+															<time>17:00</time>
+															<time>18:00</time>
+															<time>19:00</time>
+															<time>20:00</time>
+															<time>21:00</time>
+															<time>22:00</time>
+															<time>23:00</time>
+														</div>
+													</div>
+													<div className="nome-data-week">
+														<div
+															style={{
+																color: "gray",
+																width: "100%",
+																fontWeight: 500,
+																textAlign: "center",
+																fontSize: "1em",
+																letterSpacing: "0.1em",
+																fontVariant: "small-caps",
+															}}
+														>
+															Gio{" "}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																6 &&
+																getAdjustedDay(day, -2, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																5 &&
+																getAdjustedDay(day, -1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																4 &&
+																getAdjustedDay(day, 0, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																3 &&
+																getAdjustedDay(day, 1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																2 &&
+																getAdjustedDay(day, 2, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																1 &&
+																getAdjustedDay(day, 3, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																0 &&
+																getAdjustedDay(day, 4, year, meseCorrente)}
+														</div>
+														<div
+															className="orario"
+															style={{
+																width: "calc(100% - 10px)",
+																flex: "1",
+															}}
+															onWheel={handleScroll}
+														>
+															{renderWeekEvents(weekEvents, 4)}
+															<time>00:00</time>
+															<time>01:00</time>
+															<time>02:00</time>
+															<time>03:00</time>
+															<time>04:00</time>
+															<time>05:00</time>
+															<time>06:00</time>
+															<time>07:00</time>
+															<time>08:00</time>
+															<time>09:00</time>
+															<time>10:00</time>
+															<time>11:00</time>
+															<time>12:00</time>
+															<time>13:00</time>
+															<time>14:00</time>
+															<time>15:00</time>
+															<time>16:00</time>
+															<time>17:00</time>
+															<time>18:00</time>
+															<time>19:00</time>
+															<time>20:00</time>
+															<time>21:00</time>
+															<time>22:00</time>
+															<time>23:00</time>
+														</div>
+													</div>
+													<div className="nome-data-week">
+														<div
+															style={{
+																color: "gray",
+																width: "100%",
+																fontWeight: 500,
+																textAlign: "center",
+																fontSize: "1em",
+																letterSpacing: "0.1em",
+																fontVariant: "small-caps",
+															}}
+														>
+															Ven{" "}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																6 &&
+																getAdjustedDay(day, -1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																5 &&
+																getAdjustedDay(day, 0, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																4 &&
+																getAdjustedDay(day, 1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																3 &&
+																getAdjustedDay(day, 2, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																2 &&
+																getAdjustedDay(day, 3, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																1 &&
+																getAdjustedDay(day, 4, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																0 &&
+																getAdjustedDay(day, 5, year, meseCorrente)}
+														</div>
+														<div
+															className="orario"
+															style={{
+																width: "calc(100% - 10px)",
+																flex: "1",
+															}}
+															onWheel={handleScroll}
+														>
+															{renderWeekEvents(weekEvents, 5)}
+															<time>00:00</time>
+															<time>01:00</time>
+															<time>02:00</time>
+															<time>03:00</time>
+															<time>04:00</time>
+															<time>05:00</time>
+															<time>06:00</time>
+															<time>07:00</time>
+															<time>08:00</time>
+															<time>09:00</time>
+															<time>10:00</time>
+															<time>11:00</time>
+															<time>12:00</time>
+															<time>13:00</time>
+															<time>14:00</time>
+															<time>15:00</time>
+															<time>16:00</time>
+															<time>17:00</time>
+															<time>18:00</time>
+															<time>19:00</time>
+															<time>20:00</time>
+															<time>21:00</time>
+															<time>22:00</time>
+															<time>23:00</time>
+														</div>
+													</div>
+													<div className="nome-data-week">
+														<div
+															style={{
+																color: "gray",
+																width: "100%",
+																fontWeight: 500,
+																textAlign: "center",
+																fontSize: "1em",
+																letterSpacing: "0.1em",
+																fontVariant: "small-caps",
+															}}
+														>
+															Sab{" "}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																6 &&
+																getAdjustedDay(day, 0, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																5 &&
+																getAdjustedDay(day, 1, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																4 &&
+																getAdjustedDay(day, 2, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																3 &&
+																getAdjustedDay(day, 3, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																2 &&
+																getAdjustedDay(day, 4, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																1 &&
+																getAdjustedDay(day, 5, year, meseCorrente)}
+															{getDay(new Date(year, meseCorrente, day)) ===
+																0 &&
+																getAdjustedDay(day, 6, year, meseCorrente)}
+														</div>
+														<div
+															className="orario"
+															style={{
+																width: "calc(100% - 10px)",
+																flex: "1",
+															}}
+															onWheel={handleScroll}
+														>
+															{renderWeekEvents(weekEvents, 6)}
+															<time>00:00</time>
+															<time>01:00</time>
+															<time>02:00</time>
+															<time>03:00</time>
+															<time>04:00</time>
+															<time>05:00</time>
+															<time>06:00</time>
+															<time>07:00</time>
+															<time>08:00</time>
+															<time>09:00</time>
+															<time>10:00</time>
+															<time>11:00</time>
+															<time>12:00</time>
+															<time>13:00</time>
+															<time>14:00</time>
+															<time>15:00</time>
+															<time>16:00</time>
+															<time>17:00</time>
+															<time>18:00</time>
+															<time>19:00</time>
+															<time>20:00</time>
+															<time>21:00</time>
+															<time>22:00</time>
+															<time>23:00</time>
+														</div>
+													</div>
 												</div>
 											</div>
 										</div>
-									</div>
-								</div>
-							)}
+									)}
 
-							{activeButton === 2 && (
-								<div className="calendar-month-view-container">
-									<div
-										className="month-indicator"
-										style={{
-											display: "flex",
-											justifyContent: "center",
-											alignItems: "center",
-											gap: "0.5em",
-										}}
-									>
-										<button
-											className="calendar-arrows"
-											onClick={mesePrecedente}
-										>
-											{"<<"}
-										</button>
-										<div>
-											{Mesi[meseCorrente]} {year}{" "}
-										</div>
-										<button
-											className="calendar-arrows"
-											onClick={meseSuccessivo}
-										>
-											{">>"}
-										</button>
-									</div>
-									<div className="calendar">
-										<div className="day-of-week fixed-width">
-											<div>Dom</div>
-											<div>Lun</div>
-											<div>Mar</div>
-											<div>Mer</div>
-											<div>Gio</div>
-											<div>Ven</div>
-											<div>Sab</div>
-										</div>
-										<div className="date-grid">
-											{/* Celle vuote per allineare il primo giorno del mese */}
-											{Array.from({
-												length: getDay(
-													startOfMonth(new Date(year, meseCorrente))
-												),
-											}).map((_, index) => (
-												<div
-													key={index}
-													className="date-cell empty-cell"
+									{activeButton === 2 && (
+										<div className="calendar-month-view-container">
+											<div
+												className="month-indicator"
+												style={{
+													display: "flex",
+													justifyContent: "center",
+													alignItems: "center",
+													gap: "0.5em",
+												}}
+											>
+												<button
+													className="calendar-arrows"
+													onClick={mesePrecedente}
 												>
+													{"<<"}
+												</button>
+												<div>
+													{Mesi[meseCorrente]} {year}{" "}
 												</div>
-											))}
+												<button
+													className="calendar-arrows"
+													onClick={meseSuccessivo}
+												>
+													{">>"}
+												</button>
+											</div>
+											<div className="calendar">
+												<div className="day-of-week fixed-width">
+													<div>Dom</div>
+													<div>Lun</div>
+													<div>Mar</div>
+													<div>Mer</div>
+													<div>Gio</div>
+													<div>Ven</div>
+													<div>Sab</div>
+												</div>
+												<div className="date-grid">
+													{/* Celle vuote per allineare il primo giorno del mese */}
+													{Array.from({
+														length: getDay(
+															startOfMonth(new Date(year, meseCorrente))
+														),
+													}).map((_, index) => (
+														<div
+															key={index}
+															className="date-cell empty-cell"
+														>
+														</div>
+													))}
 
-											{/* Celle per i giorni del mese */}
-											{Array.from({
-												length: getDaysInMonth(
-													new Date(year, meseCorrente)
-												),
-											}).map((_, day) => (
-												<div
-													key={day + 1}
-													className="date-cell"
-													style={{
-														position: "relative",
-														minHeight: "100px",
-													}}
-												>
-													<div>{renderMonthEvents(monthEvents, day)}</div>
-													<button
-														onClick={(e): void => {
-															handleDateClick(day + 1);
-															dayMode(
-																e as React.MouseEvent<HTMLElement>
-															);
-														}}
-													>
-														{day + 1}
-													</button>
+													{/* Celle per i giorni del mese */}
+													{Array.from({
+														length: getDaysInMonth(
+															new Date(year, meseCorrente)
+														),
+													}).map((_, day) => (
+														<div
+															key={day + 1}
+															className="date-cell"
+															style={{
+																position: "relative",
+																minHeight: "100px",
+															}}
+														>
+															<div>{renderMonthEvents(monthEvents, day)}</div>
+															<button
+																onClick={(e): void => {
+																	handleDateClick(day + 1);
+																	dayMode(
+																		e as React.MouseEvent<HTMLElement>
+																	);
+																}}
+															>
+																{day + 1}
+															</button>
+														</div>
+													))}
 												</div>
-											))}
+											</div>
 										</div>
-									</div>
-								</div>
-							)}
-						</>
-					)}
-				</div>
+									)}
+								</>
+							)
+						}
+					</div >
+				)}
 			</div >
 		</>
 	);
