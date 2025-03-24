@@ -50,37 +50,37 @@ export default function ProjectList({ projects, onProjectDelete }: { projects: P
 
 	async function handleDelete(id: string): Promise<void> {
 		if (!id) {
-		  alert("Errore nella cancellazione del progetto: id non trovato. Errore del server?");
-		  return;
+			alert("Errore nella cancellazione del progetto: id non trovato. Errore del server?");
+			return;
 		}
-	  
+
 		try {
-		  const res = await fetch(`${SERVER_API}/projects/${id}`, {
-			method: "DELETE",
-		  });
-	  
-		  const resBody = (await res.json()) as ResponseBody;
-	  
-		  if (res.status === 200) {
-			console.log("Progetto cancellato correttamente!");
-			onProjectDelete(); // Aggiorna la lista dei progetti
-			setConfirmDelete(false); // Chiude il popup
-			setProjectToDelete(null); // Resetta il progetto selezionato
-		  } else {
-			alert(resBody.message || "Errore nella cancellazione del progetto");
-		  }
+			const res = await fetch(`${SERVER_API}/projects/${id}`, {
+				method: "DELETE",
+			});
+
+			const resBody = (await res.json()) as ResponseBody;
+
+			if (res.status === 200) {
+				console.log("Progetto cancellato correttamente!");
+				onProjectDelete(); // Aggiorna la lista dei progetti
+				setConfirmDelete(false); // Chiude il popup
+				setProjectToDelete(null); // Resetta il progetto selezionato
+			} else {
+				alert(resBody.message || "Errore nella cancellazione del progetto");
+			}
 		} catch (e) {
-		  alert("Impossibile raggiungere il server");
+			alert("Impossibile raggiungere il server");
 		}
-	  }
-	  
+	}
+
 
 
 	return (
 		<>
 			<div className="projects-list">
 				{projects.map((project) => (
-					<div className="card-project">
+					<div className="card-project" >
 						<div className="card-project-title">
 							<h3>
 								{project.title.length > MAX_TITLE_CHARS
@@ -106,12 +106,14 @@ export default function ProjectList({ projects, onProjectDelete }: { projects: P
 							</p>
 						</div>
 						<div className="card-project-buttons">
+
 							<button
 								onClick={(): void =>
 									window.location.assign(`/projects/${project.id}`)
 								}>
 								Visualizza
 							</button>
+
 							{project.owner === userId && (
 								<button
 									style={{ backgroundColor: "#ff6b6b" }}

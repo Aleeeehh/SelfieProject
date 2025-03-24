@@ -1094,9 +1094,17 @@ export default function Calendar(): React.JSX.Element {
 		setMessageRisorsa("");
 		setShowRisorse(!showRisorse);
 		await loadEvents();
-		handleDateClick(day);
+		if (day) {  // Verifica che day sia definito
+			await handleDateClick(day);
+		}
 	}
 
+	React.useEffect(() => {
+		(async (): Promise<void> => {
+			await handleDateClick(day);
+		})();
+	}, [showRisorse, day]);
+	//console.log("EventList aggiornato", eventList);
 	React.useEffect(() => {
 		//console.log("EventList aggiornato", eventList);
 	}, [eventList]); // Esegui questo effetto ogni volta che eventList cambia

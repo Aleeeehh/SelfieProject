@@ -91,10 +91,6 @@ Progetto di Tecnologie Web
     singolarmente
 -   FORSE, non funziona bene il sorting delle note: quando entro nella pagina delle note, queste
     sono ordinate senza un criterio
--   Nel calendario, sulla view giornaliera, in base al giorno che seleziono per vedere gli eventi,
-    il calendario non mi permette di creare una attività precedente a quella data. Esempio:
-    seleziono il 20 gennaio --> non posso creare attività che scadono il 18 perchè mi da la data
-    come non valida
 
 ### Componenti del Gruppo
 

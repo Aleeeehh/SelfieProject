@@ -350,7 +350,7 @@ export default function NotePage(): React.JSX.Element {
 									onChange={handleTextChange}
 								/>
 							</label>
-							<button onClick={togglePreview}>
+							<button style={{ backgroundColor: "bisque", color: "black" }} onClick={togglePreview}>
 								{isPreview ? "Modifica" : "Anteprima"}
 							</button>
 							{isPreview ? (
@@ -438,6 +438,7 @@ export default function NotePage(): React.JSX.Element {
 														</>
 													) : (
 														<button
+															style={{ backgroundColor: "bisque", color: "black" }}
 															onClick={(
 																e: React.MouseEvent<HTMLButtonElement>
 															): void => handleAddDateItem(e, l)}
@@ -571,7 +572,7 @@ export default function NotePage(): React.JSX.Element {
 								</div>
 							))}
 					</label>
-					{isEditing && <button onClick={handleAddItem}>Aggiungi Item</button>}
+					{isEditing && <button style={{ backgroundColor: "bisque", color: "black" }} onClick={handleAddItem}>Aggiungi Item</button>}
 
 					{/* render tags */}
 					<label>
@@ -589,7 +590,7 @@ export default function NotePage(): React.JSX.Element {
 										}}
 									/>
 								</label>
-								<button style={{ margin: "0 0.5em" }} onClick={addTag}>
+								<button style={{ margin: "0 0.5em", backgroundColor: "bisque", color: "black" }} onClick={addTag}>
 									+
 								</button>
 							</div>
@@ -679,7 +680,7 @@ export default function NotePage(): React.JSX.Element {
 						<>
 							{isEditing ? (
 								<>
-									<button onClick={handleUpdateNote}>Aggiorna Nota</button>
+									<button style={{ backgroundColor: "bisque", color: "black" }} onClick={handleUpdateNote}>Aggiorna Nota</button>
 									<button
 										style={{ backgroundColor: "#d64545" }}
 										onClick={handleAbortChanges}
@@ -688,7 +689,7 @@ export default function NotePage(): React.JSX.Element {
 									</button>
 								</>
 							) : (
-								<button onClick={(): void => setIsEditing(true)}>
+								<button style={{ backgroundColor: "bisque", color: "black" }} onClick={(): void => setIsEditing(true)}>
 									Modifica nota
 								</button>
 							)}
@@ -696,13 +697,13 @@ export default function NotePage(): React.JSX.Element {
 							{!isEditing ? (
 								<>
 									<button
-										style={{ backgroundColor: "red" }}
+										style={{ backgroundColor: "#d64545" }}
 										onClick={(): void => setConfirmDelete(true)}
 									>
 										Cancella Nota
 									</button>
 									<div className="confirmDelete-background"
-									style={{ display: confirmDelete ? "flex" : "none" }}
+										style={{ display: confirmDelete ? "flex" : "none" }}
 									>
 										<div className="confirmDelete-container">
 											<h2>Stai eliminando una nota. Vuoi procedere?</h2>

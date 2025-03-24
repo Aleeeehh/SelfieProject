@@ -501,6 +501,7 @@ export default function ActivityPage(): React.JSX.Element {
 
 							<button
 								className="activity-edit-button"
+								style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
 									if (isUser || isOwner) setIsEditing(true);
@@ -960,6 +961,7 @@ export default function ActivityPage(): React.JSX.Element {
 							)}
 							{message && <div className="error-message">{message}</div>}
 							<button
+								style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
 									handleUpdateActivity(e);
@@ -978,38 +980,38 @@ export default function ActivityPage(): React.JSX.Element {
 										behavior: "smooth",
 									});
 								}}
-								style={{ backgroundColor: "red" }}
+								style={{ backgroundColor: "#d64545" }}
 							>
 								Annulla Modifiche
 							</button>
 							<button
 								onClick={(): void => setConfirmDelete(true)}
-								style={{ backgroundColor: "red" }}
+								style={{ backgroundColor: "#d64545" }}
 							>
 								Elimina Attività
 							</button>
 							<div className="confirmDelete-background"
-									style={{ display: confirmDelete ? "flex" : "none" }}
-								>
-									<div className="confirmDelete-container">
-										<h2>Stai eliminando una attività. Vuoi procedere?</h2>
-										<div
-											style={{ display: "flex", gap: "2em" }}
+								style={{ display: confirmDelete ? "flex" : "none" }}
+							>
+								<div className="confirmDelete-container">
+									<h2>Stai eliminando una attività. Vuoi procedere?</h2>
+									<div
+										style={{ display: "flex", gap: "2em" }}
+									>
+										<button
+											style={{ backgroundColor: "#ff6b6b" }}
+											onClick={(): void => setConfirmDelete(false)}
 										>
-											<button
-												style={{ backgroundColor: "#ff6b6b" }}
-												onClick={(): void => setConfirmDelete(false)}
-											>
-												Annulla
-											</button>
-											<button
-												onClick={handleDeleteActivity}
-											>
-												Continua
-											</button>
-										</div>
+											Annulla
+										</button>
+										<button
+											onClick={handleDeleteActivity}
+										>
+											Continua
+										</button>
 									</div>
 								</div>
+							</div>
 						</div>
 					</>
 				)}

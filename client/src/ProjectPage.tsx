@@ -283,7 +283,7 @@ export default function ProjectPage(): React.JSX.Element {
 						{isEditing && (
 							<label className="project-activity-form">
 								<a href={`/activities/new?projectId=${project.id}`}>
-									<button>Aggiungi Attività al progetto</button>
+									<button style={{ backgroundColor: "#b6b6e3", color: "white" }}>Aggiungi Attività al progetto</button>
 								</a>
 							</label>
 						)}
@@ -293,16 +293,16 @@ export default function ProjectPage(): React.JSX.Element {
 							{message && <div className="error-message">{message}</div>}
 							{isEditing ? (
 								<button
-									style={{ backgroundColor: "green" }}
+									style={{ backgroundColor: "#b6b6e3", color: "white" }}
 									onClick={handleUpdateProject}>
 									Salva progetto
 								</button>
 							) : (
-								<button onClick={toggleEdit}>Modifica progetto</button>
+								<button style={{ backgroundColor: "#b6b6e3", color: "white" }} onClick={toggleEdit}>Modifica progetto</button>
 							)}
 							{/* if is owner, can delete project (not new project) */}
 							<button
-								style={{ backgroundColor: "red" }}
+								style={{ backgroundColor: "#d64545" }}
 								onClick={(): void => setConfirmDelete(true)}>
 								Cancella Progetto
 							</button>
