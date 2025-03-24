@@ -53,6 +53,7 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element {
 	// prova push
+	const [typeEvent, setTypeEvent] = React.useState("normale");
 	const [messageEditEvent, setMessageEditEvent] = React.useState("");
 	const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
 	const [editEvent, setEditEvent] = React.useState(false);
@@ -1265,6 +1266,7 @@ export default function Calendar(): React.JSX.Element {
 		setMessageNotDisturb("");
 		setMessageRisorsa("");
 		setMessageShareRisorsa("");
+		setTypeEvent("normale");
 	}
 
 	function toggleCreateNonDisturbare(): void {
@@ -1326,6 +1328,7 @@ export default function Calendar(): React.JSX.Element {
 		setMessageActivity("");
 		setMessageRisorsa("");
 		setMessageSend("");
+		setTypeEvent("normale");
 	}
 
 	function toggleCreateRisorsa(): void {
@@ -2765,7 +2768,7 @@ export default function Calendar(): React.JSX.Element {
 			return;
 		}
 
-		if (selectedEvent?.title === "" || selectedEvent?.location === "") {
+		if (selectedEvent?.title === "" || selectedEvent?.location === "" && selectedEvent?.title !== "Non disturbare" && selectedEvent?.title !== "Pomodoro Session") {
 			setMessageEditEvent("Tutti i campi dell'evento devono essere riempiti!");
 			return;
 		}
@@ -3069,6 +3072,7 @@ export default function Calendar(): React.JSX.Element {
 		setUsers([]);
 		setAccessList([]);
 		setMessageShareRisorsa("");
+		setTypeEvent("normale");
 	}
 
 	async function handleCreateRisorsa(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -3167,6 +3171,7 @@ export default function Calendar(): React.JSX.Element {
 		setUsers([]);
 		setAccessList([]);
 		setMessageNotDisturb("");
+		setTypeEvent("normale");
 	}
 
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -3890,20 +3895,20 @@ export default function Calendar(): React.JSX.Element {
 								</button>
 								<button
 									className="calendar-header-button"
-									style={{ backgroundColor: "bisque" }}
+									style={{ backgroundColor: "rgb(249, 205, 140)" }}
 									onClick={toggleCreateActivity}>
 									Attività
 								</button>
 								<button
 									className="calendar-header-button"
-									style={{ backgroundColor: "bisque" }}
+									style={{ backgroundColor: "lightgray" }}
 									onClick={toggleCreateNonDisturbare}>
 									Non disturbare
 								</button>
 
 								<button
 									className="calendar-header-button"
-									style={{ backgroundColor: "bisque" }}
+									style={{ backgroundColor: "rgb(127, 108, 80)" }}
 									onClick={toggleCreateRisorsa}>
 									Risorsa
 								</button>
@@ -3933,7 +3938,56 @@ export default function Calendar(): React.JSX.Element {
 											onClick={toggleCreateEvent}>
 											Chiudi
 										</button>
+
+										<div className="sort-label">
+											<div>Tipo evento: </div>
+											<select
+												className="sort-select"
+												value={typeEvent}
+												onChange={(e): void => {
+													console.log(e.target.value);
+													console.log(e.target.value);
+													console.log(e.target.value);
+													console.log(e.target.value);
+													setTypeEvent(e.target.value);
+													/*
+													if (e.target.value === "pomodoro") {
+														toggleEventTitle();
+													}
+													if (e.target.value === "allDay") {
+														toggleAllDayEvent();
+													}
+													*/
+													if (e.target.value === "normale" && typeEvent === "pomodoro") {
+														toggleEventTitle();
+													}
+													if (e.target.value === "normale" && typeEvent === "allDay") {
+														toggleAllDayEvent();
+													}
+
+													if (e.target.value === "pomodoro" && typeEvent === "normale") {
+														toggleEventTitle();
+													}
+													if (e.target.value === "pomodoro" && typeEvent === "allDay") {
+														toggleAllDayEvent();
+														toggleEventTitle();
+													}
+													if (e.target.value === "allDay" && typeEvent === "normale") {
+														toggleAllDayEvent();
+													}
+													if (e.target.value === "allDay" && typeEvent === "pomodoro") {
+														toggleEventTitle();
+														toggleAllDayEvent();
+													}
+												}}
+											>
+												<option value="normale"> Normale</option>
+												<option value="allDay"> AllDay </option>
+												<option value="pomodoro"> Pomodoro</option>
+											</select>
+										</div>
 										<form>
+											{/*
 											<label
 												htmlFor="useDefaultTitle"
 												style={{
@@ -3958,8 +4012,10 @@ export default function Calendar(): React.JSX.Element {
 												/>
 												Evento Pomodoro
 											</label>
+											*/}
+
 											{addTitle && (
-												<>
+												<> {/*é
 													<label htmlFor="allDayEvent"
 														style={{
 															cursor: 'pointer',
@@ -3982,6 +4038,9 @@ export default function Calendar(): React.JSX.Element {
 														/>
 														Tutto il giorno
 													</label>
+													*/}
+
+
 
 													{!allDayEvent && (
 														<>
@@ -4535,7 +4594,7 @@ export default function Calendar(): React.JSX.Element {
 										<button
 											className="btn btn-primary"
 											style={{
-												backgroundColor: "bisque",
+												backgroundColor: "rgb(249, 205, 140)",
 												color: "black",
 												border: "0",
 											}}
@@ -4830,7 +4889,7 @@ export default function Calendar(): React.JSX.Element {
 											<button
 												className="btn btn-primary"
 												style={{
-													backgroundColor: "bisque",
+													backgroundColor: "rgb(249, 205, 140)",
 													color: "black",
 													border: "0",
 												}}
@@ -4846,14 +4905,37 @@ export default function Calendar(): React.JSX.Element {
 										<button
 											className="btn btn-primary"
 											style={{
-												backgroundColor: "bisque",
+												backgroundColor: "lightgray",
 												color: "black",
 												border: "0",
 											}}
 											onClick={toggleCreateNonDisturbare}>
 											Chiudi
 										</button>
+
+										<div className="sort-label">
+											<div>Tipo: </div>
+											<select
+												className="sort-select"
+												value={typeEvent}
+												onChange={(e): void => {
+													console.log(e.target.value);
+													setTypeEvent(e.target.value);
+
+													if (e.target.value === "normale" && typeEvent === "allDay") {
+														toggleAllDayEvent();
+													}
+													if (e.target.value === "allDay" && typeEvent === "normale") {
+														toggleAllDayEvent();
+													}
+												}}
+											>
+												<option value="normale"> Normale</option>
+												<option value="allDay"> AllDay </option>
+											</select>
+										</div>
 										<form>
+											{/*
 											<label htmlFor="allDayNotDisturb"
 												style={{
 													cursor: 'pointer',
@@ -4876,6 +4958,7 @@ export default function Calendar(): React.JSX.Element {
 												/>
 												Tutto il giorno
 											</label>
+											*/}
 
 											{!allDayNotDisturb && (
 												<>
@@ -5161,7 +5244,7 @@ export default function Calendar(): React.JSX.Element {
 											<button
 												className="btn btn-primary"
 												style={{
-													backgroundColor: "bisque",
+													backgroundColor: "lightgray",
 													color: "black",
 													border: "0",
 												}}
@@ -5177,7 +5260,7 @@ export default function Calendar(): React.JSX.Element {
 										<button
 											className="btn btn-primary"
 											style={{
-												backgroundColor: "bisque",
+												backgroundColor: "rgb(127, 108, 80)",
 												color: "black",
 												border: "0",
 											}}
@@ -5214,7 +5297,7 @@ export default function Calendar(): React.JSX.Element {
 											<button
 												className="btn btn-primary"
 												style={{
-													backgroundColor: "bisque",
+													backgroundColor: "rgb(127, 108, 80)",
 													color: "black",
 													border: "0",
 												}}
