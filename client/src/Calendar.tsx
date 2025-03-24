@@ -3039,7 +3039,7 @@ export default function Calendar(): React.JSX.Element {
 		if (!res.ok) {
 			const errorData = await res.json();
 			console.error("Error response:", errorData);
-			setMessageEvent("Errore durante la creazione dell'evento: " + errorData.message);
+			setMessageEvent(errorData.message);
 			return;
 		}
 

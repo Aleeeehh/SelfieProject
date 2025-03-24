@@ -24,19 +24,17 @@ Progetto di Tecnologie Web
     nello stesso progetto, in particolare l'owner (Leo - 20250321)
 -   fix cambio dell'input ai progetti (ora cambiano solo quando il pulsante aggiorna è premuto)
     (Leo - 20250321)
--   Editare un evento base già esistente (ancora da gestire casi complessi) (Ale - 20250321
+-   Editare un evento base già esistente (ancora da gestire casi complessi) (Ale - 20250321()
 - editare un evento complesso (ripetuto, notifiche, risorse..)(per quanto possibile per non fare disastri di dipendenze) (Ale -240325) 
+-   Uniforma note/progetti/attività: colori (Ale - 20250324)
 
 ### TASK DI ALE
--   Editare un'attività esistente dalla view calendario (collegandolo alla view activities)
 -   Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con
     mouse con rotella)
 -   Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema
     operativo (con Notification API). Mettere un filtro "mostra X notifiche" come nella home, e
     magari appena ne arriva una, mostrarla a schermo e fai sentire un suono. Magari implementa una
     libreria che permetta la notifica del sistema operativo, ma magari anche via email e/o whatsapp.
--   Uniforma note/progetti/attività: se clicco su uno devo visualizzarlo, e al posto di visualizza
-    metti modifica.
 -   La creazione attività nel pannello attività, deve avere gli stessi campi della creazione
     attività nel pannello calendario.
 - Se voglio editare un'attività corrente, nella View calendario se clicco su di essa, con Cursor pointer, deve portarmi alla visuale modifica attività

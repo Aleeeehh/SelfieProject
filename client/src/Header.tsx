@@ -5,6 +5,7 @@ import Notification from "./types/Notification";
 import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRefresh } from "./TimeContext";
+//import { useRef } from "react";
 
 const buttonStyle = {
 	backgroundColor: "white",
@@ -16,6 +17,11 @@ const buttonStyle = {
 };
 
 export default function Header(): React.JSX.Element {
+	/*
+	const [overlayOpacity, setOverlayOpacity] = useState(0);
+	const [overlayText, setOverlayText] = useState<string>("");
+	const [showOverlay, setShowOverlay] = useState<boolean>(false);
+	*/
 	const [showTimeMachine, setShowTimeMachine] = useState(false);
 	const [showNotifications, setShowNotifications] = useState(false);
 	const [showDropdown, setShowDropdown] = useState(false);
@@ -25,6 +31,8 @@ export default function Header(): React.JSX.Element {
 	const [user, setUser] = useState(null);
 	const [username, setUsername] = useState("");
 	const [profileImage, setProfileImage] = useState("");
+	//const previousNotificationsRef = useRef(notifications);
+
 
 	const isLoggedIn = !!localStorage.getItem("loggedUserId");
 
@@ -439,6 +447,18 @@ export default function Header(): React.JSX.Element {
 		}
 	}
 
+	useEffect(() => {
+		if (hasEventNotifications() && !doNotDisturb) {
+			setShowNotifications(true);
+		}
+	}, [notifications, doNotDisturb]);
+
+	useEffect(() => {
+		if (doNotDisturb) {
+			setShowNotifications(false);
+		}
+	}, [doNotDisturb]);
+
 	// Ritorna true se ci sono notifiche di tipo event che sono già passate
 	function hasEventNotifications(): boolean {
 		return notifications.some((notification: Notification) => {
@@ -659,6 +679,53 @@ export default function Header(): React.JSX.Element {
 
 		return () => clearInterval(intervalId);
 	}, [showTimeMachine]);
+	/*
+		useEffect(() => {
+			let timer: NodeJS.Timeout;
+	
+			// Funzione per controllare le notifiche
+			const checkNotifications = (): void => {
+				if (notifications.length > previousNotificationsRef.current.length) {
+					const newNotification = notifications[notifications.length - 1];
+					console.log("currentDate:", currentDate);
+					console.log("newNotification.data.date:", newNotification.data.date);
+	
+					if (new Date(newNotification.data.date).getTime() < currentDate.getTime()) {
+						setOverlayText(newNotification.message);
+						setShowOverlay(true);
+						setOverlayOpacity(1);
+	
+						// Fade out dopo 5 secondi
+						setTimeout(() => {
+							setOverlayOpacity(0);
+							setTimeout(() => {
+								setShowOverlay(false);
+								setOverlayText("");
+							}, 5000);
+						}, 5000);
+					}
+				}
+				previousNotificationsRef.current = notifications;
+			};
+	
+			// Esegui il controllo ogni 5 secondi
+			timer = setInterval(checkNotifications, 5000);
+	
+			// Esegui il primo controllo immediatamente
+			checkNotifications();
+	
+			// Cleanup
+			return () => {
+				if (timer) {
+					clearInterval(timer);
+					setShowOverlay(false);
+					setOverlayText("");
+					setOverlayOpacity(0);
+				}
+			};
+		}, [notifications, currentDate]); // Aggiungi currentDate come dipendenza
+	*/
+
 
 	// Guarda se ci sono notifiche al caricamento del componente
 	useEffect(() => {
@@ -846,9 +913,9 @@ export default function Header(): React.JSX.Element {
 										value={
 											currentDate
 												? currentDate
-														.toTimeString()
-														.split(" ")[0]
-														.slice(0, 5)
+													.toTimeString()
+													.split(" ")[0]
+													.slice(0, 5)
 												: ""
 										}
 										onChange={async (event): Promise<void> => {
@@ -918,6 +985,26 @@ export default function Header(): React.JSX.Element {
 							<span className="notification-dot-gray" />
 						)}
 					</button>
+					{/*
+					{showOverlay && (
+						<div style={{
+							position: 'fixed',
+							top: '50%',
+							left: '50%',
+							transform: 'translate(-50%, -50%)',
+							backgroundColor: 'rgba(0, 0, 0, 0.8)',
+							color: 'white',
+							padding: '20px',
+							borderRadius: '10px',
+							zIndex: 1000,
+							textAlign: 'center',
+							opacity: overlayOpacity,
+							transition: 'opacity 0.5s ease-in-out' // Aggiungi la transizione
+						}}>
+							{overlayText}
+						</div>
+					)}
+					*/}
 					{showNotifications && (
 						<>
 							<div
@@ -1129,9 +1216,9 @@ export default function Header(): React.JSX.Element {
 												(currentDate.getTime() >= eventDate.getTime() ||
 													(currentDate.getDate() >= eventDate.getDate() &&
 														currentDate.getMonth() >=
-															eventDate.getMonth() &&
+														eventDate.getMonth() &&
 														currentDate.getFullYear() >=
-															eventDate.getFullYear()))
+														eventDate.getFullYear()))
 											) {
 												return (
 													<div key={index}>
