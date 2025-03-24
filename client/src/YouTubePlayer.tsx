@@ -15,7 +15,7 @@ export default function YouTubePlayer(): React.JSX.Element {
 		return match ? match[1] || match[2] : null;
 	};
 
-	function updateVideo(e: React.MouseEvent<HTMLButtonElement>): void {
+	/* function updateVideo(e: React.MouseEvent<HTMLButtonElement>): void {
 		e.preventDefault();
 
 		const newVideoId = getYouTubeVideoId(videoUrl);
@@ -30,7 +30,26 @@ export default function YouTubePlayer(): React.JSX.Element {
 
 			iframe.src = `https://www.youtube.com/embed/${newVideoId}`;
 		}
-	}
+	} */
+
+		function updateVideo(e: React.MouseEvent<HTMLButtonElement>): void {
+			e.preventDefault();
+		
+			const newVideoId = getYouTubeVideoId(videoUrl);
+			if (newVideoId) {
+				const iframeContainer = document.getElementById(
+					"youtube-div-container"
+				) as HTMLIFrameElement;
+		
+				// Inserisco l'iframe e rimuovo il vecchio iframe
+				const iframe = document.createElement("iframe");
+				iframeContainer.replaceChildren(iframe);
+		
+				iframe.src = `https://www.youtube.com/embed/${newVideoId}`;
+				iframe.style.width = "100%";
+			}
+		}
+		
 
 	return (
 		<div>
@@ -50,6 +69,7 @@ export default function YouTubePlayer(): React.JSX.Element {
 						fontWeight: "bold",
 						cursor: "pointer",
 						transition: "background-color 0.3s ease",
+						margin: "2px"
 					}}
 				>
 					Play

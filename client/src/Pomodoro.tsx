@@ -1116,10 +1116,11 @@ export default function Pomodoros(): React.JSX.Element {
 
 								<div
 									className="music-container"
-									style={{ display: chooseMusic ? "block" : "none" }}
+									style={{ display: chooseMusic ? "block" : "none", width: "80%" }}
 								>
 									<select
 										value={playerType}
+										style={{width: "70%"}}
 										onChange={(e): void =>
 											setPlayerType(e.target.value as PLAYER_TYPE)
 										}
