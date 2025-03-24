@@ -68,6 +68,10 @@ Progetto di Tecnologie Web
 -   MIGLIORA/FIXA IN GENERALE QUALSIASI COSA SU CUI POTREBBE FARE STORIE, IN PARTICOLARE UI E
     USABILITA' SONO FONDAMENTALI! CERCHIAMO DI IMMAGINARCI/PREVEDERE SU COSA POTREBBE FARE STORIE
     (ANCHE COSE MOLTO PICCOLE)
+- La time machine funziona correttamente su tutta l'interfaccia? si aggiorna in tempo reale? Il valore
+della time machine dovrebbe essere fisso e continuare indipendentmente utente per utente (se un utente
+cambia l'orario, non deve poi avere quell'orario anche gli altri utenti del sistema)
+- elimino la checkbox "invia evento ad utente"?
 
 ### ALTRI REQUISITI (FORSE RIDONDANTI DA NOTE ANDRE)
 

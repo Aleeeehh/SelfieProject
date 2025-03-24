@@ -1008,6 +1008,10 @@ export default function Calendar(): React.JSX.Element {
 		await loadMonthEvents(nuovoAnno, nuovoMese);
 	}
 
+	React.useEffect(() => {
+		setMessageEditEvent("");
+	}, [editEvent]);
+
 	async function meseSuccessivo(): Promise<void> {
 		setMonthEvents([]);
 		setEventPositions([]);
@@ -3595,7 +3599,7 @@ export default function Calendar(): React.JSX.Element {
 								Chiudi
 							</button>
 
-							{selectedEvent?.title !== "Non disturbare" &&
+							{selectedEvent?.title !== "Non disturbare" && selectedEvent?.title !== "Pomodoro Session" &&
 								<label htmlFor="title">
 									Titolo
 									<input
@@ -3617,99 +3621,103 @@ export default function Calendar(): React.JSX.Element {
 								</label>
 							}
 
-							<label htmlFor="startTime">
-								Data Inizio
-								<div>
-									<DatePicker
-										className="btn border createEventinput"
-										name="startTime"
-										selected={selectedEvent?.startTime}
-										onChange={(date: Date | null): void => {
-											if (date && selectedEvent?.startTime) {  // Verifichiamo che entrambi esistano
-												// Aggiorna la data mantenendo l'orario attuale
-												const newDate = new Date(selectedEvent.startTime);  // Ora TypeScript sa che startTime esiste
-												newDate.setFullYear(
-													date.getFullYear(),
-													date.getMonth(),
-													date.getDate()
-												);
-												setSelectedEvent({
-													...selectedEvent,
-													startTime: newDate
-												});
-											}
-										}}
-										dateFormat="dd/MM/yyyy"
-									/>
-								</div>
-								<div>
-									<input
-										className="btn border createEventinput"
-										type="time"
-										value={`${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getMinutes().toString().padStart(2, "0") : "00"}`}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-											const [hours, minutes] = e.target.value.split(":");
-											if (hours && minutes && !isNaN(Number(hours)) && !isNaN(Number(minutes))) {
-												if (selectedEvent?.startTime) {
-													const newDate = new Date(selectedEvent.startTime);
-													newDate.setHours(Number(hours), Number(minutes), 0, 0);
-													setSelectedEvent({
-														...selectedEvent,
-														startTime: newDate
-													});
-												}
-											}
-										}}
-									/>
-								</div>
-							</label>
+							{selectedEvent?.frequency === "once" && !selectedEvent?.isInfinite && !selectedEvent?.untilDate &&
+								<>
+									<label htmlFor="startTime">
+										Data Inizio
+										<div>
+											<DatePicker
+												className="btn border createEventinput"
+												name="startTime"
+												selected={selectedEvent?.startTime}
+												onChange={(date: Date | null): void => {
+													if (date && selectedEvent?.startTime) {  // Verifichiamo che entrambi esistano
+														// Aggiorna la data mantenendo l'orario attuale
+														const newDate = new Date(selectedEvent.startTime);  // Ora TypeScript sa che startTime esiste
+														newDate.setFullYear(
+															date.getFullYear(),
+															date.getMonth(),
+															date.getDate()
+														);
+														setSelectedEvent({
+															...selectedEvent,
+															startTime: newDate
+														});
+													}
+												}}
+												dateFormat="dd/MM/yyyy"
+											/>
+										</div>
+										<div>
+											<input
+												className="btn border createEventinput"
+												type="time"
+												value={`${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.startTime ? new Date(selectedEvent.startTime).getMinutes().toString().padStart(2, "0") : "00"}`}
+												onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+													const [hours, minutes] = e.target.value.split(":");
+													if (hours && minutes && !isNaN(Number(hours)) && !isNaN(Number(minutes))) {
+														if (selectedEvent?.startTime) {
+															const newDate = new Date(selectedEvent.startTime);
+															newDate.setHours(Number(hours), Number(minutes), 0, 0);
+															setSelectedEvent({
+																...selectedEvent,
+																startTime: newDate
+															});
+														}
+													}
+												}}
+											/>
+										</div>
+									</label>
 
-							<label htmlFor="endTime">
-								Data Fine
-								<div>
-									<DatePicker
-										className="btn border createEventinput"
-										name="endTime"
-										selected={selectedEvent?.endTime}
-										onChange={(date: Date | null): void => {
-											if (date && selectedEvent?.endTime) {  // Verifichiamo che entrambi esistano
-												// Aggiorna la data mantenendo l'orario attuale
-												const newDate = new Date(selectedEvent.endTime);
-												newDate.setFullYear(
-													date.getFullYear(),
-													date.getMonth(),
-													date.getDate()
-												);
-												setSelectedEvent({
-													...selectedEvent,
-													endTime: newDate,
-												});
-											}
-										}}
-										dateFormat="dd/MM/yyyy"
-									/>
-								</div>
-								<div>
-									<input
-										className="btn border createEventinput"
-										type="time"
-										value={`${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getMinutes().toString().padStart(2, "0") : "00"}`}
-										onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-											const [hours, minutes] = e.target.value.split(":");
-											if (hours && minutes && !isNaN(Number(hours)) && !isNaN(Number(minutes))) {
-												if (selectedEvent?.endTime) {
-													const newDate = new Date(selectedEvent.endTime);
-													newDate.setHours(Number(hours), Number(minutes), 0, 0);
-													setSelectedEvent({
-														...selectedEvent,
-														endTime: newDate
-													});
-												}
-											}
-										}}
-									/>
-								</div>
-							</label>
+									<label htmlFor="endTime">
+										Data Fine
+										<div>
+											<DatePicker
+												className="btn border createEventinput"
+												name="endTime"
+												selected={selectedEvent?.endTime}
+												onChange={(date: Date | null): void => {
+													if (date && selectedEvent?.endTime) {  // Verifichiamo che entrambi esistano
+														// Aggiorna la data mantenendo l'orario attuale
+														const newDate = new Date(selectedEvent.endTime);
+														newDate.setFullYear(
+															date.getFullYear(),
+															date.getMonth(),
+															date.getDate()
+														);
+														setSelectedEvent({
+															...selectedEvent,
+															endTime: newDate,
+														});
+													}
+												}}
+												dateFormat="dd/MM/yyyy"
+											/>
+										</div>
+										<div>
+											<input
+												className="btn border createEventinput"
+												type="time"
+												value={`${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getHours().toString().padStart(2, "0") : "00"}:${selectedEvent?.endTime ? new Date(selectedEvent.endTime).getMinutes().toString().padStart(2, "0") : "00"}`}
+												onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+													const [hours, minutes] = e.target.value.split(":");
+													if (hours && minutes && !isNaN(Number(hours)) && !isNaN(Number(minutes))) {
+														if (selectedEvent?.endTime) {
+															const newDate = new Date(selectedEvent.endTime);
+															newDate.setHours(Number(hours), Number(minutes), 0, 0);
+															setSelectedEvent({
+																...selectedEvent,
+																endTime: newDate
+															});
+														}
+													}
+												}}
+											/>
+										</div>
+									</label>
+								</>
+							}
 							{selectedEvent?.title !== "Non disturbare" &&
 								<label htmlFor="location">
 									Luogo
@@ -5857,107 +5865,116 @@ export default function Calendar(): React.JSX.Element {
 													<div style={{ position: "relative", marginLeft: "10%" }}>
 														{eventPositions.map((event, index) =>
 															!event.type ? (
-																<Link
-																	to={`/pomodoro?duration=${((
-																		startTime,
-																		endTime
-																	): number => {
-																		const start = new Date(
-																			startTime
-																		);
-																		const end = new Date(
-																			endTime
-																		);
-																		const totMin = Math.max(
-																			(end.getTime() -
-																				start.getTime()) /
-																			(1000 * 60),
-																			0
-																		);
-																		return totMin;
-																	})(
-																		event.event.startTime,
-																		event.event.endTime
-																	)
-																		}&id=${event.event._id}`}
+
+																<div onClick={(): void => {
+
+																	//permetti la modifica dell'evento solo se non è un evento risorsa
+																	if (!event.event.isRisorsa) {
+																		setSelectedEvent(event.event);
+																	}
+																}}
+																	key={index}
+																	className="evento red"
 																	style={{
-																		textDecoration: "none",
-																		color: "inherit",
+																		top: `${event.top}px`,
+																		height: `${event.height}px`,
+																		width: `calc(95%/${event.width})`,
+																		position: "absolute",
+																		color:
+																			new Date(currentDate) >
+																				new Date(event.event.endTime)
+																				? "red"
+																				: "red",
+																		borderColor:
+																			new Date(currentDate) >
+																				new Date(event.event.endTime)
+																				? "rgba(209, 150, 150, 1)"
+																				: "red",
+																		backgroundColor:
+																			new Date(currentDate) >
+																				new Date(event.event.endTime)
+																				? "rgba(249, 67, 67, 0.2)"
+																				: "rgba(249, 67, 67, 0.5)",
+																		marginLeft: `${event.marginLeft}%`,
 																		cursor: "pointer",
 																	}}
 																>
-																	<div onClick={(): void => console.log("ciao")}
-																		key={index}
-																		className="evento red"
-																		style={{
-																			top: `${event.top}px`,
-																			height: `${event.height}px`,
-																			width: `calc(95%/${event.width})`,
-																			position: "absolute",
-																			color:
-																				new Date(currentDate) >
-																					new Date(event.event.endTime)
-																					? "red"
-																					: "red",
-																			borderColor:
-																				new Date(currentDate) >
-																					new Date(event.event.endTime)
-																					? "rgba(209, 150, 150, 1)"
-																					: "red",
-																			backgroundColor:
-																				new Date(currentDate) >
-																					new Date(event.event.endTime)
-																					? "rgba(249, 67, 67, 0.2)"
-																					: "rgba(249, 67, 67, 0.5)",
-																			marginLeft: `${event.marginLeft}%`,
-																			cursor: "pointer",
-																		}}
-																	>
-																		<div style={{ color: "red" }}>
-
-																			{event.name}
-
-																		</div>
-																		<div
-																			className="position-relative"
-																			onClick={(e): Promise<void> => {
-																				e.stopPropagation();
-																				return handleDeleteEvent(
-																					event.event._id,
-																					event.event.groupId
+																	<div style={{ color: "red" }}>
+																		<Link
+																			to={`/pomodoro?duration=${((
+																				startTime,
+																				endTime
+																			): number => {
+																				const start = new Date(
+																					startTime
 																				);
+																				const end = new Date(
+																					endTime
+																				);
+																				const totMin = Math.max(
+																					(end.getTime() -
+																						start.getTime()) /
+																					(1000 * 60),
+																					0
+																				);
+																				return totMin;
+																			})(
+																				event.event.startTime,
+																				event.event.endTime
+																			)
+																				}&id=${event.event._id}`}
+																			style={{
+																				textDecoration: "none",
+																				color: "inherit",
+																				cursor: "pointer",
 																			}}
 																		>
-																			{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
-																			<i
-																				className="bi bi-trash"
-																				onClick={(e): void => {
-																					e.preventDefault();
-																					e.stopPropagation();
-																					handleDeleteEvent(event.event._id, event.event.groupId);
-																				}}
-																				style={{
-																					bottom: "2px", // Posiziona l'icona a 10px dal fondo
-																					right: "50%", // Posiziona l'icona a 10px dal lato destro
-																					fontSize: "1rem",
-																					margin: 0,
-																					padding: 0,
-																					color: "red",
-																					cursor: "pointer",
-																				}}
-																			></i>
-																		</div>
+
+																			{event.name}
+																		</Link>
 																	</div>
-																</Link>
+																	<div
+																		className="position-relative"
+																		onClick={(e): Promise<void> => {
+																			e.stopPropagation();
+																			return handleDeleteEvent(
+																				event.event._id,
+																				event.event.groupId
+																			);
+																		}}
+																	>
+																		{/* Questo div ha una posizione relativa per consentire il posizionamento assoluto dell'icona */}
+																		<i
+																			className="bi bi-trash"
+																			onClick={(e): void => {
+																				e.preventDefault();
+																				e.stopPropagation();
+																				handleDeleteEvent(event.event._id, event.event.groupId);
+																			}}
+																			style={{
+																				bottom: "2px", // Posiziona l'icona a 10px dal fondo
+																				right: "50%", // Posiziona l'icona a 10px dal lato destro
+																				fontSize: "1rem",
+																				margin: 0,
+																				padding: 0,
+																				color: "red",
+																				cursor: "pointer",
+																			}}
+																		></i>
+																	</div>
+																</div>
+
 															) : (
 																(!event.event.isRisorsa ||
 																	(event.event.isRisorsa &&
 																		showRisorse)) && (
 																	<div onClick={(): void => {
-																		//setEditEvent(true)
-																		setSelectedEvent(event.event);
-																		//console.log("Stampo l'evento da modificare:", event.event);
-																		//console.log("Stampo l'evento inserito nello state:", selectedEvent);
+
+																		//permetti la modifica dell'evento solo se non è un evento risorsa
+																		if (!event.event.isRisorsa) {
+																			setSelectedEvent(event.event);
+																		}
+
 																	}}
 																		className={`evento ${event.event.title ===
 																			"Non disturbare"

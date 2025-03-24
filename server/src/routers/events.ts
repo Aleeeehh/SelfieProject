@@ -1124,16 +1124,18 @@ router.put("/:id", async (req: Request, res: Response) => {
 	console.log("Entro nella PUT con req.body:", req.body);
 	console.log("Entro nella PUT con req.params:", req.params);
 	const idEventoNotificaCondiviso = req.params.id as string;
+	const idEvento = req.body._id as string;
 	const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as string[] | undefined; // username list
 	const inputEndTime = req.body.endTime as Date | undefined;
 	try {
-		console.log("ENTRO NELLA PUT CON inputEndTime:", inputEndTime);
+		//console.log("ENTRO NELLA PUT CON inputEndTime:", inputEndTime);
+		console.log("idEvento:", idEvento);
 
 		const foundEvents = await EventSchema.find({
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 		});
 
-		console.log("evento trovato:", foundEvents);
+		console.log("EVENTI TROVATI:", foundEvents);
 
 		//se entra in questo if, vuol dire che abbiamo modificato l'evento dal calendario
 		if (req.body.isUpdate) {
@@ -1143,16 +1145,39 @@ router.put("/:id", async (req: Request, res: Response) => {
 			const updatedStartTime = req.body.startTime;
 			const updatedEndTime = req.body.endTime;
 			const updatedLocation = req.body.location;
-			//modifichiamo i campi base dell'evento 
-			await EventSchema.updateOne(
-				{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
-				{
-					title: updatedTitle,
-					startTime: updatedStartTime,
-					endTime: updatedEndTime,
-					location: updatedLocation,
-				}
-			);
+
+			//se l'evento è ripetuto, aggiorniamo solo titolo e luogo
+			if (foundEvents[0].frequency !== "once" || foundEvents[0].isInfinite || foundEvents[0].recurring || foundEvents[0].untilDate) {
+				console.log("HO MODIFICATO UN EVENTO RIPETUTO");
+				console.log("HO MODIFICATO UN EVENTO RIPETUTO");
+				console.log("HO MODIFICATO UN EVENTO RIPETUTO");
+				console.log("HO MODIFICATO UN EVENTO RIPETUTO");
+				await EventSchema.updateMany(
+					{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+					{
+						$set: {
+							title: updatedTitle,
+							location: updatedLocation
+						}
+					}
+				);
+			}
+			else {
+				console.log("HO MODIFICATO UN EVENTO BASE");
+				console.log("HO MODIFICATO UN EVENTO BASE");
+				console.log("HO MODIFICATO UN EVENTO BASE");
+				console.log("HO MODIFICATO UN EVENTO BASE");
+				//se è un evento base, aggiorniamo tutto
+				await EventSchema.updateMany(
+					{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+					{
+						title: updatedTitle,
+						startTime: updatedStartTime,
+						endTime: updatedEndTime,
+						location: updatedLocation,
+					}
+				);
+			}
 
 			//guardiamo se abbiamo modificato la data di inzio dell'evento
 			if (new Date(updatedStartTime).getTime() !== new Date(foundEvents[0].startTime).getTime()) {
@@ -1186,6 +1211,27 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 				}
 
+				//se esistono risorse associate all'evento, aggiorniamo la data di inizio di ogni risorsa
+				// cerchiamo tutti gli eventi che hanno isRisorsa = true e che hanno lo stesso idEventoNotificaCondiviso
+				const risorseAssociata = await EventSchema.find({ isRisorsa: true, idEventoNotificaCondiviso: idEventoNotificaCondiviso });
+				console.log("risorseAssociata:", risorseAssociata);
+				for (const risorsa of risorseAssociata) {
+					console.log("risorsa:", risorsa);
+					//aggiorniamo la data di inizio della risorsa
+					await EventSchema.updateOne(
+						{ _id: risorsa._id },
+						{ startTime: updatedStartTime }
+					);
+
+					//aggiorniamo la data di fine della risorsa
+					await EventSchema.updateOne(
+						{ _id: risorsa._id },
+						{ endTime: updatedEndTime }
+					);
+
+
+				}
+
 			}
 		}
 
@@ -1213,14 +1259,15 @@ router.put("/:id", async (req: Request, res: Response) => {
 				{ accessListAccepted: updatedAccessListAccepted }
 			);
 		}
-
-		if (inputEndTime) {
-			//console.log("AGGIORNO LA ENDTIME:", inputEndTime);
-			await EventSchema.updateMany(
-				{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
-				{ endTime: inputEndTime }
-			);
-		}
+		/*
+				if (inputEndTime) {
+					//console.log("AGGIORNO LA ENDTIME:", inputEndTime);
+					await EventSchema.updateMany(
+						{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+						{ endTime: inputEndTime }
+					);
+				}
+					*/
 
 		// TODO: filter the fields of the found event
 		const resBody: ResponseBody = {
