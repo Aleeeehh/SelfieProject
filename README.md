@@ -24,11 +24,10 @@ Progetto di Tecnologie Web
     nello stesso progetto, in particolare l'owner (Leo - 20250321)
 -   fix cambio dell'input ai progetti (ora cambiano solo quando il pulsante aggiorna è premuto)
     (Leo - 20250321)
--   Editare un evento base già esistente (ancora da gestire casi complessi) (Ale - 20250321)
+-   Editare un evento base già esistente (ancora da gestire casi complessi) (Ale - 20250321
+- editare un evento complesso (ripetuto, notifiche, risorse..)(per quanto possibile per non fare disastri di dipendenze) (Ale -240325) 
 
 ### TASK DI ALE
-
-- editare un evento complesso (ripetuto, notifiche, risorse..)(per quanto possibile per non fare disastri di dipendenze)
 -   Editare un'attività esistente dalla view calendario (collegandolo alla view activities)
 -   Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con
     mouse con rotella)
@@ -43,35 +42,23 @@ Progetto di Tecnologie Web
 - Se voglio editare un'attività corrente, nella View calendario se clicco su di essa, con Cursor pointer, deve portarmi alla visuale modifica attività
 
 ### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
--   Non è ancora cambiata la logica dei tempi ancora sui progetti e pomodoro!
 -   Tutte le cose che vengono aggiunte/cambiano, devono venire aggiunte/essere cambiate senza
     refreshare la pagina (in particolare calendario, per view day, week, month, ma anche progetti,
     attività, ecc.)
 -   Se la time machine cambia orario, deve cambiare anche il pomodoro.
 -   Time machine deve influenzare OGNI SINGOLO COMPONENTE DEL PROGETTO, quindi sia calendario, che
     pomodoro, che attività, che progetti, che note! (Conviene lavorare lato server per questo)
--   Correggi tutti gli input time per il pomodoro (in alcuni casi non posso mettere un numero con
-    più di una cifra)
 -   FIXARE VIEW GANTT PROGETTI E TUTTI I BUG AFFINI AI PROGETTI!
 -   rendi piu efficiente il caricamento della view mese del calendario
 -   "Invia evento ad utente" o lo tolgo oppure lo miglioro che mandi il form con "Crea" e non con
     "Invia ad utente"
--   Correggi in modo definitivo i bug di visualizzazione eventi/pomodoro event su cui hai messo una
-    toppa (pomodoro session con allDay, pomodorSession ripetuto, allDay ripetuto.. deve funzionare
-    anche sul server remoto in cui fai il deploy)
 -   fixa todoList, c'è un caso in cui si bugga
 -   Controlla che quando si modifica un oggetto(evento,attività, progetto), tale modifica sia reale,
-    funzioni, e influenzi anche quello degli altri utenti se sono coinvolti in quell'oggetto (nel
-    caso in cui sia condiviso)
--   La creazione di evento pomodoro nel pannello pomodoro, deve avere gli stessi campi della
-    creazione evento pomodoro nel pannello calendario.
+    funzioni, e influenzi anche quello degli altri utenti se sono coinvolti in quell'oggetto (anche nel
+    caso in cui sia condiviso, che la modifica sia visibile anche agli altri utenti)
 -   MIGLIORA/FIXA IN GENERALE QUALSIASI COSA SU CUI POTREBBE FARE STORIE, IN PARTICOLARE UI E
     USABILITA' SONO FONDAMENTALI! CERCHIAMO DI IMMAGINARCI/PREVEDERE SU COSA POTREBBE FARE STORIE
     (ANCHE COSE MOLTO PICCOLE)
-- La time machine funziona correttamente su tutta l'interfaccia? si aggiorna in tempo reale? Il valore
-della time machine dovrebbe essere fisso e continuare indipendentmente utente per utente (se un utente
-cambia l'orario, non deve poi avere quell'orario anche gli altri utenti del sistema)
-- elimino la checkbox "invia evento ad utente"?
 
 ### ALTRI REQUISITI (FORSE RIDONDANTI DA NOTE ANDRE)
 

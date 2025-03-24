@@ -1169,7 +1169,11 @@ router.put("/:id", async (req: Request, res: Response) => {
 				console.log("HO MODIFICATO UN EVENTO BASE");
 				//se è un evento base, aggiorniamo tutto
 				await EventSchema.updateMany(
-					{ idEventoNotificaCondiviso: idEventoNotificaCondiviso },
+					{
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						isRisorsa: false
+					},
+
 					{
 						title: updatedTitle,
 						startTime: updatedStartTime,
@@ -1217,16 +1221,15 @@ router.put("/:id", async (req: Request, res: Response) => {
 				console.log("risorseAssociata:", risorseAssociata);
 				for (const risorsa of risorseAssociata) {
 					console.log("risorsa:", risorsa);
-					//aggiorniamo la data di inizio della risorsa
+					//aggiorniamo la data della risorsa
 					await EventSchema.updateOne(
 						{ _id: risorsa._id },
-						{ startTime: updatedStartTime }
-					);
-
-					//aggiorniamo la data di fine della risorsa
-					await EventSchema.updateOne(
-						{ _id: risorsa._id },
-						{ endTime: updatedEndTime }
+						{
+							$set: {
+								startTime: updatedStartTime,
+								endTime: updatedEndTime
+							}
+						}
 					);
 
 
