@@ -4764,7 +4764,7 @@ export default function Calendar(): React.JSX.Element {
 														cursor: "pointer",
 													}}
 												/>
-												Aggiungi notifica
+												Aggiungi notifica scadenza
 											</label>
 
 											{addNotification && (

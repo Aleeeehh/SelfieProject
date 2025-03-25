@@ -24,21 +24,20 @@ Progetto di Tecnologie Web
     nello stesso progetto, in particolare l'owner (Leo - 20250321)
 -   fix cambio dell'input ai progetti (ora cambiano solo quando il pulsante aggiorna è premuto)
     (Leo - 20250321)
--   Editare un evento base già esistente (ancora da gestire casi complessi) (Ale - 20250321()
+-   Editare un evento base già esistente (ancora da gestire casi complessi) (Ale - 20250321)
 - editare un evento complesso (ripetuto, notifiche, risorse..)(per quanto possibile per non fare disastri di dipendenze) (Ale -240325) 
 -   Uniforma note/progetti/attività: colori (Ale - 20250324)
 - Reso le notifiche un pò più evidenti (Ale - 20250324)
 - Se voglio editare un'attività corrente, nella View calendario se clicco su di essa, con Cursor pointer, deve portarmi alla visuale modifica attività (Ale - 250324)
+-   La creazione attività nel pannello attività, deve avere gli stessi campi della creazione
+    attività nel pannello calendario. (Ale - 250324)
 
 ### TASK DI ALE
 -   Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con
     mouse con rotella)
--   La creazione attività nel pannello attività, deve avere gli stessi campi della creazione
-    attività nel pannello calendario.
  -  migliora caricamento e refresh della view mese del calendario
  -   fixa todoList, c'è un caso in cui si bugga
  -   Se la time machine cambia orario, deve cambiare anche il pomodoro.
-
 
 
 ### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
