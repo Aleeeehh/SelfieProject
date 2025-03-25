@@ -28,10 +28,13 @@ export default function Header(): React.JSX.Element {
 	const [doNotDisturb, setDoNotDisturb] = useState(false);
 	const [notifications, setNotifications] = useState([] as Notification[]);
 	const [currentDate, setCurrentDate] = useState(new Date());
+	const [isDateLoaded, setIsDateLoaded] = useState(true);
 	const [user, setUser] = useState(null);
 	const [username, setUsername] = useState("");
-	const [profileImage, setProfileImage] = useState("");
-	//const previousNotificationsRef = useRef(notifications);
+	const [profileImage, setProfileImage] = useState(() => {
+		// Prova a recuperare l'immagine dal localStorage al caricamento iniziale
+		return localStorage.getItem('profileImage') || '';
+	});	//const previousNotificationsRef = useRef(notifications);
 
 
 	const isLoggedIn = !!localStorage.getItem("loggedUserId");
@@ -51,6 +54,12 @@ export default function Header(): React.JSX.Element {
 		const ring = new Audio("public/images/Notification.mp3");
 		ring.play();
 	}
+
+	useEffect(() => {
+		if (profileImage) {
+			localStorage.setItem('profileImage', profileImage);
+		}
+	}, [profileImage]);
 
 	const formatDate = (date: Date): string => {
 		return date.toLocaleString("it-IT", {
@@ -442,6 +451,7 @@ export default function Header(): React.JSX.Element {
 			}
 
 			setCurrentDate(data);
+			localStorage.setItem('currentDate', data.toISOString());
 		} catch (error) {
 			console.error("Errore durante l'invio della data corrente:", error);
 		}
@@ -640,6 +650,11 @@ export default function Header(): React.JSX.Element {
 	useEffect(() => {
 		const fetchData = async (): Promise<void> => {
 			// await postCurrentDate(currentDate); // Invia la data corrente al server
+			const savedDate = localStorage.getItem('currentDate');
+			if (savedDate) {
+				setCurrentDate(new Date(savedDate));
+				setIsDateLoaded(true);
+			}
 			const response = await fetch(`${SERVER_API}/currentDate`);
 			if (!response.ok) {
 				throw new Error("Errore nel recupero della data corrente");
@@ -649,6 +664,7 @@ export default function Header(): React.JSX.Element {
 			const newDate = new Date(data.currentDate);
 			newDate.setSeconds(newDate.getSeconds() + 1);
 			setCurrentDate(newDate);
+			localStorage.setItem('currentDate', newDate.toISOString());
 			triggerAction();
 
 			const currentUser = await getCurrentUser();
@@ -852,7 +868,7 @@ export default function Header(): React.JSX.Element {
 
 			{isLoggedIn ? (
 				<div className="right-menu-buttons">
-					{currentDate && (
+					{currentDate && isDateLoaded && (
 						<>
 							<span className="btn secondary date-button">
 								{formatDate(currentDate)}
@@ -1954,6 +1970,7 @@ export default function Header(): React.JSX.Element {
 								justifyContent: "center",
 							}}>
 							<img
+								loading="lazy"
 								src={
 									`/images/profile/${profileImage}`
 									//	profileImage

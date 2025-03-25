@@ -28,26 +28,23 @@ Progetto di Tecnologie Web
 - editare un evento complesso (ripetuto, notifiche, risorse..)(per quanto possibile per non fare disastri di dipendenze) (Ale -240325) 
 -   Uniforma note/progetti/attività: colori (Ale - 20250324)
 - Reso le notifiche un pò più evidenti (Ale - 20250324)
+- Se voglio editare un'attività corrente, nella View calendario se clicco su di essa, con Cursor pointer, deve portarmi alla visuale modifica attività (Ale - 250324)
 
 ### TASK DI ALE
 -   Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con
     mouse con rotella)
 -   La creazione attività nel pannello attività, deve avere gli stessi campi della creazione
     attività nel pannello calendario.
-- Se voglio editare un'attività corrente, nella View calendario se clicco su di essa, con Cursor pointer, deve portarmi alla visuale modifica attività
+ -  migliora caricamento e refresh della view mese del calendario
+ -   fixa todoList, c'è un caso in cui si bugga
+ -   Se la time machine cambia orario, deve cambiare anche il pomodoro.
+
+
 
 ### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
--   Tutte le cose che vengono aggiunte/cambiano, devono venire aggiunte/essere cambiate senza
-    refreshare la pagina (in particolare calendario, per view day, week, month, ma anche progetti,
-    attività, ecc.)
--   Se la time machine cambia orario, deve cambiare anche il pomodoro.
 -   Time machine deve influenzare OGNI SINGOLO COMPONENTE DEL PROGETTO, quindi sia calendario, che
     pomodoro, che attività, che progetti, che note! (Conviene lavorare lato server per questo)
 -   FIXARE VIEW GANTT PROGETTI E TUTTI I BUG AFFINI AI PROGETTI!
--   rendi piu efficiente il caricamento della view mese del calendario
--   "Invia evento ad utente" o lo tolgo oppure lo miglioro che mandi il form con "Crea" e non con
-    "Invia ad utente"
--   fixa todoList, c'è un caso in cui si bugga
 -   Controlla che quando si modifica un oggetto(evento,attività, progetto), tale modifica sia reale,
     funzioni, e influenzi anche quello degli altri utenti se sono coinvolti in quell'oggetto (anche nel
     caso in cui sia condiviso, che la modifica sia visibile anche agli altri utenti)
@@ -57,13 +54,8 @@ Progetto di Tecnologie Web
 
 ### ALTRI REQUISITI (FORSE RIDONDANTI DA NOTE ANDRE)
 
--   Mantenere la time machine attiva su tutta l'interfaccia
--   Editare un evento già impostato
 -   Disallineamento nelle colonne del calendario
 -   Refresh informazioni (calendario mensile)
--   Time machine influenza anche pomodoro (e se serve., non ho controllato) progetti ed attività)
--   Notifiche decisamente più evidenti, magari utilizzando il sistema di notifica del sistema
-    operativo (con Notification API)
 -   gestione partecipanti dei progetti distinti
 -   Scroll calendario attività progetto da migliorare
 -   Ordine dei "Prossimi eventi" nella home non sempre corretto
@@ -71,14 +63,10 @@ Progetto di Tecnologie Web
 -   Pomodoro NON rimane attivo anche se cambio pagina (musica compresa)
 -   Se mi trovo all'interno del giorno della scadenza di un'attività me la segna "in ritardo" =>
     togliere l'orario (ora è 01:00) oppure impostare l'orario a 23:59
--   Mettere il radio button per scegliere tra "evento pomodoro", "tutto il giorno" e "ripetuto" nel
-    form di creazione dell'evento
 -   Non posso togliere il “completata” ad una attività, una volta che l’ho completata
 -   Su telefono (Safari?): due eventi che coincidono con l’orario non stanno entrambi nella view
 -   Su telefono (Safari?): Note page ha la “X” non allineata al centro, anche la pagina di creazione
     della nota
--   Avviando un link YouTube dal pomodoro, se la view è stretta, escono gli elementi dal loro
-    container
 -   Quando spunto un'attività relativa ad un progetto come completata, viene traslata verso il basso
     nel gantt e non capisco perchè
 -   Un evento “tutto il giorno” nella visualizzazione “month” e “week” viene mostrato su 2 giorni

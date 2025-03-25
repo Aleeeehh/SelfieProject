@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { Event } from "./types/Event";
 import SearchForm from "./SearchForm";
 import SearchFormResource from "./SearchFormResource";
+
 //import mongoose from "mongoose";
 
 enum Frequency {
@@ -66,7 +67,7 @@ export default function Calendar(): React.JSX.Element {
 	const [messageActivity, setMessageActivity] = React.useState("");
 	const [messageNotDisturb, setMessageNotDisturb] = React.useState("");
 	const [messageShareRisorsa, setMessageShareRisorsa] = React.useState("");
-	const [messageSend, setMessageSend] = React.useState("");
+	//const [messageSend, setMessageSend] = React.useState("");
 	const [showRisorse, setShowRisorse] = React.useState(true);
 	const [isAdmin, setIsAdmin] = React.useState(false);
 	//sconst [idAttivitàAccettate, setIdAttivitàAccettate] = React.useState<string[]>([]);
@@ -93,8 +94,8 @@ export default function Calendar(): React.JSX.Element {
 	const [frequency, setFrequency] = React.useState(Frequency.ONCE);
 	const [isInfinite, setIsInfinite] = React.useState(false);
 	const [currentDate, setCurrentDate] = React.useState(new Date());
-	const [sendInviteActivity, setSendInviteActivity] = React.useState(false);
-	const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
+	//const [sendInviteActivity, setSendInviteActivity] = React.useState(false);
+	//const [sendInviteEvent, setSendInviteEvent] = React.useState(false);
 	const [addNotification, setAddNotification] = React.useState(false);
 	const [shareEvent, setShareEvent] = React.useState(false);
 	const [startTime, setStartTime] = React.useState(() => {
@@ -1298,7 +1299,7 @@ export default function Calendar(): React.JSX.Element {
 		setShareEvent(false);
 		setAllDayEvent(false);
 		setAllDayNotDisturb(false);
-		setSendInviteEvent(false);
+		//setSendInviteEvent(false);
 		setNotificationRepeat(false);
 		setNotificationRepeatTime(0);
 		setUntil(false);
@@ -1308,7 +1309,7 @@ export default function Calendar(): React.JSX.Element {
 		setFrequency(Frequency.ONCE);
 		setUsers([]);
 		setAccessList([]);
-		setMessageSend("");
+		//setMessageSend("");
 		setMessageEvent("");
 		setMessageActivity("");
 		setMessageNotDisturb("");
@@ -1375,7 +1376,7 @@ export default function Calendar(): React.JSX.Element {
 		setMessageEvent("");
 		setMessageActivity("");
 		setMessageRisorsa("");
-		setMessageSend("");
+		//setMessageSend("");
 		setTypeEvent("normale");
 	}
 
@@ -1401,7 +1402,7 @@ export default function Calendar(): React.JSX.Element {
 		setMessageNotDisturb("");
 		setMessageRisorsa("");
 		setMessageActivity("");
-		setMessageSend("");
+		//setMessageSend("");
 		setMessageShareActivity("");
 	}
 
@@ -1451,13 +1452,13 @@ export default function Calendar(): React.JSX.Element {
 		setCreateActivity(!createActivity);
 		setNotificationRepeat(false);
 		setAddNotification(false);
-		setSendInviteActivity(false);
+		//setSendInviteActivity(false);
 		setShareActivity(false);
 		setUsers([]);
 		setAccessList([]);
 		setTitle("");
 		setDescription("");
-		setMessageSend("");
+		//setMessageSend("");
 		setMessageActivity("");
 		setMessageShareRisorsa("");
 		setMessageEvent("");
@@ -2158,227 +2159,230 @@ export default function Calendar(): React.JSX.Element {
 		e.preventDefault();
 		setUsers([username]);
 	}
-
-	async function handleSendInviteActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
-		if (!(users.length > 0)) {
-			setMessageSend("Nessun utente selezionato");
-			return;
-		}
-		console.log("ENTRO NELLA HANDLESENDINVITE");
-		console.log("ENTRO NELLA HANDLESENDINVITE");
-		console.log("Questo è il receiver:", users[0]);
-
-		//const currentUser = await getCurrentUser();
-
-		//const ownerr = currentUser.value.username;
-		const startTime = new Date(endTime);
-		startTime.setHours(endTime.getHours() - 1);
-		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
-
-		let newNotification;
-		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
-		const data = await res.json();
-		const receiver = data.id;
-
-		if (addNotification) {
-			var notificationDate = new Date(startTime);
-			notificationDate.setHours(notificationDate.getHours() + 1); // Aggiungi un'ora
-			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
-			console.log("Questa è la data di inizio evento:", startTime);
-			console.log("Questa è la data della notifica:", notificationDate);
-			var message = "";
-			if (notificationTime < 60) {
-				message = "Scadenza " + title + " tra " + notificationTime + " minuti!";
-			} else {
-				message = "Scadenza " + title + " tra " + notificationTime / 60 + " ore!";
+	/*
+		async function handleSendInviteActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+			e.preventDefault();
+			if (!(users.length > 0)) {
+				setMessageSend("Nessun utente selezionato");
+				return;
 			}
-
-			if (notificationTime == 0) {
-				message = "Scadenza " + title + " iniziata!";
+			console.log("ENTRO NELLA HANDLESENDINVITE");
+			console.log("ENTRO NELLA HANDLESENDINVITE");
+			console.log("Questo è il receiver:", users[0]);
+	
+			//const currentUser = await getCurrentUser();
+	
+			//const ownerr = currentUser.value.username;
+			const startTime = new Date(endTime);
+			startTime.setHours(endTime.getHours() - 1);
+			const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+	
+			let newNotification;
+			const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
+			const data = await res.json();
+			const receiver = data.id;
+	
+			if (addNotification) {
+				var notificationDate = new Date(startTime);
+				notificationDate.setHours(notificationDate.getHours() + 1); // Aggiungi un'ora
+				notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+				console.log("Questa è la data di inizio evento:", startTime);
+				console.log("Questa è la data della notifica:", notificationDate);
+				var message = "";
+				if (notificationTime < 60) {
+					message = "Scadenza " + title + " tra " + notificationTime + " minuti!";
+				} else {
+					message = "Scadenza " + title + " tra " + notificationTime / 60 + " ore!";
+				}
+	
+				if (notificationTime == 0) {
+					message = "Scadenza " + title + " iniziata!";
+				}
+	
+				var repeatTime = notificationRepeatTime;
+				var repeatedNotification = false;
+				if (repeatTime > 0) {
+					repeatedNotification = true;
+				}
+	
+				newNotification = {
+					message: message,
+					mode: "activity",
+					receiver: receiver,
+					type: "activity",
+					data: {
+						date: notificationDate, //data prima notifica
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+					},
+				};
 			}
-
-			var repeatTime = notificationRepeatTime;
-			var repeatedNotification = false;
-			if (repeatTime > 0) {
-				repeatedNotification = true;
-			}
-
-			newNotification = {
-				message: message,
-				mode: "activity",
-				receiver: receiver,
-				type: "activity",
-				data: {
-					date: notificationDate, //data prima notifica
-					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
-					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
-					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
-					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
-				},
+	
+			const newEvent = {
+				idEventoNotificaCondiviso,
+				owner: receiver,
+				title: "Scadenza " + title,
+				startTime: startTime.toISOString(),
+				endTime: endTime.toISOString(),
+				untilDate: null,
+				isInfinite: false,
+				frequency: "once",
+				location,
+				repetitions: 1,
 			};
-		}
-
-		const newEvent = {
-			idEventoNotificaCondiviso,
-			owner: receiver,
-			title: "Scadenza " + title,
-			startTime: startTime.toISOString(),
-			endTime: endTime.toISOString(),
-			untilDate: null,
-			isInfinite: false,
-			frequency: "once",
-			location,
-			repetitions: 1,
-		};
-
-		const newActivity = {
-			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
-			_id: "1",
-			title,
-			deadline: endTime,
-			description,
-			owner: receiver,
-			accessList: [receiver],
-			completed: false,
-		};
-
-		const res3 = await fetch(`${SERVER_API}/notifications`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				message: "Hai ricevuto un invito per un'attività",
-				mode: "acitvity",
-				receiver: receiver,
-				type: "message",
-				data: {
-					date: currentDate, //data prima notifica
-					activity: newActivity,
-					event: newEvent,
-					notification: newNotification,
-				},
-			}),
-		});
-		console.log("Notifica creata:", res3);
-
-		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
-
-		if (resBody.status === ResponseStatus.GOOD) {
-			//alert("Invito inviato correttamente");
-			setUsers([]);
-		} else {
-			alert(resBody.message);
-		}
-
-		toggleCreateActivity();
-		setSendInviteActivity(false);
-	}
-
-	async function handleSendInviteEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
-		e.preventDefault();
-		if (!(users.length > 0)) {
-			setMessageSend("Nessun utente selezionato");
-			return;
-		}
-		console.log("ENTRO NELLA HANDLESENDINVITE");
-		console.log("ENTRO NELLA HANDLESENDINVITE");
-		console.log("Questo è il receiver:", users[0]);
-
-		//const currentUser = await getCurrentUser();
-
-		//const ownerr = currentUser.value.username;
-
-		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
-
-		let newNotification;
-		const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
-		const data = await res.json();
-		const receiver = data.id;
-
-		if (addNotification) {
-			const notificationDate = new Date(startTime);
-			notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
-			console.log("Questa è la data di inizio evento:", startTime);
-			console.log("Questa è la data della notifica:", notificationDate);
-			var message = "";
-			if (notificationTime < 60) {
-				message = "Inizio evento " + title + " tra " + notificationTime + " minuti!";
-			} else {
-				message = "Inizio evento " + title + " tra " + notificationTime / 60 + " ore!";
-			}
-
-			if (notificationTime == 0) {
-				message = "Evento " + title + " iniziato!";
-			}
-
-			var repeatTime = notificationRepeatTime;
-			var repeatedNotification = false;
-			if (repeatTime > 0) {
-				repeatedNotification = true;
-			}
-
-			newNotification = {
-				message: message,
-				mode: "event",
-				receiver: receiver,
-				type: "event",
-				data: {
-					date: notificationDate, //data prima notifica
-					idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
-					repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
-					repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
-					firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
-					frequencyEvent: frequency,
-					isInfiniteEvent: isInfinite,
-					repetitionsEvent: repetitions,
-					untilDateEvent: untilDate,
-				},
+	
+			const newActivity = {
+				idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+				_id: "1",
+				title,
+				deadline: endTime,
+				description,
+				owner: receiver,
+				accessList: [receiver],
+				completed: false,
 			};
+	
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message: "Hai ricevuto un invito per un'attività",
+					mode: "acitvity",
+					receiver: receiver,
+					type: "message",
+					data: {
+						date: currentDate, //data prima notifica
+						activity: newActivity,
+						event: newEvent,
+						notification: newNotification,
+					},
+				}),
+			});
+			console.log("Notifica creata:", res3);
+	
+			const resBody: ResponseBody = (await res3.json()) as ResponseBody;
+	
+			if (resBody.status === ResponseStatus.GOOD) {
+				//alert("Invito inviato correttamente");
+				setUsers([]);
+			} else {
+				alert(resBody.message);
+			}
+	
+			toggleCreateActivity();
+			setSendInviteActivity(false);
 		}
-
-		const newEvent = {
-			idEventoNotificaCondiviso,
-			owner: receiver,
-			title,
-			startTime: startTime.toISOString(),
-			endTime: endTime.toISOString(),
-			untilDate: untilDate,
-			isInfinite,
-			frequency: frequency,
-			location,
-			repetitions,
-		};
-
-		const res3 = await fetch(`${SERVER_API}/notifications`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				message: "Hai ricevuto un invito per un evento",
-				mode: "event",
-				receiver: receiver,
-				type: "message",
-				data: {
-					date: currentDate, //data prima notifica
-					event: newEvent,
-					notification: newNotification,
-				},
-			}),
-		});
-		console.log("Notifica creata:", res3);
-
-		const resBody: ResponseBody = (await res3.json()) as ResponseBody;
-
-		if (resBody.status === ResponseStatus.GOOD) {
-			//alert("Invito inviato correttamente");
-			setUsers([]);
-		} else {
-			alert(resBody.message);
+			*/
+	/*
+		async function handleSendInviteEvent(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+			e.preventDefault();
+			if (!(users.length > 0)) {
+				setMessageSend("Nessun utente selezionato");
+				return;
+			}
+			console.log("ENTRO NELLA HANDLESENDINVITE");
+			console.log("ENTRO NELLA HANDLESENDINVITE");
+			console.log("Questo è il receiver:", users[0]);
+	
+			//const currentUser = await getCurrentUser();
+	
+			//const ownerr = currentUser.value.username;
+	
+			const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+	
+			let newNotification;
+			const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${users[0]}`);
+			const data = await res.json();
+			const receiver = data.id;
+	
+			if (addNotification) {
+				const notificationDate = new Date(startTime);
+				notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+				console.log("Questa è la data di inizio evento:", startTime);
+				console.log("Questa è la data della notifica:", notificationDate);
+				var message = "";
+				if (notificationTime < 60) {
+					message = "Inizio evento " + title + " tra " + notificationTime + " minuti!";
+				} else {
+					message = "Inizio evento " + title + " tra " + notificationTime / 60 + " ore!";
+				}
+	
+				if (notificationTime == 0) {
+					message = "Evento " + title + " iniziato!";
+				}
+	
+				var repeatTime = notificationRepeatTime;
+				var repeatedNotification = false;
+				if (repeatTime > 0) {
+					repeatedNotification = true;
+				}
+	
+				newNotification = {
+					message: message,
+					mode: "event",
+					receiver: receiver,
+					type: "event",
+					data: {
+						date: notificationDate, //data prima notifica
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso, //id condiviso con l'evento, per delete di entrambi
+						repeatedNotification: repeatedNotification, //se è true, la notifica si ripete
+						repeatTime: repeatTime, //ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+						firstNotificationTime: notificationTime, //quanto tempo prima della data di inizio evento si invia la prima notifica
+						frequencyEvent: frequency,
+						isInfiniteEvent: isInfinite,
+						repetitionsEvent: repetitions,
+						untilDateEvent: untilDate,
+					},
+				};
+			}
+	
+			const newEvent = {
+				idEventoNotificaCondiviso,
+				owner: receiver,
+				title,
+				startTime: startTime.toISOString(),
+				endTime: endTime.toISOString(),
+				untilDate: untilDate,
+				isInfinite,
+				frequency: frequency,
+				location,
+				repetitions,
+			};
+	
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message: "Hai ricevuto un invito per un evento",
+					mode: "event",
+					receiver: receiver,
+					type: "message",
+					data: {
+						date: currentDate, //data prima notifica
+						event: newEvent,
+						notification: newNotification,
+					},
+				}),
+			});
+			console.log("Notifica creata:", res3);
+	
+			const resBody: ResponseBody = (await res3.json()) as ResponseBody;
+	
+			if (resBody.status === ResponseStatus.GOOD) {
+				//alert("Invito inviato correttamente");
+				setUsers([]);
+			} else {
+				alert(resBody.message);
+			}
+	
+			toggleCreateEvent();
+			setSendInviteEvent(false);
+			//
+			// setMessageSend("");
 		}
-
-		toggleCreateEvent();
-		setSendInviteEvent(false);
-		setMessageSend("");
-	}
+			*/
 
 	async function handleAddUserActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
@@ -2433,16 +2437,18 @@ export default function Calendar(): React.JSX.Element {
 		setShareEvent(!shareEvent);
 		setMessageShareRisorsa("");
 	}
-
-	function toggleSendInviteActivity(): void {
-		setSendInviteActivity(!sendInviteActivity);
-		setMessageSend("");
-	}
-
-	function toggleSendInviteEvent(): void {
-		setSendInviteEvent(!sendInviteEvent);
-		setMessageSend("");
-	}
+	/*
+		function toggleSendInviteActivity(): void {
+			setSendInviteActivity(!sendInviteActivity);
+			setMessageSend("");
+		}
+			*/
+	/*
+		function toggleSendInviteEvent(): void {
+			setSendInviteEvent(!sendInviteEvent);
+			setMessageSend("");
+		}
+			*/
 
 	async function handleDeleteEvent(id: string, groupId: string): Promise<void> {
 		//console.log("day:", day);
@@ -3108,7 +3114,7 @@ export default function Calendar(): React.JSX.Element {
 		const startT = new Date(year, meseCorrente, day, now.getHours(), now.getMinutes());
 		const endT = new Date(startTime.getTime() + 30 * 60 * 1000); // 30 minuti dopo
 		setStartTime(startT);
-		setMessageSend("");
+		//setMessageSend("");
 		setEndTime(endT);
 		setRepeatEvent(false);
 		setFrequency(Frequency.ONCE);
@@ -3429,14 +3435,14 @@ export default function Calendar(): React.JSX.Element {
 		setNotificationTime(0);
 		setNotificationRepeatTime(0);
 		setMessageShareActivity("");
-		setSendInviteActivity(false);
+		//setSendInviteActivity(false);
 		setShareActivity(false);
 		setAccessList([]);
 		setUsers([]);
 		setAccessList([]);
 		setTitle("");
 		setDescription("");
-		setMessageSend("");
+		//setMessageSend("");
 
 		console.log("Questa è la lista delle attività:", activityList);
 	}
@@ -4507,7 +4513,7 @@ export default function Calendar(): React.JSX.Element {
 													</select>
 												</label>
 											)}
-
+											{/* AL MOMENTO COMMENTATO L'INVIO EVENTO AD UTENTE!
 											<label htmlFor="sendInviteEvent"
 												style={{
 													cursor: 'pointer',
@@ -4562,6 +4568,7 @@ export default function Calendar(): React.JSX.Element {
 													</button>
 												</div>
 											)}
+												*/}
 
 											<label htmlFor="shareEvent"
 												style={{
@@ -4819,6 +4826,7 @@ export default function Calendar(): React.JSX.Element {
 												</label>
 											)}
 
+											{/*
 											<label htmlFor="sendInviteActivity"
 												style={{
 													cursor: 'pointer',
@@ -4841,7 +4849,9 @@ export default function Calendar(): React.JSX.Element {
 												/>
 												Invia attività ad utente
 											</label>
+											*/}
 
+											{/*
 											{sendInviteActivity && (
 												<div
 													id="send-invite"
@@ -4874,6 +4884,7 @@ export default function Calendar(): React.JSX.Element {
 													</button>
 												</div>
 											)}
+											*/}
 
 											<label htmlFor="shareActivity"
 												style={{
@@ -5527,12 +5538,14 @@ export default function Calendar(): React.JSX.Element {
 															(activity, index) => (
 																<div
 																	key={index}
+																	onClick={(): void => nav(`/activities/${(activity as any)._id}`)}
 																	style={{
 																		margin: "5px",
 																		padding: "10px",
 																		border: "1px solid #ccc",
 																		borderRadius: "10px",
 																		width: "100%",
+																		cursor: "pointer",
 																	}}>
 																	<h4 className="overflow-adhoc">
 																		{activity.title}
@@ -5731,12 +5744,14 @@ export default function Calendar(): React.JSX.Element {
 														activityList.map((activity, index) => (
 															<div
 																key={index}
+																onClick={(): void => nav(`/activities/${(activity as any)._id}`)}
 																style={{
 																	margin: "5px",
 																	padding: "10px",
 																	border: "1px solid #ccc",
 																	borderRadius: "10px",
 																	width: "100%",
+																	cursor: "pointer",
 																}}>
 																<h4 className="overflow-adhoc">
 																	{activity.title}

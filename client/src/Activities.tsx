@@ -5,7 +5,7 @@ import type { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import type Activity from "./types/Activity";
 import type User from "./types/User";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const PREVIEW_CHARS = 100;
 const MAX_TITLE_CHARS = 17;
@@ -205,32 +205,32 @@ export default function Activities(): React.JSX.Element {
 
 	async function handleDelete(id: string): Promise<void> {
 		if (!id) {
-		  alert("Errore nel cancellamento dell'attività: ID non trovato.");
-		  return;
+			alert("Errore nel cancellamento dell'attività: ID non trovato.");
+			return;
 		}
-	  
+
 		try {
-		  const res = await fetch(`${SERVER_API}/activities/${id}`, {
-			method: "DELETE",
-		  });
-	  
-		  const resBody = (await res.json()) as ResponseBody;
-	  
-		  if (res.status === 200) {
-			console.log("Attività eliminata correttamente!");
-			setActivities((prev) => prev.filter((activity) => (activity as any)._id !== id)); // Aggiorna lo stato rimuovendo l'attività eliminata
-			setConfirmDelete(false); // Chiudi il popup
-			setActivityToDelete(null); // Resetta l'attività selezionata
-		  } else {
-			alert(resBody.message || "Errore nel cancellamento dell'attività.");
-		  }
+			const res = await fetch(`${SERVER_API}/activities/${id}`, {
+				method: "DELETE",
+			});
+
+			const resBody = (await res.json()) as ResponseBody;
+
+			if (res.status === 200) {
+				console.log("Attività eliminata correttamente!");
+				setActivities((prev) => prev.filter((activity) => (activity as any)._id !== id)); // Aggiorna lo stato rimuovendo l'attività eliminata
+				setConfirmDelete(false); // Chiudi il popup
+				setActivityToDelete(null); // Resetta l'attività selezionata
+			} else {
+				alert(resBody.message || "Errore nel cancellamento dell'attività.");
+			}
 		} catch (e) {
-		  console.log("Impossibile raggiungere il server.");
+			console.log("Impossibile raggiungere il server.");
 		}
 	}
 
-	  
-	
+
+
 
 	return (
 		<>
@@ -346,7 +346,7 @@ export default function Activities(): React.JSX.Element {
 							}
 						})
 						.map((activity) => (
-							<div className="card-activity" key={activity.id}>
+							<Link to={`/activities/${(activity as any)._id}`} style={{ textDecoration: "none" }}>								<div className="card-activity" key={activity.id} style={{ cursor: "pointer" }}>
 								<div className="card-activity-title">
 									<h3>
 										{activity.title.length > MAX_TITLE_CHARS
@@ -363,13 +363,15 @@ export default function Activities(): React.JSX.Element {
 									</p>
 								</div>
 								<div className="card-activity-buttons">
-									<button
-										onClick={(): void =>
-											window.location.assign(`/activities/${(activity as any)._id}`)
-										}
-									>
-										Visualizza
-									</button>
+									{/*
+										<button
+											onClick={(): void =>
+												window.location.assign(`/activities/${(activity as any)._id}`)
+											}
+										>
+											Visualizza
+										</button>
+*/}
 									{activity.owner === userId && (
 										<button
 											style={{ backgroundColor: "#ff6b6b" }}
@@ -377,7 +379,7 @@ export default function Activities(): React.JSX.Element {
 												e.preventDefault(); // Previene comportamenti indesiderati
 												setConfirmDelete(true); // Mostra il popup di conferma
 												setActivityToDelete((activity as any)._id); // Imposta l'attività selezionata per l'eliminazione
-											  }}
+											}}
 										>
 											Cancella
 										</button>
@@ -397,7 +399,7 @@ export default function Activities(): React.JSX.Element {
 													e.preventDefault();
 													setConfirmDelete(false); // Chiudi il popup
 													setActivityToDelete(null); // Resetta l'attività selezionata
-												  }}
+												}}
 											>
 												Annulla
 											</button>
@@ -417,8 +419,9 @@ export default function Activities(): React.JSX.Element {
 									</div>
 								</div>
 							</div>
+							</Link>
 						))
-						
+
 						/*.map((activity) => (
 							<div className="card-activity" key={activity.id}>
 								<div className="card-activity-title">
@@ -461,19 +464,19 @@ export default function Activities(): React.JSX.Element {
 								</div>
 							</div>
 						))*/
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						}
+
+
+
+
+
+
+
+
+
+
+
+
+					}
 				</div>
 			</div>
 		</>

@@ -478,82 +478,83 @@ export default function CreateActivityForm(): React.JSX.Element {
 					</div>
 				</label>
 
-				{/* render notification */}
-				{/* <label htmlFor="allDayEvent">
-                    <input
-                        type="checkbox"
-                        onClick={(): void =>
-                            setAddNotification(!addNotification)
-                        }
-                        style={{
-                            marginLeft: "5px",
-                            marginRight: "3px",
-                            marginTop: "3px",
-                        }}
-                    />
-                    Aggiungi notifica
-                </label>
 
-                {addNotification && (
-                    <label htmlFor="notificationTime">
-                        Quanto tempo prima mandare la notifica
-                        <select
-                            id="notificationTimeSelect"
-                            className="btn border"
-                            onChange={(
-                                e: React.ChangeEvent<HTMLSelectElement>
-                            ): void => {
-                                setNotificationTime(Number(e.target.value));
-                                if (Number(e.target.value) > 0) {
-                                    setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-                                } else if (Number(e.target.value) == 0) {
-                                    setNotificationRepeat(false);
-                                }
-                            }}
-                            style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
-                        >
-                            <option value="0">All'ora d'inizio</option>
-                            <option value="5">5 minuti prima</option>
-                            <option value="10">10 minuti prima</option>
-                            <option value="15">15 minuti prima</option>
-                            <option value="30">30 minuti prima</option>
-                            <option value="60">1 ora prima</option>
-                            <option value="120">2 ore prima</option>
-                            <option value="1440">Un giorno prima</option>
-                            <option value="2880">2 giorni prima</option>
-                        </select>
-                    </label>
-                )}
+				{/* 
+				<label htmlFor="allDayEvent">
+					<input
+						type="checkbox"
+						onClick={(): void =>
+							setAddNotification(!addNotification)
+						}
+						style={{
+							marginLeft: "5px",
+							marginRight: "3px",
+							marginTop: "3px",
+						}}
+					/>
+					Aggiungi notifica
+				</label>
 
-                {notificationRepeat && (
-                    <label htmlFor="notificationRepeatTime">
-                        Quanto tempo ripetere la notifica
-                        <select
-                            className="btn border"
-                            name="notificationRepeatTime"
-                            onChange={(
-                                e: React.ChangeEvent<HTMLSelectElement>
-                            ): void => {
-                                setNotificationRepeatTime(
-                                    Number(e.target.value)
-                                );
-                            }}
-                        >
-                            {getValidRepeatOptions(notificationTime).map(
-                                (option) => (
-                                    <option key={option} value={option}>
-                                        {option === 0
-                                            ? "Mai"
-                                            : option >= 60
-                                            ? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-                                            : `Ogni ${option} minuti`}
-                                    </option>
-                                )
-                            )}
-                        </select>
-                    </label>
-                )}*/}
+				{false && (
+					<label htmlFor="notificationTime">
+						Quanto tempo prima mandare la notifica
+						<select
+							id="notificationTimeSelect"
+							className="btn border"
+							onChange={(
+								e: React.ChangeEvent<HTMLSelectElement>
+							): void => {
+								setNotificationTime(Number(e.target.value));
+								if (Number(e.target.value) > 0) {
+									setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+								} else if (Number(e.target.value) == 0) {
+									setNotificationRepeat(false);
+								}
+							}}
+							style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+						>
+							<option value="0">All'ora d'inizio</option>
+							<option value="5">5 minuti prima</option>
+							<option value="10">10 minuti prima</option>
+							<option value="15">15 minuti prima</option>
+							<option value="30">30 minuti prima</option>
+							<option value="60">1 ora prima</option>
+							<option value="120">2 ore prima</option>
+							<option value="1440">Un giorno prima</option>
+							<option value="2880">2 giorni prima</option>
+						</select>
+					</label>
+				)}
 
+				{notificationRepeat && (
+					<label htmlFor="notificationRepeatTime">
+						Quanto tempo ripetere la notifica
+						<select
+							className="btn border"
+							name="notificationRepeatTime"
+							onChange={(
+								e: React.ChangeEvent<HTMLSelectElement>
+							): void => {
+								setNotificationRepeatTime(
+									Number(e.target.value)
+								);
+							}}
+						>
+							{getValidRepeatOptions(notificationTime).map(
+								(option) => (
+									<option key={option} value={option}>
+										{option === 0
+											? "Mai"
+											: option >= 60
+												? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+												: `Ogni ${option} minuti`}
+									</option>
+								)
+							)}
+						</select>
+					</label>
+				)}
+*/}
 				{/* render access list */}
 				<div className="activity-participants">
 					<label>
