@@ -278,6 +278,19 @@ export default function NotePage(): React.JSX.Element {
 			),
 		});
 	}
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/notes';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
 
 	function handleRemoveDateItem(e: React.MouseEvent<HTMLButtonElement>, item: ListItem): void {
 		e.preventDefault();
@@ -583,6 +596,7 @@ export default function NotePage(): React.JSX.Element {
 									<input
 										name="tag"
 										value={tag}
+										placeholder="Nuovo tag.."
 										onChange={(
 											e: React.ChangeEvent<HTMLInputElement>
 										): void => {

@@ -1005,6 +1005,7 @@ export default function Pomodoros(): React.JSX.Element {
 										type="text"
 										name="location"
 										value={pomEvent.location}
+										placeholder="Luogo svolgimento pomodoro.."
 										onChange={(e: ChangeEvent<HTMLInputElement>): void =>
 											setPomEvent({
 												...pomEvent,
@@ -1120,7 +1121,7 @@ export default function Pomodoros(): React.JSX.Element {
 								>
 									<select
 										value={playerType}
-										style={{width: "70%"}}
+										style={{ width: "70%" }}
 										onChange={(e): void =>
 											setPlayerType(e.target.value as PLAYER_TYPE)
 										}

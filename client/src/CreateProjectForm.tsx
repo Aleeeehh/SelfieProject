@@ -145,6 +145,19 @@ export default function CreateProjectForm(): React.JSX.Element {
 			};
 		});
 	}
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/projects';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
 
 	return (
 		<>
@@ -160,7 +173,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 					{/* render title */}
 					<label htmlFor="title">
 						Titolo
-						<input name="title" value={project.title} onChange={handleChange} />
+						<input name="title" value={project.title} onChange={handleChange} placeholder="Titolo progetto.." />
 					</label>
 
 					{/* render description */}
@@ -171,6 +184,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 							value={project.description}
 							onChange={handleChange}
 							maxLength={1500}
+							placeholder="Descrizione progetto.."
 						/>
 					</label>
 
@@ -205,7 +219,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 						</div>
 					</label>
 					{message && <div className="error-message">{message}</div>}
-					<button onClick={handleCreateProject}>Crea nuovo progetto</button>
+					<button style={{ backgroundColor: "#b6b6e3", color: "white" }} onClick={handleCreateProject}>Crea nuovo progetto</button>
 				</div>
 			</div>
 

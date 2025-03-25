@@ -1126,7 +1126,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 	const idEventoNotificaCondiviso = req.params.id as string;
 	const idEvento = req.body._id as string;
 	const inputAccessListAcceptedUser = req.body.accessListAcceptedUser as string[] | undefined; // username list
-	const inputEndTime = req.body.endTime as Date | undefined;
+	//const inputEndTime = req.body.endTime as Date | undefined;
 	try {
 		//console.log("ENTRO NELLA PUT CON inputEndTime:", inputEndTime);
 		console.log("idEvento:", idEvento);

@@ -225,6 +225,46 @@ export default function Calendar(): React.JSX.Element {
 	}, []);
 	*/
 
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape' && editEvent) {
+				setEditEvent(false);
+			}
+
+			if (event.key === 'Enter' && editEvent) {
+				const buttonEvent = event as unknown as React.MouseEvent<HTMLButtonElement>;
+				handleUpdateEvent(buttonEvent);
+			}
+			if (event.key === 'Escape' && createEvent) {
+				setCreateEvent(false);
+				console.log("Escape premuto, createEvent impostato a false");
+			}
+
+			if (event.key === 'Escape' && createActivity) {
+				setCreateActivity(false);
+			}
+
+			if (event.key === 'Escape' && createNonDisturbare) {
+				setCreateNonDisturbare(false);
+			}
+
+			if (event.key === 'Escape' && createRisorsa) {
+				setCreateRisorsa(false);
+			}
+
+
+		};
+
+		// Aggiungi l'event listener quando il componente viene montato
+		window.addEventListener('keydown', handleEscKey);
+
+		// Rimuovi l'event listener quando il componente viene smontato
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, [editEvent, createEvent, createActivity, createNonDisturbare, createRisorsa]);
+
+
 	const fetchCurrentDate = async (): Promise<void> => {
 		try {
 			const response = await fetch(`${SERVER_API}/currentDate`);
@@ -3619,6 +3659,7 @@ export default function Calendar(): React.JSX.Element {
 										className="btn border"
 										type="text"
 										name="title"
+										placeholder="Titolo evento.."
 										value={selectedEvent?.title}
 										onChange={(
 											e: React.ChangeEvent<HTMLInputElement>
@@ -4202,6 +4243,7 @@ export default function Calendar(): React.JSX.Element {
 														className="btn border"
 														type="text"
 														name="title"
+														placeholder="Titolo evento.."
 														value={title}
 														onChange={(
 															e: React.ChangeEvent<HTMLInputElement>
@@ -4355,6 +4397,7 @@ export default function Calendar(): React.JSX.Element {
 														className="btn border"
 														type="text"
 														name="location"
+														placeholder="Luogo evento.."
 														value={location}
 														onChange={(
 															e: React.ChangeEvent<HTMLInputElement>
@@ -4612,11 +4655,12 @@ export default function Calendar(): React.JSX.Element {
 										<form>
 											{addTitle && (
 												<label htmlFor="title">
-													Title
+													Titolo
 													<input
 														className="btn border"
 														type="text"
 														name="title"
+														placeholder="Titolo attività.."
 														value={title}
 														onChange={(
 															e: React.ChangeEvent<HTMLInputElement>
@@ -4630,6 +4674,7 @@ export default function Calendar(): React.JSX.Element {
 													className="btn border"
 													type="text"
 													name="title"
+													placeholder="Descrizione attività.."
 													value={description}
 													onChange={(
 														e: React.ChangeEvent<HTMLInputElement>
@@ -5282,6 +5327,7 @@ export default function Calendar(): React.JSX.Element {
 													className="btn border"
 													type="text"
 													name="title"
+													placeholder="Nome risorsa.."
 													value={title}
 													onChange={(
 														e: React.ChangeEvent<HTMLInputElement>
@@ -5294,6 +5340,7 @@ export default function Calendar(): React.JSX.Element {
 													className="btn border"
 													type="text"
 													name="description"
+													placeholder="Descrizione risorsa.."
 													value={description}
 													onChange={(
 														e: React.ChangeEvent<HTMLInputElement>

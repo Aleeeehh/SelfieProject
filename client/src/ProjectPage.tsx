@@ -178,6 +178,20 @@ export default function ProjectPage(): React.JSX.Element {
 			});
 	}
 
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/projects';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
+
 	return (
 		<>
 			<div className="project-background">
@@ -317,7 +331,7 @@ export default function ProjectPage(): React.JSX.Element {
 											onClick={(): void => setConfirmDelete(false)}>
 											Annulla
 										</button>
-										<button onClick={handleDeleteProject}>Continua</button>
+										<button style={{ backgroundColor: "#4a90e2" }} onClick={handleDeleteProject}>Continua</button>
 									</div>
 								</div>
 							</div>

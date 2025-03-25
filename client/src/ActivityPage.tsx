@@ -320,6 +320,20 @@ export default function ActivityPage(): React.JSX.Element {
 		return undefined;
 	}
 
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/activities';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
+
 	return (
 		<>
 			<div className="activity-background">

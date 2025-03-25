@@ -1,4 +1,4 @@
-import React from "react";
+//import React, { useEffect } from "react";
 import { SERVER_API } from "./lib/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -7,7 +7,7 @@ import { AdvancementType } from "./types/Activity";
 import type Project from "./types/Project";
 import SearchForm from "./SearchForm";
 import type User from "./types/User";
-
+import React from "react";
 // const baseActivity: Activity = {
 // 	id: "",
 // 	title: "",
@@ -138,6 +138,19 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+
+		if (activity.title === "") {
+			setMessage("Inserisci un titolo valido");
+			return;
+		}
+		if (activity.description === "") {
+			setMessage("Inserisci una descrizione valida");
+			return;
+		}
+		if (!activity.deadline || isNaN(activity.deadline.getTime())) {
+			setMessage("Inserisci una scadenza valida");
+			return;
+		}
 
 		console.log("Creating activity: ", JSON.stringify(activity));
 
@@ -328,6 +341,20 @@ export default function CreateActivityForm(): React.JSX.Element {
 		}
 	}, [activity.projectId]);
 
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/activities';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
+
 	// const getValidRepeatOptions = (time: number): number[] => {
 	//     const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
 	//     return options.filter(
@@ -355,6 +382,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 					<input
 						type="text"
 						name="title"
+						placeholder="Titolo attività.."
 						value={activity.title}
 						onChange={handleTextChange}
 					/>
@@ -366,6 +394,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 					<input
 						type="textarea"
 						name="description"
+						placeholder="Descrizione attività.."
 						value={activity.description}
 						onChange={handleTextChange}
 					/>
@@ -661,6 +690,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 				)}
 				{message && <div className="error-message">{message}</div>}
 				<button
+					style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}
 					onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 						e.preventDefault();
 						handleCreateActivity(e);

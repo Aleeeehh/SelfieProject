@@ -881,6 +881,7 @@ export default function Header(): React.JSX.Element {
 								<label htmlFor="dateInput">
 									Cambia la data odierna:
 									<input
+										className="btn border"
 										type="date"
 										id="dateInput"
 										value={
@@ -907,31 +908,27 @@ export default function Header(): React.JSX.Element {
 								<label htmlFor="timeInput">
 									Cambia l'orario:
 									<input
-										className="btn secondary"
+										className="btn border"
 										type="time"
 										id="timeInput"
 										value={
 											currentDate
-												? currentDate
-													.toTimeString()
-													.split(" ")[0]
-													.slice(0, 5)
+												? `${currentDate.getHours().toString().padStart(2, "0")}:${currentDate
+													.getMinutes()
+													.toString()
+													.padStart(2, "0")}`
 												: ""
 										}
-										onChange={async (event): Promise<void> => {
-											const timeValue = event.target.value;
-
-											if (timeValue) {
-												const timeParts = timeValue.split(":");
-												const newDate = new Date(currentDate);
-												newDate.setHours(
-													Number(timeParts[0]),
-													Number(timeParts[1])
-												);
-												await postCurrentDate(newDate);
-												triggerAction();
-											} else {
-												console.warn("Orario non valido");
+										onChange={async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+											const [hours, minutes] = e.target.value.split(":");
+											const newDate = new Date(currentDate);
+											newDate.setHours(Number(hours), Number(minutes));
+											await postCurrentDate(newDate);
+											triggerAction();
+										}}
+										onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+											if (e.key === "Backspace") {
+												e.preventDefault();
 											}
 										}}
 										style={{ marginLeft: "10px" }}

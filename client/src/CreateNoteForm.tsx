@@ -152,7 +152,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 		if (!note.tags.includes(tag)) {
 			setNote({ ...note, tags: [...note.tags, tag] });
 			setTag("");
-		}		
+		}
 	}
 
 	function deleteTag(e: React.MouseEvent<HTMLElement>, tag: string): void {
@@ -239,6 +239,20 @@ export default function CreateNoteForm(): React.JSX.Element {
 		});
 	}
 
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/notes';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
+
 	return (
 		<>
 			<div className="note-background">
@@ -267,9 +281,9 @@ export default function CreateNoteForm(): React.JSX.Element {
 					{/* render title and text */}
 					<label htmlFor="title">
 						Titolo
-						<input name="title" value={note.title} onChange={handleTextChange} />
+						<input name="title" value={note.title} onChange={handleTextChange} placeholder="Titolo nota.." />
 					</label>
-					<button onClick={togglePreview}>{isPreview ? "Modifica" : "Anteprima"}</button>
+					<button style={{ backgroundColor: "bisque", color: "black" }} onClick={togglePreview}>{isPreview ? "Modifica" : "Anteprima"}</button>
 					{isPreview ? (
 						<div
 							className="markdown-preview"
@@ -280,7 +294,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 					) : (
 						<label htmlFor="text">
 							Testo della nota
-							<textarea name="text" value={note.text} onChange={handleTextChange} />
+							<textarea name="text" value={note.text} onChange={handleTextChange} placeholder="Testo nota.." />
 						</label>
 					)}
 
@@ -327,6 +341,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 														/>
 													</label>
 													<button
+														style={{ backgroundColor: "bisque", color: "black" }}
 														onClick={(
 															e: React.MouseEvent<HTMLButtonElement>
 														): void =>
@@ -338,6 +353,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 												</>
 											) : (
 												<button
+													style={{ backgroundColor: "bisque", color: "black" }}
 													onClick={(
 														e: React.MouseEvent<HTMLButtonElement>
 													): void => handleAddDateItem(e, l)}
@@ -358,7 +374,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 								</div>
 							))}
 					</label>
-					<button onClick={handleAddItem}>Aggiungi Item</button>
+					<button style={{ backgroundColor: "bisque", color: "black" }} onClick={handleAddItem}>Aggiungi Item</button>
 
 					{/* render tags */}
 					<label>
@@ -368,12 +384,13 @@ export default function CreateNoteForm(): React.JSX.Element {
 								<input
 									name="tag"
 									value={tag}
+									placeholder="Nuovo tag.."
 									onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
 										setTag(e.target.value);
 									}}
 								/>
 							</label>
-							<button style={{ margin: "0 0.5em" }} onClick={addTag}>
+							<button style={{ margin: "0 0.5em", backgroundColor: "bisque", color: "black" }} onClick={addTag}>
 								+
 							</button>
 						</div>
@@ -417,19 +434,19 @@ export default function CreateNoteForm(): React.JSX.Element {
 										<>
 											<div className="project-user-box">
 												{user}
-													<button
-														style={{
-															marginLeft: "0.5em",
-															padding: "0",
-															backgroundColor: "#d64545",
-														}}
-														className="project-user-delete"
-														onClick={(
-															e: React.MouseEvent<HTMLButtonElement>
-														): void => RemoveUser(e, user)}
-													>
-														X
-													</button>
+												<button
+													style={{
+														marginLeft: "0.5em",
+														padding: "0",
+														backgroundColor: "#d64545",
+													}}
+													className="project-user-delete"
+													onClick={(
+														e: React.MouseEvent<HTMLButtonElement>
+													): void => RemoveUser(e, user)}
+												>
+													X
+												</button>
 											</div>
 										</>
 									))}
@@ -439,7 +456,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 					</label>
 					{message && <div className="error-message">{message}</div>}
 
-					<button onClick={handleCreateNote}>
+					<button style={{ backgroundColor: "bisque", color: "black" }} onClick={handleCreateNote}>
 						Crea Nota
 					</button>
 				</div>
