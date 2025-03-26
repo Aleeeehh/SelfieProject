@@ -1045,7 +1045,7 @@ export default function Header(): React.JSX.Element {
 								)}
 								{notifications && notifications.length > 0 ? (
 									notifications.map((notification, index) => {
-										console.log("NOTIFICHE ATTUALI:", notifications);
+										//console.log("NOTIFICHE ATTUALI:", notifications);
 										// TODO: Differentiate by type
 										if (notification.type === "pomodoro") {
 											const nCycles = notification.data.cycles || 5;

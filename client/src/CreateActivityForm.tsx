@@ -296,8 +296,13 @@ export default function CreateActivityForm(): React.JSX.Element {
 				setMessage("Impossibile raggiungere il server");
 			});
 
-		var notificationDate = new Date(activity.deadline);
-		notificationDate.setHours(notificationDate.getHours() + 1); // Aggiungi un'ora
+		var notificationDate = new Date(newEvent.startTime);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		notificationDate.setHours(notificationDate.getHours() + 1); // 
 		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
 		console.log("Questa è la data di inizio evento:", activity.deadline);
 		console.log("Questa è la data della notifica:", notificationDate);
@@ -326,6 +331,10 @@ export default function CreateActivityForm(): React.JSX.Element {
 				" minuti prima per l'attività ",
 				activity.title
 			);
+			console.log("creo notifia con data: ", activity.deadline.toISOString());
+			console.log("creo notifia con repeat: ", repeatedNotification);
+			console.log("creo notifia con repeatTime: ", repeatTime);
+			console.log("creo notifia con notificationTime: ", notificationTime);
 			const res3 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -335,7 +344,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 					receiver: owner, // Cambia il receiver per ogni membro della accessList
 					type: "activity",
 					data: {
-						date: activity.deadline.toISOString(), // data prima notifica
+						date: notificationDate, // data prima notifica
 						idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
 						repeatedNotification: repeatedNotification, // se è true, la notifica si ripete
 						repeatTime: repeatTime, // ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
@@ -344,6 +353,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 				}),
 			});
 			console.log("Notifica creata per: " + owner, "Risposta:", res3);
+			console.log("")
 		}
 
 		//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)

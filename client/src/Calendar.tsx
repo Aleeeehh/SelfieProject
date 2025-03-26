@@ -2771,7 +2771,7 @@ export default function Calendar(): React.JSX.Element {
 		console.log("Attività completataAAAA:", attivitaCompletata);
 		const idEventoNotificaCondiviso = attivitaCompletata.idEventoNotificaCondiviso;
 		console.log("ID CONDIVISO ATTIVITA COMPLETATA:", idEventoNotificaCondiviso);
-		console.log("NOTIFICHE ATTUALIIII:", notifications);
+		//console.log("NOTIFICHE ATTUALIIII:", notifications);
 
 		for (const notification of notifications) {
 			const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
@@ -3330,6 +3330,11 @@ export default function Calendar(): React.JSX.Element {
 		await loadActivities();
 
 		var notificationDate = new Date(startTime);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
 		notificationDate.setHours(notificationDate.getHours() + 1); // Aggiungi un'ora
 		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
 		console.log("Questa è la data di inizio evento:", startTime);
@@ -3359,6 +3364,10 @@ export default function Calendar(): React.JSX.Element {
 				" minuti prima per l'attività ",
 				title
 			);
+			console.log("creo notifia con data: ", notificationDate);
+			console.log("creo notifia con repeat: ", repeatedNotification);
+			console.log("creo notifia con repeatTime: ", repeatTime);
+			console.log("creo notifia con notificationTime: ", notificationTime);
 			const res3 = await fetch(`${SERVER_API}/notifications`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
