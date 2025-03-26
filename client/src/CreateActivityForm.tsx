@@ -354,7 +354,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 				receiver: receiver,
 				type: "activity",
 				data: {
-					date: notificationDate,
+					date: activity.deadline.toISOString(),
 					idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 					firstNotificationTime: notificationTime,
 					repeatedNotification: repeatedNotification,
@@ -375,7 +375,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 						receiver: receiver, // Cambia il receiver per ogni membro della accessList
 						type: "shareActivity",
 						data: {
-							date: currentDate, // data prima notifica
+							date: activity.deadline.toISOString(), // data prima notifica
 							idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
 							firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
 							activity: activity, //attività condivisa

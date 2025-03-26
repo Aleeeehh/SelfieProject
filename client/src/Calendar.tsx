@@ -5597,7 +5597,8 @@ export default function Calendar(): React.JSX.Element {
 																	</span>
 																	<br />
 																	<button
-																		onClick={async (): Promise<void> => {
+																		onClick={async (e: React.MouseEvent): Promise<void> => {
+																			e.stopPropagation(); // Ferma la propagazione dell'evento
 																			await handleDeleteActivity(
 																				activity._id
 																			); // Chiama la funzione di eliminazione
@@ -5627,7 +5628,8 @@ export default function Calendar(): React.JSX.Element {
 																	</button>
 
 																	<button
-																		onClick={async (): Promise<void> => {
+																		onClick={async (e: React.MouseEvent): Promise<void> => {
+																			e.stopPropagation(); // Ferma la propagazione dell'evento
 																			await handleCompleteActivity(
 																				activity._id
 																			); //completo l'attività corrente
@@ -5803,7 +5805,8 @@ export default function Calendar(): React.JSX.Element {
 
 																<br />
 																<button
-																	onClick={async (): Promise<void> => {
+																	onClick={async (e: React.MouseEvent): Promise<void> => {
+																		e.stopPropagation(); // Ferma la propagazione dell'evento
 																		await handleDeleteActivity(
 																			activity._id
 																		); // Chiama la funzione di eliminazione
@@ -5832,7 +5835,8 @@ export default function Calendar(): React.JSX.Element {
 																</button>
 
 																<button
-																	onClick={async (): Promise<void> => {
+																	onClick={async (e: React.MouseEvent): Promise<void> => {
+																		e.stopPropagation(); // Ferma la propagazione dell'evento
 																		await handleCompleteActivity(
 																			activity._id
 																		); //completo l'attività corrente

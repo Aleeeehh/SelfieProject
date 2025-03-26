@@ -209,7 +209,72 @@ export default function Activities(): React.JSX.Element {
 			return;
 		}
 
+		//ottengo i dati dell'attività da eliminare
+		const res1 = await fetch(`${SERVER_API}/activities/${id}`, {
+			method: "GET",
+			headers: { "Content-Type": "application/json" }
+		});
+		const data1 = await res1.json();
+		const attivitaEliminata = data1.value;
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+
 		try {
+
+
+			/*
+				//cerca l'evento scadenza dell'attività ed eliminalo
+				const res2 = await fetch(`${SERVER_API}/events/deleteEventTitle`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						titoloDaEliminare: "Scadenza " + attivitaEliminata[0].title,
+					}),
+				});
+				const data2 = await res2.json();
+				console.log("Evento scadenza eliminato:", data2);
+		
+		
+		
+		
+				//notifiche dell'attività da eliminare
+				const owner = await getCurrentUser();
+				const ownerId = owner.value._id.toString();
+				const res3 = await fetch(`${SERVER_API}/notifications/user/${ownerId}`);
+				const data3 = await res3.json();
+				const notifications = data3.value; //tutte le notifiche sul database
+		
+				const idEventoNotificaCondiviso = attivitaEliminata[0].idEventoNotificaCondiviso;
+		
+				for (const notification of notifications) {
+					const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							notification_id: notification.id,
+							idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						}), // Assicurati di usare il campo corretto
+					});
+					console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+		
+					if (!res3.ok) {
+						const errorData = await res3.json();
+						console.error("Errore durante l'eliminazione della notifica:", errorData);
+					} else {
+						console.log(
+							`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`
+						);
+					}
+				}
+				*/
+
+			//elimina l'attività
 			const res = await fetch(`${SERVER_API}/activities/${id}`, {
 				method: "DELETE",
 			});
@@ -226,6 +291,56 @@ export default function Activities(): React.JSX.Element {
 			}
 		} catch (e) {
 			console.log("Impossibile raggiungere il server.");
+		}
+
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+
+
+		//cerca l'evento scadenza dell'attività ed eliminalo
+		const res2 = await fetch(`${SERVER_API}/events/deleteEventTitle`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				titoloDaEliminare: "Scadenza " + attivitaEliminata.title,
+			}),
+		});
+		const data2 = await res2.json();
+		console.log("Evento scadenza eliminato:", data2);
+		console.log("Evento scadenza eliminato:", data2);
+		console.log("Evento scadenza eliminato:", data2);
+		console.log("Evento scadenza eliminato:", data2);
+
+
+
+
+		//notifiche dell'attività da eliminare
+		const owner = await getCurrentUser();
+		const ownerId = owner.value._id.toString();
+		const res3 = await fetch(`${SERVER_API}/notifications/user/${ownerId}`);
+		const data3 = await res3.json();
+		const notifications = data3.value; //tutte le notifiche sul database
+
+		const idEventoNotificaCondiviso = attivitaEliminata.idEventoNotificaCondiviso;
+
+		for (const notification of notifications) {
+			const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					notification_id: notification.id,
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+				}), // Assicurati di usare il campo corretto
+			});
+			console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+
+			if (!res3.ok) {
+				const errorData = await res3.json();
+				console.error("Errore durante l'eliminazione della notifica:", errorData);
+			} else {
+				console.log(
+					`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`
+				);
+			}
 		}
 	}
 
