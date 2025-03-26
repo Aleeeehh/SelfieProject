@@ -169,23 +169,24 @@ https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/#std-label-
 
 ## Upload su Gocker
 
-- commenta codice development in server.js, e decommenta codice production
-- commenta in params.ts l'url localhost e metti quella del sito
-- se da errori, prima di caricare backend e frontend, elimina tutto con "rm -rf *" nella
+1- commenta codice development in server.ts, e decommenta codice production
+2- commenta in params.ts l'url localhost e metti quella del sito
+- entro nel computer di dipartimento
+5- se da errori, prima di caricare backend e frontend, elimina tutto con "rm -rf *" nella
 Cartella html..
-- dentro la cartella del progetto, vai su cartella client
-- npm install
-- npm run build
-- cancella cartella node_modules
-- scp -r ./build alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
-- vai in cartella server
-- npm install
-- npm run build
-- cancella cartella node_modules
-- scp -r ./* alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
-- ssh alessio.prato2@eva.cs.unibo.it (entro nel pc remoto del dipartimento)
-- cd /home, cd web, cd site232402, cd html
-- /usr/local/node/bin/npm install
-- ssh alessio.prato2@gocker.cs.unibo.it (entro in gocker)
-- start node-17 site232402 dist/server.js
+6- dentro la cartella del progetto, vai su cartella client
+7- npm install
+8- npm run build
+9- cancella cartella node_modules
+10- scp -r ./build alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
+11- vai in cartella server
+12- npm install
+13- npm run build
+14- cancella cartella node_modules
+15- scp -r ./* alessio.prato2@eva.cs.unibo.it:/home/web/site232402/html/
+3- ssh alessio.prato2@eva.cs.unibo.it (entro nel pc remoto del dipartimento)
+4- cd /home, cd web, cd site232402, cd html
+16- /usr/local/node/bin/npm install
+17- ssh alessio.prato2@gocker.cs.unibo.it (entro in gocker)
+18- start node-17 site232402 dist/server.js
 
