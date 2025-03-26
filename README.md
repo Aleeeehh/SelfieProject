@@ -169,7 +169,7 @@ https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/#std-label-
 
 ## Upload su Gocker
 
-- commenta codice development in server.js, e decommenta codice production
+- commenta codice development in server.ts, e decommenta codice production
 - commenta in params.ts l'url localhost e metti quella del sito
 - se da errori, prima di caricare backend e frontend, elimina tutto con "rm -rf *" nella
 Cartella html..
