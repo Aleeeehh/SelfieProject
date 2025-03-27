@@ -58,7 +58,9 @@ export default function SearchForm({ onItemClick, list, excludeUser }: SearchFor
 			/>
 			{searchResults.length > 0 && (
 				<select className="search-form-select" onChange={handleSelectChange} value={selectedUsername || ""}>
-					<option value="">Seleziona un utente</option>
+					<option value="">
+						{selectedUsername ? selectedUsername : "Seleziona un utente"}
+					</option>
 					{searchResults
 						.filter((username) =>
 							!list.find((u) => u === username) &&

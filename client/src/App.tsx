@@ -21,6 +21,8 @@ import CreateActivityForm from "./CreateActivityForm";
 import CreateNoteForm from "./CreateNoteForm";
 
 function App(): React.JSX.Element {
+	//const isLoggedIn = !!localStorage.getItem("loggedUserId");
+
 	return (
 		<div id="body-container">
 			<WithLayout>
@@ -84,7 +86,7 @@ function WithLayout<T extends React.ReactNode>({
 
 	return (
 		<>
-			<Header />
+			{isLoggedIn && <Header />}
 			<div className="global-div">
 				{children}
 

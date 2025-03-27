@@ -927,7 +927,7 @@ export default function Header(): React.JSX.Element {
 										className="btn border"
 										type="time"
 										id="timeInput"
-										value={
+										defaultValue={
 											currentDate
 												? `${currentDate.getHours().toString().padStart(2, "0")}:${currentDate
 													.getMinutes()
