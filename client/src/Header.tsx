@@ -1349,95 +1349,95 @@ export default function Header(): React.JSX.Element {
 											notification.read === false &&
 											doNotDisturb === false
 										) {
-											const eventDate = new Date(notification.data.date);
-											if (eventDate < currentDate) {
-												return (
-													<div key={index}>
-														Hai ricevuto un invito per un'{" "}
-														<span
+											//	const eventDate = new Date(notification.data.date);
+											//	if (eventDate < currentDate) {
+											return (
+												<div key={index}>
+													Hai ricevuto un invito per un'{" "}
+													<span
+														style={{
+															color: "orange",
+															fontWeight: "bold",
+														}}>
+														attività
+													</span>
+													!
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleAddActivity(notification);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-check"
 															style={{
-																color: "orange",
-																fontWeight: "bold",
-															}}>
-															attività
-														</span>
-														!
-														<button
-															className="btn secondary"
+																color: "green",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di tick */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleReadNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-times"
 															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleAddActivity(notification);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-check"
-																style={{
-																	color: "green",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di tick */}
-														</button>
-														<button
-															className="btn secondary"
+																color: "red",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleSnoozeNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-arrows-alt-h"
 															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleReadNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-times"
-																style={{
-																	color: "red",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleSnoozeNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-arrows-alt-h"
-																style={{
-																	color: "lightblue",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-													</div>
-												);
-											}
+																color: "lightblue",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+												</div>
+											);
+											//}
 										} else if (
 											notification.type === "message" &&
 											!notification.data.activity &&
@@ -1549,194 +1549,194 @@ export default function Header(): React.JSX.Element {
 
 											console.log("Notifica trovata: :", notification);
 
-											const eventDate = new Date(notification.data.date);
-											if (eventDate < currentDate) {
-												return (
-													<div key={index}>
-														Hai ricevuto un invito per un'{" "}
-														<span
+											//const eventDate = new Date(notification.data.date);
+											//		if (eventDate < currentDate) {
+											return (
+												<div key={index}>
+													Hai ricevuto un invito per un'{" "}
+													<span
+														style={{
+															color: "orange",
+															fontWeight: "bold",
+														}}>
+														attività condivisa
+													</span>
+													!
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleAddSharedActivity(
+																	notification
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-check"
 															style={{
-																color: "orange",
-																fontWeight: "bold",
-															}}>
-															attività condivisa
-														</span>
-														!
-														<button
-															className="btn secondary"
+																color: "green",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di tick */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleReadNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-times"
 															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleAddSharedActivity(
-																		notification
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-check"
-																style={{
-																	color: "green",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di tick */}
-														</button>
-														<button
-															className="btn secondary"
+																color: "red",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleSnoozeNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-arrows-alt-h"
 															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleReadNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-times"
-																style={{
-																	color: "red",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleSnoozeNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-arrows-alt-h"
-																style={{
-																	color: "lightblue",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-													</div>
-												);
-											}
+																color: "lightblue",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+												</div>
+											);
+											//}
 										} else if (
 											notification.type === "shareEvent" &&
 											notification.receiver === user &&
 											notification.read === false &&
 											doNotDisturb === false
 										) {
-											const eventDate = new Date(notification.data.date); // Crea un oggetto Date
-											if (eventDate < currentDate) {
-												return (
-													<div key={index}>
-														Hai ricevuto un invito per un{" "}
-														<span
+											//const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+											//if (eventDate < currentDate) {
+											return (
+												<div key={index}>
+													Hai ricevuto un invito per un{" "}
+													<span
+														style={{
+															color: "bisque",
+															fontWeight: "bold",
+														}}>
+														evento condiviso
+													</span>
+													!
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleAddSharedEvent(
+																	notification
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-check"
 															style={{
-																color: "bisque",
-																fontWeight: "bold",
-															}}>
-															evento condiviso
-														</span>
-														!
-														<button
-															className="btn secondary"
+																color: "green",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di tick */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleReadNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-times"
 															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleAddSharedEvent(
-																		notification
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-check"
-																style={{
-																	color: "green",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di tick */}
-														</button>
-														<button
-															className="btn secondary"
+																color: "red",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleSnoozeNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-arrows-alt-h"
 															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleReadNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-times"
-																style={{
-																	color: "red",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleSnoozeNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}>
-															<i
-																className="fas fa-arrows-alt-h"
-																style={{
-																	color: "lightblue",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-													</div>
-												);
-											}
+																color: "lightblue",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+												</div>
+											);
+											//}
 										} else if (
 											notification.type === "Progetto" &&
 											notification.read === false &&

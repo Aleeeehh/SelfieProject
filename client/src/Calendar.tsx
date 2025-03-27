@@ -3280,6 +3280,7 @@ export default function Calendar(): React.JSX.Element {
 		console.log("Evento scadenza creato:", res);
 
 		//crea struttura dati per il body della POST dell'evento
+		/*
 		const newEvent = {
 			idEventoNotificaCondiviso,
 			owner,
@@ -3292,6 +3293,7 @@ export default function Calendar(): React.JSX.Element {
 			location,
 			repetitions: 1,
 		};
+		*/
 
 		const newActivity = {
 			idEventoNotificaCondiviso: idEventoNotificaCondiviso,
@@ -3392,8 +3394,31 @@ export default function Calendar(): React.JSX.Element {
 			console.log("Notifica creata per: " + owner, "Risposta:", res3);
 		}
 
+		console.log("accessList: ", uniqueAccessList);
+		console.log("accessList: ", uniqueAccessList);
+		console.log("accessList: ", uniqueAccessList);
+		console.log("accessList: ", uniqueAccessList);
+		console.log("accessList: ", uniqueAccessList);
+		console.log("accessList: ", uniqueAccessList);
 		//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
 		for (const receiver of uniqueAccessList) {
+			console.log("Questo è il receiver:", receiver);
+			console.log("Questo è il receiver:", receiver);
+			console.log("Questo è il receiver:", receiver);
+
+			const newEvent = {
+				idEventoNotificaCondiviso,
+				owner: receiver,
+				title: "Scadenza " + title,
+				startTime: startTime.toISOString(),
+				endTime: endTime.toISOString(),
+				untilDate: null,
+				isInfinite: false,
+				frequency: "once",
+				location,
+				repetitions: 1,
+			};
+
 			const newNotification = {
 				message: message,
 				mode: "activity",
@@ -3409,6 +3434,8 @@ export default function Calendar(): React.JSX.Element {
 					event: newEvent,
 				},
 			};
+
+
 
 			if (receiver !== owner) {
 				console.log("Questo è il receiver:", receiver);

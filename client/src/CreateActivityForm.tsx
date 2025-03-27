@@ -359,48 +359,83 @@ export default function CreateActivityForm(): React.JSX.Element {
 			console.log("Notifica creata per: " + owner, "Risposta:", res3);
 			console.log("")
 		}
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+
 
 		//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
-		for (const receiver of activity.accessList) {
-			const newNotification = {
-				message: message,
-				mode: "activity",
-				receiver: receiver,
-				type: "activity",
-				data: {
-					date: activity.deadline.toISOString(),
-					idEventoNotificaCondiviso: idEventoNotificaCondiviso,
-					firstNotificationTime: notificationTime,
-					repeatedNotification: repeatedNotification,
-					repeatTime: repeatTime,
-					activity: activity,
-					event: newEvent,
-				},
-			};
+		if (!projectId) {
+			for (const receiver of activity.accessList) {
 
-			if (receiver !== owner) {
 				console.log("Questo è il receiver:", receiver);
-				const res4 = await fetch(`${SERVER_API}/notifications`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						message: "Hai ricevuto un attività condivisa",
-						mode: "activity",
-						receiver: receiver, // Cambia il receiver per ogni membro della accessList
-						type: "shareActivity",
-						data: {
-							date: activity.deadline.toISOString(), // data prima notifica
-							idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
-							firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
-							activity: activity, //attività condivisa
-							event: newEvent, //evento scadenza dell'attività condivisa
-							notification: addNotification ? newNotification : null,
-						},
-					}),
-				});
-				console.log("Notifica creata per:", receiver, "Risposta:", res4);
+				console.log("Questo è il receiver:", receiver);
+				console.log("Questo è il receiver:", receiver);
+
+				const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+				const data = await res.json();
+				const receiverId = data.id;
+				console.log("Questo è il receiverId:", receiverId);
+				console.log("Questo è il receiverId:", receiverId);
+
+				const newEvent = {
+					idEventoNotificaCondiviso,
+					owner: receiverId,
+					title: "Scadenza " + activity.title,
+					startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
+					endTime: activity.deadline.toISOString(),
+					untilDate: null,
+					isInfinite: false,
+					frequency: "once",
+					location: "",
+					repetitions: 1,
+				};
+
+				const newNotification = {
+					message: message,
+					mode: "activity",
+					receiver: receiverId,
+					type: "activity",
+					data: {
+						date: notificationDate,
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						firstNotificationTime: notificationTime,
+						repeatedNotification: repeatedNotification,
+						repeatTime: repeatTime,
+						activity: activity,
+						event: newEvent,
+					},
+				};
+
+				if (receiver !== owner) {
+					console.log("Questo è il receiver:", receiver);
+					const res4 = await fetch(`${SERVER_API}/notifications`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							message: "Hai ricevuto un attività condivisa",
+							mode: "activity",
+							receiver: receiverId, // Cambia il receiver per ogni membro della accessList
+							type: "shareActivity",
+							data: {
+								date: activity.deadline.toISOString(), // data prima notifica
+								idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+								firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
+								activity: activity, //attività condivisa
+								event: newEvent, //evento scadenza dell'attività condivisa
+								notification: addNotification ? newNotification : null,
+							},
+						}),
+					});
+					console.log("Notifica creata per:", receiver, "Risposta:", res4);
+				}
 			}
 		}
+
 
 
 		if (projectId) { //se l'attività è legata ad un progetto, invia notifiche "project activity" agli utenti dell'attività
@@ -449,53 +484,56 @@ export default function CreateActivityForm(): React.JSX.Element {
 			}
 		}
 
-		//se projectId è null, manda notifiche "activity" agli utenti dell'attività
-		if (!projectId) {
-			for (const receiver of activity.accessList) {
-				const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
-				const data = await res.json();
-				const receiverId = data.id;
-
-				const newEvent = {
-					idEventoNotificaCondiviso,
-					owner: receiverId,
-					title: "Scadenza " + activity.title,
-					startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
-					endTime: activity.deadline.toISOString(),
-					untilDate: null,
-					isInfinite: false,
-					frequency: "once",
-					location: "",
-					repetitions: 1,
-				};
-
-				if (receiver !== activity.owner) {
-
-
-
-					console.log("Questo è il receiver:", receiver);
-					const res4 = await fetch(`${SERVER_API}/notifications`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							message: "Hai ricevuto un attività condivisa",
-							mode: "activity",
-							receiver: receiverId, // Cambia il receiver per ogni membro della accessList
-							type: "shareActivity",
-							data: {
-								date: activity.deadline.toISOString(), // data prima notifica
-								idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
-								activity: activity, //attività condivisa
-								event: newEvent, //evento scadenza dell'attività condivisa
-								notification: null,
-							},
-						}),
-					});
-					console.log("Notifica creata per:", receiver, "Risposta:", res4);
+		/*
+				//se projectId è null, manda notifiche "activity" agli utenti dell'attività
+				if (!projectId) {
+					for (const receiver of activity.accessList) {
+						const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+						const data = await res.json();
+						const receiverId = data.id;
+		
+						const newEvent = {
+							idEventoNotificaCondiviso,
+							owner: receiverId,
+							title: "Scadenza " + activity.title,
+							startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
+							endTime: activity.deadline.toISOString(),
+							untilDate: null,
+							isInfinite: false,
+							frequency: "once",
+							location: "",
+							repetitions: 1,
+						};
+		
+						if (receiver !== activity.owner) {
+		
+		
+		
+							console.log("Questo è il receiver:", receiver);
+							const res4 = await fetch(`${SERVER_API}/notifications`, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({
+									message: "Hai ricevuto un attività condivisa",
+									mode: "activity",
+									receiver: receiverId, // Cambia il receiver per ogni membro della accessList
+									type: "shareActivity",
+									data: {
+										date: activity.deadline.toISOString(), // data prima notifica
+										idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+										activity: activity, //attività condivisa
+										event: newEvent, //evento scadenza dell'attività condivisa
+										notification: null,
+									},
+								}),
+							});
+							console.log("Notifica creata per:", receiver, "Risposta:", res4);
+						}
+					}
 				}
-			}
-		}
+						*/
 	}
+
 
 	// On page load, get the project data
 	React.useEffect(() => {
