@@ -657,6 +657,7 @@ export default function NotePage(): React.JSX.Element {
 											<SearchForm
 												onItemClick={addUser}
 												list={note.accessList}
+												excludeUser={loggedUser?.username}
 											/>
 										)}
 										<div className="tags-container">

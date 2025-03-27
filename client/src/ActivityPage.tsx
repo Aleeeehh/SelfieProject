@@ -753,6 +753,7 @@ export default function ActivityPage(): React.JSX.Element {
 										<SearchForm
 											onItemClick={addUser}
 											list={activity.accessList}
+											excludeUser={loggedUser?.username}
 										/>
 									)}
 									<div className="activity-users-container">

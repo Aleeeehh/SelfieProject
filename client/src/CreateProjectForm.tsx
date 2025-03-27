@@ -22,6 +22,10 @@ export default function CreateProjectForm(): React.JSX.Element {
 	const [project, setProject] = React.useState(baseProject);
 	const [message, setMessage] = React.useState("");
 	const [currentDate, setCurrentDate] = React.useState(new Date());
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
 
 	const nav = useNavigate();
 
@@ -193,7 +197,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 						<div>Utenti partecipanti al progetto</div>
 						<div className="project-users-form">
 							<label>
-								<SearchForm onItemClick={addUser} list={project.accessList} />
+								<SearchForm onItemClick={addUser} list={project.accessList} excludeUser={loggedUser?.username} />
 							</label>
 						</div>
 						<div className="project-users-container">

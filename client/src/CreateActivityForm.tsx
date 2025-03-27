@@ -61,6 +61,10 @@ export default function CreateActivityForm(): React.JSX.Element {
 	const [notificationTime, setNotificationTime] = React.useState(0);
 	const [notificationRepeatTime, setNotificationRepeatTime] = React.useState(0);
 	const [currentDate, setCurrentDate] = React.useState(new Date());
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
 
 
 	const getValidRepeatOptions = (time: number): number[] => {
@@ -709,7 +713,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 				<div className="activity-participants">
 					<label>
 						Invita Utenti all'attività
-						<SearchForm onItemClick={addUser} list={activity.accessList} />
+						<SearchForm onItemClick={addUser} list={activity.accessList} excludeUser={loggedUser?.username} />
 						<div className="activity-users-container">
 							{activity.accessList.length > 0 ? (
 								activity.accessList.map((u) => (

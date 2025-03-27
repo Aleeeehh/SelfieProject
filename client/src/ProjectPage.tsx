@@ -234,7 +234,7 @@ export default function ProjectPage(): React.JSX.Element {
 						{isEditing && (
 							<div className="project-users-form">
 								<label>
-									<SearchForm onItemClick={addUser} list={project.accessList} />
+									<SearchForm onItemClick={addUser} list={project.accessList} excludeUser={loggedUser?.username} />
 								</label>
 							</div>
 						)}

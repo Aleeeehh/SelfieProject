@@ -21,6 +21,10 @@ const baseNote: Note = {
 };
 
 export default function CreateNoteForm(): React.JSX.Element {
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
 	const [note, setNote] = React.useState(baseNote as Note);
 	const [tag, setTag] = React.useState("");
 	const [message, setMessage] = React.useState("");
@@ -427,7 +431,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 						</select>
 						{note.privacy === Privacy.PROTECTED && (
 							<>
-								<SearchForm onItemClick={addUser} list={note.accessList} />
+								<SearchForm onItemClick={addUser} list={note.accessList} excludeUser={loggedUser?.username} />
 
 								<div className="tags-container">
 									{note.accessList.map((user) => (

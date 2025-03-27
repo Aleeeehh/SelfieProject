@@ -54,6 +54,10 @@ const Mesi = [
 
 export default function Calendar(): React.JSX.Element {
 	// prova push
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
 	const [typeEvent, setTypeEvent] = React.useState("normale");
 	const [messageEditEvent, setMessageEditEvent] = React.useState("");
 	const [selectedEvent, setSelectedEvent] = React.useState<Event | null>(null);
@@ -4619,6 +4623,7 @@ export default function Calendar(): React.JSX.Element {
 													<SearchFormResource
 														onItemClick={handleSelectUser}
 														list={users}
+														excludeUser={loggedUser?.username}
 													/>
 													{messageShareRisorsa && (
 														<div className="error-message">
@@ -4936,6 +4941,7 @@ export default function Calendar(): React.JSX.Element {
 													<SearchForm
 														onItemClick={handleSelectUser}
 														list={users}
+														excludeUser={loggedUser?.username}
 													/>
 													{messageShareActivity && (
 														<div className="error-message">

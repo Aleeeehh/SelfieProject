@@ -4,11 +4,13 @@ import { SERVER_API } from "./lib/params";
 type SearchFormProps = {
 	onItemClick: (e: React.ChangeEvent<HTMLSelectElement>, user: string) => void;
 	list: string[];
+	excludeUser?: string | null;
 };
 
 export default function SearchFormResource({
 	onItemClick,
 	list,
+	excludeUser,
 }: SearchFormProps): React.JSX.Element {
 	const [search, setSearch] = React.useState("");
 	const [selectedUsername, setSelectedUsername] = React.useState<string | null>(null);
@@ -55,7 +57,7 @@ export default function SearchFormResource({
 			...utenti.map((user) => user),
 			...nomiRisorse,
 		];
-		
+
 		setSearchResults(combinedResults);
 	}
 
@@ -74,7 +76,7 @@ export default function SearchFormResource({
 			<input
 				className="search-form-input"
 				type="text"
-				style={{ margin: "0"}}
+				style={{ margin: "0" }}
 				placeholder="Cerca utente/risorsa"
 				value={search}
 				onChange={handleChange}
@@ -85,7 +87,8 @@ export default function SearchFormResource({
 						{selectedUsername ? selectedUsername : "Seleziona un utente/risorsa"}
 					</option>
 					{searchResults
-						.filter((username) => !list.find((u) => u === username))
+						.filter((username) => !list.find((u) => u === username) &&
+							(!excludeUser || username !== excludeUser))
 						.map((user) => (
 							<option key={user} value={user}>
 								{user}

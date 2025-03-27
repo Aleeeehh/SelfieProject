@@ -101,6 +101,10 @@ export default function Pomodoros(): React.JSX.Element {
 	const cycles = Number(searchParams.get("cycles")) || initialState.cycles;
 	const studyTime = Number(searchParams.get("studyTime")) || initialState.studyTime;
 	const pauseTime = Number(searchParams.get("pauseTime")) || initialState.pauseTime;
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
 
 	const [data, setData] = useState({
 		...initialState,
@@ -1100,7 +1104,7 @@ export default function Pomodoros(): React.JSX.Element {
 										Invia la configurazione del Pomodoro ad un amico
 									</div>
 									{users.length > 0}
-									<SearchForm onItemClick={handleSelectUser} list={users} />
+									<SearchForm onItemClick={handleSelectUser} list={users} excludeUser={loggedUser?.username} />
 									{message && <div className="error-message">{message}</div>}
 									<button
 										onClick={handleSendInvite}

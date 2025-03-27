@@ -523,18 +523,18 @@ router.post("/", async (req: Request, res: Response) => {
 					i === 1
 						? 60
 						: i === 2
-						? 720
-						: i === 3
-						? 1440
-						: i === 4
-						? 2880
-						: i === 5
-						? 4320
-						: 0; // Aggiunto il caso per i=5
+							? 720
+							: i === 3
+								? 1440
+								: i === 4
+									? 2880
+									: i === 5
+										? 4320
+										: 0; // Aggiunto il caso per i=5
 
 				const anotherNotification: Notification = {
 					data: {
-						date: new Date(new Date(data.date).getTime() + minutesToAdd * 60000), // Calcola la data in base all'indice
+						date: new Date(new Date(data.date).getTime() + (minutesToAdd + data.firstNotificationTime) * 60000), // Calcola la data in base all'indice
 						idEventoNotificaCondiviso: data.idEventoNotificaCondiviso,
 						repeatedNotification: false,
 						repeatTime: data.repeatTime,
