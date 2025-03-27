@@ -654,6 +654,7 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 								</label>
 							)}
+							{/*
 							<label
 								htmlFor="endTime"
 								className="activity-vertical"
@@ -698,6 +699,8 @@ export default function ActivityPage(): React.JSX.Element {
 													});
 												}
 											}}
+											dateFormat="dd/MM/yyyy"
+											locale="it"
 											disabled={!isUser}
 										/>
 									</div>
@@ -732,7 +735,7 @@ export default function ActivityPage(): React.JSX.Element {
 								</div>
 							</label>
 
-							{/* render completed */}
+						
 							<label className="activity-completed" htmlFor="completed">
 								Completa?
 								<input
@@ -744,6 +747,7 @@ export default function ActivityPage(): React.JSX.Element {
 									disabled={!isUser}
 								/>
 							</label>
+				*/}
 
 							{/* render access list */}
 							<div className="activity-participants">
