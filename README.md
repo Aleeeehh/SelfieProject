@@ -52,6 +52,7 @@ Progetto di Tecnologie Web
     (ANCHE COSE MOLTO PICCOLE)
 
 ### ALTRI REQUISITI (FORSE RIDONDANTI DA NOTE ANDRE)
+- eventi scalati avanti di un giorn in view month e week da tel, forse è SAFARI??
 
 -   Disallineamento nelle colonne del calendario
 -   Refresh informazioni (calendario mensile)
