@@ -4034,7 +4034,7 @@ export default function Calendar(): React.JSX.Element {
 											Chiudi
 										</button>
 
-										<div className="sort-label">
+										<div className="type-event-select">
 											<div>Tipo evento: </div>
 											<select
 												className="sort-select"
@@ -5019,7 +5019,7 @@ export default function Calendar(): React.JSX.Element {
 											Chiudi
 										</button>
 
-										<div className="sort-label">
+										<div className="type-event-select">
 											<div>Tipo: </div>
 											<select
 												className="sort-select"

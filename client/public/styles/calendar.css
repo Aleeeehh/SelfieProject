@@ -277,11 +277,25 @@
 	margin-top: 10px;
 }
 
+.type-event-select {
+	display: flex;
+    align-items: center;
+    font-weight: bold;
+	max-width: 250px;
+    font-size: 1em;
+    color: black;
+    margin: 1em 0;
+    background-color: rgb(238, 234, 228);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    padding: 0.5em;
+}
+
 .overflow-adhoc {
 	overflow: hidden;
 }
 
-@media screen and (max-width: 310px) {
+@media screen and (max-width: 360px) {
 	.day-week-month {
 		flex-direction: column;
 		justify-content: center;
@@ -290,6 +304,10 @@
 	.header-visualizza label {
 		flex-direction: column;
 		justify-content: center;
+	}
+
+	.calendar-header {
+		flex-direction: column;
 	}
 }
 

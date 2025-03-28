@@ -605,6 +605,46 @@ export default function CreateActivityForm(): React.JSX.Element {
 					/>
 				</label>
 
+				{projectId && (
+					<label
+					htmlFor="start"
+					className="activity-vertical"
+					style={{
+						display: "flex",
+						flexDirection: "row",
+						flexWrap: "wrap",
+						alignItems: "center",
+						marginBottom: "15px",
+						padding: "10px",
+						border: "1px solid #ddd",
+						borderRadius: "8px",
+						backgroundColor: "#fdfdfd",
+					}}
+				>
+					Data di Inizio
+					<div
+						style={{
+							display: "flex",
+							flexFlow: "wrap",
+							alignItems: "center",
+							gap: "0.5em",
+						}}
+					>
+						<input
+							type="date"
+							name="start"
+							className="activity-date-input"
+							onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+								setActivity({
+									...activity,
+									start: new Date(e.target.value),
+								});
+							}}
+						/>
+					</div>
+				</label>
+				)}
+
 				{/* render dates */}
 				<label
 					htmlFor="endTime"
@@ -874,7 +914,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 						)}
 
 						{/* render start date */}
-						<label
+						{/* <label
 							htmlFor="start"
 							className="activity-vertical"
 							style={{
@@ -910,7 +950,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 									}}
 								/>
 							</div>
-						</label>
+						</label> */}
 
 						{/* advancement type */}
 						<div className="activity-advancementType">

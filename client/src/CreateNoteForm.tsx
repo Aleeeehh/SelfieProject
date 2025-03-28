@@ -312,7 +312,7 @@ export default function CreateNoteForm(): React.JSX.Element {
 										<input
 											type="text"
 											value={l.text}
-											style={{ width: "200px", marginBottom: "5px" }}
+											style={{ maxWidth: "200px", minWidth: "100px", marginBottom: "5px" }}
 											placeholder="Nuovo to-do item"
 											onChange={(
 												e: React.ChangeEvent<HTMLInputElement>
