@@ -587,7 +587,7 @@ export default function Header(): React.JSX.Element {
 
 			const data = await response.json();
 
-			console.log("Notifications:", data);
+			//console.log("Notifications:", data);
 			if (data.status === ResponseStatus.GOOD) {
 				setNotifications(data.value);
 			} else {
@@ -623,7 +623,7 @@ export default function Header(): React.JSX.Element {
 			}
 
 			const eventiValue = eventi.value;
-			console.log("eventiValue:", eventiValue);
+			//console.log("eventiValue:", eventiValue);
 
 			if (!eventiValue) {
 				throw new Error("eventiValue non è definito");
