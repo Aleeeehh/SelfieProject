@@ -1,7 +1,7 @@
 import React, { createContext, useContext } from "react";
 import { SERVER_API } from "./lib/params";
 
-const TimeContext = createContext({ serverTime: new Date().getTime(), triggerAction: () => {} });
+const TimeContext = createContext({ serverTime: new Date().getTime(), triggerAction: () => { } });
 
 export const TimeProvider = ({ children }: { children: React.ReactNode }): JSX.Element => {
 	const [serverTime, setServerTime] = React.useState<number>(new Date().getTime());
@@ -13,7 +13,7 @@ export const TimeProvider = ({ children }: { children: React.ReactNode }): JSX.E
 			.then((res) => res.json())
 			.then((data) => {
 				setServerTime(new Date(data.currentDate).getTime());
-				console.log(serverTime);
+				//	console.log(serverTime);
 			});
 	};
 
