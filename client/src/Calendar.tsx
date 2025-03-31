@@ -2011,7 +2011,7 @@ export default function Calendar(): React.JSX.Element {
 		const daysInMonth = getDaysInMonth(new Date(year, meseCorrente));
 
 		for (let day = 1; day <= daysInMonth; day++) {
-			const date = new Date(year, meseCorrente, day);
+			const date = new Date(year, meseCorrente, day + 1);
 
 			try {
 				const currentUser = await getCurrentUser();
@@ -3489,7 +3489,7 @@ export default function Calendar(): React.JSX.Element {
 
 	//ottieni il giorno del mese per la visualizzazione weekly
 	function getAdjustedDay(day: number, offset: number, year: number, month: number): number {
-		let newDay = day + offset;
+		let newDay = day + offset - 1;
 		let newMonth = month;
 		let newYear = year;
 
