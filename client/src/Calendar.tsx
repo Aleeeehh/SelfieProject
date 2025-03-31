@@ -1500,6 +1500,18 @@ export default function Calendar(): React.JSX.Element {
 		});
 	};
 
+	/*
+	const handleTouchScroll = (e: React.TouchEvent<HTMLDivElement>): void => {
+		const orarioDivs = document.querySelectorAll(".orario");
+		const activeDiv = e.currentTarget as HTMLDivElement;
+		const newScrollTop = activeDiv.scrollTop;
+
+		orarioDivs.forEach((div) => {
+			div.scrollTop = newScrollTop;
+		});
+	};
+	*/
+
 	async function handleDateClick(e: React.MouseEvent<HTMLButtonElement> | number): Promise<void> {
 		//console.log("SITUAZIONE EVENT LIST PRIMA DEL CLICK:", eventList);
 		//e.preventDefault();
@@ -6633,11 +6645,12 @@ export default function Calendar(): React.JSX.Element {
 																overflowY: "auto",
 															}}
 															onWheel={handleScroll}
+														//onTouchMove={handleTouchScroll}
 														>
 															{renderWeekEvents(weekEvents, 0)}
 
 															{/*{renderMonthEvents(monthEvents, 12)}
-													RENDERIZZA GLI EVENTI DEL GIORNO 12+1 = 13*/}
+														RENDERIZZA GLI EVENTI DEL GIORNO 12+1 = 13*/}
 
 															<time>00:00</time>
 															<time>01:00</time>
@@ -6706,8 +6719,11 @@ export default function Calendar(): React.JSX.Element {
 															style={{
 																width: "calc(100% - 10px)",
 																flex: "1",
+																position: "relative",
+																overflowY: "auto",
 															}}
 															onWheel={handleScroll}
+														//onTouchMove={handleTouchScroll}
 														>
 															{renderWeekEvents(weekEvents, 1)}
 
@@ -6777,8 +6793,11 @@ export default function Calendar(): React.JSX.Element {
 															style={{
 																width: "calc(100% - 10px)",
 																flex: "1",
+																position: "relative",
+																overflowY: "auto",
 															}}
 															onWheel={handleScroll}
+														//onTouchMove={handleTouchScroll}
 														>
 															{renderWeekEvents(weekEvents, 2)}
 															<time>00:00</time>
@@ -6847,8 +6866,11 @@ export default function Calendar(): React.JSX.Element {
 															style={{
 																width: "calc(100% - 10px)",
 																flex: "1",
+																position: "relative",
+																overflowY: "auto",
 															}}
 															onWheel={handleScroll}
+														//onTouchMove={handleTouchScroll}
 														>
 															{renderWeekEvents(weekEvents, 3)}
 															<time>00:00</time>
@@ -6917,8 +6939,11 @@ export default function Calendar(): React.JSX.Element {
 															style={{
 																width: "calc(100% - 10px)",
 																flex: "1",
+																position: "relative",
+																overflowY: "auto",
 															}}
 															onWheel={handleScroll}
+														//onTouchMove={handleTouchScroll}
 														>
 															{renderWeekEvents(weekEvents, 4)}
 															<time>00:00</time>
@@ -6987,8 +7012,11 @@ export default function Calendar(): React.JSX.Element {
 															style={{
 																width: "calc(100% - 10px)",
 																flex: "1",
+																position: "relative",
+																overflowY: "auto",
 															}}
 															onWheel={handleScroll}
+														//onTouchMove={handleTouchScroll}
 														>
 															{renderWeekEvents(weekEvents, 5)}
 															<time>00:00</time>
@@ -7057,8 +7085,11 @@ export default function Calendar(): React.JSX.Element {
 															style={{
 																width: "calc(100% - 10px)",
 																flex: "1",
+																position: "relative",
+																overflowY: "auto",
 															}}
 															onWheel={handleScroll}
+														//onTouchMove={handleTouchScroll}
 														>
 															{renderWeekEvents(weekEvents, 6)}
 															<time>00:00</time>

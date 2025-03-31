@@ -44,12 +44,17 @@
 	overflow-x: hidden;
 	width: 95%;
 	font-size: 11.3px;
-	scrollbar-width: none;/* Nasconde la scrollbar per Firefox */
-	-ms-overflow-style: none;/* Nasconde la scrollbar per IE e Edge */
+	scrollbar-width: none;
+	/* Nasconde la scrollbar per Firefox */
+	-ms-overflow-style: none;
+	/* Nasconde la scrollbar per IE e Edge */
+	overscroll-behavior: none;
+	/* Previene l'effetto di rimbalzo */
 }
 
 .orario::-webkit-scrollbar {
-	display: none;/* Nasconde la scrollbar per chrome e safari */
+	display: none;
+	/* Nasconde la scrollbar per chrome e safari */
 }
 
 .day-week-month {
@@ -279,16 +284,16 @@
 
 .type-event-select {
 	display: flex;
-    align-items: center;
-    font-weight: bold;
+	align-items: center;
+	font-weight: bold;
 	max-width: 250px;
-    font-size: 1em;
-    color: black;
-    margin: 1em 0;
-    background-color: rgb(238, 234, 228);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    border-radius: 8px;
-    padding: 0.5em;
+	font-size: 1em;
+	color: black;
+	margin: 1em 0;
+	background-color: rgb(238, 234, 228);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	border-radius: 8px;
+	padding: 0.5em;
 }
 
 .overflow-adhoc {
