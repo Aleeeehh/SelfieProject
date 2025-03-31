@@ -33,12 +33,6 @@ Progetto di Tecnologie Web
     attività nel pannello calendario. (Ale - 250324)
 
 ### TASK DI ALE
--   Disallineamento nelle colonne del calendario (per tutti i possibili browser, e testa anche con
-    mouse con rotella)
- -  migliora caricamento e refresh della view mese del calendario
- -   fixa todoList, c'è un caso in cui si bugga
- -   Se la time machine cambia orario, deve cambiare anche il pomodoro.
-
 
 ### REQUISITI MINIMI DA AGGIUNGERE/MODIFICARE
 -   Time machine deve influenzare OGNI SINGOLO COMPONENTE DEL PROGETTO, quindi sia calendario, che
@@ -47,31 +41,19 @@ Progetto di Tecnologie Web
 -   Controlla che quando si modifica un oggetto(evento,attività, progetto), tale modifica sia reale,
     funzioni, e influenzi anche quello degli altri utenti se sono coinvolti in quell'oggetto (anche nel
     caso in cui sia condiviso, che la modifica sia visibile anche agli altri utenti)
--   MIGLIORA/FIXA IN GENERALE QUALSIASI COSA SU CUI POTREBBE FARE STORIE, IN PARTICOLARE UI E
-    USABILITA' SONO FONDAMENTALI! CERCHIAMO DI IMMAGINARCI/PREVEDERE SU COSA POTREBBE FARE STORIE
-    (ANCHE COSE MOLTO PICCOLE)
 
 ### ALTRI REQUISITI (FORSE RIDONDANTI DA NOTE ANDRE)
-- eventi scalati avanti di un giorn in view month e week da tel, forse è SAFARI??
 
--   Disallineamento nelle colonne del calendario
--   Refresh informazioni (calendario mensile)
 -   gestione partecipanti dei progetti distinti
--   Scroll calendario attività progetto da migliorare
 -   Ordine dei "Prossimi eventi" nella home non sempre corretto
--   Orologio alla lunga è sbagliato
--   Pomodoro NON rimane attivo anche se cambio pagina (musica compresa)
 -   Se mi trovo all'interno del giorno della scadenza di un'attività me la segna "in ritardo" =>
     togliere l'orario (ora è 01:00) oppure impostare l'orario a 23:59
--   Non posso togliere il “completata” ad una attività, una volta che l’ho completata
 -   Su telefono (Safari?): due eventi che coincidono con l’orario non stanno entrambi nella view
 -   Su telefono (Safari?): Note page ha la “X” non allineata al centro, anche la pagina di creazione
     della nota
 -   Quando spunto un'attività relativa ad un progetto come completata, viene traslata verso il basso
     nel gantt e non capisco perchè
 -   Un evento “tutto il giorno” nella visualizzazione “month” e “week” viene mostrato su 2 giorni
--   Da IPad, probabilmente anche da altri dispositivi/browser, le colonne della week si muovono
-    singolarmente
 -   FORSE, non funziona bene il sorting delle note: quando entro nella pagina delle note, queste
     sono ordinate senza un criterio
 
