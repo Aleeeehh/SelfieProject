@@ -52,6 +52,10 @@ const Mesi = [
 ];
 //const GiorniSettimana = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
 
+const monthEventsCache: { [key: string]: { day: number; positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[] } = {};
+const weekEventsCache: { [key: string]: { day: number; positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[] } = {};
+
+
 export default function Calendar(): React.JSX.Element {
 	// prova push
 	const loggedUser = {
@@ -220,15 +224,26 @@ export default function Calendar(): React.JSX.Element {
 		})();
 	}, []);
 
-	/*
 	React.useEffect(() => {
-		const intervalId = setInterval(() => {
-			fetchCurrentDate(); // Chiama la funzione per ottenere la data corrente solo se non stai usando il time machine
-		}, 1000);
+		const initializeCalendar = async (): Promise<void> => {
+			const today = new Date();
+			const currentYear = today.getFullYear();
+			const currentMonth = today.getMonth();
+			const currentDay = today.getDate();
 
-		return () => clearInterval(intervalId); // Pulizia dell'intervallo al momento dello smontaggio
+			// Calcola il giorno di inizio della settimana corrente
+			const startOfWeek = new Date(today);
+			startOfWeek.setDate(currentDay - today.getDay());
+
+			// Lancia entrambe le funzioni in parallelo
+			await Promise.all([
+				loadMonthEvents(currentYear, currentMonth),
+				loadWeekEvents(startOfWeek.getDate(), currentYear, currentMonth)
+			]);
+		};
+
+		initializeCalendar();
 	}, []);
-	*/
 
 	React.useEffect(() => {
 		const handleEscKey = (event: KeyboardEvent): void => {
@@ -1768,11 +1783,22 @@ export default function Calendar(): React.JSX.Element {
 		return startDay;
 	}
 
+	// Aggiungi questa costante all'inizio del file, fuori dalla funzione Calendar
+
 	async function loadWeekEvents(
 		startDay: number,
 		year: number,
 		meseCorrente: number
 	): Promise<void> {
+		// Crea una chiave univoca per la cache basata sulla data di inizio della settimana
+		const cacheKey = `${year}-${meseCorrente}-${startDay}`;
+
+		// Controlla se abbiamo già gli eventi in cache
+		if (weekEventsCache[cacheKey]) {
+			setWeekEvents(weekEventsCache[cacheKey]);
+			return;
+		}
+
 		const eventiSettimana = [];
 
 		for (let i = 0; i < 7; i++) {
@@ -1846,17 +1872,12 @@ export default function Calendar(): React.JSX.Element {
 
 								// Calcola la posizione e l'altezza per ogni evento
 								var topPosition =
-									47.3 * oraInizioEvento + 47.3 * (minutiInizioEvento / 60); // Posizione inizio evento
+									47.3 * oraInizioEvento + 47.3 * (minutiInizioEvento / 60);
 								var eventHeight =
 									47.3 * (oraFineEvento - oraInizioEvento) +
 									47.3 * (minutiFineEvento / 60) -
-									47.3 * (minutiInizioEvento / 60); // Altezza dell'evento
+									47.3 * (minutiInizioEvento / 60);
 
-								//console.log("Questa è la data corrente:", currentDate);
-								//console.log("Questa è la data di inizio evento:", eventStartDate);
-								//console.log("Questa è la data di fine evento:", eventEndDate);
-
-								//se la data attuale è inferiore alla data di fine evento, allora estendi l'evento a fino a fine giornata
 								if (currentDate < eventEndDate) {
 									topPosition =
 										47.3 * oraInizioEvento + 47.3 * (minutiInizioEvento / 60);
@@ -1865,18 +1886,14 @@ export default function Calendar(): React.JSX.Element {
 										47.3 * ((60 - minutiInizioEvento) / 60);
 								}
 
-								//se la data attuale è superiore alla data di inizio evento, e la data corrente è uguale alla data di fine evento
-								//allora l'evento inzia in un giorno precedente ad oggi e finisce oggi
-								// allora mostro l'evento a partire dall'inizio del giorno e lo faccio finire all'orario di fine evento
 								if (currentDate > eventStartDate && currentDate === eventEndDate) {
-									topPosition = 0; //altezza 0
+									topPosition = 0;
 									eventHeight =
-										47.3 * oraFineEvento + 47.3 * (minutiFineEvento / 60); // Altezza dell'evento
+										47.3 * oraFineEvento + 47.3 * (minutiFineEvento / 60);
 								}
 
-								// se l'evento inizia in un giorno precedente ad oggi e finisce in un giorno successivo ad oggi
 								if (currentDate > eventStartDate && currentDate < eventEndDate) {
-									topPosition = 0; //altezza 0
+									topPosition = 0;
 									eventHeight = 47.3 * 24;
 								}
 
@@ -1897,7 +1914,6 @@ export default function Calendar(): React.JSX.Element {
 						})
 						.filter(Boolean);
 
-					// Calcola le sovrapposizioni e aggiorna le posizioni
 					const overlapCount: { [key: string]: number } = {};
 					eventi.forEach((evento: Event, index: number) => {
 						const startTime = new Date(evento.startTime).getTime();
@@ -1988,7 +2004,8 @@ export default function Calendar(): React.JSX.Element {
 			}
 		}
 
-		// Aggiorna lo stato con gli eventi della settimana
+		// Salva in cache prima di aggiornare lo stato
+		weekEventsCache[cacheKey] = eventiSettimana;
 		setWeekEvents(eventiSettimana);
 	}
 
@@ -2006,158 +2023,328 @@ export default function Calendar(): React.JSX.Element {
 		console.log("Questo è il valore di activitiesMode:", activitiesMode);
 	}
 
+
 	async function loadMonthEvents(year: number, meseCorrente: number): Promise<void> {
-		const eventiMese = [];
+		const cacheKey = `${year}-${meseCorrente}`;
+
+		// Controlla se abbiamo già gli eventi in cache
+		if (monthEventsCache[cacheKey]) {
+			setMonthEvents(monthEventsCache[cacheKey]);
+			return;
+		}
+
+		const eventiMese: { day: number; positions: { top: number; height: number; name: string; type: boolean; width: number; marginLeft: number; event: Event }[] }[] = [];
 		const daysInMonth = getDaysInMonth(new Date(year, meseCorrente));
+		const promises = [];
 
 		for (let day = 1; day <= daysInMonth; day++) {
 			const date = new Date(year, meseCorrente, day + 1);
 
-			try {
-				const currentUser = await getCurrentUser();
-				const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						date: date.toISOString(),
-						owner: currentUser.value._id.toString(),
-					}),
-				});
+			promises.push(
+				(async (): Promise<void> => {
+					try {
+						const currentUser = await getCurrentUser();
+						const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({
+								date: date.toISOString(),
+								owner: currentUser.value._id.toString(),
+							}),
+						});
 
-				if (!res.ok) {
-					throw new Error("Errore nella risposta del server");
-				}
+						if (!res.ok) {
+							throw new Error("Errore nella risposta del server");
+						}
 
-				const data = await res.json();
-				const eventi = data.value;
+						const data = await res.json();
+						const eventi = data.value;
 
-				if (eventi && eventi.length > 0) {
-					const positions = eventi
-						.map((evento: Event) => {
-							if (evento && evento.startTime) {
-								const oraInizioEvento = new Date(evento.startTime).getHours();
-								const minutiInizioEvento = new Date(evento.startTime).getMinutes();
-								const minutiFineEvento = new Date(evento.endTime).getMinutes();
-								const oraFineEvento = new Date(evento.endTime).getHours();
+						if (eventi && eventi.length > 0) {
+							const positions = eventi
+								.map((evento: Event) => {
+									if (evento && evento.startTime) {
+										const oraInizioEvento = new Date(evento.startTime).getHours();
+										const minutiInizioEvento = new Date(evento.startTime).getMinutes();
+										const minutiFineEvento = new Date(evento.endTime).getMinutes();
+										const oraFineEvento = new Date(evento.endTime).getHours();
 
-								const topPosition =
-									5 * oraInizioEvento + 5 * (minutiInizioEvento / 60);
-								const eventHeight =
-									5 * (oraFineEvento - oraInizioEvento) +
-									5 * (minutiFineEvento / 60) -
-									5 * (minutiInizioEvento / 60);
+										const topPosition =
+											5 * oraInizioEvento + 5 * (minutiInizioEvento / 60);
+										const eventHeight =
+											5 * (oraFineEvento - oraInizioEvento) +
+											5 * (minutiFineEvento / 60) -
+											5 * (minutiInizioEvento / 60);
 
-								const nomeEvento = evento.title;
-								const tipoEvento = evento.title !== "Pomodoro Session";
+										const nomeEvento = evento.title;
+										const tipoEvento = evento.title !== "Pomodoro Session";
 
+										return {
+											top: topPosition,
+											height: eventHeight,
+											name: nomeEvento,
+											type: tipoEvento,
+											width: 1,
+											marginLeft: 0,
+											event: evento,
+										};
+									}
+									return null;
+								})
+								.filter(Boolean);
+
+							const overlapCount: { [key: string]: number } = {};
+							eventi.forEach((evento: Event, index: number) => {
+								const startTime = new Date(evento.startTime).getTime();
+								const endTime = new Date(evento.endTime).getTime();
+
+								for (let j = 0; j < eventi.length; j++) {
+									if (j !== index) {
+										const otherEvent = eventi[j];
+										const otherStartTime = new Date(otherEvent.startTime).getTime();
+										const otherEndTime = new Date(otherEvent.endTime).getTime();
+
+										if (startTime < otherEndTime && endTime > otherStartTime) {
+											overlapCount[index] = (overlapCount[index] || 0) + 1;
+											overlapCount[j] = overlapCount[j] || 0;
+										}
+									}
+								}
+							});
+
+							const finalPositions = positions.map((event: Event, index: number) => {
+								const count = (overlapCount[index] || 0) + 1;
 								return {
-									top: topPosition,
-									height: eventHeight,
-									name: nomeEvento,
-									type: tipoEvento,
-									width: 1,
-									marginLeft: 0,
-									event: evento,
+									...event,
+									width: count,
 								};
-							}
-							return null;
-						})
-						.filter(Boolean);
+							});
 
-					// Calcola le sovrapposizioni e aggiorna le posizioni
-					const overlapCount: { [key: string]: number } = {};
-					eventi.forEach((evento: Event, index: number) => {
-						const startTime = new Date(evento.startTime).getTime();
-						const endTime = new Date(evento.endTime).getTime();
+							finalPositions.sort(
+								(
+									a: {
+										top: number;
+										height: number;
+										name: string;
+										type: boolean;
+										width: number;
+										marginLeft: number;
+										event: Event;
+									},
+									b: {
+										top: number;
+										height: number;
+										name: string;
+										type: boolean;
+										width: number;
+										marginLeft: number;
+										event: Event;
+									}
+								) => a.top - b.top
+							);
 
-						for (let j = 0; j < eventi.length; j++) {
-							if (j !== index) {
-								const otherEvent = eventi[j];
-								const otherStartTime = new Date(otherEvent.startTime).getTime();
-								const otherEndTime = new Date(otherEvent.endTime).getTime();
+							finalPositions.forEach(
+								(
+									position: {
+										top: number;
+										height: number;
+										name: string;
+										type: boolean;
+										width: number;
+										marginLeft: number;
+										event: Event;
+									},
+									index: number
+								) => {
+									if (index > 0) {
+										const previousPosition = finalPositions[index - 1];
+										if (
+											position.width === previousPosition.width &&
+											position.event.startTime <= previousPosition.event.endTime
+										) {
+											position.marginLeft =
+												previousPosition.marginLeft + 95 / position.width;
+										} else {
+											position.marginLeft = 0;
+										}
+									} else {
+										position.marginLeft = 0;
+									}
+								}
+							);
 
-								if (startTime < otherEndTime && endTime > otherStartTime) {
-									overlapCount[index] = (overlapCount[index] || 0) + 1;
-									overlapCount[j] = overlapCount[j] || 0;
+							eventiMese[day - 1] = { day, positions: finalPositions };
+						} else {
+							eventiMese[day - 1] = { day, positions: [] };
+						}
+					} catch (e) {
+						console.error(`Errore durante il recupero degli eventi per il giorno ${day}:`, e);
+						eventiMese[day - 1] = { day, positions: [] };
+					}
+				})()
+			);
+		}
+
+		await Promise.all(promises);
+
+		// Salva in cache prima di aggiornare lo stato
+		monthEventsCache[cacheKey] = eventiMese;
+		setMonthEvents(eventiMese);
+	}
+	/*
+		async function loadMonthEvents(year: number, meseCorrente: number): Promise<void> {
+			const eventiMese = [];
+			const daysInMonth = getDaysInMonth(new Date(year, meseCorrente));
+	
+			for (let day = 1; day <= daysInMonth; day++) {
+				const date = new Date(year, meseCorrente, day + 1);
+	
+				try {
+					const currentUser = await getCurrentUser();
+					const res = await fetch(`${SERVER_API}/events/eventsOfDay`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							date: date.toISOString(),
+							owner: currentUser.value._id.toString(),
+						}),
+					});
+	
+					if (!res.ok) {
+						throw new Error("Errore nella risposta del server");
+					}
+	
+					const data = await res.json();
+					const eventi = data.value;
+	
+					if (eventi && eventi.length > 0) {
+						const positions = eventi
+							.map((evento: Event) => {
+								if (evento && evento.startTime) {
+									const oraInizioEvento = new Date(evento.startTime).getHours();
+									const minutiInizioEvento = new Date(evento.startTime).getMinutes();
+									const minutiFineEvento = new Date(evento.endTime).getMinutes();
+									const oraFineEvento = new Date(evento.endTime).getHours();
+	
+									const topPosition =
+										5 * oraInizioEvento + 5 * (minutiInizioEvento / 60);
+									const eventHeight =
+										5 * (oraFineEvento - oraInizioEvento) +
+										5 * (minutiFineEvento / 60) -
+										5 * (minutiInizioEvento / 60);
+	
+									const nomeEvento = evento.title;
+									const tipoEvento = evento.title !== "Pomodoro Session";
+	
+									return {
+										top: topPosition,
+										height: eventHeight,
+										name: nomeEvento,
+										type: tipoEvento,
+										width: 1,
+										marginLeft: 0,
+										event: evento,
+									};
+								}
+								return null;
+							})
+							.filter(Boolean);
+	
+						// Calcola le sovrapposizioni e aggiorna le posizioni
+						const overlapCount: { [key: string]: number } = {};
+						eventi.forEach((evento: Event, index: number) => {
+							const startTime = new Date(evento.startTime).getTime();
+							const endTime = new Date(evento.endTime).getTime();
+	
+							for (let j = 0; j < eventi.length; j++) {
+								if (j !== index) {
+									const otherEvent = eventi[j];
+									const otherStartTime = new Date(otherEvent.startTime).getTime();
+									const otherEndTime = new Date(otherEvent.endTime).getTime();
+	
+									if (startTime < otherEndTime && endTime > otherStartTime) {
+										overlapCount[index] = (overlapCount[index] || 0) + 1;
+										overlapCount[j] = overlapCount[j] || 0;
+									}
 								}
 							}
-						}
-					});
-
-					const finalPositions = positions.map((event: Event, index: number) => {
-						const count = (overlapCount[index] || 0) + 1;
-						return {
-							...event,
-							width: count,
-						};
-					});
-
-					finalPositions.sort(
-						(
-							a: {
-								top: number;
-								height: number;
-								name: string;
-								type: boolean;
-								width: number;
-								marginLeft: number;
-								event: Event;
-							},
-							b: {
-								top: number;
-								height: number;
-								name: string;
-								type: boolean;
-								width: number;
-								marginLeft: number;
-								event: Event;
-							}
-						) => a.top - b.top
-					);
-
-					finalPositions.forEach(
-						(
-							position: {
-								top: number;
-								height: number;
-								name: string;
-								type: boolean;
-								width: number;
-								marginLeft: number;
-								event: Event;
-							},
-							index: number
-						) => {
-							if (index > 0) {
-								const previousPosition = finalPositions[index - 1];
-								if (
-									position.width === previousPosition.width &&
-									position.event.startTime <= previousPosition.event.endTime
-								) {
-									position.marginLeft =
-										previousPosition.marginLeft + 95 / position.width;
+						});
+	
+						const finalPositions = positions.map((event: Event, index: number) => {
+							const count = (overlapCount[index] || 0) + 1;
+							return {
+								...event,
+								width: count,
+							};
+						});
+	
+						finalPositions.sort(
+							(
+								a: {
+									top: number;
+									height: number;
+									name: string;
+									type: boolean;
+									width: number;
+									marginLeft: number;
+									event: Event;
+								},
+								b: {
+									top: number;
+									height: number;
+									name: string;
+									type: boolean;
+									width: number;
+									marginLeft: number;
+									event: Event;
+								}
+							) => a.top - b.top
+						);
+	
+						finalPositions.forEach(
+							(
+								position: {
+									top: number;
+									height: number;
+									name: string;
+									type: boolean;
+									width: number;
+									marginLeft: number;
+									event: Event;
+								},
+								index: number
+							) => {
+								if (index > 0) {
+									const previousPosition = finalPositions[index - 1];
+									if (
+										position.width === previousPosition.width &&
+										position.event.startTime <= previousPosition.event.endTime
+									) {
+										position.marginLeft =
+											previousPosition.marginLeft + 95 / position.width;
+									} else {
+										position.marginLeft = 0;
+									}
 								} else {
 									position.marginLeft = 0;
 								}
-							} else {
-								position.marginLeft = 0;
 							}
-						}
-					);
-
-					eventiMese.push({ day, positions: finalPositions });
-				} else {
+						);
+	
+						eventiMese.push({ day, positions: finalPositions });
+					} else {
+						eventiMese.push({ day, positions: [] });
+					}
+				} catch (e) {
+					console.error(`Errore durante il recupero degli eventi per il giorno ${day}:`, e);
 					eventiMese.push({ day, positions: [] });
 				}
-			} catch (e) {
-				console.error(`Errore durante il recupero degli eventi per il giorno ${day}:`, e);
-				eventiMese.push({ day, positions: [] });
 			}
+	
+			// Aggiorna lo stato con gli eventi del mese
+			setMonthEvents(eventiMese);
 		}
-
-		// Aggiorna lo stato con gli eventi del mese
-		setMonthEvents(eventiMese);
-	}
+			*/
 
 	function handleSelectUser(e: React.ChangeEvent<HTMLSelectElement>, username: string): void {
 		e.preventDefault();
