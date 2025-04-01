@@ -394,27 +394,27 @@ export default function Header(): React.JSX.Element {
 		// Metti la notifica come letta
 		handleReadNotification(notification.id);
 	}
-
-	async function handleSnoozeNotification(notificationId: string): Promise<void> {
-		try {
-			const snoozeDate = new Date(currentDate.getTime() + 1000 * 60 * 60); // +1 ora
-			const res = await fetch(`${SERVER_API}/notifications/${notificationId}`, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ date: snoozeDate }), // Posticipa la notifica di 1 ora
-			});
-
-			if (!res.ok) {
-				const errorData = await res.json();
-				console.error("Errore durante l'aggiornamento della notifica:", errorData);
-			} else {
-				console.log(`Notifica con ID ${notificationId} aggiornata con successo.`);
+	/*
+		async function handleSnoozeNotification(notificationId: string): Promise<void> {
+			try {
+				const snoozeDate = new Date(currentDate.getTime() + 1000 * 60 * 60); // +1 ora
+				const res = await fetch(`${SERVER_API}/notifications/${notificationId}`, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ date: snoozeDate }), // Posticipa la notifica di 1 ora
+				});
+	
+				if (!res.ok) {
+					const errorData = await res.json();
+					console.error("Errore durante l'aggiornamento della notifica:", errorData);
+				} else {
+					console.log(`Notifica con ID ${notificationId} aggiornata con successo.`);
+				}
+				cleanNotifications();
+			} catch (error) {
+				console.error("Errore nello snooze della notifica:", error);
 			}
-			cleanNotifications();
-		} catch (error) {
-			console.error("Errore nello snooze della notifica:", error);
-		}
-	}
+		}*/
 
 	const handleReadNotification = async (notificationId: string): Promise<void> => {
 		try {
@@ -1408,8 +1408,8 @@ export default function Header(): React.JSX.Element {
 																color: "red",
 																fontSize: "20px",
 															}}></i>{" "}
-														{/* Icona di elimazione */}
 													</button>
+													{/*
 													<button
 														className="btn secondary"
 														style={{
@@ -1433,8 +1433,8 @@ export default function Header(): React.JSX.Element {
 																color: "lightblue",
 																fontSize: "20px",
 															}}></i>{" "}
-														{/* Icona di elimazione */}
 													</button>
+													*/}
 												</div>
 											);
 											//}
@@ -1504,8 +1504,8 @@ export default function Header(): React.JSX.Element {
 																	color: "red",
 																	fontSize: "20px",
 																}}></i>{" "}
-															{/* Icona di elimazione */}
 														</button>
+														{/*
 														<button
 															className="btn secondary"
 															style={{
@@ -1529,8 +1529,8 @@ export default function Header(): React.JSX.Element {
 																	color: "lightblue",
 																	fontSize: "20px",
 																}}></i>{" "}
-															{/* Icona di elimazione */}
 														</button>
+														*/}
 													</div>
 												);
 											}
@@ -1612,6 +1612,7 @@ export default function Header(): React.JSX.Element {
 															}}></i>{" "}
 														{/* Icona di elimazione */}
 													</button>
+													{/*
 													<button
 														className="btn secondary"
 														style={{
@@ -1635,8 +1636,8 @@ export default function Header(): React.JSX.Element {
 																color: "lightblue",
 																fontSize: "20px",
 															}}></i>{" "}
-														{/* Icona di elimazione */}
 													</button>
+													*/}
 												</div>
 											);
 											//}
@@ -1709,6 +1710,7 @@ export default function Header(): React.JSX.Element {
 															}}></i>{" "}
 														{/* Icona di elimazione */}
 													</button>
+													{/*
 													<button
 														className="btn secondary"
 														style={{
@@ -1732,8 +1734,8 @@ export default function Header(): React.JSX.Element {
 																color: "lightblue",
 																fontSize: "20px",
 															}}></i>{" "}
-														{/* Icona di elimazione */}
 													</button>
+													*/}
 												</div>
 											);
 											//}
