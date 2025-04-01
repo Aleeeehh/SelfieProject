@@ -848,7 +848,7 @@ export default function ActivityPage(): React.JSX.Element {
 									{/* parent*/}
 									<div className="activity-parent">
 										<div>
-											Attività padre: {activity.parent || "Nessuna"} (Non
+											Attività padre: {findParentActivity() ? findParentActivity()?.title : "Nessuna"} (Non
 											modificabile)
 										</div>
 									</div>
@@ -856,7 +856,7 @@ export default function ActivityPage(): React.JSX.Element {
 									{/* next */}
 									<div className="activity-next">
 										<div>
-											Prossima attività: {activity.next || "Nessuna"}
+											Prossima attività: {findNextActivity() ? findNextActivity()?.title : "Nessuna"}
 											{isOwner && (
 												<>
 													<select
@@ -889,7 +889,7 @@ export default function ActivityPage(): React.JSX.Element {
 													<a
 														href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}&next=${activity.next}`}
 													>
-														<button>
+														<button style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}>
 															Aggiungi attività successiva
 														</button>
 													</a>
@@ -918,7 +918,7 @@ export default function ActivityPage(): React.JSX.Element {
 												<a
 													href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}`}
 												>
-													<button>Aggiungi sotto-attività</button>
+													<button style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}>Aggiungi sotto-attività</button>
 												</a>
 											)}
 										</label>

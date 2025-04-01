@@ -534,6 +534,41 @@ export default function CreateActivityForm(): React.JSX.Element {
 						*/
 	}
 
+	function findParentActivity(): Activity | undefined {
+		if (!project) return undefined;
+		if (!parent) return undefined;
+
+		for (const act of project?.activityList) {
+			const title = findActivity(act, parent);
+			if (title) return title;
+		}
+
+		return undefined;
+	}
+
+	function findActivity(input: Activity, id: string): Activity | undefined {
+		if (input.id === id) return input;
+
+		if (input.children)
+			for (const child of input.children) {
+				const title = findActivity(child, id);
+				if (title) return title;
+			}
+
+		return undefined;
+	}
+
+	function findNextActivity(): Activity | undefined {
+		if (!project) return undefined;
+		if (!next) return undefined;
+
+		for (const act of project?.activityList) {
+			const title = findActivity(act, next);
+			if (title) return title;
+		}
+
+		return undefined;
+	}
 
 	// On page load, get the project data
 	React.useEffect(() => {
@@ -607,42 +642,42 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 				{projectId && (
 					<label
-					htmlFor="start"
-					className="activity-vertical"
-					style={{
-						display: "flex",
-						flexDirection: "row",
-						flexWrap: "wrap",
-						alignItems: "center",
-						marginBottom: "15px",
-						padding: "10px",
-						border: "1px solid #ddd",
-						borderRadius: "8px",
-						backgroundColor: "#fdfdfd",
-					}}
-				>
-					Data di Inizio
-					<div
+						htmlFor="start"
+						className="activity-vertical"
 						style={{
 							display: "flex",
-							flexFlow: "wrap",
+							flexDirection: "row",
+							flexWrap: "wrap",
 							alignItems: "center",
-							gap: "0.5em",
+							marginBottom: "15px",
+							padding: "10px",
+							border: "1px solid #ddd",
+							borderRadius: "8px",
+							backgroundColor: "#fdfdfd",
 						}}
 					>
-						<input
-							type="date"
-							name="start"
-							className="activity-date-input"
-							onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-								setActivity({
-									...activity,
-									start: new Date(e.target.value),
-								});
+						Data di Inizio
+						<div
+							style={{
+								display: "flex",
+								flexFlow: "wrap",
+								alignItems: "center",
+								gap: "0.5em",
 							}}
-						/>
-					</div>
-				</label>
+						>
+							<input
+								type="date"
+								name="start"
+								className="activity-date-input"
+								onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+									setActivity({
+										...activity,
+										start: new Date(e.target.value),
+									});
+								}}
+							/>
+						</div>
+					</label>
 				)}
 
 				{/* render dates */}
@@ -994,12 +1029,12 @@ export default function CreateActivityForm(): React.JSX.Element {
 						</label>
 						{/* parent*/}
 						<div className="activity-parent">
-							<div>Attività padre: {parent || "Nessuna"} (Non modificabile)</div>
+							<div>Attività padre: {findParentActivity() ? findParentActivity()?.title : "Nessuna"} (Non modificabile)</div>
 						</div>
 
 						{/* next */}
 						<div className="activity-next">
-							<div>Prossima attività: {next || "Nessuna"} (Non modificabile)</div>
+							<div>Prossima attività: {findNextActivity() ? findNextActivity()?.title : "Nessuna"} (Non modificabile)</div>
 						</div>
 					</>
 				)}

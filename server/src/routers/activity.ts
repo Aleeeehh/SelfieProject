@@ -497,27 +497,27 @@ router.post("/", async (req: Request, res: Response) => {
 			if (startDate.getTime() > deadlineDate.getTime()) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
-					message: "Start date cannot be after deadline",
+					message: "La data di inizio non può essere dopo la data di scadenza",
 				};
-				console.log("Start date cannot be after deadline");
+				console.log("La data di inizio non può essere dopo la data di scadenza");
 				return res.status(400).json(resBody);
 			}
 
 			if (advancementType && !Object.values(AdvancementType).includes(advancementType)) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
-					message: "Invalid advancement type",
+					message: "Il tipo di avanzamento non è valido",
 				};
-				console.log("Invalid advancement type");
+				console.log("Il tipo di avanzamento non è valido");
 				return res.status(400).json(resBody);
 			}
 
 			if (parent && !Types.ObjectId.isValid(parent)) {
 				const resBody: ResponseBody = {
 					status: ResponseStatus.BAD,
-					message: "Invalid parent id",
+					message: "L'id del genitore non è valido",
 				};
-				console.log("Invalid parent id");
+				console.log("L'id del genitore non è valido");
 				return res.status(400).json(resBody);
 			}
 

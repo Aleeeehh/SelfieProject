@@ -7,11 +7,11 @@
 	flex-direction: column;
 }
 
-.projects-container > a {
+.projects-container>a {
 	margin: 1em auto;
 }
 
-.projects-container > a > button {
+.projects-container>a>button {
 	background-color: #b6b6e3;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 	color: black;
@@ -157,7 +157,7 @@
 	color: #a12a2a !important;
 }
 
-.project-container > * {
+.project-container>* {
 	width: 100%;
 	margin-bottom: 1em;
 	border-radius: 8px;
@@ -168,7 +168,7 @@
 	border-radius: 8px;
 }
 
-.project-container > label {
+.project-container>label {
 	display: flex;
 	flex-direction: column;
 	font-weight: bold;
@@ -268,7 +268,7 @@
 	gap: 0.5em;
 }
 
-.project-activities-container > label {
+.project-activities-container>label {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
@@ -508,4 +508,13 @@
 	margin: 1em;
 	border-radius: 10px;
 	overflow: hidden;
+}
+
+.project-activities-container a {
+	color: black;
+	text-decoration: none;
+}
+
+.project-activities-container a:hover {
+	text-decoration: underline;
 }

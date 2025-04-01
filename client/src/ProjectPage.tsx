@@ -148,6 +148,8 @@ export default function ProjectPage(): React.JSX.Element {
 			} else {
 				setMessage(resBody.message || "Errore della cancellazione del progetto");
 			}
+
+
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
 		}
@@ -267,11 +269,11 @@ export default function ProjectPage(): React.JSX.Element {
 												<>
 													<a
 														href={`/activities/new?projectId=${project.id}&parent=${a.id}`}>
-														<button>Aggiungi Sotto-Attività</button>
+														<button style={{ backgroundColor: "#b6b6e3", color: "white" }}>Aggiungi Sotto-Attività</button>
 													</a>
 													<a
 														href={`/activities/new?projectId=${project.id}&parent=${a.id}&next=${a.id}`}>
-														<button>
+														<button style={{ backgroundColor: "#b6b6e3", color: "white" }}>
 															Aggiungi Attività Precedente
 														</button>
 													</a>
@@ -283,7 +285,7 @@ export default function ProjectPage(): React.JSX.Element {
 													<div className="project-activity-child">
 														<a href={`/activities/${c.id}`}>
 															Sottoattività: {c.title}{" "}
-															(getActivityStatus(serverTime, c))
+															({getActivityStatus(serverTime, c)})
 														</a>
 													</div>
 												))}
