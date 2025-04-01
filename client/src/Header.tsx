@@ -308,7 +308,19 @@ export default function Header(): React.JSX.Element {
 		});
 		console.log("Evento scadenza creato:", response);
 
+		// Aggiungi la notifica dell'attività condivisa come notifica sul calendario
+		if (notification.data.notification) {
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(notification.data.notification),
+			});
+			console.log("Notifica creata:", res3);
+		}
+
 		handleReadNotification(notification.id);
+
+
 	}
 
 	async function handleAddSharedEvent(notification: Notification): Promise<void> {

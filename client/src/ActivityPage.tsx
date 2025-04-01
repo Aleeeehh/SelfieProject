@@ -5,8 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import type Activity from "./types/Activity";
 import { ActivityStatus, AdvancementType } from "./types/Activity";
 import type Project from "./types/Project";
-import DatePicker from "react-datepicker";
-import SearchForm from "./SearchForm";
+//import DatePicker from "react-datepicker";
+//import SearchForm from "./SearchForm";
 import { getActivityStatus } from "./lib/helpers";
 import { useRefresh } from "./TimeContext";
 
@@ -129,27 +129,28 @@ export default function ActivityPage(): React.JSX.Element {
 
 		return possibleNext;
 	}
-
-	function addUser(e: React.ChangeEvent<HTMLSelectElement>, user: string): void {
-		e.preventDefault();
-
-		if (activity.projectId && project && !project.accessList.includes(user)) {
-			console.log("Cannot add user to the activity: the user is not in the project list");
-			return;
+	/*
+		function addUser(e: React.ChangeEvent<HTMLSelectElement>, user: string): void {
+			e.preventDefault();
+	
+			if (activity.projectId && project && !project.accessList.includes(user)) {
+				console.log("Cannot add user to the activity: the user is not in the project list");
+				return;
+			}
+	
+			if (activity.accessList.includes(user)) {
+				console.log("Cannot add user: already in the access list");
+				return;
+			}
+	
+			setActivity((prevAct) => {
+				return {
+					...prevAct,
+					accessList: [...prevAct.accessList, user],
+				};
+			});
 		}
-
-		if (activity.accessList.includes(user)) {
-			console.log("Cannot add user: already in the access list");
-			return;
-		}
-
-		setActivity((prevAct) => {
-			return {
-				...prevAct,
-				accessList: [...prevAct.accessList, user],
-			};
-		});
-	}
+			*/
 	/*
 
 	function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
@@ -569,6 +570,7 @@ export default function ActivityPage(): React.JSX.Element {
 							</label>
 
 							{/* render dates */}
+							{/*
 							{project && (
 								<label
 									htmlFor="start"
@@ -654,7 +656,7 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 								</label>
 							)}
-							{/*
+							
 							<label
 								htmlFor="endTime"
 								className="activity-vertical"
@@ -747,9 +749,9 @@ export default function ActivityPage(): React.JSX.Element {
 									disabled={!isUser}
 								/>
 							</label>
-				*/}
+			
 
-							{/* render access list */}
+						
 							<div className="activity-participants">
 								<label>
 									Utenti partecipanti all'attività
@@ -780,7 +782,7 @@ export default function ActivityPage(): React.JSX.Element {
 															X
 														</button>
 													)}
-														*/}
+														
 												</div>
 											))
 										) : (
@@ -789,6 +791,7 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 								</label>
 							</div>
+							*/}
 
 							{/* render project inputs */}
 							{/* render project */}

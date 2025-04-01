@@ -88,6 +88,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 			}
 			const data = await response.json();
 			setCurrentDate(new Date(data.currentDate)); // Assicurati che il formato sia corretto
+			console.log("currentDate: ", currentDate);
 
 		} catch (error) {
 			console.error("Errore durante il recupero della data corrente:", error);
@@ -461,6 +462,22 @@ export default function CreateActivityForm(): React.JSX.Element {
 					repetitions: 1,
 				};
 
+				const newNotification = {
+					message: message,
+					mode: "activity",
+					receiver: receiverId,
+					type: "activity",
+					data: {
+						date: notificationDate,
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						firstNotificationTime: notificationTime,
+						repeatedNotification: repeatedNotification,
+						repeatTime: repeatTime,
+						activity: activity,
+						event: newEvent,
+					},
+				};
+
 
 				if (receiver !== activity.owner) { //posso mettere che la riceva anche l'owner magari
 					console.log("Questo è il receiver:", receiver);
@@ -473,9 +490,12 @@ export default function CreateActivityForm(): React.JSX.Element {
 							receiver: receiverId, // Cambia il receiver per ogni membro della accessList
 							type: "ProjectActivity",
 							data: {
-								date: currentDate, // data prima notifica
+								date: activity.deadline.toISOString(), // data prima notifica
 								activity: activity,
 								event: newEvent,
+								notification: addNotification ? newNotification : null,
+								firstNotificationTime: notificationTime,
+								idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 							},
 						}),
 					});
