@@ -12,13 +12,17 @@ Additionally, you can create and manage Pomodoro timers and notes with to-do lis
 
 ## Launch the application locally
 
-Start the MongoDB instance (container or on the host):
-Before starting the server, make sure MongoDB is running to allow the connection.
+Before starting the server, ensure that MongoDB is running to establish the connection. 
+If MongoDB is not installed, please install it on your machine
 
 If you have MongoDB installed locally, you can start it with
 ```(bash)
 mongod
 ```
+
+Alternatively, you can run MongoDB in a container.
+
+
 
 Run Server and Client together within the project folder
 ```(bash)
