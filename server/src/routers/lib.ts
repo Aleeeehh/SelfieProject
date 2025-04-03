@@ -11,7 +11,7 @@ export async function getUsernameListFromIdList(list: Types.ObjectId[]): Promise
 	const accessList = [];
 	for (const access of list) {
 		const foundUser = await UserSchema.findById(access.toString()).lean();
-		if (foundUser) {
+		if (foundUser && accessList.indexOf(foundUser.username) === -1) {
 			accessList.push(foundUser.username);
 		}
 	}

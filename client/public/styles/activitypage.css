@@ -224,6 +224,15 @@ div[message] {
     }
 }
 
+.activity-project a {
+    color: black;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.activity-project a:hover {
+    text-decoration: underline;
+}
 
 /* ACTIVITIES PAGE */
 
@@ -281,12 +290,15 @@ div[message] {
 }
 
 .card-activity-description {
-    scrollbar-width: none; /* Per i browser Firefox */
-    -ms-overflow-style: none; /* Per i browser Internet Explorer */
+    scrollbar-width: none;
+    /* Per i browser Firefox */
+    -ms-overflow-style: none;
+    /* Per i browser Internet Explorer */
 }
 
 .card-activity-description::-webkit-scrollbar {
-    display: none; /* Per i browser basati su Webkit */
+    display: none;
+    /* Per i browser basati su Webkit */
 }
 
 .card-activity-buttons {

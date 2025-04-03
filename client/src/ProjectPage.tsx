@@ -145,10 +145,11 @@ export default function ProjectPage(): React.JSX.Element {
 			if (resBody.status === ResponseStatus.GOOD) {
 				console.log("Progetto cancellato correttamente!");
 				nav("/projects", { replace: true });
-
 			} else {
 				setMessage(resBody.message || "Errore della cancellazione del progetto");
 			}
+
+
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
 		}
@@ -178,6 +179,20 @@ export default function ProjectPage(): React.JSX.Element {
 				};
 			});
 	}
+
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/projects';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
 
 	return (
 		<>
@@ -221,16 +236,14 @@ export default function ProjectPage(): React.JSX.Element {
 						{isEditing && (
 							<div className="project-users-form">
 								<label>
-									<SearchForm onItemClick={addUser} list={project.accessList} />
+									<SearchForm onItemClick={addUser} list={project.accessList} excludeUser={loggedUser?.username} />
 								</label>
 							</div>
 						)}
 						<div className="project-users-container">
 							{project.accessList.length > 0 ? (
 								project.accessList.map((u) => (
-									<div className="project-user-box">
-										{u}
-									</div>
+									<div className="project-user-box">{u}</div>
 								))
 							) : (
 								<div style={{ fontWeight: "normal" }}>Nessun partecipante</div>
@@ -247,51 +260,46 @@ export default function ProjectPage(): React.JSX.Element {
 									project.activityList.map((a) => (
 										<div
 											key={"activity-" + a.id}
-											className="project-activity-item"
-										>
-											<a
-												href={`/activities/${a.id}`}
-												style={{ width: "100%" }}
-											>
-												{a.title} - {getActivityStatus(serverTime, a)}
+											className="project-activity-item">
+											<a href={`/activities/${a.id}`}>
+												{a.title} ({getActivityStatus(serverTime, a)})
 											</a>
 
 											{isEditing && (
 												<>
-													<a href={`/activities/new?projectId=${project.id}&parent=${a.id}`}>
-														<button>Aggiungi Sotto-Attività</button>
+													<a
+														href={`/activities/new?projectId=${project.id}&parent=${a.id}`}>
+														<button style={{ backgroundColor: "#b6b6e3", color: "white" }}>Aggiungi Sotto-Attività</button>
 													</a>
-													<a href={`/activities/new?projectId=${project.id}&parent=${a.id}&next=${a.id}`}>
-														<button>
+													<a
+														href={`/activities/new?projectId=${project.id}&parent=${a.id}&next=${a.id}`}>
+														<button style={{ backgroundColor: "#b6b6e3", color: "white" }}>
 															Aggiungi Attività Precedente
 														</button>
 													</a>
 												</>
 											)}
 
-											<div>
-												{a.children &&
-													a.children.map((c) => (
-														<div style={{backgroundColor: "gray"}}>
-															<a href={`/activities/${c.id}`}>
-																Child - {c.title} - {c.status}
-															</a>
-														</div>
-													))
-												}
-											</div>
+											{a.children &&
+												a.children.map((c) => (
+													<div className="project-activity-child">
+														<a href={`/activities/${c.id}`}>
+															Sottoattività: {c.title}{" "}
+															({getActivityStatus(serverTime, c)})
+														</a>
+													</div>
+												))}
 										</div>
 									))
 								) : (
 									<div style={{ fontWeight: "normal" }}>Nessuna attività</div>
-								))
-							}
+								))}
 						</label>
 
 						{isEditing && (
 							<label className="project-activity-form">
 								<a href={`/activities/new?projectId=${project.id}`}>
-									<button>Aggiungi Attività al progetto</button>
+									<button style={{ backgroundColor: "#b6b6e3", color: "white" }}>Aggiungi Attività al progetto</button>
 								</a>
 							</label>
 						)}
@@ -301,40 +309,31 @@ export default function ProjectPage(): React.JSX.Element {
 							{message && <div className="error-message">{message}</div>}
 							{isEditing ? (
 								<button
-									style={{ backgroundColor: "green" }}
-									onClick={handleUpdateProject}
-								>
+									style={{ backgroundColor: "#b6b6e3", color: "white" }}
+									onClick={handleUpdateProject}>
 									Salva progetto
 								</button>
 							) : (
-								<button onClick={toggleEdit}>Modifica progetto</button>
+								<button style={{ backgroundColor: "#b6b6e3", color: "white" }} onClick={toggleEdit}>Modifica progetto</button>
 							)}
 							{/* if is owner, can delete project (not new project) */}
 							<button
-								style={{ backgroundColor: "red" }}
-								onClick={(): void => setConfirmDelete(true)}
-							>
+								style={{ backgroundColor: "#d64545" }}
+								onClick={(): void => setConfirmDelete(true)}>
 								Cancella Progetto
 							</button>
-							<div className="confirmDelete-background"
-							style={{ display: confirmDelete ? "flex" : "none" }}
-							>
+							<div
+								className="confirmDelete-background"
+								style={{ display: confirmDelete ? "flex" : "none" }}>
 								<div className="confirmDelete-container">
 									<h2>Stai eliminando un progetto. Vuoi procedere?</h2>
-									<div
-										style={{ display: "flex", gap: "2em" }}
-									>
+									<div style={{ display: "flex", gap: "2em" }}>
 										<button
 											style={{ backgroundColor: "#ff6b6b" }}
-											onClick={(): void => setConfirmDelete(false)}
-										>
+											onClick={(): void => setConfirmDelete(false)}>
 											Annulla
 										</button>
-										<button
-											onClick={handleDeleteProject}
-										>
-											Continua
-										</button>
+										<button style={{ backgroundColor: "#4a90e2" }} onClick={handleDeleteProject}>Continua</button>
 									</div>
 								</div>
 							</div>

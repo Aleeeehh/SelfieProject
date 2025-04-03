@@ -22,6 +22,10 @@ export default function CreateProjectForm(): React.JSX.Element {
 	const [project, setProject] = React.useState(baseProject);
 	const [message, setMessage] = React.useState("");
 	const [currentDate, setCurrentDate] = React.useState(new Date());
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
 
 	const nav = useNavigate();
 
@@ -145,6 +149,19 @@ export default function CreateProjectForm(): React.JSX.Element {
 			};
 		});
 	}
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/projects';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
 
 	return (
 		<>
@@ -160,7 +177,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 					{/* render title */}
 					<label htmlFor="title">
 						Titolo
-						<input name="title" value={project.title} onChange={handleChange} />
+						<input name="title" value={project.title} onChange={handleChange} placeholder="Titolo progetto.." />
 					</label>
 
 					{/* render description */}
@@ -171,6 +188,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 							value={project.description}
 							onChange={handleChange}
 							maxLength={1500}
+							placeholder="Descrizione progetto.."
 						/>
 					</label>
 
@@ -179,7 +197,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 						<div>Utenti partecipanti al progetto</div>
 						<div className="project-users-form">
 							<label>
-								<SearchForm onItemClick={addUser} list={project.accessList} />
+								<SearchForm onItemClick={addUser} list={project.accessList} excludeUser={loggedUser?.username} />
 							</label>
 						</div>
 						<div className="project-users-container">
@@ -205,7 +223,7 @@ export default function CreateProjectForm(): React.JSX.Element {
 						</div>
 					</label>
 					{message && <div className="error-message">{message}</div>}
-					<button onClick={handleCreateProject}>Crea nuovo progetto</button>
+					<button style={{ backgroundColor: "#b6b6e3", color: "white" }} onClick={handleCreateProject}>Crea nuovo progetto</button>
 				</div>
 			</div>
 

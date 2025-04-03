@@ -5,8 +5,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import type Activity from "./types/Activity";
 import { ActivityStatus, AdvancementType } from "./types/Activity";
 import type Project from "./types/Project";
-import DatePicker from "react-datepicker";
-import SearchForm from "./SearchForm";
+//import DatePicker from "react-datepicker";
+//import SearchForm from "./SearchForm";
 import { getActivityStatus } from "./lib/helpers";
 import { useRefresh } from "./TimeContext";
 
@@ -129,27 +129,28 @@ export default function ActivityPage(): React.JSX.Element {
 
 		return possibleNext;
 	}
-
-	function addUser(e: React.ChangeEvent<HTMLSelectElement>, user: string): void {
-		e.preventDefault();
-
-		if (activity.projectId && project && !project.accessList.includes(user)) {
-			console.log("Cannot add user to the activity: the user is not in the project list");
-			return;
+	/*
+		function addUser(e: React.ChangeEvent<HTMLSelectElement>, user: string): void {
+			e.preventDefault();
+	
+			if (activity.projectId && project && !project.accessList.includes(user)) {
+				console.log("Cannot add user to the activity: the user is not in the project list");
+				return;
+			}
+	
+			if (activity.accessList.includes(user)) {
+				console.log("Cannot add user: already in the access list");
+				return;
+			}
+	
+			setActivity((prevAct) => {
+				return {
+					...prevAct,
+					accessList: [...prevAct.accessList, user],
+				};
+			});
 		}
-
-		if (activity.accessList.includes(user)) {
-			console.log("Cannot add user: already in the access list");
-			return;
-		}
-
-		setActivity((prevAct) => {
-			return {
-				...prevAct,
-				accessList: [...prevAct.accessList, user],
-			};
-		});
-	}
+			*/
 	/*
 
 	function deleteUser(e: React.MouseEvent<HTMLElement>, username: string): void {
@@ -319,6 +320,20 @@ export default function ActivityPage(): React.JSX.Element {
 
 		return undefined;
 	}
+
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/activities';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
 
 	return (
 		<>
@@ -501,6 +516,7 @@ export default function ActivityPage(): React.JSX.Element {
 
 							<button
 								className="activity-edit-button"
+								style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
 									if (isUser || isOwner) setIsEditing(true);
@@ -554,6 +570,7 @@ export default function ActivityPage(): React.JSX.Element {
 							</label>
 
 							{/* render dates */}
+							{/*
 							{project && (
 								<label
 									htmlFor="start"
@@ -639,6 +656,7 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 								</label>
 							)}
+							
 							<label
 								htmlFor="endTime"
 								className="activity-vertical"
@@ -683,6 +701,8 @@ export default function ActivityPage(): React.JSX.Element {
 													});
 												}
 											}}
+											dateFormat="dd/MM/yyyy"
+											locale="it"
 											disabled={!isUser}
 										/>
 									</div>
@@ -717,7 +737,7 @@ export default function ActivityPage(): React.JSX.Element {
 								</div>
 							</label>
 
-							{/* render completed */}
+						
 							<label className="activity-completed" htmlFor="completed">
 								Completa?
 								<input
@@ -729,8 +749,9 @@ export default function ActivityPage(): React.JSX.Element {
 									disabled={!isUser}
 								/>
 							</label>
+			
 
-							{/* render access list */}
+						
 							<div className="activity-participants">
 								<label>
 									Utenti partecipanti all'attività
@@ -738,6 +759,7 @@ export default function ActivityPage(): React.JSX.Element {
 										<SearchForm
 											onItemClick={addUser}
 											list={activity.accessList}
+											excludeUser={loggedUser?.username}
 										/>
 									)}
 									<div className="activity-users-container">
@@ -760,7 +782,7 @@ export default function ActivityPage(): React.JSX.Element {
 															X
 														</button>
 													)}
-														*/}
+														
 												</div>
 											))
 										) : (
@@ -769,6 +791,7 @@ export default function ActivityPage(): React.JSX.Element {
 									</div>
 								</label>
 							</div>
+							*/}
 
 							{/* render project inputs */}
 							{/* render project */}
@@ -828,7 +851,7 @@ export default function ActivityPage(): React.JSX.Element {
 									{/* parent*/}
 									<div className="activity-parent">
 										<div>
-											Attività padre: {activity.parent || "Nessuna"} (Non
+											Attività padre: {findParentActivity() ? findParentActivity()?.title : "Nessuna"} (Non
 											modificabile)
 										</div>
 									</div>
@@ -836,7 +859,7 @@ export default function ActivityPage(): React.JSX.Element {
 									{/* next */}
 									<div className="activity-next">
 										<div>
-											Prossima attività: {activity.next || "Nessuna"}
+											Prossima attività: {findNextActivity() ? findNextActivity()?.title : "Nessuna"}
 											{isOwner && (
 												<>
 													<select
@@ -869,7 +892,7 @@ export default function ActivityPage(): React.JSX.Element {
 													<a
 														href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}&next=${activity.next}`}
 													>
-														<button>
+														<button style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}>
 															Aggiungi attività successiva
 														</button>
 													</a>
@@ -898,7 +921,7 @@ export default function ActivityPage(): React.JSX.Element {
 												<a
 													href={`/activities/new?projectId=${activity.projectId}&parent=${activity.id}`}
 												>
-													<button>Aggiungi sotto-attività</button>
+													<button style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}>Aggiungi sotto-attività</button>
 												</a>
 											)}
 										</label>
@@ -960,6 +983,7 @@ export default function ActivityPage(): React.JSX.Element {
 							)}
 							{message && <div className="error-message">{message}</div>}
 							<button
+								style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
 									handleUpdateActivity(e);
@@ -978,38 +1002,38 @@ export default function ActivityPage(): React.JSX.Element {
 										behavior: "smooth",
 									});
 								}}
-								style={{ backgroundColor: "red" }}
+								style={{ backgroundColor: "#d64545" }}
 							>
 								Annulla Modifiche
 							</button>
 							<button
 								onClick={(): void => setConfirmDelete(true)}
-								style={{ backgroundColor: "red" }}
+								style={{ backgroundColor: "#d64545" }}
 							>
 								Elimina Attività
 							</button>
 							<div className="confirmDelete-background"
-									style={{ display: confirmDelete ? "flex" : "none" }}
-								>
-									<div className="confirmDelete-container">
-										<h2>Stai eliminando una attività. Vuoi procedere?</h2>
-										<div
-											style={{ display: "flex", gap: "2em" }}
+								style={{ display: confirmDelete ? "flex" : "none" }}
+							>
+								<div className="confirmDelete-container">
+									<h2>Stai eliminando una attività. Vuoi procedere?</h2>
+									<div
+										style={{ display: "flex", gap: "2em" }}
+									>
+										<button
+											style={{ backgroundColor: "#ff6b6b" }}
+											onClick={(): void => setConfirmDelete(false)}
 										>
-											<button
-												style={{ backgroundColor: "#ff6b6b" }}
-												onClick={(): void => setConfirmDelete(false)}
-											>
-												Annulla
-											</button>
-											<button
-												onClick={handleDeleteActivity}
-											>
-												Continua
-											</button>
-										</div>
+											Annulla
+										</button>
+										<button
+											onClick={handleDeleteActivity}
+										>
+											Continua
+										</button>
 									</div>
 								</div>
+							</div>
 						</div>
 					</>
 				)}

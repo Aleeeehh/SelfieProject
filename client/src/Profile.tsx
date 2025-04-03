@@ -22,6 +22,7 @@ export default function Profile(): React.JSX.Element {
 	const [user, setUser] = React.useState(emptyUser);
 	const [isEditing, setIsEditing] = React.useState(false);
 	const [changePassword, setChangePassword] = React.useState(false);
+	const [confirmDelete, setConfirmDelete] = React.useState(false);
 
 	const [oldPassword, setOldPassword] = React.useState("");
 	const [newPassword, setNewPassword] = React.useState("");
@@ -32,7 +33,7 @@ export default function Profile(): React.JSX.Element {
 
 	React.useEffect(() => {
 		fetchUserData();
-	}, [isLoggedIn, nav]);
+	}, [isLoggedIn, nav, isEditing]);
 
 	async function fetchUserData(): Promise<void> {
 		try {
@@ -85,6 +86,41 @@ export default function Profile(): React.JSX.Element {
 	}
 
 	async function handleUpdate(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+		if (user.firstName === "" || user.lastName === "" || user.address === "") {
+			setMessage("Compilare tutti i campi ");
+			return;
+		}
+
+		if (changePassword && (oldPassword === "" || newPassword === "" || confirmNewPassword === "")) {
+			setMessage("Compilare tutti i campi ");
+			return;
+		}
+
+
+		if (changePassword) {
+			if (newPassword !== confirmNewPassword) {
+				setMessage("Le password non coincidono");
+				return;
+			}
+		}
+
+		if (new Date(user.birthday) > new Date(Date.now())) {
+			setMessage("La data di nascita non può essere nel futuro");
+			//setUser();
+			return;
+		}
+
+		/*if (oldPassword !== user.password) {
+			console.log(oldPassword, user.password);
+			console.log(oldPassword, user.password);
+			console.log(oldPassword, user.password);
+			console.log(oldPassword, user.password);
+			console.log(oldPassword, user.password);
+			setMessage("Vecchia password errata");
+			return;
+		}*/
+
+
 		e.preventDefault();
 
 		const newData = {
@@ -114,8 +150,15 @@ export default function Profile(): React.JSX.Element {
 				//alert("Utente aggiornato correttamente!");
 				fetchUserData();
 				setIsEditing(false);
+				setMessage("");
+				setChangePassword(false);
+				setOldPassword("");
+				setNewPassword("");
+				setConfirmNewPassword("");
+			} else if (resBody.message === "Old password is incorrect") {
+				setMessage("Vecchia password errata");
 			} else {
-				setMessage("Errore durante il tentativo di aggiornamento");
+				//setMessage("Errore durante il tentativo di aggiornamento");
 			}
 		} catch (e) {
 			setMessage("Impossibile raggiungere il server");
@@ -190,7 +233,7 @@ export default function Profile(): React.JSX.Element {
 							<label className="eighty-percent">Data di nascita:
 								<p>{new Date(user.birthday).toLocaleDateString()}</p>
 							</label>
-							<label className="eighty-percent">Indirizzo:
+							<label className="eighty-percent">Indirizzo di casa:
 								<p>{user.address}</p>
 							</label>
 						</>
@@ -203,17 +246,28 @@ export default function Profile(): React.JSX.Element {
 									className="btn profile-date-input"
 									name="birthday"
 									value={new Date(user.birthday).toISOString().split("T")[0]}
-									onChange={(e): void =>
+									onChange={(e): void => {
+										const selectedDate = new Date(e.target.value);
+										const today = new Date();
+										today.setHours(0, 0, 0, 0);
+
+										if (selectedDate > today) {
+											setMessage("La data di nascita non può essere nel futuro");
+											return;
+										}
+
+										setMessage("");
 										setUser({
 											...user,
-											birthday: new Date(e.target.value),
-										})
-									}
+											birthday: selectedDate,
+										});
+									}}
+									max={new Date().toISOString().split("T")[0]}
 									required
 								/>
 							</label>
 							<label className="eighty-percent">
-								Indirizzo:
+								Indirizzo di casa:
 								<input
 									type="text"
 									name="address"
@@ -230,13 +284,23 @@ export default function Profile(): React.JSX.Element {
 
 				{isEditing && (
 					<div className="profile-details">
-						<label htmlFor="updatePassword">
-							Aggiorna password?
+						<label
+							htmlFor="updatePassword"
+							style={{
+								cursor: 'pointer',
+								userSelect: 'none',  // Impedisce la selezione del testo
+								WebkitUserSelect: 'none',  // Per Safari
+								MozUserSelect: 'none',     // Per Firefox
+								msUserSelect: 'none'       // Per IE/Edge
+							}}
+						>
+							Voglio aggiornare la password
 							<input
 								type="checkbox"
 								name="updatePassword"
 								id="updatePassword"
 								onChange={(e): void => setChangePassword(e.target.checked)}
+								style={{ cursor: "pointer" }}
 							/>
 						</label>
 						{changePassword && (
@@ -272,7 +336,7 @@ export default function Profile(): React.JSX.Element {
 						)}
 					</div>
 				)}
-
+				{message && isEditing && <div className="error-message">{message}</div>}
 				<div className="buttons">
 					{!isEditing ? (
 						<>
@@ -298,14 +362,13 @@ export default function Profile(): React.JSX.Element {
 							<button
 								type="button"
 								className="btn btn-danger custom-btn"
-								onClick={handleDelete}
+								onClick={(): void => setConfirmDelete(true)}
 							>
 								ELIMINA ACCOUNT
 							</button>
 						</>
 					) : (
 						<>
-							{message && <div className="error-message">{message}</div>}
 							<button
 								type="button"
 								className="btn btn-warning custom-btn"
@@ -319,12 +382,41 @@ export default function Profile(): React.JSX.Element {
 								onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 									e.preventDefault();
 									setIsEditing(false);
+									setChangePassword(false);
+									setOldPassword("");
+									setNewPassword("");
+									setConfirmNewPassword("");
+									setMessage("");
 								}}
 							>
 								ANNULLA
 							</button>
 						</>
 					)}
+				</div>
+			</div>
+			<div
+				className="confirmDelete-background"
+				style={{ display: confirmDelete ? "flex" : "none" }}
+			>
+				<div className="confirmDelete-container">
+					<h2>Stai per eliminare il tuo account. Vuoi procedere?</h2>
+					<div style={{ display: "flex", gap: "2em" }}>
+						<button
+							style={{ backgroundColor: "#ff6b6b" }}
+							onClick={(): void => setConfirmDelete(false)}
+						>
+							Annulla
+						</button>
+						<button
+							onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
+								setConfirmDelete(false);
+								handleDelete(e);
+							}}
+						>
+							Continua
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

@@ -35,6 +35,9 @@ function MessageHub(): React.JSX.Element {
 
 				if (resBody.status === ResponseStatus.GOOD) {
 					setChatList(resBody.value);
+					if (resBody.value.length > 0) {
+						setActiveChat(resBody.value[0]);
+					}
 				} else {
 				}
 			}
@@ -45,6 +48,7 @@ function MessageHub(): React.JSX.Element {
 
 	React.useEffect(() => {
 		getAllChats();
+		console.log(chatMessage);
 	}, []);
 
 	async function handleSendMessage(): Promise<void> {
@@ -140,21 +144,47 @@ function MessageHub(): React.JSX.Element {
 			const resBody = (await res.json()) as ResponseBody;
 
 			if (res.status === 200) {
-				console.log(resBody);
-
 				// Aggiorna la lista delle chat
 				const chats = await fetch(`${SERVER_API}/chats`);
 				const resBody2 = (await chats.json()) as ResponseBody;
 				if (res.status === 200) {
-					setChatList(resBody2.value as Chat[]);
+					const updatedChats = resBody2.value as Chat[];
+					setChatList(updatedChats);
+
+					// Se la chat eliminata era quella attiva
+					if (chat.id === activeChat.id) {
+						// Se ci sono altre chat, imposta la prima come attiva
+						if (updatedChats.length > 0) {
+							setActiveChat(updatedChats[0]);
+						} else {
+							// Se non ci sono altre chat, resetta activeChat
+							setActiveChat({} as Chat);
+						}
+					}
 				} else {
-					setListMessage("Impossibile recuperare le chat: " + resBody.message);
+					setListMessage("Impossibile eliminare la chat: " + resBody.message);
 				}
 			} else {
 				setListMessage("Impossibile eliminare la chat: " + resBody.message);
 			}
 		} catch (e) {
 			setListMessage("Impossibile raggiungere il server");
+		}
+	}
+
+	async function handleChatSelection(chat: Chat): Promise<void> {
+		try {
+			const res = await fetch(`${SERVER_API}/chats`);
+			const resBody = (await res.json()) as ResponseBody;
+			if (res.status === 200) {
+				const chats = resBody.value as Chat[];
+				const updatedChat = chats.find((c) => c.id === chat.id);
+				if (updatedChat) {
+					setActiveChat(updatedChat);
+				}
+			}
+		} catch (e) {
+			setChatMessage("Impossibile aggiornare la chat");
 		}
 	}
 
@@ -174,9 +204,12 @@ function MessageHub(): React.JSX.Element {
 							<>
 								<SearchForm
 									onItemClick={(e, user): void => {
-										addNewChat(e, user);
+										if (user !== loggedUser?.username) {
+											addNewChat(e, user);
+										}
 									}}
 									list={[]}
+									excludeUser={loggedUser?.username}
 								/>
 								<button
 									className="chat-close-button"
@@ -196,7 +229,7 @@ function MessageHub(): React.JSX.Element {
 								<div style={{ display: "flex", gap: "0.5em" }}>
 									<button
 										className="chat-select-button"
-										onClick={(): void => setActiveChat(chat)}
+										onClick={(): Promise<void> => handleChatSelection(chat)}
 									>
 										Chat
 									</button>
@@ -213,69 +246,89 @@ function MessageHub(): React.JSX.Element {
 							</div>
 						))}
 					</div>
-					<div className="chat-container">
-						<div className="chat-header">
-							{activeChat &&
-								activeChat.firstUser &&
-								activeChat.secondUser &&
-								(activeChat.firstUser === loggedUser?.username
-									? activeChat.secondUser
-									: activeChat.firstUser)}
-						</div>
-						<div className="chat-message-list">
-							{activeChat &&
-								activeChat.messageList &&
-								activeChat.messageList.map((message, index) => (
-									<div
-										className={`chat-message ${
-											message.username === loggedUser?.username
+					{chatList.length > 0 &&
+
+						<div className="chat-container">
+							<div className="chat-header">
+								{activeChat &&
+									activeChat.firstUser &&
+									activeChat.secondUser &&
+									(activeChat.firstUser === loggedUser?.username
+										? activeChat.secondUser
+										: activeChat.firstUser)}
+							</div>
+							<div className="chat-message-list">
+								{activeChat &&
+									activeChat.messageList &&
+									activeChat.messageList.map((message, index) => (
+										<div
+											className={`chat-message ${message.username === loggedUser?.username
 												? "message-sent"
 												: "message-received"
-										}`}
-										key={message.id}
-										ref={
-											index === activeChat.messageList.length - 1
-												? lastMessageRef
-												: null
-										}
-									>
-										<div className="message-text">{message.text}</div>
-										<div className="message-info">
-											<span>Da {message.username} - </span>
-											<span>
-												{message.createdAt
-													? new Date(
-															message.createdAt
-													  ).toLocaleTimeString("it-IT", {
+												}`}
+											key={message.id}
+											ref={
+												index === activeChat.messageList.length - 1
+													? lastMessageRef
+													: null
+											}
+										>
+											<div className="message-text">{message.text}</div>
+											<div
+												className="message-info"
+												style={{
+													display: 'flex',
+													justifyContent: 'flex-end',  // Allinea a destra
+													gap: '4px'  // Spazio consistente tra gli elementi
+												}}
+											>
+												<span>Da {message.username}</span>
+												<span>-</span>
+												<span>
+													{message.createdAt
+														? new Date(message.createdAt).toLocaleTimeString("it-IT", {
 															hour: "2-digit",
 															minute: "2-digit",
-													  })
-													: "N/A"}
-											</span>
+														})
+														: "N/A"}
+												</span>
+											</div>
 										</div>
-									</div>
-								))}
+									))}
+							</div>
+							{/* {chatMessage && (<div className="error-message">{chatMessage}</div>)} */}
+							<div className="chat-input-container">
+								<input
+									className="message-input"
+									value={input}
+									onChange={(e): void => setInput(e.target.value)}
+									onKeyDown={(e): void => {
+										if (e.key === 'Enter' && input.trim()) {
+											e.preventDefault();
+											handleSendMessage();
+										}
+										// Non blocchiamo altri tasti, permettendo la loro ripetizione naturale
+									}}
+									autoComplete="off"  // Previene suggerimenti che potrebbero interferire
+									style={{
+										WebkitUserSelect: 'text',
+										userSelect: 'text'
+									}}
+								/>
+								<button
+									className="send-button"
+									onClick={handleSendMessage}
+									disabled={!input}
+								>
+									Invia
+								</button>
+							</div>
 						</div>
-						{chatMessage && (<div className="error-message">{chatMessage}</div>)}
-						<div className="chat-input-container">
-							<input
-								className="message-input"
-								value={input}
-								onChange={(e): void => setInput(e.target.value)}
-							/>
-							<button
-								className="send-button"
-								onClick={handleSendMessage}
-								disabled={!input}
-							>
-								Invia
-							</button>
-						</div>
-					</div>
+					}
 				</div>
 			</div>
 		</>
 	);
 }
-
 export default MessageHub;
+

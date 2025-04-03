@@ -5,7 +5,7 @@ import type { ResponseBody } from "./types/ResponseBody";
 import { ResponseStatus } from "./types/ResponseStatus";
 import type Activity from "./types/Activity";
 import type User from "./types/User";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const PREVIEW_CHARS = 100;
 const MAX_TITLE_CHARS = 17;
@@ -30,7 +30,22 @@ export default function Activities(): React.JSX.Element {
 	const [projectIdToTitle, setProjectIdToTitle] = React.useState<{ [key: string]: string }>({});
 
 	const [confirmDelete, setConfirmDelete] = React.useState(false);
+	const [currentDate, setCurrentDate] = React.useState<Date | null>(null);
 	const [activityToDelete, setActivityToDelete] = React.useState<string | null>(null);
+
+	const fetchCurrentDate = async (): Promise<void> => {
+		try {
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			if (!response.ok) {
+				throw new Error("Errore nel recupero della data corrente");
+			}
+			const data = await response.json();
+			setCurrentDate(new Date(data.currentDate)); // Assicurati che il formato sia corretto
+
+		} catch (error) {
+			console.error("Errore durante il recupero della data corrente:", error);
+		}
+	};
 
 
 
@@ -60,6 +75,107 @@ export default function Activities(): React.JSX.Element {
 			console.log("Impossibile recuperare il titolo del progetto");
 			return projectId; // fallback all'ID in caso di errore
 		}
+	}
+	React.useEffect(() => {
+		fetchCurrentDate();
+
+		//aggiorna la currentDate di calendar ogni secondo
+		const intervalId = setInterval(fetchCurrentDate, 1000);
+		return () => clearInterval(intervalId);
+	}, []);
+
+	async function handleCompleteActivity(id: string): Promise<void> {
+		console.log("Completo l'attività:", id);
+		const res = await fetch(`${SERVER_API}/activities/completeActivity`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				activity_id: id,
+			}),
+		});
+
+		const resTitle = await fetch(`${SERVER_API}/activities/title/${id}`);
+		const dataTitle = await resTitle.json();
+		const activityTitle = dataTitle.value;
+		console.log("TITOLO ATTIVITA COMPLETATA:", activityTitle);
+
+		//ottieni tutte le note con l'id dell'attività completata
+		const resNotes = await fetch(`${SERVER_API}/notes/`);
+		const dataNotes = await resNotes.json();
+		const Notes = dataNotes.value;
+		console.log("ATTIVITA COMPLETATA:", activityTitle);
+		//per ogni nota, scorri la sua todoList, e controlla se ci sono item il cui item.text sia
+		//uguale ad activity.title
+		console.log("Queste sono le note su cui iterare:", Notes);
+
+		for (const note of Notes) {
+			console.log("Questi sono gli item della nota:", note.toDoList);
+			for (const item of note.toDoList) {
+				if (item.text === activityTitle) {
+					console.log("ITEM DA COMPLETARE:", item);
+
+					const noteId = note._id || note.id;
+					console.log("ID NOTA:", noteId);
+
+					// Chiamata alla nuova API per completare l'item
+					const res = await fetch(
+						`${SERVER_API}/notes/${noteId}/complete-item/${item.id}`,
+						{
+							method: "PUT",
+							headers: { "Content-Type": "application/json" },
+						}
+					);
+
+					if (!res.ok) {
+						console.error("Errore nel completamento dell'item");
+					} else {
+						console.log("Item completato con successo");
+					}
+				}
+			}
+		}
+
+		const data = await res.json();
+		//console.log("ATTIVITA COMPLETATA:", data);
+
+		//const res2 = await fetch(`${SERVER_API}/activities`); // Assicurati che l'endpoint sia corretto
+		//const updatedActivities = await res2.json();
+
+		const owner = await getCurrentUser();
+		const ownerId = owner.value._id.toString();
+		const res3 = await fetch(`${SERVER_API}/notifications/user/${ownerId}`);
+		const data3 = await res3.json();
+		const attivitaCompletata = data.value[0];
+		console.log("ATTIVITA COMPLETATA:", attivitaCompletata);
+		const notifications = data3.value; //tutte le notifiche sul database
+		console.log("NOTIFICHE RIMASTE IN LISTAAAA:", notifications);
+		console.log("Attività completataAAAA:", attivitaCompletata);
+		const idEventoNotificaCondiviso = attivitaCompletata.idEventoNotificaCondiviso;
+		console.log("ID CONDIVISO ATTIVITA COMPLETATA:", idEventoNotificaCondiviso);
+		//console.log("NOTIFICHE ATTUALIIII:", notifications);
+
+		for (const notification of notifications) {
+			const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					notification_id: notification.id,
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+				}), // Assicurati di usare il campo corretto
+			});
+			console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+
+			if (!res3.ok) {
+				const errorData = await res3.json();
+				console.error("Errore durante l'eliminazione della notifica:", errorData);
+			} else {
+				console.log(
+					`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`
+				);
+			}
+		}
+
+		await updateActivities();
 	}
 
 	async function getAllUsers(): Promise<string[]> {
@@ -205,32 +321,147 @@ export default function Activities(): React.JSX.Element {
 
 	async function handleDelete(id: string): Promise<void> {
 		if (!id) {
-		  alert("Errore nel cancellamento dell'attività: ID non trovato.");
-		  return;
+			alert("Errore nel cancellamento dell'attività: ID non trovato.");
+			return;
 		}
-	  
+
+		//ottengo i dati dell'attività da eliminare
+		const res1 = await fetch(`${SERVER_API}/activities/${id}`, {
+			method: "GET",
+			headers: { "Content-Type": "application/json" }
+		});
+		const data1 = await res1.json();
+		const attivitaEliminata = data1.value;
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+
 		try {
-		  const res = await fetch(`${SERVER_API}/activities/${id}`, {
-			method: "DELETE",
-		  });
-	  
-		  const resBody = (await res.json()) as ResponseBody;
-	  
-		  if (res.status === 200) {
-			console.log("Attività eliminata correttamente!");
-			setActivities((prev) => prev.filter((activity) => (activity as any)._id !== id)); // Aggiorna lo stato rimuovendo l'attività eliminata
-			setConfirmDelete(false); // Chiudi il popup
-			setActivityToDelete(null); // Resetta l'attività selezionata
-		  } else {
-			alert(resBody.message || "Errore nel cancellamento dell'attività.");
-		  }
+
+
+			/*
+				//cerca l'evento scadenza dell'attività ed eliminalo
+				const res2 = await fetch(`${SERVER_API}/events/deleteEventTitle`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						titoloDaEliminare: "Scadenza " + attivitaEliminata[0].title,
+					}),
+				});
+				const data2 = await res2.json();
+				console.log("Evento scadenza eliminato:", data2);
+		
+		
+		
+		
+				//notifiche dell'attività da eliminare
+				const owner = await getCurrentUser();
+				const ownerId = owner.value._id.toString();
+				const res3 = await fetch(`${SERVER_API}/notifications/user/${ownerId}`);
+				const data3 = await res3.json();
+				const notifications = data3.value; //tutte le notifiche sul database
+		
+				const idEventoNotificaCondiviso = attivitaEliminata[0].idEventoNotificaCondiviso;
+		
+				for (const notification of notifications) {
+					const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							notification_id: notification.id,
+							idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						}), // Assicurati di usare il campo corretto
+					});
+					console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+		
+					if (!res3.ok) {
+						const errorData = await res3.json();
+						console.error("Errore durante l'eliminazione della notifica:", errorData);
+					} else {
+						console.log(
+							`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`
+						);
+					}
+				}
+				*/
+
+			//elimina l'attività
+			const res = await fetch(`${SERVER_API}/activities/${id}`, {
+				method: "DELETE",
+			});
+
+			const resBody = (await res.json()) as ResponseBody;
+
+			if (res.status === 200) {
+				console.log("Attività eliminata correttamente!");
+				setActivities((prev) => prev.filter((activity) => (activity as any)._id !== id)); // Aggiorna lo stato rimuovendo l'attività eliminata
+				setConfirmDelete(false); // Chiudi il popup
+				setActivityToDelete(null); // Resetta l'attività selezionata
+			} else {
+				alert(resBody.message || "Errore nel cancellamento dell'attività.");
+			}
 		} catch (e) {
-		  console.log("Impossibile raggiungere il server.");
+			console.log("Impossibile raggiungere il server.");
+		}
+
+		console.log("ATTIVITA DA ELIMINARE:", attivitaEliminata);
+
+
+		//cerca l'evento scadenza dell'attività ed eliminalo
+		const res2 = await fetch(`${SERVER_API}/events/deleteEventTitle`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				titoloDaEliminare: "Scadenza " + attivitaEliminata.title,
+			}),
+		});
+		const data2 = await res2.json();
+		console.log("Evento scadenza eliminato:", data2);
+		console.log("Evento scadenza eliminato:", data2);
+		console.log("Evento scadenza eliminato:", data2);
+		console.log("Evento scadenza eliminato:", data2);
+
+
+
+
+		//notifiche dell'attività da eliminare
+		const owner = await getCurrentUser();
+		const ownerId = owner.value._id.toString();
+		const res3 = await fetch(`${SERVER_API}/notifications/user/${ownerId}`);
+		const data3 = await res3.json();
+		const notifications = data3.value; //tutte le notifiche sul database
+
+		const idEventoNotificaCondiviso = attivitaEliminata.idEventoNotificaCondiviso;
+
+		for (const notification of notifications) {
+			const res3 = await fetch(`${SERVER_API}/notifications/deleteNotification`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					notification_id: notification.id,
+					idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+				}), // Assicurati di usare il campo corretto
+			});
+			console.log("ID NOTIFICA DA ELIMINARE:", notification.id);
+
+			if (!res3.ok) {
+				const errorData = await res3.json();
+				console.error("Errore durante l'eliminazione della notifica:", errorData);
+			} else {
+				console.log(
+					`Notifica con ID ${notification.data.idEventoNotificaCondiviso} eliminata con successo.`
+				);
+			}
 		}
 	}
 
-	  
-	
+
+
 
 	return (
 		<>
@@ -346,7 +577,7 @@ export default function Activities(): React.JSX.Element {
 							}
 						})
 						.map((activity) => (
-							<div className="card-activity" key={activity.id}>
+							<Link to={`/activities/${(activity as any)._id}`} style={{ textDecoration: "none" }}>								<div className="card-activity" key={activity.id} style={{ cursor: "pointer" }}>
 								<div className="card-activity-title">
 									<h3>
 										{activity.title.length > MAX_TITLE_CHARS
@@ -362,22 +593,34 @@ export default function Activities(): React.JSX.Element {
 											: activity.description}
 									</p>
 								</div>
+								<div className="card-activity-title" style={{ backgroundColor: "rgb(238, 234, 228)" }}>
+									<h6>
+										{/* scritta in verde se completata, in rosso se in ritardo*/}
+										<span style={{ color: "rgb(88, 205, 103)", fontWeight: "bold" }}>{activity.completed ? "ATTIVITA' COMPLETATA!" : ""}</span>
+										<span style={{ color: "lightcoral", fontWeight: "bold" }}>{!activity.completed && currentDate && new Date(activity.deadline) < currentDate ? "ATTIVITA' IN RITARDO!" : ""}</span>
+
+									</h6>
+								</div>
 								<div className="card-activity-buttons">
+
 									<button
-										onClick={(): void =>
-											window.location.assign(`/activities/${(activity as any)._id}`)
-										}
+										onClick={async (e: React.MouseEvent): Promise<void> => {
+											e.preventDefault();
+											await handleCompleteActivity(
+												(activity as any)._id
+											); //completo l'attività corrente
+										}}
 									>
-										Visualizza
+										Completa
 									</button>
 									{activity.owner === userId && (
 										<button
 											style={{ backgroundColor: "#ff6b6b" }}
 											onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
-												e.preventDefault(); // Previene comportamenti indesiderati
+												e.preventDefault();
 												setConfirmDelete(true); // Mostra il popup di conferma
 												setActivityToDelete((activity as any)._id); // Imposta l'attività selezionata per l'eliminazione
-											  }}
+											}}
 										>
 											Cancella
 										</button>
@@ -397,7 +640,7 @@ export default function Activities(): React.JSX.Element {
 													e.preventDefault();
 													setConfirmDelete(false); // Chiudi il popup
 													setActivityToDelete(null); // Resetta l'attività selezionata
-												  }}
+												}}
 											>
 												Annulla
 											</button>
@@ -417,8 +660,9 @@ export default function Activities(): React.JSX.Element {
 									</div>
 								</div>
 							</div>
+							</Link>
 						))
-						
+
 						/*.map((activity) => (
 							<div className="card-activity" key={activity.id}>
 								<div className="card-activity-title">
@@ -461,19 +705,19 @@ export default function Activities(): React.JSX.Element {
 								</div>
 							</div>
 						))*/
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						}
+
+
+
+
+
+
+
+
+
+
+
+
+					}
 				</div>
 			</div>
 		</>

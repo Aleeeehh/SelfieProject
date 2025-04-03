@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import type Project from "./types/Project";
 import { useRefresh } from "./TimeContext";
 
@@ -7,36 +7,59 @@ enum View {
 	WEEK = "Week",
 	MONTH = "Month",
 }
+
 const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
+interface GanttInput {
+	dateStart: Date;
+	dateEnd: Date;
+	view: View;
+}
+
+interface GanttOutput extends GanttInput {
+	points: number[];
+	limit: number;
+}
+
 const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element => {
-	const [start, setStart] = useState<Date>(new Date());
-	const [end, setEnd] = useState<Date>(new Date(start.getTime() + THIRTY_DAYS));
-	const [points, setPoints] = useState<number[]>([]);
-	const [view, setView] = useState<View>(View.DAY);
+	const [inputs, setInputs] = React.useState<GanttInput>({
+		dateStart: new Date(),
+		dateEnd: new Date(new Date().getTime() + THIRTY_DAYS),
+		view: View.DAY,
+	});
+
+	const [outputs, setOutputs] = React.useState<GanttOutput>({
+		points: [],
+		limit: 0,
+		dateStart: new Date(),
+		dateEnd: new Date(new Date().getTime() + THIRTY_DAYS),
+		view: View.DAY,
+	});
 
 	const { serverTime } = useRefresh();
 
-	const [limit, setLimit] = useState(0);
-
-	const getPoints = (): void => {
+	const getPoints = (): { view: View; points: number[]; limit: number } => {
 		const points = [];
 
+		const start = new Date(inputs.dateStart);
+		const end = new Date(inputs.dateEnd);
+		const view = inputs.view;
+
 		// Generate points array from start to end, based on view
-		if (view === View.DAY) {
+		if (inputs.view === View.DAY) {
 			for (let i = 0; i <= (end.getTime() - start.getTime()) / ONE_DAY; i++) {
 				const currDate = new Date(start.getTime() + i * ONE_DAY);
 				currDate.setHours(0, 0, 0, 0);
 				points.push(currDate.getTime());
 			}
-		} else if (view === View.WEEK) {
+		} else if (inputs.view === View.WEEK) {
 			for (let i = 0; i <= (end.getTime() - start.getTime()) / ONE_DAY; i += 7) {
 				const currDate = new Date(start.getTime() + i * ONE_DAY);
 				currDate.setHours(0, 0, 0, 0);
 				points.push(currDate.getTime());
 			}
-		} else if (view === View.MONTH) {
+		} else if (inputs.view === View.MONTH) {
 			// Get the first of the month of start
 			start.setHours(0, 0, 0, 0);
 			start.setDate(1);
@@ -52,42 +75,28 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 				currentDate.setMonth(currentDate.getMonth() + 1);
 			}
 		}
-		setPoints(points);
 
-		setLimit(
+		const limit =
 			view === View.DAY
 				? ONE_DAY
 				: view === View.WEEK
 				? 7 * ONE_DAY
-				: THIRTY_DAYS + 2 * ONE_DAY
-		);
+				: THIRTY_DAYS + 2 * ONE_DAY;
+
+		return { view, points, limit };
 	};
 
-	React.useEffect(() => {
-		const startZero = new Date(serverTime);
-		startZero.setHours(0, 0, 0, 0);
-		setStart(startZero);
+	// React.useEffect(() => {
+	// 	const startZero = new Date(serverTime);
+	// 	startZero.setHours(0, 0, 0, 0);
+	// 	setStart(startZero);
 
-		const endZero = new Date(new Date(serverTime).getTime() + THIRTY_DAYS);
-		endZero.setHours(0, 0, 0, 0);
-		setEnd(endZero);
+	// 	const endZero = new Date(new Date(serverTime).getTime() + THIRTY_DAYS);
+	// 	endZero.setHours(0, 0, 0, 0);
+	// 	setEnd(endZero);
 
-		getPoints();
-	}, [serverTime]);
-
-	function handleChange(e: React.ChangeEvent<HTMLInputElement>): void {
-		try {
-			const inputDate = new Date(e.target.value);
-			const formattedDate = inputDate.toISOString().split("T")[0];
-			if (e.target.name === "start") {
-				setStart(new Date(formattedDate));
-			} else if (e.target.name === "end") {
-				setEnd(new Date(formattedDate));
-			}
-		} catch (e) {
-			console.log(e);
-		}
-	}
+	// 	getPoints();
+	// }, [serverTime]);
 
 	return (
 		<div className="gantt-container">
@@ -97,27 +106,40 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 				<input
 					type="date"
 					name="start"
-					value={start ? start.toISOString().split("T")[0] : ""}
-					onChange={handleChange}
+					value={inputs.dateStart ? inputs.dateStart.toISOString().split("T")[0] : ""}
+					onChange={(e): void =>
+						setInputs({
+							...inputs,
+							dateStart: new Date(
+								new Date(e.target.value).toISOString().split("T")[0]
+							),
+						})
+					}
 					className="gantt-date-input"
 				/>
 				<input
 					type="date"
 					name="end"
-					value={end ? end.toISOString().split("T")[0] : ""}
-					onChange={handleChange}
+					value={inputs.dateEnd ? inputs.dateEnd.toISOString().split("T")[0] : ""}
+					onChange={(e): void =>
+						setInputs({
+							...inputs,
+							dateEnd: new Date(new Date(e.target.value).toISOString().split("T")[0]),
+						})
+					}
 					className="gantt-date-input"
 				/>
 				<select
-					value={view}
-					onChange={(e): void => setView(e.target.value as View)}
-					style={{ width: "200px" }}
-				>
+					value={inputs.view}
+					onChange={(e): void => setInputs({ ...inputs, view: e.target.value as View })}
+					style={{ width: "200px" }}>
 					<option value={View.DAY}>Giorno</option>
 					<option value={View.WEEK}>Settimana</option>
 					<option value={View.MONTH}>Mese</option>
 				</select>
-				<button onClick={getPoints} className="gantt-update-button">
+				<button
+					onClick={(): void => setOutputs({ ...outputs, ...getPoints() })}
+					className="gantt-update-button">
 					Aggiorna
 				</button>
 			</div>
@@ -129,17 +151,16 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 							<th className="gantt-table-head-cell">Task</th>
 							<th className="gantt-table-head-cell">Sub Task</th>
 							<th className="gantt-table-head-cell">Partecipanti</th>
-							{points.map((point, index) => (
+							{outputs.points.map((point, index) => (
 								<th
 									key={index}
 									className="gantt-table-head-cell"
 									style={
 										new Date(serverTime).getTime() <= point &&
-										new Date(serverTime).getTime() + limit >= point
+										new Date(serverTime).getTime() + outputs.limit >= point
 											? { backgroundColor: "blueviolet" }
 											: {}
-									}
-								>
+									}>
 									{new Date(point).toISOString().split("T")[0]}
 								</th>
 							))}
@@ -160,7 +181,7 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 													</div>
 												))}
 											</td>
-											{points.map((point, i) => (
+											{outputs.points.map((point, i) => (
 												<td key={i} className="day-cell">
 													{new Date(task.start || serverTime).getTime() <=
 														point &&
@@ -188,8 +209,7 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 																			backgroundColor:
 																				"green",
 																	  }
-															}
-														></div>
+															}></div>
 													) : (
 														<div className="gantt-empty-cell"></div>
 													)}
@@ -200,8 +220,7 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 											task.children.map((child) => (
 												<tr
 													key={"row -" + task?.id + child?.id}
-													className="table-row"
-												>
+													className="table-row">
 													<td></td>
 													<td className="gantt-task-cell">
 														{child.title}
@@ -210,53 +229,47 @@ const GanttDiagram = ({ projects }: { projects: Project[] }): React.JSX.Element 
 														{child.accessList.map((u, i) => (
 															<div
 																key={i}
-																className="gantt-participant"
-															>
+																className="gantt-participant">
 																{u}
 															</div>
 														))}
 													</td>
-													{points.map((point, i) => (
+													{outputs.points.map((point, i) => (
 														<td key={i} className="day-cell">
-															{
-																new Date(child.start!).getTime() <=
-																	point &&
-																point <=
-																	new Date(
-																		child.deadline
-																	).getTime() +
-																		ONE_DAY ? (
-																	<div
-																		className="gantt-task-bar"
-																		style={
-																			point <
-																			new Date(
-																				serverTime
-																			).getTime()
-																				? new Date(
-																						task.deadline
-																				  ).getTime() <
-																				  new Date(
-																						serverTime
-																				  ).getTime()
-																					? {
-																							backgroundColor:
-																								"darkred",
-																					  }
-																					: {
-																							backgroundColor:
-																								"orange",
-																					  }
+															{new Date(child.start!).getTime() <=
+																point &&
+															point <=
+																new Date(child.deadline).getTime() +
+																	ONE_DAY ? (
+																<div
+																	className="gantt-task-bar"
+																	style={
+																		point <
+																		new Date(
+																			serverTime
+																		).getTime()
+																			? new Date(
+																					task.deadline
+																			  ).getTime() <
+																			  new Date(
+																					serverTime
+																			  ).getTime()
+																				? {
+																						backgroundColor:
+																							"darkred",
+																				  }
 																				: {
 																						backgroundColor:
-																							"green",
+																							"orange",
 																				  }
-																		}
-																	></div>
-																) : (
-																	<div className="gantt-empty-cell"></div>
-																)
-															}
+																			: {
+																					backgroundColor:
+																						"green",
+																			  }
+																	}></div>
+															) : (
+																<div className="gantt-empty-cell"></div>
+															)}
 														</td>
 													))}
 												</tr>

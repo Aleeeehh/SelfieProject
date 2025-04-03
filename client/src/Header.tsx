@@ -5,6 +5,7 @@ import Notification from "./types/Notification";
 import User from "./types/User";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRefresh } from "./TimeContext";
+//import { useRef } from "react";
 
 const buttonStyle = {
 	backgroundColor: "white",
@@ -16,17 +17,36 @@ const buttonStyle = {
 };
 
 export default function Header(): React.JSX.Element {
+	/*
+	const [overlayOpacity, setOverlayOpacity] = useState(0);
+	const [overlayText, setOverlayText] = useState<string>("");
+	const [showOverlay, setShowOverlay] = useState<boolean>(false);
+	*/
 	const [showTimeMachine, setShowTimeMachine] = useState(false);
 	const [showNotifications, setShowNotifications] = useState(false);
 	const [showDropdown, setShowDropdown] = useState(false);
 	const [doNotDisturb, setDoNotDisturb] = useState(false);
 	const [notifications, setNotifications] = useState([] as Notification[]);
-	const [currentDate, setCurrentDate] = useState(new Date()); // Formato YYYY-MM-DD
+	const [currentDate, setCurrentDate] = useState(new Date());
+	const [isDateLoaded, setIsDateLoaded] = useState(true);
 	const [user, setUser] = useState(null);
 	const [username, setUsername] = useState("");
-	const [profileImage, setProfileImage] = useState("");
+	const [profileImage, setProfileImage] = useState(() => {
+		// Prova a recuperare l'immagine dal localStorage al caricamento iniziale
+		return localStorage.getItem('profileImage') || '';
+	});	//const previousNotificationsRef = useRef(notifications);
+
 
 	const isLoggedIn = !!localStorage.getItem("loggedUserId");
+
+	// async function refreshCurrentDate(): Promise<void> {
+	// 	const response = await fetch(`${SERVER_API}/currentDate`);
+	// 	if (!response.ok) {
+	// 		throw new Error("Errore nel recupero della data corrente");
+	// 	}
+	// 	const data = await response.json();
+	// 	setCurrentDate(new Date(data.currentDate));
+	// }
 
 	const { triggerAction } = useRefresh();
 
@@ -34,6 +54,12 @@ export default function Header(): React.JSX.Element {
 		const ring = new Audio("public/images/Notification.mp3");
 		ring.play();
 	}
+
+	useEffect(() => {
+		if (profileImage) {
+			localStorage.setItem('profileImage', profileImage);
+		}
+	}, [profileImage]);
 
 	const formatDate = (date: Date): string => {
 		return date.toLocaleString("it-IT", {
@@ -54,14 +80,14 @@ export default function Header(): React.JSX.Element {
 
 	const cleanNotifications = async (): Promise<void> => {
 		try {
-			const res1 = await fetch(`${SERVER_API}/currentDate`);
-			if (!res1.ok) {
-				throw new Error("Errore nel recupero della data corrente");
-			}
+			// const res1 = await fetch(`${SERVER_API}/currentDate`);
+			// if (!res1.ok) {
+			// 	throw new Error("Errore nel recupero della data corrente");
+			// }
 
-			const data = await res1.json();
+			// const data = await res1.json();
 
-			const currentDate = new Date(data.currentDate);
+			// const currentDate = new Date(data.currentDate);
 			await fetch(`${SERVER_API}/notifications/cleanNotifications`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -223,7 +249,9 @@ export default function Header(): React.JSX.Element {
 		let project;
 		// Ottieni il progetto dal titolo
 		console.log("titolo progetto notifica:", notification.data.project.title);
-		const res = await fetch(`${SERVER_API}/projects/by-title/${notification.data.project.title}`);
+		const res = await fetch(
+			`${SERVER_API}/projects/by-title/${notification.data.project.title}`
+		);
 		if (res.ok) {
 			const data = await res.json();
 			project = data.value;
@@ -239,14 +267,15 @@ export default function Header(): React.JSX.Element {
 
 		console.log("AccessListAccepted aggiornato:", res2);
 		handleReadNotification(notification.id);
-
 	}
 
 	async function handleAddProjectActivity(notification: Notification): Promise<void> {
 		//const owner = await getCurrentUser();
 		//const ownerId = owner.value._id.toString();
 		// Ottieni l'attività dal titolo
-		const res = await fetch(`${SERVER_API}/activities/by-title/${notification.data.activity.title}`);
+		const res = await fetch(
+			`${SERVER_API}/activities/by-title/${notification.data.activity.title}`
+		);
 		const data = await res.json();
 		const activity = data.value;
 		console.log("Attività trovata:", activity);
@@ -279,7 +308,19 @@ export default function Header(): React.JSX.Element {
 		});
 		console.log("Evento scadenza creato:", response);
 
+		// Aggiungi la notifica dell'attività condivisa come notifica sul calendario
+		if (notification.data.notification) {
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(notification.data.notification),
+			});
+			console.log("Notifica creata:", res3);
+		}
+
 		handleReadNotification(notification.id);
+
+
 	}
 
 	async function handleAddSharedEvent(notification: Notification): Promise<void> {
@@ -365,27 +406,27 @@ export default function Header(): React.JSX.Element {
 		// Metti la notifica come letta
 		handleReadNotification(notification.id);
 	}
-
-	async function handleSnoozeNotification(notificationId: string): Promise<void> {
-		try {
-			const snoozeDate = new Date(currentDate.getTime() + 1000 * 60 * 60); // +1 ora
-			const res = await fetch(`${SERVER_API}/notifications/${notificationId}`, {
-				method: "PUT",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ date: snoozeDate }), // Posticipa la notifica di 1 ora
-			});
-
-			if (!res.ok) {
-				const errorData = await res.json();
-				console.error("Errore durante l'aggiornamento della notifica:", errorData);
-			} else {
-				console.log(`Notifica con ID ${notificationId} aggiornata con successo.`);
+	/*
+		async function handleSnoozeNotification(notificationId: string): Promise<void> {
+			try {
+				const snoozeDate = new Date(currentDate.getTime() + 1000 * 60 * 60); // +1 ora
+				const res = await fetch(`${SERVER_API}/notifications/${notificationId}`, {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ date: snoozeDate }), // Posticipa la notifica di 1 ora
+				});
+	
+				if (!res.ok) {
+					const errorData = await res.json();
+					console.error("Errore durante l'aggiornamento della notifica:", errorData);
+				} else {
+					console.log(`Notifica con ID ${notificationId} aggiornata con successo.`);
+				}
+				cleanNotifications();
+			} catch (error) {
+				console.error("Errore nello snooze della notifica:", error);
 			}
-			cleanNotifications();
-		} catch (error) {
-			console.error("Errore nello snooze della notifica:", error);
-		}
-	}
+		}*/
 
 	const handleReadNotification = async (notificationId: string): Promise<void> => {
 		try {
@@ -421,14 +462,24 @@ export default function Header(): React.JSX.Element {
 				throw new Error("ERRORE NELLA RICHIESTA POST DI CURRENTDATE NELL'HEADER");
 			}
 
-			const getResponse = await fetch(`${SERVER_API}/currentDate`);
-			if (!getResponse.ok) {
-				throw new Error("ERRORE NELLA RICHIESTA GET DI CURRENTDATE NELL'HEADER");
-			}
+			setCurrentDate(data);
+			localStorage.setItem('currentDate', data.toISOString());
 		} catch (error) {
 			console.error("Errore durante l'invio della data corrente:", error);
 		}
 	}
+
+	useEffect(() => {
+		if (hasEventNotifications() && !doNotDisturb) {
+			setShowNotifications(true);
+		}
+	}, [notifications, doNotDisturb]);
+
+	useEffect(() => {
+		if (doNotDisturb) {
+			setShowNotifications(false);
+		}
+	}, [doNotDisturb]);
 
 	// Ritorna true se ci sono notifiche di tipo event che sono già passate
 	function hasEventNotifications(): boolean {
@@ -446,7 +497,11 @@ export default function Header(): React.JSX.Element {
 				return true;
 			}
 
-			if (notification && notification.type === "ProjectActivity" && notification.read === false) {
+			if (
+				notification &&
+				notification.type === "ProjectActivity" &&
+				notification.read === false
+			) {
 				return true;
 			}
 
@@ -500,7 +555,6 @@ export default function Header(): React.JSX.Element {
 				) {
 					return true;
 				}
-
 			}
 
 			if (notification && notification.type === "message" && notification.read === false) {
@@ -545,7 +599,7 @@ export default function Header(): React.JSX.Element {
 
 			const data = await response.json();
 
-			console.log("Notifications:", data);
+			//console.log("Notifications:", data);
 			if (data.status === ResponseStatus.GOOD) {
 				setNotifications(data.value);
 			} else {
@@ -559,12 +613,29 @@ export default function Header(): React.JSX.Element {
 	// Ottengo tutti gli eventi, e guardo se la currentDate cade in un evento di tipo "NON DISTURBARE". Se si, ritorna true.
 	const checkDoNotDisturb = async (): Promise<void> => {
 		const currentUser = await getCurrentUser();
+
+		if (!currentUser) {
+			console.error("Utente non trovato");
+			return;
+		}
+
 		const owner = currentUser.value._id.toString();
+
 		try {
 			const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
+
+			if (!res.ok) {
+				throw new Error("Errore nel ritrovare eventi dell'utente");
+			}
+
 			const eventi = await res.json();
+
+			if (!eventi) {
+				throw new Error("eventi non sono stati trovati");
+			}
+
 			const eventiValue = eventi.value;
-			console.log("eventiValue:", eventiValue);
+			//console.log("eventiValue:", eventiValue);
 
 			if (!eventiValue) {
 				throw new Error("eventiValue non è definito");
@@ -590,8 +661,30 @@ export default function Header(): React.JSX.Element {
 
 	useEffect(() => {
 		const fetchData = async (): Promise<void> => {
-			await postCurrentDate(currentDate); // Invia la data corrente al server
+			// await postCurrentDate(currentDate); // Invia la data corrente al server
+			const savedDate = localStorage.getItem('currentDate');
+			if (savedDate) {
+				setCurrentDate(new Date(savedDate));
+				setIsDateLoaded(true);
+			}
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			if (!response.ok) {
+				throw new Error("Errore nel recupero della data corrente");
+			}
+			const data = await response.json();
+
+			const newDate = new Date(data.currentDate);
+			newDate.setSeconds(newDate.getSeconds() + 1);
+			setCurrentDate(newDate);
+			localStorage.setItem('currentDate', newDate.toISOString());
+			triggerAction();
+
 			const currentUser = await getCurrentUser();
+
+			if (!currentUser) {
+				console.error("Utente non trovato");
+				return;
+			}
 
 			setUser(currentUser.value._id.toString());
 			setUsername(currentUser.value.username);
@@ -614,6 +707,53 @@ export default function Header(): React.JSX.Element {
 
 		return () => clearInterval(intervalId);
 	}, [showTimeMachine]);
+	/*
+		useEffect(() => {
+			let timer: NodeJS.Timeout;
+	
+			// Funzione per controllare le notifiche
+			const checkNotifications = (): void => {
+				if (notifications.length > previousNotificationsRef.current.length) {
+					const newNotification = notifications[notifications.length - 1];
+					console.log("currentDate:", currentDate);
+					console.log("newNotification.data.date:", newNotification.data.date);
+	
+					if (new Date(newNotification.data.date).getTime() < currentDate.getTime()) {
+						setOverlayText(newNotification.message);
+						setShowOverlay(true);
+						setOverlayOpacity(1);
+	
+						// Fade out dopo 5 secondi
+						setTimeout(() => {
+							setOverlayOpacity(0);
+							setTimeout(() => {
+								setShowOverlay(false);
+								setOverlayText("");
+							}, 5000);
+						}, 5000);
+					}
+				}
+				previousNotificationsRef.current = notifications;
+			};
+	
+			// Esegui il controllo ogni 5 secondi
+			timer = setInterval(checkNotifications, 5000);
+	
+			// Esegui il primo controllo immediatamente
+			checkNotifications();
+	
+			// Cleanup
+			return () => {
+				if (timer) {
+					clearInterval(timer);
+					setShowOverlay(false);
+					setOverlayText("");
+					setOverlayOpacity(0);
+				}
+			};
+		}, [notifications, currentDate]); // Aggiungi currentDate come dipendenza
+	*/
+
 
 	// Guarda se ci sono notifiche al caricamento del componente
 	useEffect(() => {
@@ -625,6 +765,28 @@ export default function Header(): React.JSX.Element {
 		setShowDropdown((prevState) => !prevState);
 		console.log("showDropdown:", showDropdown);
 	}
+
+	useEffect(() => {
+		const header = document.querySelector(".header-container");
+
+		const handleScroll = (): void => {
+			if (header) {
+				// Controlla se l'header è attaccato al top
+				if (window.scrollY > 0) {
+					header.classList.add("sticky");
+				} else {
+					header.classList.remove("sticky");
+				}
+			}
+		};
+
+		window.addEventListener("scroll", handleScroll);
+
+		// Cleanup
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
 
 	return (
 		<header className="header-container">
@@ -656,8 +818,7 @@ export default function Header(): React.JSX.Element {
 				<a className="header-link" href="/projects" title="Progetti">
 					Progetti
 				</a>
-				<a
-					className="header-link" href="/activities" title="Attività">
+				<a className="header-link" href="/activities" title="Attività">
 					Attività
 				</a>
 			</div>
@@ -719,7 +880,7 @@ export default function Header(): React.JSX.Element {
 
 			{isLoggedIn ? (
 				<div className="right-menu-buttons">
-					{currentDate && (
+					{currentDate && isDateLoaded && (
 						<>
 							<span className="btn secondary date-button">
 								{formatDate(currentDate)}
@@ -737,8 +898,7 @@ export default function Header(): React.JSX.Element {
 						onClick={(): void => {
 							setShowTimeMachine(!showTimeMachine);
 							setShowNotifications(false);
-						}}
-					>
+						}}>
 						{/* Icona della clessidra */}
 						<i className="fas fa-hourglass"></i>
 					</button>
@@ -749,6 +909,7 @@ export default function Header(): React.JSX.Element {
 								<label htmlFor="dateInput">
 									Cambia la data odierna:
 									<input
+										className="btn border"
 										type="date"
 										id="dateInput"
 										value={
@@ -775,31 +936,27 @@ export default function Header(): React.JSX.Element {
 								<label htmlFor="timeInput">
 									Cambia l'orario:
 									<input
-										className="btn secondary"
+										className="btn border"
 										type="time"
 										id="timeInput"
-										value={
+										defaultValue={
 											currentDate
-												? currentDate
-													.toTimeString()
-													.split(" ")[0]
-													.slice(0, 5)
+												? `${currentDate.getHours().toString().padStart(2, "0")}:${currentDate
+													.getMinutes()
+													.toString()
+													.padStart(2, "0")}`
 												: ""
 										}
-										onChange={(event): void => {
-											const timeValue = event.target.value;
-
-											if (timeValue) {
-												const timeParts = timeValue.split(":");
-												const newDate = new Date(currentDate);
-												newDate.setHours(
-													Number(timeParts[0]),
-													Number(timeParts[1])
-												);
-												setCurrentDate(newDate);
-												triggerAction();
-											} else {
-												console.warn("Orario non valido");
+										onChange={async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+											const [hours, minutes] = e.target.value.split(":");
+											const newDate = new Date(currentDate);
+											newDate.setHours(Number(hours), Number(minutes));
+											await postCurrentDate(newDate);
+											triggerAction();
+										}}
+										onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+											if (e.key === "Backspace") {
+												e.preventDefault();
 											}
 										}}
 										style={{ marginLeft: "10px" }}
@@ -808,12 +965,11 @@ export default function Header(): React.JSX.Element {
 
 								<button
 									className="btn secondary"
-									onClick={(): void => {
-										postCurrentDate(currentDate);
+									onClick={async (): Promise<void> => {
+										await postCurrentDate(currentDate);
 										setShowTimeMachine(false);
 									}}
-									style={buttonStyle}
-								>
+									style={buttonStyle}>
 									Imposta Data
 								</button>
 
@@ -826,8 +982,7 @@ export default function Header(): React.JSX.Element {
 										triggerAction();
 										setShowTimeMachine(false);
 									}}
-									style={buttonStyle}
-								>
+									style={buttonStyle}>
 									Resetta Data
 								</button>
 							</div>
@@ -848,15 +1003,33 @@ export default function Header(): React.JSX.Element {
 							playNotificationSound();
 						}}>
 						<i className="fas fa-bell" />
-						{hasEventNotifications() &&
-							!doNotDisturb && (
-								<span className="notification-dot" />
-							)}
-						{hasEventNotifications() &&
-							doNotDisturb && (
-								<span className="notification-dot-gray" />
-							)}
+						{hasEventNotifications() && !doNotDisturb && (
+							<span className="notification-dot" />
+						)}
+						{hasEventNotifications() && doNotDisturb && (
+							<span className="notification-dot-gray" />
+						)}
 					</button>
+					{/*
+					{showOverlay && (
+						<div style={{
+							position: 'fixed',
+							top: '50%',
+							left: '50%',
+							transform: 'translate(-50%, -50%)',
+							backgroundColor: 'rgba(0, 0, 0, 0.8)',
+							color: 'white',
+							padding: '20px',
+							borderRadius: '10px',
+							zIndex: 1000,
+							textAlign: 'center',
+							opacity: overlayOpacity,
+							transition: 'opacity 0.5s ease-in-out' // Aggiungi la transizione
+						}}>
+							{overlayText}
+						</div>
+					)}
+					*/}
 					{showNotifications && (
 						<>
 							<div
@@ -877,20 +1050,16 @@ export default function Header(): React.JSX.Element {
 											style={{
 												fontWeight: "bold",
 												color: "gray",
-											}}
-										>
+											}}>
 											non disturbare
 										</span>
 									</div>
 								)}
 								{notifications && notifications.length > 0 ? (
 									notifications.map((notification, index) => {
-										console.log("NOTIFICHE ATTUALI:", notifications);
+										//console.log("NOTIFICHE ATTUALI:", notifications);
 										// TODO: Differentiate by type
-										if (
-											notification.type ===
-											"pomodoro"
-										) {
+										if (notification.type === "pomodoro") {
 											const nCycles = notification.data.cycles || 5;
 											const nStudyTime = notification.data.studyTime || 25;
 											const nPauseTime = notification.data.pauseTime || 5;
@@ -902,8 +1071,7 @@ export default function Header(): React.JSX.Element {
 														style={{
 															color: "black",
 															textDecoration: "none",
-														}}
-													>
+														}}>
 														Hai ricevuto un invito per un{" "}
 														<span
 															style={{
@@ -929,8 +1097,7 @@ export default function Header(): React.JSX.Element {
 																		"ID notifica non definito"
 																	);
 																}
-															}}
-														>
+															}}>
 															<i
 																className="fas fa-check"
 																style={{
@@ -955,8 +1122,7 @@ export default function Header(): React.JSX.Element {
 																		"ID notifica non definito"
 																	);
 																}
-															}}
-														>
+															}}>
 															<i
 																className="fas fa-times"
 																style={{
@@ -999,8 +1165,7 @@ export default function Header(): React.JSX.Element {
 																		"ID notifica non definito"
 																	);
 																}
-															}}
-														>
+															}}>
 															<i
 																className="fas fa-check"
 																style={{
@@ -1040,8 +1205,7 @@ export default function Header(): React.JSX.Element {
 																		"ID notifica non definito"
 																	);
 																}
-															}}
-														>
+															}}>
 															<i
 																className="fas fa-check"
 																style={{
@@ -1197,426 +1361,17 @@ export default function Header(): React.JSX.Element {
 											notification.read === false &&
 											doNotDisturb === false
 										) {
-											const eventDate = new Date(notification.data.date);
-											if (eventDate < currentDate) {
-												return (
-													<div key={index}>
-														Hai ricevuto un invito per un'{" "}
-														<span
-															style={{
-																color: "orange",
-																fontWeight: "bold",
-															}}>
-															attività
-														</span>
-														!
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleAddActivity(notification);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-check"
-																style={{
-																	color: "green",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di tick */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleReadNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-times"
-																style={{
-																	color: "red",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleSnoozeNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-arrows-alt-h"
-																style={{
-																	color: "lightblue",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-													</div>
-												);
-											}
-										} else if (
-											notification.type === "message" &&
-											!notification.data.activity &&
-											notification.receiver === user &&
-											notification.read === false &&
-											doNotDisturb === false
-										) {
-											const eventDate = new Date(notification.data.date);
-											if (eventDate < currentDate) {
-												return (
-													<div key={index}>
-														Hai ricevuto un invito per un{" "}
-														<span
-															style={{
-																color: "bisque",
-																fontWeight: "bold",
-															}}
-														>
-															evento
-														</span>
-														!
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleAddEvent(notification);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-check"
-																style={{
-																	color: "green",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di tick */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleReadNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-times"
-																style={{
-																	color: "red",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleSnoozeNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-arrows-alt-h"
-																style={{
-																	color: "lightblue",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-													</div>
-												);
-											}
-										} else if (
-											notification.type === "shareActivity" &&
-											notification.receiver === user &&
-											notification.read === false &&
-											doNotDisturb === false
-										) {
-											console.log("Notifica trovata: :", notification);
-											console.log("Notifica trovata: :", notification);
-
-											console.log("Notifica trovata: :", notification);
-
-											console.log("Notifica trovata: :", notification);
-
-											console.log("Notifica trovata: :", notification);
-
-											const eventDate = new Date(notification.data.date);
-											if (eventDate < currentDate) {
-												return (
-													<div key={index}>
-														Hai ricevuto un invito per un'{" "}
-														<span
-															style={{
-																color: "orange",
-																fontWeight: "bold",
-															}}>
-															attività condivisa
-														</span>
-														!
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleAddSharedActivity(
-																		notification
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-check"
-																style={{
-																	color: "green",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di tick */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleReadNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-times"
-																style={{
-																	color: "red",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleSnoozeNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-arrows-alt-h"
-																style={{
-																	color: "lightblue",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-													</div>
-												);
-											}
-										} else if (
-											notification.type === "shareEvent" &&
-											notification.receiver === user &&
-											notification.read === false &&
-											doNotDisturb === false
-										) {
-											const eventDate = new Date(notification.data.date); // Crea un oggetto Date
-											if (eventDate < currentDate) {
-												return (
-													<div key={index}>
-														Hai ricevuto un invito per un{" "}
-														<span
-															style={{
-																color: "bisque",
-																fontWeight: "bold",
-															}}
-														>
-															evento condiviso
-														</span>
-														!
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleAddSharedEvent(
-																		notification
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-check"
-																style={{
-																	color: "green",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di tick */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleReadNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-times"
-																style={{
-																	color: "red",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-														<button
-															className="btn secondary"
-															style={{
-																background: "none",
-																cursor: "pointer",
-															}}
-															onClick={(): void => {
-																if (notification.id) {
-																	handleSnoozeNotification(
-																		notification.id
-																	);
-																} else {
-																	console.error(
-																		"ID notifica non definito"
-																	);
-																}
-															}}
-														>
-															<i
-																className="fas fa-arrows-alt-h"
-																style={{
-																	color: "lightblue",
-																	fontSize: "20px",
-																}}></i>{" "}
-															{/* Icona di elimazione */}
-														</button>
-													</div>
-												);
-											}
-										}
-
-										else if (
-											notification.type === "Progetto" &&
-											notification.read === false &&
-											doNotDisturb === false &&
-											notification.receiver === user
-										) {
+											//	const eventDate = new Date(notification.data.date);
+											//	if (eventDate < currentDate) {
 											return (
 												<div key={index}>
-													Hai ricevuto un invito per un{" "}
+													Hai ricevuto un invito per un'{" "}
 													<span
 														style={{
-															color: "purple",
+															color: "orange",
 															fontWeight: "bold",
-														}}
-													>
-														progetto
+														}}>
+														attività
 													</span>
 													!
 													<button
@@ -1627,16 +1382,13 @@ export default function Header(): React.JSX.Element {
 														}}
 														onClick={(): void => {
 															if (notification.id) {
-																handleAddProject(
-																	notification
-																);
+																handleAddActivity(notification);
 															} else {
 																console.error(
 																	"ID notifica non definito"
 																);
 															}
-														}}
-													>
+														}}>
 														<i
 															className="fas fa-check"
 															style={{
@@ -1661,8 +1413,401 @@ export default function Header(): React.JSX.Element {
 																	"ID notifica non definito"
 																);
 															}
+														}}>
+														<i
+															className="fas fa-times"
+															style={{
+																color: "red",
+																fontSize: "20px",
+															}}></i>{" "}
+													</button>
+													{/*
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
 														}}
-													>
+														onClick={(): void => {
+															if (notification.id) {
+																handleSnoozeNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-arrows-alt-h"
+															style={{
+																color: "lightblue",
+																fontSize: "20px",
+															}}></i>{" "}
+													</button>
+													*/}
+												</div>
+											);
+											//}
+										} else if (
+											notification.type === "message" &&
+											!notification.data.activity &&
+											notification.receiver === user &&
+											notification.read === false &&
+											doNotDisturb === false
+										) {
+											const eventDate = new Date(notification.data.date);
+											if (eventDate < currentDate) {
+												return (
+													<div key={index}>
+														Hai ricevuto un invito per un{" "}
+														<span
+															style={{
+																color: "bisque",
+																fontWeight: "bold",
+															}}>
+															evento
+														</span>
+														!
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	handleAddEvent(notification);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-check"
+																style={{
+																	color: "green",
+																	fontSize: "20px",
+																}}></i>{" "}
+															{/* Icona di tick */}
+														</button>
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	handleReadNotification(
+																		notification.id
+																	);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-times"
+																style={{
+																	color: "red",
+																	fontSize: "20px",
+																}}></i>{" "}
+														</button>
+														{/*
+														<button
+															className="btn secondary"
+															style={{
+																background: "none",
+																cursor: "pointer",
+															}}
+															onClick={(): void => {
+																if (notification.id) {
+																	handleSnoozeNotification(
+																		notification.id
+																	);
+																} else {
+																	console.error(
+																		"ID notifica non definito"
+																	);
+																}
+															}}>
+															<i
+																className="fas fa-arrows-alt-h"
+																style={{
+																	color: "lightblue",
+																	fontSize: "20px",
+																}}></i>{" "}
+														</button>
+														*/}
+													</div>
+												);
+											}
+										} else if (
+											notification.type === "shareActivity" &&
+											notification.receiver === user &&
+											notification.read === false &&
+											doNotDisturb === false
+										) {
+											console.log("Notifica trovata: :", notification);
+											console.log("Notifica trovata: :", notification);
+
+											console.log("Notifica trovata: :", notification);
+
+											console.log("Notifica trovata: :", notification);
+
+											console.log("Notifica trovata: :", notification);
+
+											//const eventDate = new Date(notification.data.date);
+											//		if (eventDate < currentDate) {
+											return (
+												<div key={index}>
+													Hai ricevuto un invito per un'{" "}
+													<span
+														style={{
+															color: "orange",
+															fontWeight: "bold",
+														}}>
+														attività condivisa
+													</span>
+													!
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleAddSharedActivity(
+																	notification
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-check"
+															style={{
+																color: "green",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di tick */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleReadNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-times"
+															style={{
+																color: "red",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+													{/*
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleSnoozeNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-arrows-alt-h"
+															style={{
+																color: "lightblue",
+																fontSize: "20px",
+															}}></i>{" "}
+													</button>
+													*/}
+												</div>
+											);
+											//}
+										} else if (
+											notification.type === "shareEvent" &&
+											notification.receiver === user &&
+											notification.read === false &&
+											doNotDisturb === false
+										) {
+											//const eventDate = new Date(notification.data.date); // Crea un oggetto Date
+											//if (eventDate < currentDate) {
+											return (
+												<div key={index}>
+													Hai ricevuto un invito per un{" "}
+													<span
+														style={{
+															color: "bisque",
+															fontWeight: "bold",
+														}}>
+														evento condiviso
+													</span>
+													!
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleAddSharedEvent(
+																	notification
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-check"
+															style={{
+																color: "green",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di tick */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleReadNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-times"
+															style={{
+																color: "red",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di elimazione */}
+													</button>
+													{/*
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleSnoozeNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-arrows-alt-h"
+															style={{
+																color: "lightblue",
+																fontSize: "20px",
+															}}></i>{" "}
+													</button>
+													*/}
+												</div>
+											);
+											//}
+										} else if (
+											notification.type === "Progetto" &&
+											notification.read === false &&
+											doNotDisturb === false &&
+											notification.receiver === user
+										) {
+											return (
+												<div key={index}>
+													Hai ricevuto un invito per un{" "}
+													<span
+														style={{
+															color: "purple",
+															fontWeight: "bold",
+														}}>
+														progetto
+													</span>
+													!
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleAddProject(notification);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
+														<i
+															className="fas fa-check"
+															style={{
+																color: "green",
+																fontSize: "20px",
+															}}></i>{" "}
+														{/* Icona di tick */}
+													</button>
+													<button
+														className="btn secondary"
+														style={{
+															background: "none",
+															cursor: "pointer",
+														}}
+														onClick={(): void => {
+															if (notification.id) {
+																handleReadNotification(
+																	notification.id
+																);
+															} else {
+																console.error(
+																	"ID notifica non definito"
+																);
+															}
+														}}>
 														<i
 															className="fas fa-times"
 															style={{
@@ -1695,14 +1840,12 @@ export default function Header(): React.JSX.Element {
 																color: "lightblue",
 																fontSize: "20px",
 															}}></i>{" "}
-													
+												
 													</button>
 													*/}
 												</div>
 											);
-										}
-
-										else if (
+										} else if (
 											notification.type === "ProjectActivity" &&
 											notification.read === false &&
 											doNotDisturb === false &&
@@ -1715,17 +1858,15 @@ export default function Header(): React.JSX.Element {
 														style={{
 															color: "orange",
 															fontWeight: "bold",
-														}}
-													>
+														}}>
 														attività
-													</span>
-													{" "}di un{" "}
+													</span>{" "}
+													di un{" "}
 													<span
 														style={{
 															color: "purple",
 															fontWeight: "bold",
-														}}
-													>
+														}}>
 														progetto
 													</span>
 													!
@@ -1745,8 +1886,7 @@ export default function Header(): React.JSX.Element {
 																	"ID notifica non definito"
 																);
 															}
-														}}
-													>
+														}}>
 														<i
 															className="fas fa-check"
 															style={{
@@ -1771,8 +1911,7 @@ export default function Header(): React.JSX.Element {
 																	"ID notifica non definito"
 																);
 															}
-														}}
-													>
+														}}>
 														<i
 															className="fas fa-times"
 															style={{
@@ -1829,8 +1968,7 @@ export default function Header(): React.JSX.Element {
 							width: undefined,
 							justifyContent: "flex-end",
 							alignItems: "center",
-						}}
-					>
+						}}>
 						<a
 							href="/profile"
 							title="Profilo"
@@ -1844,9 +1982,9 @@ export default function Header(): React.JSX.Element {
 								alignItems: "center",
 								display: "flex",
 								justifyContent: "center",
-							}}
-						>
+							}}>
 							<img
+								loading="lazy"
 								src={
 									`/images/profile/${profileImage}`
 									//	profileImage
@@ -1874,8 +2012,7 @@ export default function Header(): React.JSX.Element {
 						backgroundColor: "green",
 						color: "white",
 						margin: "12px",
-					}}
-				>
+					}}>
 					Login
 				</a>
 			)}

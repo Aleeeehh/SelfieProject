@@ -97,10 +97,16 @@ const initialPomEvent: PomodoroEvent = {
 };
 
 export default function Pomodoros(): React.JSX.Element {
+	const [currentDate, setCurrentDate] = useState(new Date());
+	const [datePomodoroStart, setDatePomodoroStart] = useState(new Date()); //data di quando si inizia il pomodoro
 	const [searchParams] = useSearchParams();
 	const cycles = Number(searchParams.get("cycles")) || initialState.cycles;
 	const studyTime = Number(searchParams.get("studyTime")) || initialState.studyTime;
 	const pauseTime = Number(searchParams.get("pauseTime")) || initialState.pauseTime;
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
 
 	const [data, setData] = useState({
 		...initialState,
@@ -121,12 +127,28 @@ export default function Pomodoros(): React.JSX.Element {
 	const [shareConfig, setShareConfig] = React.useState(false);
 	const [previousPomodoros, setPreviousPomodoros] = React.useState(false);
 	const [chooseMusic, setChooseMusic] = React.useState(false);
+	const [firstFetchCurrentDate, setFirstFetchCurrentDate] = React.useState(true);
 
+
+	//const [timeChanged, setTimeChanged] = React.useState(false);
+	const [timeDiff, setTimeDiff] = React.useState(0);
 	const [playerType, setPlayerType] = useState(PLAYER_TYPE.SOUND);
 
 	const pomodoroRef = useRef<HTMLDivElement | null>(null);
 
 	const nav = useNavigate();
+
+	const timeDiffRef = useRef(0);
+	const currentDateRef = useRef(new Date());
+	React.useEffect(() => {
+		timeDiffRef.current = timeDiff;
+	}, [timeDiff]);
+
+	React.useEffect(() => {
+		currentDateRef.current = currentDate;
+	}, [currentDate]);
+
+
 
 
 	const location = useLocation();  //contiene informazioni sull'URL attuale (pathname, query, hash, etc.)
@@ -170,6 +192,95 @@ export default function Pomodoros(): React.JSX.Element {
 			}
 		})();
 	}, []);
+
+	React.useEffect(() => {
+
+	}, []);
+
+
+	const fetchCurrentDate = async (): Promise<void> => {
+		try {
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			if (!response.ok) {
+				throw new Error("Errore nel recupero della data corrente");
+			}
+			const data = await response.json();
+			const newDate = new Date(data.currentDate);
+
+			var timeDiff = newDate.getTime() - currentDateRef.current.getTime();
+			/*
+			console.log("timeDiff:", timeDiff);
+			console.log("currentDate:", currentDate);
+			console.log("newDate:", newDate);
+			console.log("firstFetchCurrentDate:", firstFetchCurrentDate);
+			console.log("currentDateRef:", currentDateRef.current);
+			*/
+			if (!firstFetchCurrentDate && currentDate) {
+
+				if (timeDiff > 60000) { // 60000 ms = 1 minuto
+					/*
+										console.log("E' stata cambiata la data di più di un minuto!")
+										console.log("E' stata cambiata la data di più di un minuto!")
+					
+										console.log("E' stata cambiata la data di più di un minuto!")
+										console.log("E' stata cambiata la data di più di un minuto!")
+					
+										console.log("E' stata cambiata la data di più di un minuto!")
+										
+
+					console.log("AGGIUNGIAMO AL TIMER DEL POMODORO MINUTI:", Math.floor(timeDiff / 60000));
+					console.log("minuti del timer del pomodoro:", data.minutes);
+					*/
+					//setTimeChanged(true);
+					timeDiff = timeDiff / 60000; //convertiamo in minuti
+					setTimeDiff(timeDiff);
+
+
+					//quello che vorrei che accada, è togliere tale timeDiff al timer del pomodoro
+
+					//const newMinutes = data.minutes - Math.floor(timeDiff / 60000);
+					//const newSeconds = data.seconds - Math.floor((timeDiff % 60000) / 1000);
+
+					//setData({ ...data, minutes: newMinutes, seconds: newSeconds });
+
+
+
+				}
+
+				else {
+					//E' STATA CAMBIATA LA DATA DI MENO DI UN MINUTO!")
+					setTimeDiff(0);
+				}
+			}
+
+			setCurrentDate(newDate);
+
+			/*
+						if (firstFetchCurrentDate) {
+							setFirstFetchCurrentDate(false);
+						}
+							*/
+
+		} catch (error) {
+			console.error("Errore durante il recupero della data corrente:", error);
+		}
+	};
+
+	React.useEffect(() => {
+		fetchCurrentDate();
+
+
+		//aggiorna la currentDate di calendar ogni secondo
+		const intervalId = setInterval(fetchCurrentDate, 1000);
+		return () => clearInterval(intervalId);
+	}, [firstFetchCurrentDate]);
+
+	React.useEffect(() => {
+		if (firstFetchCurrentDate) {
+			setFirstFetchCurrentDate(false);
+		} //
+	}, [currentDate]); // Si attiva quando currentDate cambia
+
 
 	async function updateTomatoList(): Promise<void> {
 		try {
@@ -236,6 +347,16 @@ export default function Pomodoros(): React.JSX.Element {
 
 	async function handleSavePomodoroConfig(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
+
+		setDatePomodoroStart(currentDate);
+		console.log("Hai iniziato il pomodoro in data:", currentDate);
+		console.log("Hai iniziato il pomodoro in data:", currentDate);
+		console.log("Hai iniziato il pomodoro in data:", currentDate);
+		console.log("Hai iniziato il pomodoro in data:", currentDate);
+		console.log("Hai iniziato il pomodoro in data:", currentDate);
+		console.log("Hai iniziato il pomodoro in data:", currentDate);
+		console.log(datePomodoroStart);
+
 		if (inputCheck()) {
 			try {
 				const pomodoroConfig = {
@@ -285,7 +406,8 @@ export default function Pomodoros(): React.JSX.Element {
 			};
 		});
 
-		resetPomodoroColor();
+		//resetPomodoroColor();
+		changePomodoroColor(timeDiff);
 	}
 
 	function handleLeftTime(): void {
@@ -302,11 +424,6 @@ export default function Pomodoros(): React.JSX.Element {
 					const res = await fetch(`${SERVER_API}/events/owner?owner=${owner}`);
 					const date = await res.json();
 					console.log("Eventi trovati nella handleLeftTime:", data);
-					console.log("Eventi trovati nella handleLeftTime:", data);
-					console.log("Eventi trovati nella handleLeftTime:", data);
-					console.log("Eventi trovati nella handleLeftTime:", data);
-					console.log("Eventi trovati nella handleLeftTime:", data);
-
 
 					// Creo una variabile per il pomodoro attuale
 					const currentPomodoro = date.value.find((event: any) => {
@@ -319,15 +436,6 @@ export default function Pomodoros(): React.JSX.Element {
 					);
 
 					if (date.status === ResponseStatus.GOOD) {
-						console.log("ENTRO NELL'IF");
-						console.log("ENTRO NELL'IF");
-
-						console.log("ENTRO NELL'IF");
-
-						console.log("ENTRO NELL'IF");
-						console.log("ENTRO NELL'IF");
-						console.log("ENTRO NELL'IF");
-						console.log("ENTRO NELL'IF");
 						console.log("ENTRO NELL'IF");
 						console.log("ENTRO NELL'IF");
 
@@ -394,18 +502,6 @@ export default function Pomodoros(): React.JSX.Element {
 								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
 								eventPomodoro
 							);
-							console.log(
-								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
-								eventPomodoro
-							);
-							console.log(
-								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
-								eventPomodoro
-							);
-							console.log(
-								"Trovato un evento 'Pomodoro Session' successivo all'orario attuale:",
-								eventPomodoro
-							);
 
 							const updatedEndTime = new Date(eventPomodoro.endTime);
 							updatedEndTime.setMinutes(updatedEndTime.getMinutes() + timeToAdd);
@@ -463,6 +559,123 @@ export default function Pomodoros(): React.JSX.Element {
 				seconds = 59;
 				minutes -= 1;
 			}
+			const timeDiff = Math.floor(timeDiffRef.current);
+			console.log("timeDiff in updateTimer:", timeDiff);
+
+			//BASE DI PARTENZA FUNZIONANTE!!! (funziona per andare avanti nei minuti della fase)
+			/*
+						if (timeDiff > 0) {
+							//togliamo tali minuti al timer del pomodoro
+							minutes -= timeDiff;
+			
+							// Reset dell'animazione per riflettere il salto nel tempo
+							changePomodoroColor(timeDiff);
+							setTimeDiff(0);
+							// Riavvia l'animazione con il tempo rimanente
+							startAnimation(studying);
+						}
+			//FINE ALGORITMO BASE FUNZIONANTE				
+							*/
+
+
+			//ALGORITMO SPERIMENTALE
+			if (timeDiff > 0) {
+				//tutte le variabili sono in minuti
+
+				var durataFaseAttuale = studying ? studyTime : pauseTime;
+				var tempoDellaFaseAndato = durataFaseAttuale - minutes;
+				var durataProssimaFase = studying ? pauseTime : studyTime;
+				var tempoPerProssimaFase = durataFaseAttuale - tempoDellaFaseAndato;
+				var timeDiffRimasto = timeDiff - tempoPerProssimaFase;
+				//timeDiff rimasto dopo aver passato la fase corrente
+
+
+				if (timeDiff > tempoPerProssimaFase) {
+					//algoritmo per scalare avanti di almeno una fase
+					if (cycles === 0 || (timeDiff > (studyTime + pauseTime) * cycles)) { //se non ci sono più cicli da fare allora terminiamo 
+						clearInterval(prevData.intervalId);
+
+						intervalId = undefined;
+						activeTimer = false;
+						status = STATUS.END;
+
+						changePomodoroColor(0);
+						//resetPomodoroColor();
+						minutes = studyTime;
+						seconds = 0;
+					}
+					else { //rimangono cicli da fare
+						//gestiamo caso complesso
+
+						// Calcola quanti cicli completi possiamo saltare
+
+						var fasiSaltate = 1;
+
+						//facciamo finta che deve saltare solo la fase attuale
+
+						while (timeDiffRimasto > durataProssimaFase) {
+							timeDiffRimasto -= durataProssimaFase;
+							if (studying) {
+								durataProssimaFase = pauseTime;
+							}
+							else {
+								durataProssimaFase = studyTime;
+							}
+							studying = !studying;
+							fasiSaltate += 1;
+						}
+						console.log("fasiSaltate:", fasiSaltate);
+						const cicliSaltati = Math.floor(fasiSaltate / 2);
+						console.log("Cicli saltati:", cicliSaltati);
+
+						if (studying) {
+							console.log(durataProssimaFase);
+							console.log("Start pause session sperimentale con timeDiffRimasto:", timeDiffRimasto);
+							status = STATUS.PAUSE;
+							studying = false;
+							playRing();
+							//startAnimation(false);
+							startAnimation(false);
+							changePomodoroColor(timeDiffRimasto);
+
+							minutes = pauseTime - timeDiffRimasto;
+							seconds = 0;
+							cycles -= cicliSaltati;
+
+						} else {
+							console.log("Start study session");
+							status = STATUS.STUDY;
+							studying = true;
+							playRing();
+							startAnimation(true)
+							changePomodoroColor(timeDiffRimasto);
+							minutes = studyTime - timeDiffRimasto;
+							seconds = 0;
+							cycles -= cicliSaltati;
+						}
+					}
+				}
+
+
+
+
+				else {
+					minutes -= timeDiff;
+					changePomodoroColor(timeDiff);
+					startAnimation(studying);
+				}
+
+				// Reset dell'animazione per riflettere il salto nel tempo
+				setTimeDiff(0);
+				// Riavvia l'animazione con il tempo rimanente
+
+			}
+
+
+
+
+
+
 
 			if (minutes < 0) {
 				if (cycles === 0) {
@@ -472,7 +685,8 @@ export default function Pomodoros(): React.JSX.Element {
 					activeTimer = false;
 					status = STATUS.END;
 
-					resetPomodoroColor();
+					changePomodoroColor(timeDiff);
+					//resetPomodoroColor();
 					minutes = studyTime;
 					seconds = 0;
 				} else {
@@ -512,6 +726,85 @@ export default function Pomodoros(): React.JSX.Element {
 		});
 	}
 
+	/*
+		function updateTimerWithChangeDate(timeDiff: number): void {
+			setData((prevData) => {
+				let {
+					minutes,
+					seconds,
+					cycles,
+					studyTime,
+					studying,
+					pauseTime,
+					status,
+					intervalId,
+					activeTimer,
+				} = prevData;
+		
+				// Converti timeDiff da millisecondi a minuti e secondi
+		
+				//const minutesToSubtract = Math.floor(timeDiff / 60000);
+				//const secondsToSubtract = Math.floor((timeDiff % 60000) / 1000);
+		
+				// Sottrai i minuti e secondi dal tempo rimanente
+				console.log("timeDiff:", timeDiff);
+		
+				seconds -= 0//secondsToSubtract;
+				minutes -= 0//minutesToSubtract;
+		
+				// Gestisci il caso in cui i secondi diventano negativi
+				while (seconds < 0) {
+					seconds += 60;
+					minutes -= 1;
+				}
+		
+				// Gestisci il caso in cui i minuti diventano negativi
+				while (minutes < 0) {
+					if (cycles === 0) {
+						clearInterval(prevData.intervalId);
+						intervalId = undefined;
+						activeTimer = false;
+						status = STATUS.END;
+						resetPomodoroColor();
+						minutes = studyTime;
+						seconds = 0;
+						break;
+					} else {
+						if (studying) {
+							console.log("Start pause session");
+							status = STATUS.PAUSE;
+							studying = false;
+							playRing();
+							startAnimation(false);
+							minutes += pauseTime; // Aggiungi il tempo di pausa
+							cycles -= 1;
+						} else {
+							console.log("Start study session");
+							status = STATUS.STUDY;
+							studying = true;
+							playRing();
+							startAnimation(true);
+							minutes += studyTime; // Aggiungi il tempo di studio
+						}
+					}
+				}
+		
+				return {
+					...prevData,
+					minutes,
+					seconds,
+					cycles,
+					studyTime,
+					studying,
+					pauseTime,
+					status,
+					intervalId,
+					activeTimer,
+				} as PomodoroData;
+			});
+		}
+			*/
+
 	function startAnimation(isStudying: boolean): void {
 		console.log(isStudying);
 		if (pomodoroRef.current) {
@@ -531,18 +824,97 @@ export default function Pomodoros(): React.JSX.Element {
 		return value < 10 ? "0" + value : String(value);
 	}
 
-	function resetPomodoroColor(): void {
-		if (pomodoroRef.current) {
-			pomodoroRef.current.style.animationDuration = `0.1s`;
-			pomodoroRef.current.classList.add("animate-pomodoro");
+	/*
+		function resetPomodoroColor(): void {
+			if (pomodoroRef.current) {
+				pomodoroRef.current.style.animationDuration = `0.1s`;
+				pomodoroRef.current.classList.add("animate-pomodoro");
+		
+				setTimeout(() => {
+					if (pomodoroRef.current) {
+						pomodoroRef.current.classList.remove("animate-pomodoro");
+					}
+				}, 100);
+			}
+		}
+			*/
 
-			setTimeout(() => {
-				if (pomodoroRef.current) {
-					pomodoroRef.current.classList.remove("animate-pomodoro");
-				}
-			}, 100);
+	// Funzione helper per ottenere il progresso corrente dell'animazione
+	function getCurrentAnimationProgress(): number {
+		if (!pomodoroRef.current) return 0;
+
+		const computedStyle = window.getComputedStyle(pomodoroRef.current);
+		const animationDelay = parseFloat(computedStyle.animationDelay);
+		const animationDuration = parseFloat(computedStyle.animationDuration);
+
+		if (animationDuration === 0) return 0;
+
+		return Math.abs(animationDelay) / animationDuration;
+	}
+
+	function changePomodoroColor(timeDiff: number): void {
+		if (pomodoroRef.current) {
+			if (timeDiff > 0) {
+				pomodoroRef.current.classList.remove("animate-pomodoro");//
+				pomodoroRef.current.classList.remove("reverse-animate-pomodoro");//
+				// Calcola la percentuale di avanzamento basata sul timeDiff
+				const totalTime = data.studying ? data.studyTime * 60 : data.pauseTime * 60;
+
+				// Ottieni il progresso corrente dell'animazione
+				const currentProgress = getCurrentAnimationProgress();
+				const newProgress = (timeDiff * 60) / totalTime;
+
+				// Combina il progresso esistente con il nuovo
+				const combinedProgress = currentProgress + newProgress;
+
+				// Imposta l'animazione per avanzare di timeDiff minuti
+				pomodoroRef.current.style.animationDuration = `${totalTime}s`;
+				pomodoroRef.current.style.animationDelay = `-${combinedProgress * totalTime}s`;
+				pomodoroRef.current.classList.add(data.studying ? "animate-pomodoro" : "reverse-animate-pomodoro");
+			} else {
+				// Comportamento originale per il reset
+				pomodoroRef.current.classList.remove("animate-pomodoro");//
+				pomodoroRef.current.classList.remove("reverse-animate-pomodoro");//
+				pomodoroRef.current.style.animationDuration = `0.1s`;
+				pomodoroRef.current.classList.add("animate-pomodoro");
+
+				setTimeout(() => {
+					if (pomodoroRef.current) {
+						pomodoroRef.current.classList.remove("animate-pomodoro");
+						pomodoroRef.current.classList.remove("reverse-animate-pomodoro");//
+					}
+				}, 100);
+			}
 		}
 	}
+	/*
+		function changePomodoroColor(timeDiff: number): void {
+			if (pomodoroRef.current) {
+				if (timeDiff > 0) {
+					// Calcola la percentuale di avanzamento basata sul timeDiff
+					const totalTime = data.studying ? data.studyTime * 60 : data.pauseTime * 60;
+					const progress = (timeDiff * 60) / totalTime;
+		
+					// Imposta l'animazione per avanzare di timeDiff minuti
+					pomodoroRef.current.style.animationDuration = `${totalTime}s`;
+					pomodoroRef.current.style.animationDelay = `-${progress * totalTime}s`;
+					pomodoroRef.current.classList.add(data.studying ? "animate-pomodoro" : "reverse-animate-pomodoro");
+				} else {
+					// Comportamento originale per il reset
+					pomodoroRef.current.style.animationDuration = `0.1s`;
+					pomodoroRef.current.classList.add("animate-pomodoro");
+		
+					setTimeout(() => {
+						if (pomodoroRef.current) {
+							pomodoroRef.current.classList.remove("animate-pomodoro");
+						}
+					}, 100);
+				}
+			}
+		}
+			*/
+
+
 
 	function nextPhase(): void {
 		setData((prevData) => {
@@ -565,7 +937,8 @@ export default function Pomodoros(): React.JSX.Element {
 				activeTimer = false;
 				status = STATUS.END;
 
-				resetPomodoroColor();
+				//resetPomodoroColor();
+				changePomodoroColor(timeDiff);
 				minutes = studyTime;
 				seconds = 0;
 			} else {
@@ -578,6 +951,12 @@ export default function Pomodoros(): React.JSX.Element {
 					minutes = pauseTime;
 					seconds = 0;
 					cycles -= 1;
+					// Reset dell'animazione per la fase di pausa
+					if (pomodoroRef.current) {
+						pomodoroRef.current.style.animationDelay = "0s";
+						pomodoroRef.current.classList.remove("animate-pomodoro", "reverse-animate-pomodoro");
+						pomodoroRef.current.classList.add("reverse-animate-pomodoro");
+					}
 				} else {
 					console.log("Start study session");
 					status = STATUS.STUDY;
@@ -586,6 +965,12 @@ export default function Pomodoros(): React.JSX.Element {
 					startAnimation(true);
 					minutes = studyTime;
 					seconds = 0;
+					// Reset dell'animazione per la fase di studio
+					if (pomodoroRef.current) {
+						pomodoroRef.current.style.animationDelay = "0s";
+						pomodoroRef.current.classList.remove("animate-pomodoro", "reverse-animate-pomodoro");
+						pomodoroRef.current.classList.add("animate-pomodoro");
+					}
 				}
 			}
 
@@ -1031,6 +1416,7 @@ export default function Pomodoros(): React.JSX.Element {
 										type="text"
 										name="location"
 										value={pomEvent.location}
+										placeholder="Luogo svolgimento pomodoro.."
 										onChange={(e: ChangeEvent<HTMLInputElement>): void =>
 											setPomEvent({
 												...pomEvent,
@@ -1080,7 +1466,7 @@ export default function Pomodoros(): React.JSX.Element {
 										className="previous-pomodoros-button"
 										onClick={togglePreviousPomodoros}
 									>
-										Visualizza ultimi Pomodoro
+										Visualizza ultimi Pomodori
 									</button>
 									<button className="share-config-button" onClick={toggleShareConfig}>
 										<a style={{ textDecoration: "none", color: "inherit" }}>
@@ -1096,7 +1482,7 @@ export default function Pomodoros(): React.JSX.Element {
 									className="preview"
 									style={{ display: previousPomodoros ? "flex" : "none" }}
 								>
-									<div style={{ fontWeight: "bold" }}>POMODORO RECENTI:</div>
+									<div style={{ fontWeight: "bold" }}>POMODORI RECENTI:</div>
 									{tomatoList.slice(-3).map((pomodoro, index) => (
 										<button
 											className="previous-pomodoros"
@@ -1125,7 +1511,7 @@ export default function Pomodoros(): React.JSX.Element {
 										Invia la configurazione del Pomodoro ad un amico
 									</div>
 									{users.length > 0}
-									<SearchForm onItemClick={handleSelectUser} list={users} />
+									<SearchForm onItemClick={handleSelectUser} list={users} excludeUser={loggedUser?.username} />
 									{message && <div className="error-message">{message}</div>}
 									<button
 										onClick={handleSendInvite}
@@ -1142,10 +1528,11 @@ export default function Pomodoros(): React.JSX.Element {
 
 								<div
 									className="music-container"
-									style={{ display: chooseMusic ? "block" : "none" }}
+									style={{ display: chooseMusic ? "block" : "none", width: "80%" }}
 								>
 									<select
 										value={playerType}
+										style={{ width: "70%" }}
 										onChange={(e): void =>
 											setPlayerType(e.target.value as PLAYER_TYPE)
 										}
@@ -1173,6 +1560,11 @@ export default function Pomodoros(): React.JSX.Element {
 											? `${pad(data.minutes)}:${pad(data.seconds)}`
 											: ""}
 									</div>
+									{/*
+									<div className="timer">
+										{datePomodoroStart.toLocaleString()}
+									</div>
+									*/}
 								</div>
 
 								<div>
@@ -1199,7 +1591,7 @@ export default function Pomodoros(): React.JSX.Element {
 
 									<br />
 
-									<div className="commands-container" style={{ width: "100%" }}>
+									<div className="commands-container" style={{ width: "100%", marginTop: "-20px" }}>
 										<button
 											type="button"
 											className="bg-warning skip-phase-button"

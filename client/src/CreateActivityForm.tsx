@@ -1,4 +1,4 @@
-import React from "react";
+//import React, { useEffect } from "react";
 import { SERVER_API } from "./lib/params";
 import { ResponseStatus } from "./types/ResponseStatus";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -7,7 +7,7 @@ import { AdvancementType } from "./types/Activity";
 import type Project from "./types/Project";
 import SearchForm from "./SearchForm";
 import type User from "./types/User";
-
+import React from "react";
 // const baseActivity: Activity = {
 // 	id: "",
 // 	title: "",
@@ -27,7 +27,7 @@ const emptyActivity: Activity = {
 	description: "",
 	createdAt: new Date(""),
 	updatedAt: new Date(""),
-	deadline: new Date(""),
+	deadline: new Date(),
 	completed: false,
 	accessList: [],
 	next: null,
@@ -56,6 +56,48 @@ export default function CreateActivityForm(): React.JSX.Element {
 	// const [notificationRepeat, setNotificationRepeat] = React.useState(false);
 	// const [_, setNotificationRepeatTime] = React.useState(0);
 	// const [notificationTime, setNotificationTime] = React.useState(0);
+	const [addNotification, setAddNotification] = React.useState(false);
+	const [notificationRepeat, setNotificationRepeat] = React.useState(false);
+	const [notificationTime, setNotificationTime] = React.useState(0);
+	const [notificationRepeatTime, setNotificationRepeatTime] = React.useState(0);
+	const [currentDate, setCurrentDate] = React.useState(new Date());
+	const loggedUser = {
+		username: localStorage.getItem("loggedUserName"),
+		id: localStorage.getItem("loggedUserId"),
+	};
+
+
+	const getValidRepeatOptions = (time: number): number[] => {
+		const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
+		return options.filter((option) => option !== time && (time % option === 0 || option === 0)); // Filtra solo i divisori, escludendo il numero stesso
+	};
+
+
+	function toggleAddNotification(): void {
+		setAddNotification(!addNotification);
+		if (notificationRepeat === true) {
+			setNotificationRepeat(false);
+		}
+	}
+
+	const fetchCurrentDate = async (): Promise<void> => {
+		try {
+			const response = await fetch(`${SERVER_API}/currentDate`);
+			if (!response.ok) {
+				throw new Error("Errore nel recupero della data corrente");
+			}
+			const data = await response.json();
+			setCurrentDate(new Date(data.currentDate)); // Assicurati che il formato sia corretto
+			console.log("currentDate: ", currentDate);
+
+		} catch (error) {
+			console.error("Errore durante il recupero della data corrente:", error);
+		}
+	};
+
+	React.useEffect(() => {
+		fetchCurrentDate();
+	}, []);
 
 	function refreshProject(): void {
 		fetch(`${SERVER_API}/projects/${projectId}`)
@@ -139,6 +181,22 @@ export default function CreateActivityForm(): React.JSX.Element {
 	async function handleCreateActivity(e: React.MouseEvent<HTMLButtonElement>): Promise<void> {
 		e.preventDefault();
 
+		if (activity.title === "") {
+			setMessage("Inserisci un titolo valido");
+			return;
+		}
+		if (activity.description === "") {
+			setMessage("Inserisci una descrizione valida");
+			return;
+		}
+		if (!activity.deadline || isNaN(activity.deadline.getTime())) {
+
+			setMessage("Inserisci una scadenza valida");
+			return;
+		}
+
+
+
 		console.log("Creating activity: ", JSON.stringify(activity));
 
 		console.log("AccessList: ", activity.accessList);
@@ -158,15 +216,23 @@ export default function CreateActivityForm(): React.JSX.Element {
 
 		let accessListAccepted: string[] = [];
 		accessListAccepted.push(owner);
-
-		console.log("questo è il projectID:", projectId);
-		console.log("questo è il projectID:", projectId);
-		console.log("questo è il projectID:", projectId);
-		console.log("questo è il projectID:", projectId);
-		console.log("questo è il projectID:", projectId);
 		//se non si msotra projectid, usa start come parametro per distinzione attività di progetto e attività normale
 
 		const idEventoNotificaCondiviso = `${Date.now()}${Math.floor(Math.random() * 10000)}`;
+
+		console.log("deadline: ", activity.deadline);
+		console.log("deadline: ", activity.deadline);
+
+		console.log("deadline: ", activity.deadline);
+
+		console.log("deadline: ", activity.deadline);
+		console.log("deadline: ", activity.deadline);
+		console.log("deadline: ", activity.deadline);
+
+		console.log("deadline: ", activity.deadline);
+
+		console.log("deadline: ", activity.deadline);
+
 
 		//crea l'attività come evento sul calendario
 		const res = await fetch(`${SERVER_API}/events`, {
@@ -185,6 +251,19 @@ export default function CreateActivityForm(): React.JSX.Element {
 				repetitions: 1,
 			}),
 		});
+
+		const newEvent = {
+			idEventoNotificaCondiviso,
+			owner,
+			title: "Scadenza " + activity.title,
+			startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
+			endTime: activity.deadline.toISOString(),
+			untilDate: null,
+			isInfinite: false,
+			frequency: "once",
+			location: "",
+			repetitions: 1,
+		};
 		console.log("Evento scadenza creato:", res);
 
 		fetch(`${SERVER_API}/activities/${activity.id}`, {
@@ -195,7 +274,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 				description: activity.description,
 				accessList: accessListIds,
 				accessListAccepted: accessListAccepted,
-				deadline: new Date(activity.deadline).toISOString().split("T")[0],
+				deadline: new Date(activity.deadline).toISOString(),
 				idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 
 				// project related fields
@@ -222,6 +301,144 @@ export default function CreateActivityForm(): React.JSX.Element {
 				setMessage("Impossibile raggiungere il server");
 			});
 
+		var notificationDate = new Date(newEvent.startTime);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		console.log("notificationDate: ", notificationDate);
+		notificationDate.setHours(notificationDate.getHours() + 1); // 
+		notificationDate.setMinutes(notificationDate.getMinutes() - notificationTime);
+		console.log("Questa è la data di inizio evento:", activity.deadline);
+		console.log("Questa è la data della notifica:", notificationDate);
+		var message = "";
+		if (notificationTime < 60) {
+			message = "Scadenza " + activity.title + " tra " + notificationTime + " minuti!";
+		} else {
+			message = "Scadenza " + activity.title + " tra " + notificationTime / 60 + " ore!";
+		}
+
+		if (notificationTime == 0) {
+			message = "Scadenza " + activity.title + " iniziata!";
+		}
+
+		var repeatTime = notificationRepeatTime;
+		var repeatedNotification = false;
+		if (repeatTime > 0) {
+			repeatedNotification = true;
+		}
+
+		//se è stata annessa una notifica all'evento, aggiungo tale notifica al db con una post
+		if (addNotification) {
+			console.log(
+				"Aggiungo notifica di lunghezza ",
+				notificationTime,
+				" minuti prima per l'attività ",
+				activity.title
+			);
+			console.log("creo notifia con data: ", activity.deadline.toISOString());
+			console.log("creo notifia con repeat: ", repeatedNotification);
+			console.log("creo notifia con repeatTime: ", repeatTime);
+			console.log("creo notifia con notificationTime: ", notificationTime);
+			const res3 = await fetch(`${SERVER_API}/notifications`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					message: message,
+					mode: "activity",
+					receiver: owner, // Cambia il receiver per ogni membro della accessList
+					type: "activity",
+					data: {
+						date: notificationDate, // data prima notifica
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+						repeatedNotification: repeatedNotification, // se è true, la notifica si ripete
+						repeatTime: repeatTime, // ogni quanti minuti si ripete la notifica, in seguito alla data di prima notifica
+						firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
+					},
+				}),
+			});
+			console.log("Notifica creata per: " + owner, "Risposta:", res3);
+			console.log("")
+		}
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+		console.log("accessList: ", activity.accessList);
+
+
+		//invia ad ogni utente della accessList una richiesta di accettazione dell'attività (una notifica)
+		if (!projectId) {
+			for (const receiver of activity.accessList) {
+
+				console.log("Questo è il receiver:", receiver);
+				console.log("Questo è il receiver:", receiver);
+				console.log("Questo è il receiver:", receiver);
+
+				const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+				const data = await res.json();
+				const receiverId = data.id;
+				console.log("Questo è il receiverId:", receiverId);
+				console.log("Questo è il receiverId:", receiverId);
+
+				const newEvent = {
+					idEventoNotificaCondiviso,
+					owner: receiverId,
+					title: "Scadenza " + activity.title,
+					startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
+					endTime: activity.deadline.toISOString(),
+					untilDate: null,
+					isInfinite: false,
+					frequency: "once",
+					location: "",
+					repetitions: 1,
+				};
+
+				const newNotification = {
+					message: message,
+					mode: "activity",
+					receiver: receiverId,
+					type: "activity",
+					data: {
+						date: notificationDate,
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						firstNotificationTime: notificationTime,
+						repeatedNotification: repeatedNotification,
+						repeatTime: repeatTime,
+						activity: activity,
+						event: newEvent,
+					},
+				};
+
+				if (receiver !== owner) {
+					console.log("Questo è il receiver:", receiver);
+					const res4 = await fetch(`${SERVER_API}/notifications`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({
+							message: "Hai ricevuto un attività condivisa",
+							mode: "activity",
+							receiver: receiverId, // Cambia il receiver per ogni membro della accessList
+							type: "shareActivity",
+							data: {
+								date: activity.deadline.toISOString(), // data prima notifica
+								idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+								firstNotificationTime: notificationTime, // quanto tempo prima della data di inizio evento si invia la prima notifica
+								activity: activity, //attività condivisa
+								event: newEvent, //evento scadenza dell'attività condivisa
+								notification: addNotification ? newNotification : null,
+							},
+						}),
+					});
+					console.log("Notifica creata per:", receiver, "Risposta:", res4);
+				}
+			}
+		}
+
+
+
 		if (projectId) { //se l'attività è legata ad un progetto, invia notifiche "project activity" agli utenti dell'attività
 
 			console.log("Creo le notifiche per gli utenti");
@@ -245,6 +462,22 @@ export default function CreateActivityForm(): React.JSX.Element {
 					repetitions: 1,
 				};
 
+				const newNotification = {
+					message: message,
+					mode: "activity",
+					receiver: receiverId,
+					type: "activity",
+					data: {
+						date: notificationDate,
+						idEventoNotificaCondiviso: idEventoNotificaCondiviso,
+						firstNotificationTime: notificationTime,
+						repeatedNotification: repeatedNotification,
+						repeatTime: repeatTime,
+						activity: activity,
+						event: newEvent,
+					},
+				};
+
 
 				if (receiver !== activity.owner) { //posso mettere che la riceva anche l'owner magari
 					console.log("Questo è il receiver:", receiver);
@@ -257,9 +490,12 @@ export default function CreateActivityForm(): React.JSX.Element {
 							receiver: receiverId, // Cambia il receiver per ogni membro della accessList
 							type: "ProjectActivity",
 							data: {
-								date: new Date(), // data prima notifica
+								date: activity.deadline.toISOString(), // data prima notifica
 								activity: activity,
 								event: newEvent,
+								notification: addNotification ? newNotification : null,
+								firstNotificationTime: notificationTime,
+								idEventoNotificaCondiviso: idEventoNotificaCondiviso,
 							},
 						}),
 					});
@@ -268,53 +504,90 @@ export default function CreateActivityForm(): React.JSX.Element {
 			}
 		}
 
-		//se projectId è null, manda notifiche "activity" agli utenti dell'attività
-
-		if (!projectId) {
-			for (const receiver of activity.accessList) {
-				const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
-				const data = await res.json();
-				const receiverId = data.id;
-
-				const newEvent = {
-					idEventoNotificaCondiviso,
-					owner: receiverId,
-					title: "Scadenza " + activity.title,
-					startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
-					endTime: activity.deadline.toISOString(),
-					untilDate: null,
-					isInfinite: false,
-					frequency: "once",
-					location: "",
-					repetitions: 1,
-				};
-
-				if (receiver !== activity.owner) {
-
-
-
-					console.log("Questo è il receiver:", receiver);
-					const res4 = await fetch(`${SERVER_API}/notifications`, {
-						method: "POST",
-						headers: { "Content-Type": "application/json" },
-						body: JSON.stringify({
-							message: "Hai ricevuto un attività condivisa",
-							mode: "activity",
-							receiver: receiverId, // Cambia il receiver per ogni membro della accessList
-							type: "shareActivity",
-							data: {
-								date: new Date(), // data prima notifica
-								idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
-								activity: activity, //attività condivisa
-								event: newEvent, //evento scadenza dell'attività condivisa
-								notification: null,
-							},
-						}),
-					});
-					console.log("Notifica creata per:", receiver, "Risposta:", res4);
+		/*
+				//se projectId è null, manda notifiche "activity" agli utenti dell'attività
+				if (!projectId) {
+					for (const receiver of activity.accessList) {
+						const res = await fetch(`${SERVER_API}/users/getIdByUsername?username=${receiver}`);
+						const data = await res.json();
+						const receiverId = data.id;
+		
+						const newEvent = {
+							idEventoNotificaCondiviso,
+							owner: receiverId,
+							title: "Scadenza " + activity.title,
+							startTime: new Date(activity.deadline.getTime() - 60 * 60 * 1000).toISOString(),
+							endTime: activity.deadline.toISOString(),
+							untilDate: null,
+							isInfinite: false,
+							frequency: "once",
+							location: "",
+							repetitions: 1,
+						};
+		
+						if (receiver !== activity.owner) {
+		
+		
+		
+							console.log("Questo è il receiver:", receiver);
+							const res4 = await fetch(`${SERVER_API}/notifications`, {
+								method: "POST",
+								headers: { "Content-Type": "application/json" },
+								body: JSON.stringify({
+									message: "Hai ricevuto un attività condivisa",
+									mode: "activity",
+									receiver: receiverId, // Cambia il receiver per ogni membro della accessList
+									type: "shareActivity",
+									data: {
+										date: activity.deadline.toISOString(), // data prima notifica
+										idEventoNotificaCondiviso: idEventoNotificaCondiviso, // id condiviso con l'evento, per delete di entrambi
+										activity: activity, //attività condivisa
+										event: newEvent, //evento scadenza dell'attività condivisa
+										notification: null,
+									},
+								}),
+							});
+							console.log("Notifica creata per:", receiver, "Risposta:", res4);
+						}
+					}
 				}
-			}
+						*/
+	}
+
+	function findParentActivity(): Activity | undefined {
+		if (!project) return undefined;
+		if (!parent) return undefined;
+
+		for (const act of project?.activityList) {
+			const title = findActivity(act, parent);
+			if (title) return title;
 		}
+
+		return undefined;
+	}
+
+	function findActivity(input: Activity, id: string): Activity | undefined {
+		if (input.id === id) return input;
+
+		if (input.children)
+			for (const child of input.children) {
+				const title = findActivity(child, id);
+				if (title) return title;
+			}
+
+		return undefined;
+	}
+
+	function findNextActivity(): Activity | undefined {
+		if (!project) return undefined;
+		if (!next) return undefined;
+
+		for (const act of project?.activityList) {
+			const title = findActivity(act, next);
+			if (title) return title;
+		}
+
+		return undefined;
 	}
 
 	// On page load, get the project data
@@ -327,6 +600,20 @@ export default function CreateActivityForm(): React.JSX.Element {
 			refreshProject();
 		}
 	}, [activity.projectId]);
+
+	React.useEffect(() => {
+		const handleEscKey = (event: KeyboardEvent): void => {
+			if (event.key === 'Escape') {
+				window.location.href = '/activities';
+			}
+		};
+
+		window.addEventListener('keydown', handleEscKey);
+
+		return () => {
+			window.removeEventListener('keydown', handleEscKey);
+		};
+	}, []);
 
 	// const getValidRepeatOptions = (time: number): number[] => {
 	//     const options = [0, 5, 10, 15, 30, 60, 120, 1440]; // Opzioni disponibili
@@ -355,6 +642,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 					<input
 						type="text"
 						name="title"
+						placeholder="Titolo attività.."
 						value={activity.title}
 						onChange={handleTextChange}
 					/>
@@ -366,10 +654,51 @@ export default function CreateActivityForm(): React.JSX.Element {
 					<input
 						type="textarea"
 						name="description"
+						placeholder="Descrizione attività.."
 						value={activity.description}
 						onChange={handleTextChange}
 					/>
 				</label>
+
+				{projectId && (
+					<label
+						htmlFor="start"
+						className="activity-vertical"
+						style={{
+							display: "flex",
+							flexDirection: "row",
+							flexWrap: "wrap",
+							alignItems: "center",
+							marginBottom: "15px",
+							padding: "10px",
+							border: "1px solid #ddd",
+							borderRadius: "8px",
+							backgroundColor: "#fdfdfd",
+						}}
+					>
+						Data di Inizio
+						<div
+							style={{
+								display: "flex",
+								flexFlow: "wrap",
+								alignItems: "center",
+								gap: "0.5em",
+							}}
+						>
+							<input
+								type="date"
+								name="start"
+								className="activity-date-input"
+								onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+									setActivity({
+										...activity,
+										start: new Date(e.target.value),
+									});
+								}}
+							/>
+						</div>
+					</label>
+				)}
 
 				{/* render dates */}
 				<label
@@ -401,135 +730,123 @@ export default function CreateActivityForm(): React.JSX.Element {
 							name="deadline"
 							className="activity-date-input"
 							onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+								const newDate = new Date(e.target.value);
+								// Mantieni l'orario esistente
+								newDate.setHours(activity.deadline.getHours());
+								newDate.setMinutes(activity.deadline.getMinutes());
 								setActivity({
 									...activity,
-									deadline: new Date(e.target.value),
+									deadline: newDate,
 								});
 							}}
 						/>
-						{/*<div>
-							<DatePicker
-								className="btn border"
-								name="endTime"
-								selected={activity.deadline || new Date()}
-								onChange={(date: Date | null): void => {
-									if (date) {
-										// Aggiorna la data mantenendo l'orario attuale
-										const newDate = new Date(activity.deadline) || new Date();
-										newDate.setFullYear(
-											date.getFullYear(),
-											date.getMonth(),
-											date.getDate()
-										);
-										setActivity({ ...activity, deadline: newDate });
-									}
-								}}
-							/>
-						</div>
-						<div>
-							<input
-								style={{ backgroundColor: "white" }}
-								className="btn border"
-								type="time"
-								value={`${new Date(activity.deadline)
-									.getHours()
-									.toString()
-									.padStart(2, "0")}:${new Date(activity.deadline)
-									.getMinutes()
-									.toString()
-									.padStart(2, "0")}`}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-									const [hours, minutes] = e.target.value.split(":");
-									const newDate = new Date(activity.deadline);
-									newDate.setHours(Number(hours), Number(minutes)); // Aggiorna l'orario
-									setActivity({ ...activity, deadline: newDate });
-								}}
-							/>
-						</div>*/}
+
+						<input
+							className="btn border"
+							type="time"
+							defaultValue={`${activity.deadline ?
+								`${activity.deadline.getHours().toString().padStart(2, "0")}:${activity.deadline.getMinutes().toString().padStart(2, "0")}`
+								: "00:00"}`}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+								const [hours, minutes] = e.target.value.split(":");
+								const newDate = new Date(activity.deadline || new Date()); // Fallback a new Date() se deadline è null
+								newDate.setHours(Number(hours), Number(minutes));
+								setActivity({
+									...activity,
+									deadline: newDate,
+								});
+							}}
+							onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>): void => {
+								if (e.key === "Backspace") {
+									e.preventDefault();
+								}
+							}}
+						/>
 					</div>
 				</label>
 
-				{/* render notification */}
-				{/* <label htmlFor="allDayEvent">
-                    <input
-                        type="checkbox"
-                        onClick={(): void =>
-                            setAddNotification(!addNotification)
-                        }
-                        style={{
-                            marginLeft: "5px",
-                            marginRight: "3px",
-                            marginTop: "3px",
-                        }}
-                    />
-                    Aggiungi notifica
-                </label>
 
-                {addNotification && (
-                    <label htmlFor="notificationTime">
-                        Quanto tempo prima mandare la notifica
-                        <select
-                            id="notificationTimeSelect"
-                            className="btn border"
-                            onChange={(
-                                e: React.ChangeEvent<HTMLSelectElement>
-                            ): void => {
-                                setNotificationTime(Number(e.target.value));
-                                if (Number(e.target.value) > 0) {
-                                    setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
-                                } else if (Number(e.target.value) == 0) {
-                                    setNotificationRepeat(false);
-                                }
-                            }}
-                            style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
-                        >
-                            <option value="0">All'ora d'inizio</option>
-                            <option value="5">5 minuti prima</option>
-                            <option value="10">10 minuti prima</option>
-                            <option value="15">15 minuti prima</option>
-                            <option value="30">30 minuti prima</option>
-                            <option value="60">1 ora prima</option>
-                            <option value="120">2 ore prima</option>
-                            <option value="1440">Un giorno prima</option>
-                            <option value="2880">2 giorni prima</option>
-                        </select>
-                    </label>
-                )}
+				{/* 
+				<label htmlFor="allDayEvent">
+					<input
+						type="checkbox"
+						onClick={(): void =>
+							setAddNotification(!addNotification)
+						}
+						style={{
+							marginLeft: "5px",
+							marginRight: "3px",
+							marginTop: "3px",
+						}}
+					/>
+					Aggiungi notifica
+				</label>
 
-                {notificationRepeat && (
-                    <label htmlFor="notificationRepeatTime">
-                        Quanto tempo ripetere la notifica
-                        <select
-                            className="btn border"
-                            name="notificationRepeatTime"
-                            onChange={(
-                                e: React.ChangeEvent<HTMLSelectElement>
-                            ): void => {
-                                setNotificationRepeatTime(
-                                    Number(e.target.value)
-                                );
-                            }}
-                        >
-                            {getValidRepeatOptions(notificationTime).map(
-                                (option) => (
-                                    <option key={option} value={option}>
-                                        {option === 0
-                                            ? "Mai"
-                                            : option >= 60
-                                            ? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
-                                            : `Ogni ${option} minuti`}
-                                    </option>
-                                )
-                            )}
-                        </select>
-                    </label>
-                )}*/}
+				{false && (
+					<label htmlFor="notificationTime">
+						Quanto tempo prima mandare la notifica
+						<select
+							id="notificationTimeSelect"
+							className="btn border"
+							onChange={(
+								e: React.ChangeEvent<HTMLSelectElement>
+							): void => {
+								setNotificationTime(Number(e.target.value));
+								if (Number(e.target.value) > 0) {
+									setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+								} else if (Number(e.target.value) == 0) {
+									setNotificationRepeat(false);
+								}
+							}}
+							style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+						>
+							<option value="0">All'ora d'inizio</option>
+							<option value="5">5 minuti prima</option>
+							<option value="10">10 minuti prima</option>
+							<option value="15">15 minuti prima</option>
+							<option value="30">30 minuti prima</option>
+							<option value="60">1 ora prima</option>
+							<option value="120">2 ore prima</option>
+							<option value="1440">Un giorno prima</option>
+							<option value="2880">2 giorni prima</option>
+						</select>
+					</label>
+				)}
 
+				{notificationRepeat && (
+					<label htmlFor="notificationRepeatTime">
+						Quanto tempo ripetere la notifica
+						<select
+							className="btn border"
+							name="notificationRepeatTime"
+							onChange={(
+								e: React.ChangeEvent<HTMLSelectElement>
+							): void => {
+								setNotificationRepeatTime(
+									Number(e.target.value)
+								);
+							}}
+						>
+							{getValidRepeatOptions(notificationTime).map(
+								(option) => (
+									<option key={option} value={option}>
+										{option === 0
+											? "Mai"
+											: option >= 60
+												? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+												: `Ogni ${option} minuti`}
+									</option>
+								)
+							)}
+						</select>
+					</label>
+				)}
+*/}
 				{/* render access list */}
 				<div className="activity-participants">
 					<label>
 						Invita Utenti all'attività
-						<SearchForm onItemClick={addUser} list={activity.accessList} />
+						<SearchForm onItemClick={addUser} list={activity.accessList} excludeUser={loggedUser?.username} />
 						<div className="activity-users-container">
 							{activity.accessList.length > 0 ? (
 								activity.accessList.map((u) => (
@@ -556,6 +873,88 @@ export default function CreateActivityForm(): React.JSX.Element {
 					</label>
 				</div>
 
+				<label htmlFor="addNotificationActivity"
+					style={{
+						cursor: 'pointer',
+						userSelect: 'none',  // Impedisce la selezione del testo
+						WebkitUserSelect: 'none',  // Per Safari
+						MozUserSelect: 'none',     // Per Firefox
+						msUserSelect: 'none'       // Per IE/Edge
+					}}>
+					<input
+						type="checkbox"
+						name="addNotificationActivity"
+						id="addNotificationActivity"
+						onClick={toggleAddNotification}
+						style={{
+							marginLeft: "5px",
+							marginRight: "3px",
+							marginTop: "3px",
+							cursor: "pointer",
+						}}
+					/>
+					Aggiungi notifica scadenza
+				</label>
+
+				{addNotification && (
+					<label htmlFor="notificationTime">
+						Quanto tempo prima mandare la notifica
+						<select
+							id="notificationTimeSelect"
+							className="btn border"
+							onChange={(
+								e: React.ChangeEvent<HTMLSelectElement>
+							): void => {
+								setNotificationTime(Number(e.target.value));
+								if (Number(e.target.value) > 0) {
+									setNotificationRepeat(true); // Imposta il valore selezionato come notificationTime
+								} else if (Number(e.target.value) == 0) {
+									setNotificationRepeat(false);
+								}
+							}}
+							style={{ marginLeft: "10px" }} // Aggiungi margine se necessario
+						>
+							<option value="0">All'ora d'inizio</option>
+							<option value="5">5 minuti prima</option>
+							<option value="10">10 minuti prima</option>
+							<option value="15">15 minuti prima</option>
+							<option value="30">30 minuti prima</option>
+							<option value="60">1 ora prima</option>
+							<option value="120">2 ore prima</option>
+							<option value="1440">Un giorno prima</option>
+							<option value="2880">2 giorni prima</option>
+						</select>
+					</label>
+				)}
+
+				{notificationRepeat && (
+					<label htmlFor="notificationRepeatTime">
+						Quanto tempo ripetere la notifica
+						<select
+							className="btn border"
+							name="notificationRepeatTime"
+							onChange={(
+								e: React.ChangeEvent<HTMLSelectElement>
+							): void => {
+								setNotificationRepeatTime(
+									Number(e.target.value)
+								);
+							}}>
+							{getValidRepeatOptions(notificationTime).map(
+								(option) => (
+									<option key={option} value={option}>
+										{option === 0
+											? "Mai"
+											: option >= 60
+												? `Ogni ${option / 60} ore` // Se option è maggiore di 60, mostra in ore
+												: `Ogni ${option} minuti`}
+									</option>
+								)
+							)}
+						</select>
+					</label>
+				)}
+
 				{/* project related fields*/}
 				{projectId && (
 					<>
@@ -570,7 +969,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 						)}
 
 						{/* render start date */}
-						<label
+						{/* <label
 							htmlFor="start"
 							className="activity-vertical"
 							style={{
@@ -606,7 +1005,7 @@ export default function CreateActivityForm(): React.JSX.Element {
 									}}
 								/>
 							</div>
-						</label>
+						</label> */}
 
 						{/* advancement type */}
 						<div className="activity-advancementType">
@@ -650,17 +1049,18 @@ export default function CreateActivityForm(): React.JSX.Element {
 						</label>
 						{/* parent*/}
 						<div className="activity-parent">
-							<div>Attività padre: {parent || "Nessuna"} (Non modificabile)</div>
+							<div>Attività padre: {findParentActivity() ? findParentActivity()?.title : "Nessuna"} (Non modificabile)</div>
 						</div>
 
 						{/* next */}
 						<div className="activity-next">
-							<div>Prossima attività: {next || "Nessuna"} (Non modificabile)</div>
+							<div>Prossima attività: {findNextActivity() ? findNextActivity()?.title : "Nessuna"} (Non modificabile)</div>
 						</div>
 					</>
 				)}
 				{message && <div className="error-message">{message}</div>}
 				<button
+					style={{ backgroundColor: "rgb(249, 205, 140)", color: "white" }}
 					onClick={(e: React.MouseEvent<HTMLButtonElement>): void => {
 						e.preventDefault();
 						handleCreateActivity(e);
